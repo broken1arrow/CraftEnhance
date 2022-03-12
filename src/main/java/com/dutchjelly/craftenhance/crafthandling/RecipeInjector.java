@@ -60,9 +60,9 @@ public class RecipeInjector implements Listener {
 	//Add registrations of owners of containers.
 	public void registerContainerOwners(Map<Location, UUID> containerOwners) {
 		//Make sure to only register containers, in case some are non existent anymore.
-		containerOwners.entrySet().forEach(entry -> {
-			if (entry.getKey() != null && entry.getKey().getBlock() instanceof Container)
-				this.containerOwners.put(entry.getKey(), entry.getValue());
+		containerOwners.forEach((key, value) -> {
+			if (key != null && key.getWorld() != null && key.getBlock() instanceof Container)
+				this.containerOwners.put(key, value);
 		});
 	}
 
