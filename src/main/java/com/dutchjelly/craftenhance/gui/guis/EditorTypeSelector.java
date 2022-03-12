@@ -1,6 +1,5 @@
 package com.dutchjelly.craftenhance.gui.guis;
 
-import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.gui.GuiManager;
@@ -24,16 +23,9 @@ public class EditorTypeSelector extends GUIElement {
 	public EditorTypeSelector(GuiManager manager, GuiTemplate template, GUIElement previousGui, Player player, String key, String permission) {
 		super(manager, template, previousGui, player);
 		this.addBtnListener(ButtonType.ChooseWorkbenchType, (btn, type) -> {
-			final EnhancedRecipe enhancedRecipe = self().getFm().getRecipe(key);
 			WBRecipe newRecipe = new WBRecipe(permission, null, new ItemStack[9]);
-			if (enhancedRecipe != null) {
-				int uniqueKeyIndex = 1;
-				while (!self().getFm().isUniqueRecipeKey("recipe" + uniqueKeyIndex))
-					uniqueKeyIndex++;
-				
-				newRecipe.setKey("recipe" + uniqueKeyIndex);
-			} else
-				newRecipe.setKey(key);
+
+			newRecipe.setKey(getFreshKey(key));
 
 			WBRecipeEditor gui = new WBRecipeEditor(
 					self().getGuiManager(),
@@ -43,16 +35,9 @@ public class EditorTypeSelector extends GUIElement {
 			getManager().openGUI(getPlayer(), gui);
 		});
 		this.addBtnListener(ButtonType.ChooseFurnaceType, (btn, type) -> {
-			final EnhancedRecipe enhancedRecipe = self().getFm().getRecipe(key);
 			FurnaceRecipe newRecipe = new FurnaceRecipe(permission, null, new ItemStack[1]);
-			if (enhancedRecipe != null) {
-				int uniqueKeyIndex = 1;
-				while (!self().getFm().isUniqueRecipeKey("recipe" + uniqueKeyIndex))
-					uniqueKeyIndex++;
 
-				newRecipe.setKey("recipe" + uniqueKeyIndex);
-			} else
-				newRecipe.setKey(key);
+			newRecipe.setKey(getFreshKey(key));
 
 			FurnaceRecipeEditor gui = new FurnaceRecipeEditor(
 					self().getGuiManager(),
@@ -62,6 +47,18 @@ public class EditorTypeSelector extends GUIElement {
 			getManager().openGUI(getPlayer(), gui);
 		});
 		inventory = GuiUtil.CopyInventory(getTemplate().getTemplate(), getTemplate().getInvTitle(), this);
+	}
+
+	private String getFreshKey(String keySeed) {
+		if (keySeed == null || !self().getFm().isUniqueRecipeKey(keySeed)) {
+			int uniqueKeyIndex = 1;
+			keySeed = "recipe";
+
+			while (!self().getFm().isUniqueRecipeKey(keySeed + uniqueKeyIndex))
+				uniqueKeyIndex++;
+			keySeed += uniqueKeyIndex;
+		}
+		return keySeed;
 	}
 
 	@Override
