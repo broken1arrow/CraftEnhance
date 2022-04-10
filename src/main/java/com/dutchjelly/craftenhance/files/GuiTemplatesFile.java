@@ -10,6 +10,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,7 +61,7 @@ public class GuiTemplatesFile {
 				templates.put(clazz, new GuiTemplate(templateConfig.getConfigurationSection(key)));
 			} catch (ConfigError configError) {
 				Messenger.Error("There is a problem with loading the gui template of " + key + ". You're probably missing some new templates, which will automatically generate when just removing the guitemplates.yml file.\n");
-				Debug.Send("(Config Error)" + configError.getStackTrace());
+				Debug.Send("(Config Error)" + Arrays.toString(configError.getStackTrace()).replace(",","\n"));
 			}
 		}
 	}
