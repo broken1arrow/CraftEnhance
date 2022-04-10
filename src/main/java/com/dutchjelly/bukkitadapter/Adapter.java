@@ -36,8 +36,13 @@ public class Adapter {
 		} catch (Exception e) {
 			if (name.equals("WORKBENCH"))
 				return Material.valueOf("CRAFTING_TABLE");
+			if (name.equals("WEB"))
+				return Material.valueOf("COBWEB");
+			if (name.equals("EXP_BOTTLE"))
+				return Material.valueOf("EXPERIENCE_BOTTLE");
 			try {
-				return Material.matchMaterial("LEGACY_" + name);
+				if (self().getVersionChecker().olderThan(VersionChecker.ServerVersion.v1_14))
+					return Material.matchMaterial("LEGACY_" + name);
 			} catch (Exception e2) {
 			}
 		}
