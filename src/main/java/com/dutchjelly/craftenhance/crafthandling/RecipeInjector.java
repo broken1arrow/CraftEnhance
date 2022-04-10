@@ -169,8 +169,11 @@ public class RecipeInjector implements Listener {
 					Debug.Send("found enhanced recipe result for furnace");
 					return Optional.of(fRecipe.getResult());
 				}
+			} else {
+				Debug.Send("found recipe doesn't match " + (entityCanCraft(p, fRecipe) ? "." : "and no perms."));
+				return null;
 			}
-			Debug.Send("found recipe doesn't match or no perms.");
+			Debug.Send("found recipe match but " + (entityCanCraft(p, fRecipe) ? "." : "no perms."));
 		}
 		//Check for similar server recipes if no enhanced ones match.
 		for (Recipe sRecipe : group.getServerRecipes()) {
@@ -244,6 +247,6 @@ public class RecipeInjector implements Listener {
 
 	private boolean entityCanCraft(Permissible entity, EnhancedRecipe recipe) {
 		return recipe.getPermissions() == null || recipe.getPermissions().equals("")
-				|| entity != null && entity.hasPermission(recipe.getPermissions());
+				|| (entity != null && entity.hasPermission(recipe.getPermissions()));
 	}
 }
