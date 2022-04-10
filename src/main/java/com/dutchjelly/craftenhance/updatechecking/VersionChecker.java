@@ -3,13 +3,18 @@ package com.dutchjelly.craftenhance.updatechecking;
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.messaging.Messenger;
+import lombok.Getter;
 
 public class VersionChecker {
 
 	private CraftEnhance plugin;
+	private String serverVersion;
+	private int currentServerVersion;
 
 	public static VersionChecker init(CraftEnhance plugin) {
 		VersionChecker checker = new VersionChecker();
+		checker.serverVersion = plugin.getServer().getBukkitVersion();
+		checker.currentServerVersion = Integer.parseInt(checker.serverVersion.split("\\.")[1]);
 		checker.plugin = plugin;
 		return checker;
 	}
@@ -45,7 +50,6 @@ public class VersionChecker {
 	}
 
 	public boolean runVersionCheck() {
-		String serverVersion = plugin.getServer().getBukkitVersion();
 		Messenger.Message("Running a version check to check that the server is compatible with game version " + String.join(", ", Adapter.CompatibleVersions()) + ".");
 		for (String version : Adapter.CompatibleVersions()) {
 			if (serverVersion.contains(version)) {
@@ -73,5 +77,48 @@ public class VersionChecker {
 		String currentVersion = plugin.getDescription().getVersion();
 		return !version.equalsIgnoreCase(currentVersion);
 		//return !Arrays.stream(version.split("\n")).anyMatch(x -> x.equalsIgnoreCase(currentVersion));
+	}
+
+	public boolean equals(ServerVersion version) {
+		return serverVersion(version) == 0;
+	}
+
+	public boolean newerThan(ServerVersion version) {
+		return serverVersion(version) > 0;
+	}
+
+	public boolean olderThan(ServerVersion version) {
+		return serverVersion(version) < 0;
+	}
+
+	public int serverVersion(ServerVersion version) {
+		return this.currentServerVersion - version.getVersion();
+	}
+
+	public enum ServerVersion {
+		v1_18(18),
+		v1_17(17),
+		v1_16(16),
+		v1_15(15),
+		v1_14(14),
+		v1_13(13),
+		v1_12(12),
+		v1_11(11),
+		v1_10(10),
+		v1_9(9),
+		v1_8(8),
+		v1_7(7),
+		v1_6(6),
+		v1_5(5),
+		v1_4(4),
+		v1_3_AND_BELOW(3);
+		@Getter
+		private final int version;
+
+		ServerVersion(int version) {
+			this.version = version;
+
+		}
+
 	}
 }
