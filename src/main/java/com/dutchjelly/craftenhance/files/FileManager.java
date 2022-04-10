@@ -1,10 +1,5 @@
 package com.dutchjelly.craftenhance.files;
 
-import java.io.*;
-import java.lang.reflect.Type;
-import java.util.*;
-import java.util.logging.Logger;
-
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.messaging.Debug;
@@ -18,6 +13,11 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.io.*;
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.logging.Logger;
 
 public class FileManager {
 
@@ -249,9 +249,9 @@ public class FileManager {
 			String[] parsedKey = key.split(",");
 			Location loc = new Location(
 					Bukkit.getServer().getWorld(UUID.fromString(parsedKey[3])),
-					Integer.valueOf(parsedKey[0]),
-					Integer.valueOf(parsedKey[1]),
-					Integer.valueOf(parsedKey[2]));
+					Integer.parseInt(parsedKey[0]),
+					Integer.parseInt(parsedKey[1]),
+					Integer.parseInt(parsedKey[2]));
 			blockOwners.put(loc, UUID.fromString(containerOwnerConfig.getString(key)));
 		}
 		return blockOwners;
