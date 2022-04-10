@@ -1,11 +1,14 @@
 package com.dutchjelly.craftenhance.crafthandling.util;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import lombok.Getter;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Arrays;
+
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class ItemMatchers {
 
@@ -72,16 +75,32 @@ public class ItemMatchers {
 		return (a, b) -> Arrays.stream(matchers).allMatch(x -> x.match(a, b));
 	}
 
+	public static boolean matchCustomModelData(ItemStack a, ItemStack b) {
+		if (a == null || b == null) return a == null && b == null;
+
+		if (a.hasItemMeta() && b.hasItemMeta()) {
+			ItemMeta itemMetaA = a.getItemMeta();
+			ItemMeta itemMetaB = b.getItemMeta();
+			if (itemMetaA != null && itemMetaB != null && itemMetaA.hasCustomModelData() && itemMetaB.hasCustomModelData())
+				return itemMetaA.getCustomModelData() == itemMetaB.getCustomModelData();
+		}
+		return false;
+	}
 
 	public static boolean matchTypeData(ItemStack a, ItemStack b) {
 
 		if (a == null || b == null) return a == null && b == null;
 
-		if (!a.hasItemMeta() && !b.hasItemMeta())
+		if (self().getVersionChecker().olderThan(VersionChecker.ServerVersion.v1_14)) {
+			if (a.getData() == null && b.getData() == null)
+				return matchType(a, b);
+			return a.getData().equals(b.getData());
+		} else {
+			if (a.hasItemMeta() && b.hasItemMeta()) {
+				return matchCustomModelData(a, b) || matchType(a, b);
+			}
 			return matchType(a, b);
-		else if (a.getData() == null && b.getData() == null)
-			return matchType(a, b);
-		return a.getData().equals(b.getData());
+		}
 	}
 
 	public static boolean matchName(ItemStack a, ItemStack b) {
