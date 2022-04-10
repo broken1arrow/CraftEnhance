@@ -170,6 +170,10 @@ public class RecipeInjector implements Listener {
 					return Optional.of(fRecipe.getResult());
 				}
 			} else {
+				if (fRecipe.matcheType(srcMatrix)) {
+					Debug.Send("found similar match itemtype for furnace");
+					return Optional.empty();
+				}
 				Debug.Send("found recipe doesn't match " + (entityCanCraft(p, fRecipe) ? "." : "and no perms."));
 				return null;
 			}
@@ -210,8 +214,6 @@ public class RecipeInjector implements Listener {
 			return;
 		}
 
-
-		Debug.Send("furnace burn");
 		Optional<ItemStack> result = getFurnaceResult(f.getInventory().getSmelting(), (Furnace) e.getBlock().getState());
 		if (result != null && !result.isPresent()) {
 			e.setCancelled(true);
