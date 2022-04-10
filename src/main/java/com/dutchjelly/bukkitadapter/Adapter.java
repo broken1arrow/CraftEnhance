@@ -1,8 +1,8 @@
 package com.dutchjelly.bukkitadapter;
 
 
-import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.messaging.Debug;
+import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import org.bukkit.DyeColor;
 import org.bukkit.Keyed;
 import org.bukkit.Material;
@@ -19,6 +19,8 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class Adapter {
 
@@ -128,12 +130,23 @@ public class Adapter {
 	}
 
 	public static void SetIngredient(ShapedRecipe recipe, char key, ItemStack ingredient) {
-		if (!CraftEnhance.self().getConfig().getBoolean("learn-recipes")) {
-			MaterialData md = ingredient.getData();
-			if (md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)) {
-				recipe.setIngredient(key, ingredient.getType());
+		if (!self().getConfig().getBoolean("learn-recipes")) {
+			if (self().getVersionChecker().newerThan(VersionChecker.ServerVersion.v1_16)) {
+				if (ingredient.getData() == null) return;
+				Material md = ingredient.getData().getItemType();
+				if (md == null || !md.equals(ingredient.getType()) || md.equals(Material.AIR)) {
+					recipe.setIngredient(key, ingredient.getType());
+				} else {
+					recipe.setIngredient(key, md);
+				}
+				return;
 			} else {
-				recipe.setIngredient(key, md);
+				MaterialData md = ingredient.getData();
+				if (md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)) {
+					recipe.setIngredient(key, ingredient.getType());
+				} else {
+					recipe.setIngredient(key, md);
+				}
 			}
 			return;
 		}
@@ -147,7 +160,7 @@ public class Adapter {
 	}
 
 	public static void AddIngredient(ShapelessRecipe recipe, ItemStack ingredient) {
-		if (!CraftEnhance.self().getConfig().getBoolean("learn-recipes")) {
+		if (!self().getConfig().getBoolean("learn-recipes")) {
 			MaterialData md = ingredient.getData();
 			if (md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)) {
 				recipe.addIngredient(ingredient.getType());
