@@ -17,7 +17,6 @@ import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Container;
 import org.bukkit.block.Furnace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -61,7 +60,7 @@ public class RecipeInjector implements Listener {
 	public void registerContainerOwners(Map<Location, UUID> containerOwners) {
 		//Make sure to only register containers, in case some are non existent anymore.
 		containerOwners.forEach((key, value) -> {
-			if (key != null && key.getWorld() != null && key.getBlock() instanceof Container)
+			if (key != null && key.getWorld() != null)
 				this.containerOwners.put(key, value);
 		});
 	}
@@ -155,7 +154,7 @@ public class RecipeInjector implements Listener {
 		}
 		UUID playerId = containerOwners.get(furnace.getLocation());
 		Player p = playerId == null ? null : plugin.getServer().getPlayer(playerId);
-		Debug.Send("Furnace belongs to player with id: " + playerId);
+		Debug.Send("Furnace belongs to player: " + p + " the id " + playerId);
 
 		//Check if any grouped enhanced recipe is a match.
 		for (EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
