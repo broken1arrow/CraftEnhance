@@ -70,17 +70,17 @@ public class RecipeLoader implements Listener {
 
 	//Adds or merges group with existing group.
 	private RecipeGroup addGroup(RecipeGroup newGroup, RecipeType type) {
-
+		Debug.Send("AddGroupe.");
 		if (newGroup == null) return null;
-
 		List<RecipeGroup> groupedRecipes = mappedGroupedRecipes.get(type);
 		for (RecipeGroup group : groupedRecipes) {
 //            Debug.Send("Looking if two enhanced recipes are similar for merge.");
 			if (newGroup.getEnhancedRecipes().stream().anyMatch(x -> group.getEnhancedRecipes().stream().anyMatch(x::isSimilar))) {
 				return group.mergeWith(newGroup);
+
 			}
 		}
-
+		Debug.Send("AddGroupe done.");
 		groupedRecipes.add(newGroup);
 		return newGroup;
 	}
