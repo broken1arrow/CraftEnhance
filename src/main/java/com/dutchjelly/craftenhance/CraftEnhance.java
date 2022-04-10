@@ -54,7 +54,8 @@ public class CraftEnhance extends JavaPlugin {
 	private CustomCmdHandler commandHandler;
 
 	private RecipeInjector injector;
-
+	@Getter
+	VersionChecker versionChecker;
 	@Getter
 	private boolean usingItemsAdder;
 
@@ -74,7 +75,7 @@ public class CraftEnhance extends JavaPlugin {
 		Debug.Send("Coloring config messages.");
 		ConfigFormatter.init(this).formatConfigMessages();
 		Messenger.Init(this);
-
+		versionChecker = VersionChecker.init(this);
 		ItemMatchers.init(getConfig().getBoolean("enable-backwards-compatible-item-matching"));
 
 		this.usingItemsAdder = this.getServer().getPluginManager().getPlugin("ItemsAdder") != null;
@@ -108,12 +109,11 @@ public class CraftEnhance extends JavaPlugin {
 
 		Messenger.Message("CraftEnhance is managed and developed by DutchJelly.");
 		Messenger.Message("If you find a bug in the plugin, please report it to https://dev.bukkit.org/projects/craftenhance.");
-		VersionChecker checker = VersionChecker.init(this);
-		if (!checker.runVersionCheck()) {
+		if (!versionChecker.runVersionCheck()) {
 			for (int i = 0; i < 4; i++)
 				Messenger.Message("WARN: The installed version isn't tested to work with the game version of the server.");
 		}
-		Bukkit.getScheduler().runTaskAsynchronously(this, checker::runUpdateCheck);
+		Bukkit.getScheduler().runTaskAsynchronously(this, versionChecker::runUpdateCheck);
 
 
 		final int metricsId = 9023;
