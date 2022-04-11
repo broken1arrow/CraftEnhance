@@ -24,16 +24,15 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.inventory.FurnaceBurnEvent;
-import org.bukkit.event.inventory.FurnaceSmeltEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.*;
 import org.bukkit.permissions.Permissible;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.time.LocalDateTime;
 import java.util.*;
+
+import static com.dutchjelly.craftenhance.util.FurnaceDefultValues.getExp;
 
 public class RecipeInjector implements Listener {
 
@@ -48,6 +47,7 @@ public class RecipeInjector implements Listener {
 	//Keep track of the id's of the owners of containers.
 	@Getter
 	private final Map<Location, UUID> containerOwners = new HashMap<>();
+	private final Set<Location> notCustomItem = new HashSet<>();
 
 	public RecipeInjector(JavaPlugin plugin) {
 		this.plugin = plugin;
@@ -144,10 +144,16 @@ public class RecipeInjector implements Listener {
 		inv.setResult(null); //We found similar custom recipes, but none matched exactly. So set result to null.
 	}
 
-	public Optional<ItemStack> getFurnaceResult(ItemStack source, Furnace furnace) {
+	public RecipeGroup getMatchingRecipeGroup(ItemStack source) {
 		ItemStack[] srcMatrix = new ItemStack[]{source};
 		FurnaceRecipe recipe = new FurnaceRecipe(null, null, srcMatrix);
-		RecipeGroup group = RecipeLoader.getInstance().findSimilarGroup(recipe);
+		return RecipeLoader.getInstance().findSimilarGroup(recipe);
+	}
+
+	public Optional<ItemStack> getFurnaceResult(RecipeGroup group, ItemStack source, Furnace furnace) {
+		ItemStack[] srcMatrix = new ItemStack[]{source};
+		//FurnaceRecipe recipe = new FurnaceRecipe(null, null, srcMatrix);
+		//RecipeGroup group = RecipeLoader.getInstance().findSimilarGroup(recipe);
 		if (group == null) {
 			Debug.Send("furnace recipe does not match any group, so not changing the outcome");
 			return null;
@@ -190,31 +196,58 @@ public class RecipeInjector implements Listener {
 	}
 
 	@EventHandler
+	public void exstract(FurnaceExtractEvent e) {
+
+		if (!notCustomItem.isEmpty() && notCustomItem.contains(e.getBlock().getLocation())) {
+			e.setExpToDrop(getExp(e.getItemType()));
+			notCustomItem.remove(e.getBlock().getLocation());
+		}
+	}
+
+	@EventHandler
 	public void smelt(FurnaceSmeltEvent e) {
 		Debug.Send("furnace smelt");
-		Optional<ItemStack> result = getFurnaceResult(e.getSource(), (Furnace) e.getBlock().getState());
+		RecipeGroup group = getMatchingRecipeGroup(e.getSource());
+		Optional<ItemStack> result = getFurnaceResult(group, e.getSource(), (Furnace) e.getBlock().getState());
 		if (result == null) return;
-
 		if (result.isPresent()) {
 			e.setResult(result.get());
-		} else e.setCancelled(true);
+		} else {
+			ItemStack itemStack = RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(e.getSource().getType()));
+			if (itemStack != null) {
+				//Adapter.GetFurnaceRecipe(CraftEnhance.self(), ServerRecipeTranslator.GetFreeKey(itemStack.getType().name().toLowerCase()), itemStack, e.getSource().getType(), 160, getExp(itemStack.getType()));
+				//pausedFurnaces.put((Furnace) e.getBlock().getState(), LocalDateTime.now().plusSeconds(10L));
+				e.setResult(itemStack);
+				for (EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
+					FurnaceRecipe fRecipe = (FurnaceRecipe) eRecipe;
+					if (fRecipe.matcheType(new ItemStack[]{e.getSource()})) {
+						notCustomItem.add(e.getBlock().getLocation());
+						break;
+					}
+				}
+			} else
+				e.setCancelled(true);
+		}
+
 
 	}
 
 	@EventHandler
 	public void burn(FurnaceBurnEvent e) {
+		Debug.Send("furnace burn");
 		if (e.isCancelled()) return;
 		Furnace f = (Furnace) e.getBlock().getState();
-
 		//Reduce computing time by pausing furnaces. This can be removed if we also check for hoppers
 		//instead of only clicks to unpause.
 		if (pausedFurnaces.getOrDefault(f, LocalDateTime.now()).isAfter(LocalDateTime.now())) {
 			e.setCancelled(true);
 			return;
 		}
-
-		Optional<ItemStack> result = getFurnaceResult(f.getInventory().getSmelting(), (Furnace) e.getBlock().getState());
+		RecipeGroup recipe = getMatchingRecipeGroup(f.getInventory().getSmelting());
+		Optional<ItemStack> result = getFurnaceResult(recipe, f.getInventory().getSmelting(), (Furnace) e.getBlock().getState());
 		if (result != null && !result.isPresent()) {
+			if (f.getInventory().getSmelting() != null && RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(f.getInventory().getSmelting().getType())) != null)
+				return;
 			e.setCancelled(true);
 			pausedFurnaces.put(f, LocalDateTime.now().plusSeconds(10L));
 		}
@@ -225,6 +258,7 @@ public class RecipeInjector implements Listener {
 		if (e.isCancelled()) return;
 		if (e.getView().getTopInventory() instanceof FurnaceInventory) {
 			Furnace f = (Furnace) e.getView().getTopInventory().getHolder();
+
 			pausedFurnaces.remove(f);
 		}
 	}
@@ -246,8 +280,8 @@ public class RecipeInjector implements Listener {
 		}
 	}
 
-	private boolean entityCanCraft(Permissible entity, EnhancedRecipe recipe) {
-		return recipe.getPermissions() == null || recipe.getPermissions().equals("")
-				|| (entity != null && entity.hasPermission(recipe.getPermissions()));
+	private boolean entityCanCraft(Permissible entity, EnhancedRecipe group) {
+		return group.getPermissions() == null || group.getPermissions().equals("")
+				|| (entity != null && entity.hasPermission(group.getPermissions()));
 	}
 }
