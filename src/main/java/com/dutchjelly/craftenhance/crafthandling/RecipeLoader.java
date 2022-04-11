@@ -3,6 +3,7 @@ package com.dutchjelly.craftenhance.crafthandling;
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.messaging.Debug;
@@ -45,7 +46,8 @@ public class RecipeLoader implements Listener {
 
 	@Getter
 	private List<Recipe> disabledServerRecipes = new ArrayList<>();
-
+	@Getter
+	private final Map<ItemStack,ItemStack> similarVanillaRecipe = new HashMap<>();
 
 	private Map<String, Recipe> loaded = new HashMap<>();
 	private Server server;
@@ -62,6 +64,7 @@ public class RecipeLoader implements Listener {
 		server.recipeIterator().forEachRemaining(serverRecipes::add);
 		for (Iterator<Recipe> it = server.recipeIterator(); it.hasNext(); ) {
 			Recipe data = it.next();
+
 		}
 		for (RecipeType type : RecipeType.values()) {
 			mappedGroupedRecipes.put(type, new ArrayList<>());
@@ -216,10 +219,14 @@ public class RecipeLoader implements Listener {
 				break;
 			}
 		}
+		//cache orginal recipe if user make furnace recipe and give right item as output.
+		//time and exp not work as it should yet.
+		cacheSimilarVanilliaRecipe( recipe);
 		//Only load the recipe if there is not a server recipe that's always similar.
 		if (alwaysSimilar == null) {
 			Recipe serverRecipe = recipe.getServerRecipe();
 			server.addRecipe(serverRecipe);
+
 			Debug.Send("Added server recipe for " + serverRecipe.getResult().toString());
 			loaded.put(recipe.getKey(), serverRecipe);
 			if (CraftEnhance.self().getConfig().getBoolean("learn-recipes"))
@@ -232,6 +239,24 @@ public class RecipeLoader implements Listener {
 		group.setServerRecipes(similarServerRecipes);
 		addGroup(group, recipe.getType());
 		loadedRecipes.add(recipe);
+	}
+
+	public void cacheSimilarVanilliaRecipe(EnhancedRecipe recipe) {
+		if (!(recipe instanceof FurnaceRecipe)) return;
+		Debug.Send("Start to add Furnace recipe");
+		for (Recipe r : serverRecipes) {
+			if (!(r instanceof org.bukkit.inventory.FurnaceRecipe)) continue;
+			if (recipe.getContent().length <= 0 || recipe.getContent()[0] == null) continue;
+
+			org.bukkit.inventory.FurnaceRecipe serverRecipe = (org.bukkit.inventory.FurnaceRecipe) r;
+			ItemStack itemStack = serverRecipe.getInput();
+			Debug.Send("Added Furnace recipe for " + serverRecipe.getResult());
+
+			if (recipe.getContent()[0].getType() == itemStack.getType()) {
+				this.similarVanillaRecipe.put( serverRecipe.getInput() ,serverRecipe.getResult());
+				//Adapter.GetFurnaceRecipe(CraftEnhance.self(), ServerRecipeTranslator.GetFreeKey(itemStack.getType().name().toLowerCase()), itemStack, serverRecipe.getResult().getType(), serverRecipe.getCookingTime(), getExp(itemStack.getType()));
+			}
+		}
 	}
 
 	public List<Recipe> getLoadedServerRecipes() {
