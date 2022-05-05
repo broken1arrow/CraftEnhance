@@ -32,10 +32,12 @@ public class FurnaceRecipeEditor extends RecipeEditor<FurnaceRecipe> {
             Messenger.Message("Please input a cook duration.", getPlayer());
             this.getManager().waitForChatInput(this, getPlayer(), (msg) -> {
                 short parsed;
+                if (msg.equals("cancel")||msg.equals("quit") ||msg.equals("exit"))
+                    return false;
                 try{
                     parsed = Short.valueOf(msg);
                 }catch(NumberFormatException e){
-                    Messenger.Message("Error, you didn't input a number.", getPlayer());
+                    Messenger.Message("Error, you didn't input a number. your input " +msg, getPlayer());
                     return true;
                 }
                 if(parsed < 0) parsed = 0;
