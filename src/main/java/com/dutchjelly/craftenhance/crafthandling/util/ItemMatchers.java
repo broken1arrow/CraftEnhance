@@ -2,6 +2,7 @@ package com.dutchjelly.craftenhance.crafthandling.util;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
+import com.dutchjelly.craftenhance.util.StripColors;
 import lombok.Getter;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -17,15 +18,16 @@ public class ItemMatchers {
 		MATCH_TYPE(constructIMatcher(ItemMatchers::matchType), "match type"),
 		MATCH_META(constructIMatcher(ItemMatchers::matchMeta), "match meta"),
 		MATCH_NAME(constructIMatcher(ItemMatchers::matchName), "match name"),
-		MATCH_MODELDATA_AND_TYPE(constructIMatcher(ItemMatchers::matchType, ItemMatchers::matchModelData), "match modeldata and type");
-//        MATCH_ITEMSADDER()
+		MATCH_MODELDATA_AND_TYPE(constructIMatcher(ItemMatchers::matchType, ItemMatchers::matchModelData), "match modeldata and type"),
+		MATCH_NAME_LORE(constructIMatcher(ItemMatchers::matchNameLore), "match name and lore");
+		//        MATCH_ITEMSADDER()
 //        MATCH_NAME_AND_TYPE(constructIMatcher(ItemMatchers::matchName, ItemMatchers::matchType), "match name and type");
 
 		@Getter
-		private IMatcher matcher;
+		private final IMatcher matcher;
 
 		@Getter
-		private String description;
+		private final String description;
 
 
 		MatchType(IMatcher matcher, String description) {
@@ -111,6 +113,22 @@ public class ItemMatchers {
 		return a.hasItemMeta() == b.hasItemMeta() && a.getType() == b.getType();
 	}
 
+	public static boolean matchNameLore(ItemStack a, ItemStack b) {
+		if (a.hasItemMeta() && b.hasItemMeta()) {
+			ItemMeta itemMetaA = a.getItemMeta();
+			ItemMeta itemMetaB = b.getItemMeta();
+
+			if (itemMetaA != null && itemMetaB != null) {
+				boolean hasSameLore = itemMetaA.getLore() == null || itemMetaA.getLore().equals(itemMetaB.getLore());
+				if (!hasSameLore)
+					hasSameLore = StripColors.stripLore(itemMetaA.getLore()).equals(StripColors.stripLore(itemMetaB.getLore()));
+
+				return itemMetaA.getDisplayName().equals(itemMetaB.getDisplayName()) && hasSameLore;
+			}
+		}
+		//neither has item meta, and type has to match
+		return a.hasItemMeta() == b.hasItemMeta() && a.getType() == b.getType();
+	}
 //    public static boolean matchItemsadderItems(ItemStack a, ItemStack b) {
 //        CustomStack stack = CustomStack.byItemStack(myItemStack);
 //        CustomStack
