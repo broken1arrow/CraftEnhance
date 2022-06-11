@@ -35,6 +35,7 @@ public class FileManager {
 
 	private String itemsJson;
 	private Logger logger;
+
 	private Map<String, ItemStack> items;
 	private List<EnhancedRecipe> recipes;
 
@@ -58,10 +59,10 @@ public class FileManager {
 	}
 
 	@SneakyThrows
-	public static void EnsureResourceUpdate(String resourceName, File file, FileConfiguration fileConfig, JavaPlugin plugin) {
+	public static boolean EnsureResourceUpdate(String resourceName, File file, FileConfiguration fileConfig, JavaPlugin plugin) {
 		if(!file.exists()){
 			plugin.saveResource(resourceName, false);
-			return;
+			return false;
 		}
 
 		Reader jarConfigReader = new InputStreamReader(plugin.getResource(resourceName));
@@ -79,7 +80,7 @@ public class FileManager {
 
 		if(unsavedChanges)
 			fileConfig.save(file);
-
+		return true;
 	}
 
 	private File ensureCreated(File file){

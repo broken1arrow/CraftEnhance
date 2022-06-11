@@ -46,7 +46,10 @@ public class GuiTemplatesFile {
 	@SneakyThrows
 	public void load() {
 		templateConfig = YamlConfiguration.loadConfiguration(file);
-		FileManager.EnsureResourceUpdate(GUI_FILE_NAME, file, templateConfig, plugin);
+		if (!FileManager.EnsureResourceUpdate(GUI_FILE_NAME, file, templateConfig, plugin)){
+			plugin.getLogger().info(file.getName() + " doesn't exist... creating it.");
+			templateConfig = YamlConfiguration.loadConfiguration(file);
+		}
 
 		templates = new HashMap<>();
 		for (String key : templateConfig.getKeys(false)) {

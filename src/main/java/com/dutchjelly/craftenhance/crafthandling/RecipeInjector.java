@@ -210,6 +210,7 @@ public class RecipeInjector implements Listener {
 		RecipeGroup group = getMatchingRecipeGroup(e.getSource());
 		Optional<ItemStack> result = getFurnaceResult(group, e.getSource(), (Furnace) e.getBlock().getState());
 		if (result == null) return;
+
 		if (result.isPresent()) {
 			e.setResult(result.get());
 		} else {
@@ -232,7 +233,7 @@ public class RecipeInjector implements Listener {
 
 	}
 
-	@EventHandler
+	@EventHandler (ignoreCancelled = false)
 	public void burn(FurnaceBurnEvent e) {
 		Debug.Send("furnace burn");
 		if (e.isCancelled()) return;
