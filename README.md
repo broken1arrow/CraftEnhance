@@ -15,7 +15,19 @@ Some examples of why I would use this plugin as an API in certain cases is to:
  - Add own GUI's by extending the GUIElement interface class.
 
 ### Changelog
+##### 2.4.4
+```diff
++ java.lang.IllegalArgumentException: Recipe must have non-AIR result. So you know with recipe some are the problem.
++ debug in GetShapedRecipe will now send stacktrace and not String class hash code.
++ so you can match both name and lore.
++ bug when use itemadder, thanks @ᵃʰᵉᵍᵃᵒ 𝐏𝐥𝐨𝐨𝐬𝐡𝐢𝐞 ♡ to bug test it. I needed to strip the colors for make it work (was some issue with lore, were probably colorcodes not match).
++ furnaces now can you smelt even material type some is same as the custom  item you made, so you get right item and the xp is set to default vanilla behaviour (should be pretty similar). 
++ fixed so furnaces is saved on restart (was a bug).
++ only smelt 1 item and stop should be solved now (need more testing).
++ java.lang.NullPointerException: Cannot invoke "org.bukkit.World.getBlockAt(org.bukkit.Location)" because the return value of     "org.bukkit.Location.getWorld()" is null again. Only add null check for key was not enough.
 
+< not fixed the time will be same as the custom item (not find good fix for it). Still don´t know if can fix that with current system.
+``` 
 ##### 2.4.2
 ```diff
 + Now `ExactChoice` is only used when `learn-recipes` is set to true.
