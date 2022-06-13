@@ -14,7 +14,10 @@ public class VersionChecker {
 	public static VersionChecker init(CraftEnhance plugin) {
 		VersionChecker checker = new VersionChecker();
 		checker.serverVersion = plugin.getServer().getBukkitVersion();
-		checker.currentServerVersion = Integer.parseInt(checker.serverVersion.split("\\.")[1]);
+		String version = checker.serverVersion.split("\\.")[1];
+		if (version.contains("-"))
+			version =version.substring(0,version.indexOf('-'));
+		checker.currentServerVersion = Integer.parseInt(version);
 		checker.plugin = plugin;
 		return checker;
 	}
@@ -64,7 +67,7 @@ public class VersionChecker {
 		Messenger.Message("The correct version can be installed here: https://dev.bukkit.org/projects/craftenhance/files");
 		Messenger.Message("When installing the plugin make sure that the game version matches your bukkit or spigot version.");
 		Messenger.Message("Please note that this incompatibility could cause duping glitches.");
-		Messenger.Message("So because the incorrect plugin version is being used, the plugin has to be disabled.");
+		//Messenger.Message("So because the incorrect plugin version is being used, the plugin has to be disabled.");
 		return false;
 	}
 
