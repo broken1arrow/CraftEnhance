@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 public class FileManager {
 
 	private final boolean useJson;
-	
+
 	private File dataFolder;
 	private File itemsFile;
 	private File recipesFile;
@@ -40,12 +40,12 @@ public class FileManager {
 	private List<EnhancedRecipe> recipes;
 
 	private FileManager(boolean useJson) {
-	    this.useJson = useJson;
-    }
+		this.useJson = useJson;
+	}
 
-	public static FileManager init(CraftEnhance main){
+	public static FileManager init(CraftEnhance main) {
 //		FileManager fm = new FileManager(main.getConfig().getBoolean("use-json"));
-        FileManager fm = new FileManager(main.getConfig().getBoolean("use-json"));
+		FileManager fm = new FileManager(main.getConfig().getBoolean("use-json"));
 		fm.items = new HashMap<>();
 		fm.recipes = new ArrayList<>();
 		fm.logger = main.getLogger();
@@ -60,7 +60,7 @@ public class FileManager {
 
 	@SneakyThrows
 	public static boolean EnsureResourceUpdate(String resourceName, File file, FileConfiguration fileConfig, JavaPlugin plugin) {
-		if(!file.exists()){
+		if (!file.exists()) {
 			plugin.saveResource(resourceName, false);
 			return false;
 		}
@@ -71,179 +71,181 @@ public class FileManager {
 
 		boolean unsavedChanges = false;
 
-		for(String key : jarResourceConfig.getKeys(false)) {
-			if(!fileConfig.contains(key, false)) {
+		for (String key : jarResourceConfig.getKeys(false)) {
+			if (!fileConfig.contains(key, false)) {
 				fileConfig.set(key, jarResourceConfig.get(key));
 				unsavedChanges = true;
 			}
 		}
 
-		if(unsavedChanges)
+		if (unsavedChanges)
 			fileConfig.save(file);
 		return true;
 	}
 
-	private File ensureCreated(File file){
-		if(!file.exists()){
+	private File ensureCreated(File file) {
+		if (!file.exists()) {
 			logger.info(file.getName() + " doesn't exist... creating it.");
 			try {
 				file.createNewFile();
 			} catch (IOException e) {
-				logger.warning("The file " + file.getName() 
-				+ " couldn't be created!");
+				logger.warning("The file " + file.getName()
+						+ " couldn't be created!");
 			}
 		}
 		return file;
 	}
-	
-	private File getFile(String name){
+
+	private File getFile(String name) {
 		File file = new File(dataFolder, name);
 		ensureCreated(file);
 		return file;
 	}
-	
-	private FileConfiguration getYamlConfig(File file){
+
+	private FileConfiguration getYamlConfig(File file) {
 		return YamlConfiguration.loadConfiguration(file);
 	}
-	
-	public void cacheRecipes(){
+
+	public void cacheRecipes() {
 		Debug.Send("The file manager is caching recipes...");
 		EnhancedRecipe keyValue;
 		recipesConfig = getYamlConfig(recipesFile);
 		recipes.clear();
-		for(String key : recipesConfig.getKeys(false)){
+		for (String key : recipesConfig.getKeys(false)) {
 			Debug.Send("Caching recipe with key " + key);
-            keyValue = (EnhancedRecipe)recipesConfig.get(key);
-            String validation = keyValue.validate();
-            if(validation != null){
-                Messenger.Error("Recipe with key " + key + " has issues: " + validation);
-                Messenger.Error("This recipe will not be cached and loaded.");
-                continue;
-            }
+			keyValue = (EnhancedRecipe) recipesConfig.get(key);
+			String validation = keyValue.validate();
+			if (validation != null) {
+				Messenger.Error("Recipe with key " + key + " has issues: " + validation);
+				Messenger.Error("This recipe will not be cached and loaded.");
+				continue;
+			}
 			keyValue.setKey(key);
 			recipes.add(keyValue);
 		}
 	}
 
 	@SneakyThrows
-	public void cacheItems(){
+	public void cacheItems() {
 
-	    if(useJson){
+		if (useJson) {
 
-            StringBuilder json = new StringBuilder("");
-            Scanner scanner = new Scanner(itemsFile);
-            while(scanner.hasNextLine())
-                json.append(scanner.nextLine());
-            scanner.close();
-	        items.clear();
-	        Type typeToken = new TypeToken<HashMap<String,Map<String,Object>>>(){}.getType();
-            Gson gson = new Gson();
-            final Map<String,Map<String,Object>> serialized = gson.fromJson(json.toString(), typeToken);
-            if(serialized != null)
-                serialized.keySet().forEach(x -> items.put(x, ItemStack.deserialize(serialized.get(x))));
-            return;
-        }
+			StringBuilder json = new StringBuilder("");
+			Scanner scanner = new Scanner(itemsFile);
+			while (scanner.hasNextLine())
+				json.append(scanner.nextLine());
+			scanner.close();
+			items.clear();
+			Type typeToken = new TypeToken<HashMap<String, Map<String, Object>>>() {
+			}.getType();
+			Gson gson = new Gson();
+			final Map<String, Map<String, Object>> serialized = gson.fromJson(json.toString(), typeToken);
+			if (serialized != null)
+				serialized.keySet().forEach(x -> items.put(x, ItemStack.deserialize(serialized.get(x))));
+			return;
+		}
 
 		itemsConfig = getYamlConfig(itemsFile);
 		items.clear();
-		for(String key : itemsConfig.getKeys(false)){
+		for (String key : itemsConfig.getKeys(false)) {
 			items.put(key, itemsConfig.getItemStack(key));
 		}
 	}
-	
-	public Map<String, ItemStack> getItems(){
+
+	public Map<String, ItemStack> getItems() {
 		return items;
 	}
-	
-	public ItemStack getItem(String key){
+
+	public ItemStack getItem(String key) {
 		return items.get(key);
 	}
-	
-	public String getItemKey(ItemStack item){
-		if(item == null) return null;
-		for(String key : items.keySet()){
-			if(item.equals(items.get(key)))
+
+	public String getItemKey(ItemStack item) {
+		if (item == null) return null;
+		for (String key : items.keySet()) {
+			if (item.equals(items.get(key)))
 				return key;
 		}
 		String uniqueKey = getUniqueItemKey(item);
 		saveItem(uniqueKey, item);
-		return uniqueKey; 
+		return uniqueKey;
 	}
-	
-	private String getUniqueItemKey(ItemStack item){
-		if(item == null) return null;
+
+	private String getUniqueItemKey(ItemStack item) {
+		if (item == null) return null;
 		String base = item.hasItemMeta() && item.getItemMeta().hasDisplayName() ?
 				item.getItemMeta().getDisplayName() : item.getType().name();
 		base = base.replaceAll("\\.", "");
 		String unique = base;
 		int incrementer = 1;
-		while(items.keySet().contains(unique))
+		while (items.keySet().contains(unique))
 			unique = base + incrementer++;
 		return unique;
 	}
-	
-	public List<EnhancedRecipe> getRecipes(){
+
+	public List<EnhancedRecipe> getRecipes() {
 		return recipes;
 	}
-	
-	public EnhancedRecipe getRecipe(String key){
-		for(EnhancedRecipe recipe : recipes){
-			if(recipe.getKey().equals(key))
+
+	public EnhancedRecipe getRecipe(String key) {
+		for (EnhancedRecipe recipe : recipes) {
+			if (recipe.getKey().equals(key))
 				return recipe;
 		}
 		return null;
 	}
-	
-	public boolean isUniqueRecipeKey(String key){
+
+	public boolean isUniqueRecipeKey(String key) {
 		return getRecipe(key) == null;
 	}
 
 	@SneakyThrows
-	public boolean saveItem(String key, ItemStack item){
+	public boolean saveItem(String key, ItemStack item) {
 
-	    if(useJson){
-	        items.put(key, item);
-	        Gson gson = new Gson();
-	        Map<String,Map<String,Object>> serialized = new HashMap<>();
-	        items.keySet().forEach(x -> serialized.put(x, items.get(x).serialize()));
-	        itemsJson = gson.toJson(serialized, new TypeToken<HashMap<String,Map<String,Object>>>(){}.getType());
-            FileWriter writer = new FileWriter(itemsFile);
-            writer.write(itemsJson);
-            writer.close();
-	        return true;
-        }
+		if (useJson) {
+			items.put(key, item);
+			Gson gson = new Gson();
+			Map<String, Map<String, Object>> serialized = new HashMap<>();
+			items.keySet().forEach(x -> serialized.put(x, items.get(x).serialize()));
+			itemsJson = gson.toJson(serialized, new TypeToken<HashMap<String, Map<String, Object>>>() {
+			}.getType());
+			FileWriter writer = new FileWriter(itemsFile);
+			writer.write(itemsJson);
+			writer.close();
+			return true;
+		}
 
 		itemsConfig = getYamlConfig(itemsFile);
-		if(!itemsConfig.contains(key)){
+		if (!itemsConfig.contains(key)) {
 			itemsConfig.set(key, item);
-			try{
+			try {
 				itemsConfig.save(itemsFile);
 				items.put(key, item);
 				return true;
-			} catch(IOException e){
+			} catch (IOException e) {
 				logger.severe("Error saving an item to the items.yml file.");
 			}
 		}
 		return false;
 	}
 
-	public List<String> readDisabledServerRecipes(){
-	    if(serverRecipeConfig == null)
-	        serverRecipeConfig = getYamlConfig(serverRecipeFile);
-	    return serverRecipeConfig.getStringList("disabled");
-    }
+	public List<String> readDisabledServerRecipes() {
+		if (serverRecipeConfig == null)
+			serverRecipeConfig = getYamlConfig(serverRecipeFile);
+		return serverRecipeConfig.getStringList("disabled");
+	}
 
-    public boolean saveDisabledServerRecipes(List<String> keys){
-        serverRecipeConfig.set("disabled", keys);
-        try {
-            serverRecipeConfig.save(serverRecipeFile);
-        } catch (IOException e) {
-            return false;
-        }
-        return true;
-    }
+	public boolean saveDisabledServerRecipes(List<String> keys) {
+		serverRecipeConfig.set("disabled", keys);
+		try {
+			serverRecipeConfig.save(serverRecipeFile);
+		} catch (IOException e) {
+			return false;
+		}
+		return true;
+	}
 
-    public Map<Location, UUID> getContainerOwners() {
+	public Map<Location, UUID> getContainerOwners() {
 		containerOwnerConfig = getYamlConfig(containerOwnerFile);
 		Map<Location, UUID> blockOwners = new HashMap<>();
 		for (String key : containerOwnerConfig.getKeys(false)) {
@@ -272,34 +274,48 @@ public class FileManager {
 		}
 		return true;
 	}
-	
-	public void saveRecipe(EnhancedRecipe recipe){
+
+	public void saveRecipe(EnhancedRecipe recipe) {
 		Debug.Send("Saving recipe " + recipe.toString() + " with key " + recipe.getKey());
+		String recipeKey = recipe.getKey();
+		if (recipe.getKey().contains(".")) {
+			recipeKey = recipeKey.replace(".", "_");
+			Messenger.Message("your recipe key contains '.', it is removed now. Before " + recipe.getKey() + " after removed " + recipeKey);
+			recipe.setKey(recipeKey);
+		}
+
 		recipesConfig = getYamlConfig(recipesFile);
-		recipesConfig.set(recipe.getKey(), recipe);
-		try{
+		recipesConfig.set(recipeKey, recipe);
+		try {
 			recipesConfig.save(recipesFile);
-			if(getRecipe(recipe.getKey()) == null)
+			if (getRecipe(recipe.getKey()) == null)
 				recipes.add(recipe);
 			Debug.Send("Succesfully saved the recipe, there are now " + recipes.size() + " recipes cached.");
-		} catch(IOException e){
+		} catch (IOException e) {
 			logger.severe("Error saving a recipe to the recipes.yml file.");
 		}
 	}
-	
-	public void removeRecipe(EnhancedRecipe recipe){
+
+	public void removeRecipe(EnhancedRecipe recipe) {
 		Debug.Send("Removing recipe " + recipe.toString() + " with key " + recipe.getKey());
+		String recipeKey = recipe.getKey();
+		if (recipe.getKey().contains(".")) {
+			recipeKey = recipeKey.replace(".", "_");
+			Messenger.Message("your recipe key contains '.', it is removed now. Before " + recipe.getKey() + " after removed " + recipeKey);
+			recipe.setKey(recipeKey);
+		}
+
 		recipesConfig = getYamlConfig(recipesFile);
-		recipesConfig.set(recipe.getKey(), null);
+		recipesConfig.set(recipeKey, null);
 		recipes.remove(recipe);
-		try{
+		try {
 			recipesConfig.save(recipesFile);
-		} catch(IOException e){
+		} catch (IOException e) {
 			logger.severe("Error removing a recipe.");
 		}
 	}
-	
-	public void overrideSave(){
+
+	public void overrideSave() {
 		Debug.Send("Overriding saved recipes with new list..");
 		List<EnhancedRecipe> cloned = new ArrayList<>();
 		recipes.forEach(x -> cloned.add(x));
@@ -308,17 +324,17 @@ public class FileManager {
 		recipes = cloned;
 		recipesConfig = getYamlConfig(recipesFile);
 	}
-	
-	private void removeAllRecipes(){
-		if(recipes.isEmpty()) return;
+
+	private void removeAllRecipes() {
+		if (recipes.isEmpty()) return;
 		removeRecipe(recipes.get(0));
 		removeAllRecipes();
 	}
-	
-	public void cleanItemFile(){
+
+	public void cleanItemFile() {
 		Debug.Send("Cleaning up unused items.");
-		for(String itemKey : items.keySet()){
-			if(!isItemInUse(items.get(itemKey))){
+		for (String itemKey : items.keySet()) {
+			if (!isItemInUse(items.get(itemKey))) {
 				Debug.Send("Item with key " + itemKey + " is not used and will be removed.");
 				itemsConfig.set(itemKey, null);
 				try {
@@ -329,16 +345,16 @@ public class FileManager {
 			}
 		}
 	}
-	
-	private boolean isItemInUse(ItemStack item){
-		for(EnhancedRecipe r : recipes){
-			if(r.getResult().equals(item)) return true;
-            for(ItemStack inRecipe : r.getContent()){
-                if(inRecipe != null && inRecipe.equals(item)) return true;
-            }
+
+	private boolean isItemInUse(ItemStack item) {
+		for (EnhancedRecipe r : recipes) {
+			if (r.getResult().equals(item)) return true;
+			for (ItemStack inRecipe : r.getContent()) {
+				if (inRecipe != null && inRecipe.equals(item)) return true;
+			}
 
 		}
 		return false;
 	}
-	
+
 }

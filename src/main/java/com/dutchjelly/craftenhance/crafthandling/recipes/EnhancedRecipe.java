@@ -4,24 +4,17 @@ import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
-import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
-import com.dutchjelly.craftenhance.crafthandling.util.WBRecipeComparer;
 import com.dutchjelly.craftenhance.files.FileManager;
 import com.dutchjelly.craftenhance.gui.interfaces.GuiPlacable;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.Recipe;
-import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.inventory.ShapelessRecipe;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 public abstract class EnhancedRecipe extends GuiPlacable implements ConfigurationSerializable, ServerLoadable {
 
@@ -115,12 +108,20 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
     }
 
     @Override
+    public String toString() {
+        return "EnhancedRecipe{" +
+                "key='" + key + '\'' +
+                ", result=" + (this.result == null ? "null" : result)  +
+                '}';
+    }
+/*
+    @Override
     public String toString(){
         String s = "";
         s += "key = " + key + "\n";
-        s += "result = " + result == null ? "null" : result.toString() + "\n";
+        s += "result = " + (this.result == null ? "null" : result) + "\n";
         return s;
-    }
+    }*/
 
     @Override
     public ItemStack getDisplayItem(){

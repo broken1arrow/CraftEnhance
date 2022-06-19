@@ -2,6 +2,7 @@ package com.dutchjelly.bukkitadapter;
 
 
 import com.dutchjelly.craftenhance.messaging.Debug;
+import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import org.bukkit.DyeColor;
 import org.bukkit.Keyed;
@@ -14,6 +15,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -29,22 +31,28 @@ public class Adapter {
 		return Arrays.asList("1.9", "1.10", "1.11", "1.12", "1.13", "1.14", "1.15", "1.16", "1.17", "1.18");
 	}
 
-
+	@Nullable
 	public static Material getMaterial(String name) {
-		try {
-			return Material.valueOf(name);
-		} catch (Exception e) {
-			if (name.equals("WORKBENCH"))
-				return Material.valueOf("CRAFTING_TABLE");
-			if (name.equals("WEB"))
-				return Material.valueOf("COBWEB");
-			if (name.equals("EXP_BOTTLE"))
-				return Material.valueOf("EXPERIENCE_BOTTLE");
-			try {
-				if (self().getVersionChecker().olderThan(VersionChecker.ServerVersion.v1_14))
+		if (name == null) return null;
+		name = name.toUpperCase();
+		Material material = Material.getMaterial(name);
+		if (material != null)
+			return material;
+		if (self().getVersionChecker().newerThan(VersionChecker.ServerVersion.v1_12)) {
+			switch (name) {
+				case "WORKBENCH":
+					return Material.valueOf("CRAFTING_TABLE");
+				case "WEB":
+					return Material.valueOf("COBWEB");
+				case "EXP_BOTTLE":
+					return Material.valueOf("EXPERIENCE_BOTTLE");
+				default:
+					Messenger.Error("Could not find " + name + " try load legacy suport");
 					return Material.matchMaterial("LEGACY_" + name);
-			} catch (Exception e2) {
 			}
+		} else {
+			if (name.equals("CLOCK"))
+				return Material.valueOf("WATCH");
 		}
 		return null;
 	}
@@ -118,14 +126,13 @@ public class Adapter {
 					.newInstance(getNameSpacedKey(plugin, key), result, source, exp, duration);
 		} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
 			Debug.Send("Couldn't use namespaced key: " + e.getMessage() + "\n" + e.getStackTrace());
-			e.printStackTrace();
+			//e.printStackTrace();
+			FurnaceRecipe recipe = new FurnaceRecipe(result, source);
+			if (!callSingleParamMethod("setCookingTime", duration, Integer.class, recipe, FurnaceRecipe.class))
+				Debug.Send("Custom cooking time is not supported.");
+			recipe.setExperience(exp);
+			return recipe;
 		}
-		FurnaceRecipe recipe = new FurnaceRecipe(result, source);
-
-		if (!callSingleParamMethod("setCookingTime", duration, Integer.class, recipe, FurnaceRecipe.class))
-			Debug.Send("Custom cooking time is not supported.");
-		recipe.setExperience(exp);
-		return recipe;
 	}
 
 
@@ -136,10 +143,10 @@ public class Adapter {
 
 	public static void SetIngredient(ShapedRecipe recipe, char key, ItemStack ingredient) {
 		if (!self().getConfig().getBoolean("learn-recipes")) {
-			if (self().getVersionChecker().newerThan(VersionChecker.ServerVersion.v1_16)) {
-				if (ingredient.getData() == null) return;
-				Material md = ingredient.getData().getItemType();
-				if (md == null || !md.equals(ingredient.getType()) || md.equals(Material.AIR)) {
+			if (self().getVersionChecker().newerThan(VersionChecker.ServerVersion.v1_14)) {
+				if (ingredient == null) return;
+				Material md = ingredient.getType();
+				if (md != ingredient.getType() || md == Material.AIR) {
 					recipe.setIngredient(key, ingredient.getType());
 				} else {
 					recipe.setIngredient(key, md);

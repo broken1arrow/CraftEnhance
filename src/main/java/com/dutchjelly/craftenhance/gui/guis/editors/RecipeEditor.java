@@ -19,6 +19,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -158,12 +159,12 @@ public abstract class RecipeEditor<RecipeT extends EnhancedRecipe> extends GUIEl
 			Messenger.Message("Could not parse the slot number.", getPlayer());
 			return true;
 		}
-
 		recipe.setPage(page);
 		recipe.setSlot(slot);
 
 		Messenger.Message("Set the page to " + page + ", and the slot to " + slot + ". This will get auto-filled if it's not available.", getPlayer());
-		getManager().getMain().getFm().saveRecipe(recipe);
+		save(false);
+		//getManager().getMain().getFm().saveRecipe(recipe);
 
 		//Modify the previous GUI so the new position is rendered.
 		if (getPreviousGui() instanceof RecipesViewer) {
@@ -269,9 +270,24 @@ public abstract class RecipeEditor<RecipeT extends EnhancedRecipe> extends GUIEl
 		if (getTemplate().getFillSpace().contains(null)) {
 			throw new ConfigError("Error, fill space of wb recipe editor contains null element.");
 		}
+		save(true);
+		Messenger.Message("Successfully saved the recipe.", getPlayer());
+		return;
+	}
 
-		ItemStack newContents[] = getTemplate().getFillSpace().subList(0, recipe.getContent().length).stream().map(x -> {
-			ItemStack item = inventory.getItem(x);
+	@Nullable
+	private ItemStack getResult() {
+		return this.inventory.getItem(getTemplate().getFillSpace().get(this.getRecipeLength()));
+	}
+
+	private int getRecipeLength() {
+		return this.recipe.getContent().length;
+	}
+
+	@Nullable
+	private ItemStack[] getIngredients() {
+		ItemStack newContents[] = getTemplate().getFillSpace().subList(0, this.getRecipeLength()).stream().map(x -> {
+			ItemStack item = this.inventory.getItem(x);
 			if (item == null) return null;
 			if (item.getAmount() != 1) {
 				Messenger.Message("Recipes only support amounts of 1 in the content.", getPlayer());
@@ -280,17 +296,24 @@ public abstract class RecipeEditor<RecipeT extends EnhancedRecipe> extends GUIEl
 			return item;
 		}).toArray(ItemStack[]::new);
 
-		ItemStack newResult = inventory.getItem(getTemplate().getFillSpace().get(recipe.getContent().length));
-
 		if (!Arrays.stream(newContents).anyMatch(x -> x != null)) {
+			return null;
+		}
+		return newContents;
+	}
+
+	private void save(boolean loadRecipe) {
+		ItemStack newContents[] = getIngredients();
+		if (newContents == null) {
 			Messenger.Message("The recipe is empty.", getPlayer());
 			return;
 		}
-
+		ItemStack newResult = getResult();
 		if (newResult == null) {
 			Messenger.Message("The result slot is empty.", getPlayer());
 			return;
 		}
+
 		recipe.setContent(newContents);
 		recipe.setResult(newResult);
 
@@ -299,10 +322,10 @@ public abstract class RecipeEditor<RecipeT extends EnhancedRecipe> extends GUIEl
 		beforeSave();
 		recipe.setPermissions(permission);
 		recipe.save();
-		recipe.load();
-
-		Messenger.Message("Successfully saved the recipe.", getPlayer());
-		return;
+		if (loadRecipe) {
+			recipe.load();
+		}else
+			Messenger.Message("Has not reload this recipe, click on save to reload the recipe or /ceh reload", getPlayer());
 	}
 
 	protected abstract void beforeSave();
