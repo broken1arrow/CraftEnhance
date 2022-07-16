@@ -1,17 +1,15 @@
 package com.dutchjelly.craftenhance.commands.edititem;
 
-import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.commandhandling.CommandRoute;
+import com.dutchjelly.craftenhance.commandhandling.CustomCmdHandler;
+import com.dutchjelly.craftenhance.commandhandling.ICommand;
 import com.dutchjelly.craftenhance.commandhandling.ICompletionProvider;
+import com.dutchjelly.craftenhance.itemcreation.ItemCreator;
+import com.dutchjelly.craftenhance.itemcreation.ParseResult;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-
-import com.dutchjelly.craftenhance.commandhandling.ICommand;
-import com.dutchjelly.craftenhance.commandhandling.CommandRoute;
-import com.dutchjelly.craftenhance.commandhandling.CustomCmdHandler;
-import com.dutchjelly.craftenhance.itemcreation.ItemCreator;
-import com.dutchjelly.craftenhance.itemcreation.ParseResult;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,6 +42,27 @@ public class EnchantCmd implements ICommand, ICompletionProvider {
 	@Override
 	public void handleConsoleCommand(CommandSender sender, String[] args) {
 		Messenger.MessageFromConfig("messages.commands.only-for-players", sender);
+	}
+
+	@Override
+	public List<String> handleTabCompletion(CommandSender sender, String[] args) {
+		List<String> list = new ArrayList<>();
+		if (args.length == 1) {
+			list.add("enchant");
+		}
+		if (args.length == 2) {
+			list.add("clear");
+			String toComplete = args[args.length - 1];
+			List<Enchantment> enchants = Arrays.asList(Enchantment.values());
+			enchants.stream().filter(x ->
+							x.getName().toLowerCase().startsWith(toComplete.toLowerCase()))
+					.collect(Collectors.toList())
+					.forEach(x -> list.add(x.getName().toLowerCase()));
+		}
+		if (args.length == 3) {
+			list.addAll(Arrays.asList("1", "2", "3", "4", "5"));
+		}
+		return list;
 	}
 
 	@Override

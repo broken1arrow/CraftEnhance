@@ -1,14 +1,14 @@
 package com.dutchjelly.craftenhance.itemcreation;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.dutchjelly.bukkitadapter.Adapter;
 import org.bukkit.ChatColor;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ItemCreator {
 	
@@ -95,17 +95,21 @@ public class ItemCreator {
 	
 	public ParseResult enchant(){
 		if(item == null || item.getItemMeta() == null) return ParseResult.NULL_ITEM;
+		if (args.length == 1 && args[0].equals("clear")){
+			clearEnchants();
+			return ParseResult.SUCCESS;
+		}
 		if(args.length < 2) return ParseResult.NO_ARGS;
 		if(args.length % 2 != 0) return ParseResult.MISSING_VALUE;
-		clearEnchants();
+
 		Enchantment currentEnch;
 		int currentLevel;
 		while(args.length > 0){
-			currentEnch = getEnchantment(popFirstArg());
+			currentEnch = getEnchantment(popFirstArg().toUpperCase());
 			if(currentEnch == null){
 				return ParseResult.INVALID_ENCHANTMENT;
 			}
-			currentLevel = tryParse(popFirstArg());
+			currentLevel = tryParse(popFirstArg().toUpperCase());
 			if(currentLevel == 0)
 				return ParseResult.NO_NUMBER;
 			

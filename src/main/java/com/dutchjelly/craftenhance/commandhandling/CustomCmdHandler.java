@@ -1,19 +1,15 @@
 package com.dutchjelly.craftenhance.commandhandling;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
-import com.dutchjelly.craftenhance.messaging.Debug;
+import java.lang.annotation.Annotation;
+import java.util.*;
 
 public class CustomCmdHandler implements TabCompleter{
 	
@@ -120,9 +116,20 @@ public class CustomCmdHandler implements TabCompleter{
 	
 	//Handle tab completion by returning all tab completions.
 	@Override
-	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+	public List<String> onTabComplete(CommandSender sender, Command cmd, String label,String[] args) {
 		String[] completeArgs = pushLabelArg(label, args);
 		List<String> tabCompletion = new ArrayList<>();
+
+		ICommand executor = getExecutor(label, args.length > 0 ? args[0] : "");
+		if (executor != null) {
+			List<String> handleTabCompletion = executor.handleTabCompletion(sender, args);
+			if (handleTabCompletion != null) {
+				CommandRoute annotation = commandClasses.get(executor);
+				if (hasPermission(sender, annotation)) {
+					return handleTabCompletion;
+				}
+			}
+		}
 //		ICommand suitableExecutor = getExecutor(args);
 //		if(suitableExecutor != null && suitableExecutor instanceof ICompletionProvider)
 //			tabCompletion.addAll(((ICompletionProvider)suitableExecutor).getCompletions(args));
@@ -141,7 +148,7 @@ public class CustomCmdHandler implements TabCompleter{
 	}
 	
 	//Get the executor object from given args.
-	public ICommand getExecutor(String[] args){
+	public ICommand getExecutor(String... args){
 		int maxMatching = -1, currentMatch;
 		ICommand bestMatch = null;
 		for(ICommand cmdClass : commandClasses.keySet()){
@@ -193,7 +200,7 @@ public class CustomCmdHandler implements TabCompleter{
 		if(annotation.perms().equals("") || annotation.perms() == null)
 			return true;
 		String perms = main.getConfig().getString(annotation.perms()) + "";
-		if(perms.trim() == "") return true;
+		if(perms.trim().equals("")) return true;
 		return sender.hasPermission(perms);
 	}
 	
