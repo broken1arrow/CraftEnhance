@@ -29,7 +29,7 @@ public class Disabler implements ICommand {
 	public void handlePlayerCommand(Player p, String[] args) {
 		final CraftEnhance main = handler.getMain();
         final GuiTemplate template = main.getGuiTemplatesFile().getTemplate(RecipeDisabler.class);
-		final RecipeDisabler gui = new RecipeDisabler(main.getGuiManager(), template, null, p, RecipeLoader.getInstance().getServerRecipes(), RecipeLoader.getInstance().getDisabledServerRecipes());
+		final RecipeDisabler gui = new RecipeDisabler(main.getGuiManager(), template, null, p, RecipeLoader.getInstance().getServerRecipes(), RecipeLoader.getInstance().getDisabledServerRecipes(),"");
 
 		if(args.length == 1){
 		    try{

@@ -87,7 +87,9 @@ public class GuiManager implements Listener {
 		Bukkit.getScheduler().runTask(getMain(), () -> {
 			IChatInputHandler callback = chatWaiting.get(id).getSecond();
 			if (callback.handle(e.getMessage())) return;
-			openGUI(e.getPlayer(), chatWaiting.get(id).getFirst());
+			GUIElement gui = chatWaiting.get(id).getFirst();
+			if (gui != null)
+				openGUI(e.getPlayer(), gui);
 			chatWaiting.remove(id);
 		});
 

@@ -1,7 +1,6 @@
 package com.dutchjelly.craftenhance.gui.guis;
 
 import com.dutchjelly.bukkitadapter.Adapter;
-import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.gui.GuiManager;
 import com.dutchjelly.craftenhance.gui.templates.GuiTemplate;
@@ -9,10 +8,11 @@ import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.messaging.Debug;
-import org.bukkit.Bukkit;
+import com.dutchjelly.craftenhance.messaging.Messenger;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -30,7 +30,7 @@ public class RecipeDisabler extends GUIElement {
     //Reference to objects managed outside this gui.
     protected List<Recipe> enabledRecipes;
     protected List<Recipe> disabledRecipe;
-
+    protected String itemSeachFor;
     private Map<Integer, Recipe> placedRecipes = new HashMap<>();
 
     //If true, you can enable *disabled* recipes.
@@ -40,23 +40,44 @@ public class RecipeDisabler extends GUIElement {
     private int currentPage = 0;
     //TODO: implement map for recipe location mapping to allow customizable recipe locations. I'm thinking of making that a config thing in a RecipesViewer GuiTemplate.
 
-    public RecipeDisabler(GuiManager manager, GuiTemplate template, GUIElement previous, Player p, List<Recipe> enabledRecipes, List<Recipe> disabledRecipes){
+    public RecipeDisabler(GuiManager manager, GuiTemplate template, GUIElement previous, Player p, List<Recipe> enabledRecipes, List<Recipe> disabledRecipes,String itemSeachFor){
         super(manager, template, previous, p);
         Debug.Send("An instance is being made for a recipe disabler");
         this.enabledRecipes = enabledRecipes;
         this.disabledRecipe = disabledRecipes;
+        this.itemSeachFor = itemSeachFor;
         this.addBtnListener(ButtonType.NxtPage, this::handlePageChangingClicked);
         this.addBtnListener(ButtonType.PrvPage, this::handlePageChangingClicked);
         this.addBtnListener(ButtonType.SwitchDisablerMode, this::switchMode);
+        this.addBtnListener(ButtonType.Seach, (click, btn, type) -> {
+            if (click.isLeftClick()) {
+                Messenger.Message("Please input your item to seach for.", getPlayer());
+                this.getManager().waitForChatInput(null, getPlayer(), (msg) -> {
+                    if (msg.equals("cancel") || msg.equals("quit") || msg.equals("exit"))
+                        return false;
+                    if (!msg.isEmpty()) {
+                        this.itemSeachFor = msg;
+                        manager.openGUI(p, this);
+                        updatePlaceHolders();
+                        return false;
+                    }
+                    return true;
+                });
+            } else {
+                this.itemSeachFor = "";
+                manager.openGUI(p, this);
+            }
+        });
         generateInventories(null);
         updatePlaceHolders();
     }
 
-    private void switchMode(ItemStack itemStack, ButtonType buttonType) {
+    private void switchMode(ClickType clickType,ItemStack itemStack, ButtonType buttonType) {
         this.enableMode = !this.enableMode;
         this.currentPage = 0;
         generateInventories(null);
         updatePlaceHolders();
+        this.itemSeachFor = "";
         getManager().openGUI(getPlayer(), this);
     }
 
@@ -74,7 +95,14 @@ public class RecipeDisabler extends GUIElement {
         }
     }
 
-    private List<Recipe> getRecipes(){
+    private List<Recipe> getRecipes() {
+        if (itemSeachFor != null && !itemSeachFor.isEmpty()) {
+            if (enableMode)
+                return disabledRecipe.stream().filter(recipe -> recipe.getResult().getType().name().contains(itemSeachFor)).collect(Collectors.toList());
+            else
+                return enabledRecipes.stream().filter(recipe -> recipe.getResult().getType().name().contains(itemSeachFor)).collect(Collectors.toList());
+
+        }
         return !enableMode ? enabledRecipes : disabledRecipe;
     }
 
@@ -118,11 +146,12 @@ public class RecipeDisabler extends GUIElement {
         if(currentPage >= inventories.length) currentPage = inventories.length-1;
     }
 
-    private void handlePageChangingClicked(ItemStack btn, ButtonType btnType){
+    private void handlePageChangingClicked(ClickType clickType,ItemStack btn, ButtonType btnType){
         int direction = btnType == ButtonType.PrvPage ? -1 : 1;
         currentPage += direction;
         if(currentPage < 0) currentPage = inventories.length-1;
         else if(currentPage >= inventories.length) currentPage = 0;
+
         getManager().openGUI(getPlayer(), this);
     }
 
