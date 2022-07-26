@@ -22,7 +22,7 @@ public class EditorTypeSelector extends GUIElement {
 
 	public EditorTypeSelector(GuiManager manager, GuiTemplate template, GUIElement previousGui, Player player, String key, String permission) {
 		super(manager, template, previousGui, player);
-		this.addBtnListener(ButtonType.ChooseWorkbenchType, (btn, type) -> {
+		this.addBtnListener(ButtonType.ChooseWorkbenchType, (click,btn, type) -> {
 			WBRecipe newRecipe = new WBRecipe(permission, null, new ItemStack[9]);
 
 			newRecipe.setKey(getFreshKey(key));
@@ -34,7 +34,7 @@ public class EditorTypeSelector extends GUIElement {
 			);
 			getManager().openGUI(getPlayer(), gui);
 		});
-		this.addBtnListener(ButtonType.ChooseFurnaceType, (btn, type) -> {
+		this.addBtnListener(ButtonType.ChooseFurnaceType, (click,btn, type) -> {
 			FurnaceRecipe newRecipe = new FurnaceRecipe(permission, null, new ItemStack[1]);
 
 			newRecipe.setKey(getFreshKey(key));

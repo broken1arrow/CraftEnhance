@@ -38,7 +38,7 @@ public class WBRecipeEditor extends RecipeEditor<WBRecipe> {
 
     @Override
     protected void initBtnListeners() {
-        addBtnListener(ButtonType.SwitchShaped, (btn, type) -> {
+        addBtnListener(ButtonType.SwitchShaped, (clickType, btn, btnType) -> {
             shapeless = !shapeless;
             updatePlaceHolders();
         });

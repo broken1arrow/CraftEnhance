@@ -28,7 +28,7 @@ public class FurnaceRecipeEditor extends RecipeEditor<FurnaceRecipe> {
 
     @Override
     public void initBtnListeners() {
-        addBtnListener(ButtonType.SetCookTime, (btn, type) -> {
+        addBtnListener(ButtonType.SetCookTime, (clickType, btn, btnType)-> {
             Messenger.Message("Please input a cook duration.", getPlayer());
             this.getManager().waitForChatInput(this, getPlayer(), (msg) -> {
                 short parsed;
@@ -47,7 +47,7 @@ public class FurnaceRecipeEditor extends RecipeEditor<FurnaceRecipe> {
                 return false;
             });
         });
-        addBtnListener(ButtonType.SetExp, (btn, type) -> {
+       addBtnListener(ButtonType.SetExp, (clickType, btn, btnType) ->  {
             Messenger.Message("Please input an exp amount.", getPlayer());
             this.getManager().waitForChatInput(this, getPlayer(), (msg) -> {
                 int parsed;

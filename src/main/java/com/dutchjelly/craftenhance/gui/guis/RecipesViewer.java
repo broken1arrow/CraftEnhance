@@ -1,33 +1,31 @@
 package com.dutchjelly.craftenhance.gui.guis;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.RecipeType;
-import com.dutchjelly.craftenhance.gui.guis.editors.FurnaceRecipeEditor;
-import com.dutchjelly.craftenhance.gui.guis.viewers.FurnaceRecipeViewer;
-import com.dutchjelly.craftenhance.gui.guis.viewers.WBRecipeViewer;
-import com.dutchjelly.craftenhance.util.PermissionTypes;
-
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.gui.GuiManager;
+import com.dutchjelly.craftenhance.gui.guis.editors.FurnaceRecipeEditor;
 import com.dutchjelly.craftenhance.gui.guis.editors.WBRecipeEditor;
+import com.dutchjelly.craftenhance.gui.guis.viewers.FurnaceRecipeViewer;
+import com.dutchjelly.craftenhance.gui.guis.viewers.WBRecipeViewer;
 import com.dutchjelly.craftenhance.gui.templates.GuiTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.messaging.Debug;
-
 import com.dutchjelly.craftenhance.messaging.Messenger;
+import com.dutchjelly.craftenhance.util.PermissionTypes;
 import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RecipesViewer extends GUIElement {
 
@@ -107,7 +105,7 @@ public class RecipesViewer extends GUIElement {
         if(currentPage >= inventories.length) currentPage = inventories.length-1;
 	}
 
-    private void handlePageChangingClicked(ItemStack btn, ButtonType btnType){
+    private void handlePageChangingClicked(ClickType click,ItemStack btn, ButtonType btnType){
         int direction = btnType == ButtonType.PrvPage ? -1 : 1;
         currentPage += direction;
         if(currentPage < 0) currentPage = inventories.length-1;

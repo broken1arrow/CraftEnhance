@@ -7,6 +7,7 @@ import com.dutchjelly.craftenhance.gui.interfaces.IButtonHandler;
 import lombok.Getter;
 import lombok.NonNull;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.InventoryHolder;
@@ -51,7 +52,7 @@ public abstract class GUIElement implements InventoryHolder{
         buttonClickHandlers.put(ButtonType.Back, Arrays.asList(this::handleBackBtnClicked));
     }
 
-    public void handleBackBtnClicked(ItemStack btn, ButtonType btnType){
+    public void handleBackBtnClicked(ClickType click, ItemStack btn, ButtonType btnType){
         if(previousGui == null) return;
         manager.openGUI(player, previousGui);
     }
@@ -65,13 +66,12 @@ public abstract class GUIElement implements InventoryHolder{
             throw new IllegalStateException("Other player clicked than owner of GUI.");
 
         int clickedSlot = e.getSlot();
-
         //Handle button clicks.
         ButtonType clickedButton = getTemplate().getButtonMapping().get(clickedSlot);
         if(clickedButton != null){
             List<IButtonHandler> btnHandlers = buttonClickHandlers.get(clickedButton);
             if(btnHandlers != null)
-                btnHandlers.forEach(x -> x.handleClick(e.getCurrentItem(), clickedButton));
+                btnHandlers.forEach(x -> x.handleClick(   e.getClick() ,e.getCurrentItem(), clickedButton));
         }
 
         //Allow implementation to handle event.

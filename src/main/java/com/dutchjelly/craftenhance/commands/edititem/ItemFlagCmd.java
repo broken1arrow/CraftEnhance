@@ -50,13 +50,16 @@ public class ItemFlagCmd implements ICommand {
 		if (args.length == 1) {
 			list.add("itemflag");
 	}
-		if (args.length == 2) {
+		if (args.length >= 2) {
 			String toComplete = args[args.length - 1];
 			List<ItemFlag> enchants = Arrays.asList(ItemFlag.values());
 			enchants.stream().filter(x ->
 							x.name().toLowerCase().startsWith(toComplete.toLowerCase()))
 					.collect(Collectors.toList())
-					.forEach(x -> list.add(x.name().toLowerCase()));
+					.forEach(x -> {
+						if (!list.contains(x.name().toLowerCase()))
+							list.add(x.name().toLowerCase());
+					});
 		}
 		return list;
 	}

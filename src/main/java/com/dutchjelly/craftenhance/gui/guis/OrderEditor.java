@@ -1,9 +1,5 @@
 package com.dutchjelly.craftenhance.gui.guis;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.gui.GuiManager;
 import com.dutchjelly.craftenhance.gui.templates.GuiTemplate;
@@ -12,9 +8,14 @@ import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class OrderEditor extends GUIElement {
 
@@ -33,11 +34,11 @@ public class OrderEditor extends GUIElement {
 		generateInventories();
 	}
 
-    private void handleSave(ItemStack itemStack, ButtonType buttonType) {
+    private void handleSave(ClickType click,ItemStack itemStack, ButtonType buttonType) {
 
     }
 
-    private void handlePageChangingClicked(ItemStack itemStack, ButtonType buttonType) {
+    private void handlePageChangingClicked(ClickType click, ItemStack itemStack, ButtonType buttonType) {
 
 
 

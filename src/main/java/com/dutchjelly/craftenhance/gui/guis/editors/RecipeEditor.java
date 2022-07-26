@@ -15,6 +15,7 @@ import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import lombok.Getter;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -80,7 +81,7 @@ public abstract class RecipeEditor<RecipeT extends EnhancedRecipe> extends GUIEl
 		updatePlaceHolders();
 	}
 
-	private void switchMatchMeta(ItemStack itemStack, ButtonType buttonType) {
+	private void switchMatchMeta(ClickType clickType,ItemStack itemStack, ButtonType buttonType) {
 		ItemMatchers.MatchType[] matchTypes = ItemMatchers.MatchType.values();
 		int i;
 		for (i = 0; i < matchTypes.length; i++) {
@@ -96,7 +97,7 @@ public abstract class RecipeEditor<RecipeT extends EnhancedRecipe> extends GUIEl
 
 	protected abstract void initBtnListeners();
 
-	private void setPermission(ItemStack itemStack, ButtonType buttonType) {
+	private void setPermission(ClickType clickType,ItemStack itemStack, ButtonType buttonType) {
 		Messenger.Message("Please specify the permission. Write \"-\" for empty permission. Write \"&cQ&r\" to exit.", getPlayer());
 		getManager().waitForChatInput(this, getPlayer(), this::handlePermissionSetCB);
 	}
@@ -124,12 +125,12 @@ public abstract class RecipeEditor<RecipeT extends EnhancedRecipe> extends GUIEl
 		return false;
 	}
 
-	private void switchHidden(ItemStack itemStack, ButtonType buttonType) {
+	private void switchHidden(ClickType clickType,ItemStack itemStack, ButtonType buttonType) {
 		hidden = !hidden;
 		updatePlaceHolders();
 	}
 
-	private void setPosition(ItemStack itemStack, ButtonType buttonType) {
+	private void setPosition(ClickType clickType,ItemStack itemStack, ButtonType buttonType) {
 		Messenger.Message("Please specify the page and slot that you want the recipe to be displayed on in format: \"&epage slot&r\". Write \"&cQ&r\" to exit.", getPlayer());
 		getManager().waitForChatInput(this, getPlayer(), this::handlePositionChange);
 	}
@@ -238,16 +239,16 @@ public abstract class RecipeEditor<RecipeT extends EnhancedRecipe> extends GUIEl
 		return true;
 	}
 
-	private void changeCategory(ItemStack button, ButtonType btnType) {
+	private void changeCategory(ClickType clickType,ItemStack button, ButtonType btnType) {
 //        throw new NotImplementedException("That operation is not yet implemented.");
 		Messenger.Message("That's not implemented yet.", getPlayer());
 	}
 
-	private void resetRecipe(ItemStack button, ButtonType btnType) {
+	private void resetRecipe(ClickType clickType,ItemStack button, ButtonType btnType) {
 		updateRecipeDisplay();
 	}
 
-	private void deleteRecipe(ItemStack button, ButtonType btnType) {
+	private void deleteRecipe(ClickType clickType,ItemStack button, ButtonType btnType) {
 
 		getManager().getMain().getFm().removeRecipe(recipe);
 		RecipeLoader.getInstance().unloadRecipe(recipe);
@@ -263,7 +264,7 @@ public abstract class RecipeEditor<RecipeT extends EnhancedRecipe> extends GUIEl
 		getManager().openGUI(getPlayer(), getPreviousGui());
 	}
 
-	private void saveRecipe(ItemStack button, ButtonType btnType) {
+	private void saveRecipe(ClickType clickType,ItemStack button, ButtonType btnType) {
 		if (getTemplate().getFillSpace().size() != recipe.getContent().length + 1) {
 			throw new ConfigError("Error, fill space size of wb recipe editor is not equal to 10.");
 		}
