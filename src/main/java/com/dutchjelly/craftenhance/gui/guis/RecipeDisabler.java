@@ -50,7 +50,7 @@ public class RecipeDisabler extends GUIElement {
         this.addBtnListener(ButtonType.NxtPage, this::handlePageChangingClicked);
         this.addBtnListener(ButtonType.PrvPage, this::handlePageChangingClicked);
         this.addBtnListener(ButtonType.SwitchDisablerMode, this::switchMode);
-        this.addBtnListener(ButtonType.Seach, (click, btn, type) -> {
+        this.addBtnListener(ButtonType.Search, (click, btn, type) -> {
             if (click.isLeftClick()) {
                 Messenger.Message("Please input your item to seach for.", getPlayer());
                 this.getManager().waitForChatInput(null, getPlayer(), (msg) -> {

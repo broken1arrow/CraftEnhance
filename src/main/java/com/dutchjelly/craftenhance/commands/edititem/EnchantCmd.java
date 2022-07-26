@@ -50,21 +50,27 @@ public class EnchantCmd implements ICommand, ICompletionProvider {
 		if (args.length == 1) {
 			list.add("enchant");
 		}
-		if (args.length == 2) {
+		if (args.length >= 2 && args.length % 2 == 0) {
 			list.add("clear");
 			String toComplete = args[args.length - 1];
 			List<Enchantment> enchants = Arrays.asList(Enchantment.values());
 			enchants.stream().filter(x ->
-							x.getName().toLowerCase().startsWith(toComplete.toLowerCase()))
+							!containsEnchant(x.getName().toLowerCase(), args))
 					.collect(Collectors.toList())
 					.forEach(x -> list.add(x.getName().toLowerCase()));
 		}
-		if (args.length == 3) {
+		if (args.length >= 3 && args.length % 2 != 0) {
 			list.addAll(Arrays.asList("1", "2", "3", "4", "5"));
 		}
 		return list;
 	}
-
+	public boolean containsEnchant(String enchantName, String[] args) {
+		for (String arg : args) {
+			if (arg.toLowerCase().startsWith(enchantName))
+				return true;
+		}
+		return false;
+	}
 	@Override
 	public List<String> getCompletions(String[] args) {
 		if(args == null)

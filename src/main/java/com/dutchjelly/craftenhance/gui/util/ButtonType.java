@@ -18,5 +18,5 @@ public enum ButtonType {
     SetCookTime,
     SetExp,
     ChooseFurnaceType,
-    Seach
+    Search
 }

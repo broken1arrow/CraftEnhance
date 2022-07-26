@@ -146,7 +146,7 @@ RecipeDisabler:
   button-mapping:
     47: PrvPage
     48: SwitchDisablerMode
-    50: Seach
+    50: Search
     51: NxtPage
     
   template:
@@ -164,7 +164,7 @@ RecipeDisabler:
       glow: true
     50:
       material: "PAPER"
-      name: "&F click to seach for recipe"
+      name: "&fclick to search for recipe"
       glow: true
     51:
       color: base64eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWFiOTVhODc1MWFlYWEzYzY3MWE4ZTkwYjgzZGU3NmEwMjA0ZjFiZTY1NzUyYWMzMWJlMmY5OGZlYjY0YmY3ZiJ9fX0=

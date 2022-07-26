@@ -54,13 +54,18 @@ public class ItemFlagCmd implements ICommand {
 			String toComplete = args[args.length - 1];
 			List<ItemFlag> enchants = Arrays.asList(ItemFlag.values());
 			enchants.stream().filter(x ->
-							x.name().toLowerCase().startsWith(toComplete.toLowerCase()))
+					!containsFlag(x.name().toLowerCase(), args))
 					.collect(Collectors.toList())
-					.forEach(x -> {
-						if (!list.contains(x.name().toLowerCase()))
-							list.add(x.name().toLowerCase());
-					});
+					.forEach(x -> list.add(x.name().toLowerCase()));
 		}
 		return list;
+	}
+
+	public boolean containsFlag(String enchantName, String[] args) {
+		for (String arg : args) {
+			if (arg.toLowerCase().startsWith(enchantName))
+				return true;
+		}
+		return false;
 	}
 }
