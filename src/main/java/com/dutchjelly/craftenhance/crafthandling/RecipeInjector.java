@@ -88,7 +88,13 @@ public class RecipeInjector implements Listener {
 		Debug.Send("The server wants to inject " + serverRecipe.getResult().toString() + " ceh will check or modify this.");
 
 		List<RecipeGroup> possibleRecipeGroups = loader.findGroupsByResult(serverRecipe.getResult(), RecipeType.WORKBENCH);
-
+		List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
+		if (disabledServerRecipes != null && !disabledServerRecipes.isEmpty())
+			for (Recipe disabledRecipe : disabledServerRecipes)
+				if (disabledRecipe.getResult().isSimilar(serverRecipe.getResult())) {
+					inv.setResult(null);
+					return;
+				}
 		if (possibleRecipeGroups == null || possibleRecipeGroups.size() == 0) {
 			if (disableDefaultModeldataCrafts && Adapter.canUseModeldata() && containsModeldata(inv)) {
 				inv.setResult(null);
@@ -104,7 +110,6 @@ public class RecipeInjector implements Listener {
 				if (!(eRecipe instanceof WBRecipe)) return;
 
 				WBRecipe wbRecipe = (WBRecipe) eRecipe;
-
 				Debug.Send("Checking if enhanced recipe for " + wbRecipe.getResult().toString() + " matches.");
 
 				if (wbRecipe.matches(inv.getMatrix())

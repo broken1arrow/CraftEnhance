@@ -45,6 +45,7 @@ public class RecipeDisabler extends GUIElement {
         Debug.Send("An instance is being made for a recipe disabler");
         this.enabledRecipes = enabledRecipes;
         this.disabledRecipe = disabledRecipes;
+        if (itemSeachFor != null && !itemSeachFor.isEmpty())
         this.itemSeachFor = itemSeachFor;
         this.addBtnListener(ButtonType.NxtPage, this::handlePageChangingClicked);
         this.addBtnListener(ButtonType.PrvPage, this::handlePageChangingClicked);
@@ -57,14 +58,15 @@ public class RecipeDisabler extends GUIElement {
                         return false;
                     if (!msg.isEmpty()) {
                         this.itemSeachFor = msg;
+                        generateInventories(null);
                         manager.openGUI(p, this);
-                        updatePlaceHolders();
                         return false;
                     }
                     return true;
                 });
             } else {
                 this.itemSeachFor = "";
+                generateInventories(null);
                 manager.openGUI(p, this);
             }
         });
@@ -75,9 +77,9 @@ public class RecipeDisabler extends GUIElement {
     private void switchMode(ClickType clickType,ItemStack itemStack, ButtonType buttonType) {
         this.enableMode = !this.enableMode;
         this.currentPage = 0;
+        this.itemSeachFor = "";
         generateInventories(null);
         updatePlaceHolders();
-        this.itemSeachFor = "";
         getManager().openGUI(getPlayer(), this);
     }
 
@@ -98,10 +100,9 @@ public class RecipeDisabler extends GUIElement {
     private List<Recipe> getRecipes() {
         if (itemSeachFor != null && !itemSeachFor.isEmpty()) {
             if (enableMode)
-                return disabledRecipe.stream().filter(recipe -> recipe.getResult().getType().name().contains(itemSeachFor)).collect(Collectors.toList());
+                return disabledRecipe.stream().filter(recipe -> recipe.getResult().getType().name().contains(itemSeachFor.toUpperCase())).collect(Collectors.toList());
             else
-                return enabledRecipes.stream().filter(recipe -> recipe.getResult().getType().name().contains(itemSeachFor)).collect(Collectors.toList());
-
+                return enabledRecipes.stream().filter(recipe -> recipe.getResult().getType().name().contains(itemSeachFor.toUpperCase())).collect(Collectors.toList());
         }
         return !enableMode ? enabledRecipes : disabledRecipe;
     }
