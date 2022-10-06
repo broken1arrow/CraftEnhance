@@ -166,6 +166,7 @@ public class RecipeInjector implements Listener {
 		UUID playerId = containerOwners.get(furnace.getLocation());
 		Player p = playerId == null ? null : plugin.getServer().getPlayer(playerId);
 		Debug.Send("Furnace belongs to player: " + p + " the id " + playerId);
+		Debug.Send("Furnace source item: " + source);
 
 		//Check if any grouped enhanced recipe is a match.
 		for (EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
@@ -176,25 +177,30 @@ public class RecipeInjector implements Listener {
 			if (fRecipe.matches(srcMatrix)) {
 				if (entityCanCraft(p, fRecipe)) {
 					//TODO test if result can be changed here
-					Debug.Send("found enhanced recipe result for furnace");
+					Debug.Send("Found enhanced recipe " + fRecipe.getResult().toString() + " for furnace");
+					Debug.Send("Matching ingridens are " + source + " .");
 					return Optional.of(fRecipe.getResult());
+				} else {
+					Debug.Send("found this recipe " + fRecipe.getResult().toString() + " match but, player has not this permission " + fRecipe.getPermissions());
+					break;
 				}
 			} else {
-				if (fRecipe.matcheType(srcMatrix)) {
-					Debug.Send("found similar match itemtype for furnace");
+			/*	if (fRecipe.matcheType(srcMatrix)) {
+					Debug.Send("Found similar match itemtype for furnace");
+					Debug.Send("Is item similar= "  + fRecipe.getContent()[0].isSimilar(srcMatrix[0]));
+					Debug.Send("For recipe: " + fRecipe.getResult());
 					return Optional.empty();
 				}
 				Debug.Send("found recipe doesn't match " + (entityCanCraft(p, fRecipe) ? "." : "and no perms."));
-				return null;
+				return null;*/
 			}
-			Debug.Send("found recipe match but " + (entityCanCraft(p, fRecipe) ? "." : "no perms."));
 		}
 		//Check for similar server recipes if no enhanced ones match.
 		for (Recipe sRecipe : group.getServerRecipes()) {
 			org.bukkit.inventory.FurnaceRecipe fRecipe = (org.bukkit.inventory.FurnaceRecipe) sRecipe;
 			if (getTypeMatcher().match(fRecipe.getInput(), source)) {
 				Debug.Send("found similar server recipe for furnace");
-				return Optional.of(fRecipe.getResult());
+				return Optional.empty();
 			}
 		}
 		return Optional.empty();

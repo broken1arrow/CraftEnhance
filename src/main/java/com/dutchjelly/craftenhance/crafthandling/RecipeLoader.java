@@ -19,6 +19,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -72,19 +73,23 @@ public class RecipeLoader implements Listener {
 	}
 
 	//Adds or merges group with existing group.
-	private RecipeGroup addGroup(RecipeGroup newGroup, RecipeType type) {
+	private RecipeGroup addGroup(List<Recipe> serverRecipes, EnhancedRecipe enhancedRecipe) {
 		Debug.Send("AddGroupe.");
-		if (newGroup == null) return null;
-		List<RecipeGroup> groupedRecipes = mappedGroupedRecipes.get(type);
-		for (RecipeGroup group : groupedRecipes) {
-//            Debug.Send("Looking if two enhanced recipes are similar for merge.");
-			if (newGroup.getEnhancedRecipes().stream().anyMatch(x -> group.getEnhancedRecipes().stream().anyMatch(x::isSimilar))) {
-				return group.mergeWith(newGroup);
+		List<RecipeGroup> groupedRecipes = mappedGroupedRecipes.get(enhancedRecipe.getType());
+		//            Debug.Send("Looking if two enhanced recipes are similar for merge.");
+		if (groupedRecipes == null)
+			groupedRecipes = new ArrayList<>();
 
-			}
+		for (RecipeGroup group : groupedRecipes) {
+				group.addAllNotExist(serverRecipes);
+				return group.addIfNotExist(enhancedRecipe);
 		}
-		Debug.Send("AddGroupe done.");
-		groupedRecipes.add(newGroup);
+		RecipeGroup newGroup = new RecipeGroup();
+		if (groupedRecipes.isEmpty()){
+			newGroup.addIfNotExist(enhancedRecipe);
+			newGroup.setServerRecipes(serverRecipes);
+			groupedRecipes.add(newGroup);
+		}
 		return newGroup;
 	}
 
@@ -234,10 +239,9 @@ public class RecipeLoader implements Listener {
 		} else {
 			Debug.Send("Didn't add server recipe for " + recipe.getKey() + " because a similar one was already loaded: " + alwaysSimilar.toString() + " with the result " + alwaysSimilar.getResult().toString());
 		}
-		RecipeGroup group = new RecipeGroup();
-		group.setEnhancedRecipes(Arrays.asList(recipe));
-		group.setServerRecipes(similarServerRecipes);
-		addGroup(group, recipe.getType());
+
+		addGroup(similarServerRecipes, recipe);
+		Debug.Send("AddGroupe done.");
 		loadedRecipes.add(recipe);
 	}
 
@@ -267,9 +271,9 @@ public class RecipeLoader implements Listener {
 		for (Map.Entry<RecipeType, List<RecipeGroup>> recipeGrouping : mappedGroupedRecipes.entrySet()) {
 			Debug.Send("Groups for recipes of type: " + recipeGrouping.getKey().toString());
 			for (RecipeGroup group : recipeGrouping.getValue()) {
-				Debug.Send("  <group>");
-				Debug.Send("     enhanced recipes: " + group.getEnhancedRecipes().stream().filter(x -> x != null).map(x -> x.getResult().toString()).collect(Collectors.joining(", ")));
-				Debug.Send("     server recipes: " + group.getServerRecipes().stream().filter(x -> x != null).map(x -> x.getResult().toString()).collect(Collectors.joining(", ")));
+				Debug.Send("<group>");
+				Debug.Send("Enhanced recipes: " + group.getEnhancedRecipes().stream().filter(Objects::nonNull).map(x -> x.getResult().toString()).collect(Collectors.joining("\nEnhanced recipes: ")));
+				Debug.Send("Server recipes: " + group.getServerRecipes().stream().filter(Objects::nonNull).map(x -> x.getResult().toString()).collect(Collectors.joining("\nEnhanced recipes: ")));
 			}
 		}
 	}
@@ -325,7 +329,9 @@ public class RecipeLoader implements Listener {
 		}
 		return false;
 	}
-
+	public EnhancedRecipe getLoadedRecipes(Predicate<? super EnhancedRecipe>  predicate){
+		return this.getLoadedRecipes().stream().filter(predicate).findFirst().orElse(null);
+	}
 	public void disableServerRecipes(List<Recipe> disabledServerRecipes) {
 		//No need to be efficient here, this'll only run once.
 		disabledServerRecipes.forEach(x -> disableServerRecipe(x));

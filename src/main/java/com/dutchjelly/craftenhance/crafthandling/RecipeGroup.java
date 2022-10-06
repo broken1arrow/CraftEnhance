@@ -26,6 +26,24 @@ public class RecipeGroup {
     @Getter @Setter
     private List<EnhancedRecipe> enhancedRecipes = new ArrayList<>();
 
+
+    public RecipeGroup addIfNotExist(EnhancedRecipe enhancedRecipe){
+        if (!enhancedRecipes.contains(enhancedRecipe))
+            enhancedRecipes.add(enhancedRecipe);
+        return this;
+    }
+
+    public RecipeGroup addIfNotExist(Recipe recipe){
+        if (!serverRecipes.contains(recipe))
+            serverRecipes.add(recipe);
+        return this;
+    }
+    public RecipeGroup addAllNotExist(List<Recipe> recipes){
+        for (Recipe recipe :recipes)
+        if (!serverRecipes.contains(recipe))
+            serverRecipes.add(recipe);
+        return this;
+    }
     //Returns this for chaining purposes.
     public RecipeGroup mergeWith(@NonNull RecipeGroup othergroup){
         List<Recipe> mergedServerRecipes = new ArrayList<>();

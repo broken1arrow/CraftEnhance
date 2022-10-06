@@ -65,7 +65,7 @@ public class ItemMatchers {
 			);
 		}
 
-		return a.isSimilar(b) && (canUseModeldata && matchModelData(a, b) || !canUseModeldata);
+		return a.isSimilar(b) && (!canUseModeldata || matchModelData(a, b));
 	}
 
 	public static boolean matchType(ItemStack a, ItemStack b) {

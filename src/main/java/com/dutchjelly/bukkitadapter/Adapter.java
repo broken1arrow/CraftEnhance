@@ -173,18 +173,34 @@ public class Adapter {
 
 	public static void AddIngredient(ShapelessRecipe recipe, ItemStack ingredient) {
 		if (!self().getConfig().getBoolean("learn-recipes")) {
-			MaterialData md = ingredient.getData();
-			if (md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)) {
+			if (self().getVersionChecker().newerThan(VersionChecker.ServerVersion.v1_13)) {
+				ItemMeta meta = ingredient.getItemMeta();
+				if (meta instanceof org.bukkit.inventory.meta.Damageable) {
+					org.bukkit.inventory.meta.Damageable damageable = ((org.bukkit.inventory.meta.Damageable) meta);
+					if (damageable.hasDamage()) {
+						MaterialData md = ingredient.getData();
+						if (md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)) {
+							recipe.addIngredient(ingredient.getType());
+						} else {
+							recipe.addIngredient(md);
+						}
+						return;
+					}
+				}
 				recipe.addIngredient(ingredient.getType());
 			} else {
-				recipe.addIngredient(md);
+				MaterialData md = ingredient.getData();
+				if (md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)) {
+					recipe.addIngredient(ingredient.getType());
+				} else {
+					recipe.addIngredient(md);
+				}
 			}
 			return;
 		}
 		try {
 			recipe.getClass().getMethod("addIngredient", Class.forName("org.bukkit.inventory.RecipeChoice.ExactChoice")).invoke(recipe,
-					Class.forName("org.bukkit.inventory.RecipeChoice.ExactChoice").getConstructor(ItemStack.class).newInstance(ingredient)
-			);
+					Class.forName("org.bukkit.inventory.RecipeChoice.ExactChoice").getConstructor(ItemStack.class).newInstance(ingredient));
 		} catch (Exception e) {
 			recipe.addIngredient(ingredient.getType());
 		}

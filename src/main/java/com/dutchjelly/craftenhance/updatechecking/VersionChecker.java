@@ -34,7 +34,7 @@ public class VersionChecker {
 		if (!isOutDated(currentVersion)) {
 			Messenger.Message("CraftEnhance is up to date.");
 		} else {
-			Messenger.Message("There's a new version (" + currentVersion + ") of the plugin available on https://dev.bukkit.org/projects/craftenhance/files.");
+			Messenger.Message("There's a new version (" + currentVersion + ") of the plugin available on https://www.spigotmc.org/resources/1-9-1-19-custom-recipes-and-crafting-craftenhance.65058/ or https://dev.bukkit.org/projects/craftenhance/files.");
 		}
 	}
 

@@ -108,7 +108,7 @@ public class CraftEnhance extends JavaPlugin {
 		setupCommands();
 
 		Messenger.Message("CraftEnhance is managed and developed by DutchJelly.");
-		Messenger.Message("If you find a bug in the plugin, please report it to https://dev.bukkit.org/projects/craftenhance.");
+		Messenger.Message("If you find a bug in the plugin, please report it to https://github.com/DutchJelly/CraftEnhance/issues.");
 		if (!versionChecker.runVersionCheck()) {
 			for (int i = 0; i < 4; i++)
 				Messenger.Message("WARN: The installed version isn't tested to work with the game version of the server.");
