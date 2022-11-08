@@ -1,16 +1,15 @@
 package com.dutchjelly.craftenhance.commands.ceh;
 
 import com.dutchjelly.craftenhance.CraftEnhance;
-import com.dutchjelly.craftenhance.IEnhancedRecipe;
-import com.dutchjelly.craftenhance.PermissionTypes;
-import com.dutchjelly.craftenhance.commandhandling.ICommand;
 import com.dutchjelly.craftenhance.commandhandling.CommandRoute;
 import com.dutchjelly.craftenhance.commandhandling.CustomCmdHandler;
+import com.dutchjelly.craftenhance.commandhandling.ICommand;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
-import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.gui.guis.RecipesViewer;
 import com.dutchjelly.craftenhance.gui.templates.GuiTemplate;
 import com.dutchjelly.craftenhance.messaging.Messenger;
+import com.dutchjelly.craftenhance.util.PermissionTypes;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -36,7 +35,7 @@ public class RecipesCmd implements ICommand {
 	public void handlePlayerCommand(Player p, String[] args) {
 		final CraftEnhance main = handler.getMain();
         final GuiTemplate template = main.getGuiTemplatesFile().getTemplate(RecipesViewer.class);
-		final List<IEnhancedRecipe> recipes = RecipeLoader.getInstance().getLoadedRecipes().stream().filter(x ->
+		final List<EnhancedRecipe> recipes = RecipeLoader.getInstance().getLoadedRecipes().stream().filter(x ->
 				(!handler.getMain().getConfig().getBoolean("only-show-available") || x.getPermissions() == null || x.getPermissions() == "" || p.hasPermission(x.getPermissions()))
 				&& (!x.isHidden() || p.hasPermission(PermissionTypes.Edit.getPerm()) || p.hasPermission(x.getPermissions() + ".hidden"))).collect(Collectors.toList()
         );

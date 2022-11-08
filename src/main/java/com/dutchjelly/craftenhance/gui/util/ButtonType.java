@@ -13,9 +13,6 @@ public enum ButtonType {
     SetPosition,
     SwitchHidden,
     SetPermission,
-<<<<<<< Updated upstream
-    SwitchDisablerMode
-=======
     SwitchDisablerMode,
     ChooseWorkbenchType,
     SetCookTime,
@@ -31,5 +28,4 @@ public enum ButtonType {
         }
         return null;
     }
->>>>>>> Stashed changes
-}
+    }

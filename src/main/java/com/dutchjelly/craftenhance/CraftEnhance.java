@@ -24,11 +24,12 @@ import com.dutchjelly.craftenhance.files.FileManager;
 import com.dutchjelly.craftenhance.files.GuiTemplatesFile;
 import com.dutchjelly.craftenhance.gui.GuiManager;
 import com.dutchjelly.craftenhance.gui.guis.CustomCraftingTable;
-import com.dutchjelly.craftenhance.gui.guis.WBRecipeViewer;
+import com.dutchjelly.craftenhance.gui.guis.viewers.WBRecipeViewer;
 import com.dutchjelly.craftenhance.gui.templates.MenuSettingsCache;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
+import com.dutchjelly.craftenhance.util.Metrics;
 import lombok.Getter;
 import org.brokenarrow.menu.library.RegisterMenuAPI;
 import org.bukkit.command.Command;
@@ -94,6 +95,9 @@ public class CraftEnhance extends JavaPlugin{
                 ).collect(Collectors.toList())
         );
 
+		injector = new RecipeInjector(this);
+		injector.registerContainerOwners(fm.getContainerOwners());
+
 		Debug.Send("Loading gui templates");
 		guiTemplatesFile = new GuiTemplatesFile(this);
 		guiTemplatesFile.load();
@@ -134,15 +138,14 @@ public class CraftEnhance extends JavaPlugin{
         reloadConfig();
         ConfigFormatter.init(this).formatConfigMessages();
 	}
-	
-	@Override
-	public void onDisable(){
-	    try{
-            guiManager.closeAll();
-        } catch(Exception e) {}
 
-        fm.saveDisabledServerRecipes(RecipeLoader.getInstance().getDisabledServerRecipes().stream().map(x -> Adapter.GetRecipeIdentifier(x)).collect(Collectors.toList()));
-        getServer().resetRecipes();
+	@Override
+	public void onDisable() {
+		Debug.Send("Saving container owners...");
+		fm.saveContainerOwners(injector.getContainerOwners());
+		Debug.Send("Saving disabled recipes...");
+		fm.saveDisabledServerRecipes(RecipeLoader.getInstance().getDisabledServerRecipes().stream().map(x -> Adapter.GetRecipeIdentifier(x)).collect(Collectors.toList()));
+		getServer().resetRecipes();
 	}
 	
 	@Override

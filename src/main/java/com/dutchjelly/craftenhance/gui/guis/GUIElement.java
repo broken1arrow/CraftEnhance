@@ -3,10 +3,11 @@ package com.dutchjelly.craftenhance.gui.guis;
 import com.dutchjelly.craftenhance.gui.GuiManager;
 import com.dutchjelly.craftenhance.gui.templates.GuiTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
-import com.dutchjelly.craftenhance.gui.IButtonHandler;
+import com.dutchjelly.craftenhance.gui.interfaces.IButtonHandler;
 import lombok.Getter;
 import lombok.NonNull;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.InventoryHolder;
@@ -18,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class GUIElement implements InventoryHolder{
-
     @Getter
     private final GuiManager manager;
 
@@ -42,7 +42,16 @@ public abstract class GUIElement implements InventoryHolder{
         buttonClickHandlers.put(ButtonType.Back, Arrays.asList(this::handleBackBtnClicked));
     }
 
-    public void handleBackBtnClicked(ItemStack btn, ButtonType btnType){
+    public GUIElement(GuiManager manager, GUIElement previousGui, Player player){
+        this.manager = manager;
+        this.template = manager.getMain().getGuiTemplatesFile().getTemplate(getClass());
+        this.player = player;
+        this.previousGui = previousGui;
+        buttonClickHandlers = new HashMap<>();
+        buttonClickHandlers.put(ButtonType.Back, Arrays.asList(this::handleBackBtnClicked));
+    }
+
+    public void handleBackBtnClicked(ClickType click, ItemStack btn, ButtonType btnType){
         if(previousGui == null) return;
         manager.openGUI(player, previousGui);
     }
@@ -56,13 +65,12 @@ public abstract class GUIElement implements InventoryHolder{
             throw new IllegalStateException("Other player clicked than owner of GUI.");
 
         int clickedSlot = e.getSlot();
-
         //Handle button clicks.
         ButtonType clickedButton = getTemplate().getButtonMapping().get(clickedSlot);
         if(clickedButton != null){
             List<IButtonHandler> btnHandlers = buttonClickHandlers.get(clickedButton);
             if(btnHandlers != null)
-                btnHandlers.forEach(x -> x.handleClick(e.getCurrentItem(), clickedButton));
+                btnHandlers.forEach(x -> x.handleClick(   e.getClick() ,e.getCurrentItem(), clickedButton));
         }
 
         //Allow implementation to handle event.
@@ -84,9 +92,9 @@ public abstract class GUIElement implements InventoryHolder{
         }
     }
 
-	public abstract void handleEventRest(InventoryClickEvent e);
+    public abstract void handleEventRest(InventoryClickEvent e);
 
-	public abstract boolean isCancelResponsible();
+    public abstract boolean isCancelResponsible();
 
-	
+
 }
