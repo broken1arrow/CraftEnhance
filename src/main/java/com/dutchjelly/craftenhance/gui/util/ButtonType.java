@@ -13,5 +13,23 @@ public enum ButtonType {
     SetPosition,
     SwitchHidden,
     SetPermission,
+<<<<<<< Updated upstream
     SwitchDisablerMode
+=======
+    SwitchDisablerMode,
+    ChooseWorkbenchType,
+    SetCookTime,
+    SetExp,
+    ChooseFurnaceType,
+    Search;
+
+    public static ButtonType valueOfType(String buttontype) {
+        ButtonType[] buttonTypes = ButtonType.values();
+        for (ButtonType buttonType : buttonTypes) {
+            if (buttonType.name().equalsIgnoreCase(buttontype))
+                return buttonType;
+        }
+        return null;
+    }
+>>>>>>> Stashed changes
 }

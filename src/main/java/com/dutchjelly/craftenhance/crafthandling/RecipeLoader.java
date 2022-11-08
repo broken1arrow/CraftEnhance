@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 public class RecipeLoader implements Listener {
 
+<<<<<<< Updated upstream
     @EventHandler
     public void onJoin(PlayerJoinEvent e){
         if(CraftEnhance.self().getConfig().getBoolean("learn-recipes"))
@@ -74,6 +75,115 @@ public class RecipeLoader implements Listener {
 //                    return group.mergeWith(newGroup);
 //                }
 //            }
+=======
+	@EventHandler
+	public void onJoin(PlayerJoinEvent e) {
+		if (CraftEnhance.self().getConfig().getBoolean("learn-recipes"))
+			Adapter.DiscoverRecipes(e.getPlayer(), getLoadedServerRecipes());
+	}
+
+	//Ensure one instance
+	private static RecipeLoader instance = null;
+
+	public static RecipeLoader getInstance() {
+		return instance == null ? instance = new RecipeLoader(Bukkit.getServer()) : instance;
+	}
+
+	public static void clearInstance() {
+		instance = null;
+	}
+
+	@Getter
+	private final List<Recipe> serverRecipes = new ArrayList<>();
+
+	@Getter
+	private final List<Recipe> disabledServerRecipes = new ArrayList<>();
+	@Getter
+	private final Map<ItemStack,ItemStack> similarVanillaRecipe = new HashMap<>();
+
+	private final Map<String, Recipe> loaded = new HashMap<>();
+	private final Server server;
+
+	@Getter
+	private final Map<RecipeType, List<RecipeGroup>> mappedGroupedRecipes = new HashMap<>();
+
+	@Getter
+	private final List<EnhancedRecipe> loadedRecipes = new ArrayList<>();
+
+	private RecipeLoader(Server server) {
+		this.server = server;
+
+		server.recipeIterator().forEachRemaining(serverRecipes::add);
+		for (Iterator<Recipe> it = server.recipeIterator(); it.hasNext(); ) {
+			Recipe data = it.next();
+
+		}
+		for (RecipeType type : RecipeType.values()) {
+			mappedGroupedRecipes.put(type, new ArrayList<>());
+		}
+	}
+
+	//Adds or merges group with existing group.
+	private RecipeGroup addGroup(List<Recipe> serverRecipes, EnhancedRecipe enhancedRecipe) {
+		Debug.Send("AddGroupe.");
+		List<RecipeGroup> groupedRecipes = mappedGroupedRecipes.get(enhancedRecipe.getType());
+		//            Debug.Send("Looking if two enhanced recipes are similar for merge.");
+		if (groupedRecipes == null)
+			groupedRecipes = new ArrayList<>();
+
+		for (RecipeGroup group : groupedRecipes) {
+				group.addAllNotExist(serverRecipes);
+				return group.addIfNotExist(enhancedRecipe);
+		}
+		RecipeGroup newGroup = new RecipeGroup();
+		if (groupedRecipes.isEmpty()){
+			newGroup.addIfNotExist(enhancedRecipe);
+			newGroup.setServerRecipes(serverRecipes);
+			groupedRecipes.add(newGroup);
+		}
+		return newGroup;
+	}
+
+	public RecipeGroup findGroup(EnhancedRecipe recipe) {
+		return mappedGroupedRecipes.get(recipe.getType()).stream().filter(x -> x.getEnhancedRecipes().contains(recipe)).findFirst().orElse(null);
+	}
+
+	//Find groups that contain at least one recipe that maps to result.
+	public List<RecipeGroup> findGroupsByResult(ItemStack result, RecipeType type) {
+		List<RecipeGroup> originGroups = new ArrayList<>();
+		for (RecipeGroup group : mappedGroupedRecipes.get(type)) {
+			if (group.getEnhancedRecipes().stream().anyMatch(x -> result.equals(x.getResult())))
+				originGroups.add(group);
+			else if (group.getServerRecipes().stream().anyMatch(x -> result.equals(x.getResult())))
+				originGroups.add(group);
+		}
+		return originGroups;
+	}
+
+	public RecipeGroup findMatchingGroup(ItemStack[] matrix, RecipeType type) {
+		for (RecipeGroup group : mappedGroupedRecipes.get(type)) {
+			if (group.getEnhancedRecipes().stream().anyMatch(x -> x.matches(matrix)))
+				return group;
+		}
+		return null;
+	}
+
+	public RecipeGroup findSimilarGroup(EnhancedRecipe recipe) {
+		return mappedGroupedRecipes.get(recipe.getType()).stream().filter(x ->
+				x.getEnhancedRecipes().stream().anyMatch(y -> y.isSimilar(recipe)) ||
+						x.getServerRecipes().stream().anyMatch(y -> recipe.isSimilar(y))
+		).findFirst().orElse(null);
+	}
+
+	//There can only be one group that matches a matrix, because that's how they're grouped
+//    public List<RecipeGroup> findMatchingGroups(ItemStack[] matrix, RecipeType type){
+//        List<RecipeGroup> matchingGroups = new ArrayList<>();
+//        for(RecipeGroup group : mappedGroupedRecipes.get(type)){
+//            try{
+//                if(group.getEnhancedRecipes().stream().anyMatch(x -> x.matches(matrix)))
+//                    matchingGroups.add(group);
+//            } catch(ClassCastException e){}
+>>>>>>> Stashed changes
 //        }
 
         for(RecipeGroup group : groupedRecipes){

@@ -1,14 +1,18 @@
 package com.dutchjelly.craftenhance.commands.ceh;
 
-import com.dutchjelly.craftenhance.commandhandling.ICommand;
 import com.dutchjelly.craftenhance.commandhandling.CommandRoute;
 import com.dutchjelly.craftenhance.commandhandling.CustomCmdHandler;
+<<<<<<< Updated upstream
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.gui.guis.WBRecipeEditor;
+=======
+import com.dutchjelly.craftenhance.commandhandling.ICommand;
+import com.dutchjelly.craftenhance.gui.guis.EditorTypeSelector;
+import com.dutchjelly.craftenhance.gui.guis.EditorTypeSelectorCopy;
+>>>>>>> Stashed changes
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
 @CommandRoute(cmdPath="ceh.createrecipe", perms="perms.recipe-editor")
 public class CreateRecipeCmd implements ICommand {
@@ -31,10 +35,17 @@ public class CreateRecipeCmd implements ICommand {
 	        int uniqueKeyIndex = 1;
 	        while(!handler.getMain().getFm().isUniqueRecipeKey("recipe" + uniqueKeyIndex))
                 uniqueKeyIndex++;
+<<<<<<< Updated upstream
             WBRecipe newRecipe = new WBRecipe(null, null, new ItemStack[9]);
             newRecipe.setKey("recipe" + uniqueKeyIndex);
             WBRecipeEditor gui = new WBRecipeEditor(handler.getMain().getGuiManager(), handler.getMain().getGuiTemplatesFile().getTemplate(WBRecipeEditor.class), null, p, newRecipe);
             handler.getMain().getGuiManager().openGUI(p, gui);
+=======
+            /*EditorTypeSelector gui = new EditorTypeSelector(handler.getMain().getGuiManager(), handler.getMain().getGuiTemplatesFile().getTemplate(EditorTypeSelector.class), null, p, "recipe" + uniqueKeyIndex, null);
+            handler.getMain().getGuiManager().openGUI(p, gui);*/
+		    EditorTypeSelectorCopy guis  = new EditorTypeSelectorCopy(handler.getMain().getGuiManager(), handler.getMain().getGuiTemplatesFile().getTemplate(EditorTypeSelector.class), null, "recipe" + uniqueKeyIndex, null);
+		    guis.menuOpen(p);
+>>>>>>> Stashed changes
 	        return;
         }
 

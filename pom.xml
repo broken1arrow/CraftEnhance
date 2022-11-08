@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>CraftEnhance</groupId>
@@ -32,11 +33,84 @@
 			<id>spigot-repo</id>
 			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
 		</repository>
+=======
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.dutchjelly.craftenhance</groupId>
+    <artifactId>CraftEnhance</artifactId>
+    <version>2.4.4.5</version>
+    <name>CraftEnhance</name>
+    <description>This is a minecraft plugin to enhance crafting.</description>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+    </properties>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>default-deploy</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>deploy</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.4</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <finalName>${project.name}-${project.version}</finalName>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.github.broken1arrow:MenuLibrary*</include>
+                                    <!--<include>broken_gradient:*</include>-->
+                                </includes>
+                            </artifactSet>
+                            <relocations>
+                                <relocation>
+                                    <pattern>org.brokenarrow.menu.library</pattern>
+                                    <shadedPattern>menulibrary.menulib</shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+    <repositories>
+        <repository>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+>>>>>>> Stashed changes
 
         <repository>
             <id>minecraft-repo</id>
             <url>https://libraries.minecraft.net/</url>
         </repository>
+<<<<<<< Updated upstream
 	</repositories>
 	<dependencies>
 		<dependency>
@@ -45,12 +119,31 @@
 			<artifactId>spigot-api</artifactId>
 			<version>1.16.3-R0.1-SNAPSHOT</version>
 		</dependency>
+=======
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+        <repository>
+            <id>itemsadder-repo</id>
+            <url>https://maven.pkg.github.com/LoneDev6/API-ItemsAdder</url>
+        </repository>
+
+    </repositories>
+    <dependencies>
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>1.18.2-R0.1-SNAPSHOT</version>
+        </dependency>
+>>>>>>> Stashed changes
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.12</version>
             <scope>provided</scope>
         </dependency>
+<<<<<<< Updated upstream
 
 		<dependency>
 			<groupId>com.mojang</groupId>
@@ -58,6 +151,25 @@
 			<version>1.5.21</version>
 			<scope>provided</scope>
 		</dependency>
+=======
+        <dependency>
+            <groupId>com.github.broken1arrow</groupId>
+            <artifactId>MenuLibrary</artifactId>
+            <version>0.67</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.9.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <!--<dependency>-->
+        <!--<groupId>dev.lone</groupId>-->
+        <!--<artifactId>api-itemsadder</artifactId>-->
+        <!--<version>2.4.21</version>-->
+        <!--</dependency>-->
+>>>>>>> Stashed changes
         <!--<dependency>-->
             <!--<groupId>org.bukkit</groupId>-->
             <!--<artifactId>bukkit</artifactId>-->
