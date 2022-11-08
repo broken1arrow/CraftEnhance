@@ -1,13 +1,6 @@
 package com.dutchjelly.craftenhance;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
 import com.dutchjelly.bukkitadapter.Adapter;
-<<<<<<< Updated upstream
-import com.dutchjelly.craftenhance.commands.ceh.*;
-=======
-import com.dutchjelly.craftenhance.api.CraftEnhanceAPI;
 import com.dutchjelly.craftenhance.commandhandling.CustomCmdHandler;
 import com.dutchjelly.craftenhance.commands.ceh.ChangeKeyCmd;
 import com.dutchjelly.craftenhance.commands.ceh.CleanItemFileCmd;
@@ -17,7 +10,6 @@ import com.dutchjelly.craftenhance.commands.ceh.RecipesCmd;
 import com.dutchjelly.craftenhance.commands.ceh.ReloadCmd;
 import com.dutchjelly.craftenhance.commands.ceh.SetPermissionCmd;
 import com.dutchjelly.craftenhance.commands.ceh.SpecsCommand;
-import com.dutchjelly.craftenhance.commands.ceh.ViewCmd;
 import com.dutchjelly.craftenhance.commands.edititem.DisplayNameCmd;
 import com.dutchjelly.craftenhance.commands.edititem.DurabilityCmd;
 import com.dutchjelly.craftenhance.commands.edititem.EnchantCmd;
@@ -25,45 +17,28 @@ import com.dutchjelly.craftenhance.commands.edititem.ItemFlagCmd;
 import com.dutchjelly.craftenhance.commands.edititem.LocalizedNameCmd;
 import com.dutchjelly.craftenhance.commands.edititem.LoreCmd;
 import com.dutchjelly.craftenhance.crafthandling.RecipeInjector;
->>>>>>> Stashed changes
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
+import com.dutchjelly.craftenhance.files.ConfigFormatter;
+import com.dutchjelly.craftenhance.files.FileManager;
 import com.dutchjelly.craftenhance.files.GuiTemplatesFile;
+import com.dutchjelly.craftenhance.gui.GuiManager;
 import com.dutchjelly.craftenhance.gui.guis.CustomCraftingTable;
-<<<<<<< Updated upstream
 import com.dutchjelly.craftenhance.gui.guis.WBRecipeViewer;
-=======
-import com.dutchjelly.craftenhance.gui.guis.viewers.WBRecipeViewer;
 import com.dutchjelly.craftenhance.gui.templates.MenuSettingsCache;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
->>>>>>> Stashed changes
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import lombok.Getter;
-<<<<<<< Updated upstream
-=======
 import org.brokenarrow.menu.library.RegisterMenuAPI;
-import org.bukkit.Bukkit;
->>>>>>> Stashed changes
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.dutchjelly.craftenhance.commandhandling.CustomCmdHandler;
-import com.dutchjelly.craftenhance.crafthandling.RecipeInjector;
-import com.dutchjelly.craftenhance.files.ConfigFormatter;
-import com.dutchjelly.craftenhance.files.FileManager;
-import com.dutchjelly.craftenhance.gui.GuiManager;
-import com.dutchjelly.craftenhance.messaging.Debug;
-import com.dutchjelly.craftenhance.messaging.Messenger;
-import com.dutchjelly.craftenhance.commands.edititem.DisplayNameCmd;
-import com.dutchjelly.craftenhance.commands.edititem.DurabilityCmd;
-import com.dutchjelly.craftenhance.commands.edititem.EnchantCmd;
-import com.dutchjelly.craftenhance.commands.edititem.ItemFlagCmd;
-import com.dutchjelly.craftenhance.commands.edititem.LocalizedNameCmd;
-import com.dutchjelly.craftenhance.commands.edititem.LoreCmd;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class CraftEnhance extends JavaPlugin{
 
@@ -82,9 +57,6 @@ public class CraftEnhance extends JavaPlugin{
 	private GuiTemplatesFile guiTemplatesFile;
 
 	private CustomCmdHandler commandHandler;
-
-<<<<<<< Updated upstream
-=======
 	private RecipeInjector injector;
 	@Getter
 	VersionChecker versionChecker;
@@ -92,8 +64,6 @@ public class CraftEnhance extends JavaPlugin{
 	private boolean usingItemsAdder;
 	@Getter
 	private MenuSettingsCache menuSettingsCache;
-
->>>>>>> Stashed changes
 	@Override
 	public void onEnable(){
 
@@ -127,12 +97,10 @@ public class CraftEnhance extends JavaPlugin{
 		Debug.Send("Loading gui templates");
 		guiTemplatesFile = new GuiTemplatesFile(this);
 		guiTemplatesFile.load();
-<<<<<<< Updated upstream
-=======
 		menuSettingsCache = new MenuSettingsCache(this);
 		menuSettingsCache.reload();
 		guiManager = new GuiManager(this);
->>>>>>> Stashed changes
+
 
 		Debug.Send("Setting up listeners and commands");
 		setupListeners();

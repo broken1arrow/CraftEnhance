@@ -1,72 +1,29 @@
 package com.dutchjelly.bukkitadapter;
 
 
-<<<<<<< Updated upstream
-import com.dutchjelly.craftenhance.CraftEnhance;
-import com.dutchjelly.craftenhance.messaging.Debug;
-=======
-import com.dutchjelly.craftenhance.exceptions.ConfigError;
+import com.dutchjelly.craftenhance.ConfigError;
 import com.dutchjelly.craftenhance.gui.util.SkullCreator;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
-import org.bukkit.Keyed;
->>>>>>> Stashed changes
 import org.bukkit.Material;
-
 import org.bukkit.OfflinePlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.*;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import org.bukkit.DyeColor;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
-<<<<<<< Updated upstream
-import java.util.Arrays;
-import java.util.List;
-
-public class Adapter {
-
-
-    public static List<String> CompatibleVersions(){
-        return Arrays.asList("1.9", "1.10", "1.11", "1.12", "1.13", "1.14", "1.15", "1.16");
-    }
-
-
-    public static Material getMaterial(String name){
-        try{
-            return Material.valueOf(name);
-        }catch(Exception e){
-            if(name.equals("WORKBENCH"))
-                return Material.valueOf("CRAFTING_TABLE");
-            try{
-                return Material.matchMaterial("LEGACY_" + name);
-            }catch(Exception e2) {}
-        }
-        return null;
-    }
-
-    @SuppressWarnings("deprecation")
-    public static ItemStack getColoredItem(String name, DyeColor color){
-        try{
-            return new ItemStack(Material.valueOf(color.name() + "_" + name));
-        }catch(Exception e){
-            try{
-                return new ItemStack(Material.valueOf(name), 1, (short)color.getWoolData());
-            }catch(Exception e2){ }
-        }
-        return null;
-    }
-
-    private static Object getNameSpacedKey(JavaPlugin plugin, String key) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-=======
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -78,10 +35,12 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class Adapter {
 
+
+    public static List<String> CompatibleVersions(){
+        return Arrays.asList("1.9", "1.10", "1.11", "1.12", "1.13", "1.14", "1.15", "1.16");
+    }
+
 	public final static String GUI_SKULL_MATERIAL_NAME = "GUI_SKULL_ITEM";
-	public static List<String> CompatibleVersions() {
-		return Arrays.asList("1.9", "1.10", "1.11", "1.12", "1.13", "1.14", "1.15", "1.16", "1.17", "1.18","1.19");
-	}
 
 	@Nullable
 	public static ItemStack getItemStack(String material, String displayName, List<String> lore, String color, boolean glow) {
@@ -198,7 +157,6 @@ public class Adapter {
 	}
 
 	private static Object getNameSpacedKey(JavaPlugin plugin, String key) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
->>>>>>> Stashed changes
 //        return new NamespacedKey(plugin, key);
         return Class.forName("org.bukkit.NamespacedKey").getConstructor(org.bukkit.plugin.Plugin.class, String.class).newInstance(plugin, key);
     }
@@ -228,7 +186,7 @@ public class Adapter {
     }
 
     public static void SetIngredient(ShapedRecipe recipe, char key, ItemStack ingredient){
-        if(!CraftEnhance.self().getConfig().getBoolean("learn-recipes")){
+        if(!self().getConfig().getBoolean("learn-recipes")){
             MaterialData md = ingredient.getData();
             if(md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)){
                 recipe.setIngredient(key, ingredient.getType());
@@ -247,7 +205,7 @@ public class Adapter {
     }
 
     public static void AddIngredient(ShapelessRecipe recipe, ItemStack ingredient){
-        if(!CraftEnhance.self().getConfig().getBoolean("learn-recipes")){
+        if(!self().getConfig().getBoolean("learn-recipes")){
             MaterialData md = ingredient.getData();
             if(md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)){
                 recipe.addIngredient(ingredient.getType());
