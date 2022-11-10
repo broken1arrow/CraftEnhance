@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
+import static com.dutchjelly.craftenhance.util.FormatRecipeContents.formatRecipes;
 
 public class WBRecipeEditorCopy<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
@@ -45,7 +46,7 @@ public class WBRecipeEditorCopy<RecipeT extends EnhancedRecipe> extends MenuHold
 	private boolean shapeless;
 
 	public  WBRecipeEditorCopy(RecipeT recipe,String permission) {
-		super( recipe.getContent() != null ? Arrays.asList(recipe.getContent()): new ArrayList<>());
+		super( formatRecipes(recipe));
 		if (permission == null || permission.equals(""))
 			this.permission = recipe.getPermissions();
 		else this.permission = permission;
@@ -157,9 +158,10 @@ public class WBRecipeEditorCopy<RecipeT extends EnhancedRecipe> extends MenuHold
 		}
 		if (value.getButtonType() == ButtonType.SaveRecipe){
 			final CheckItemsInsideInventory checkItemsInsideInventory = new CheckItemsInsideInventory();
-			final Map<Integer, ItemStack> map = checkItemsInsideInventory.getItemsExceptBottomBar( menu, player,false);
+			checkItemsInsideInventory.setSlotsToCheck(menuTemplate.getFillSlots());
+			final Map<Integer, ItemStack> map = checkItemsInsideInventory.getItemsOnSpecifiedSlots( menu, player,false);
 			save( map, player,true);
-			return true;
+			new WBRecipeEditorCopy<>(recipe, permission).menuOpen(player);
 		}
 		if (value.getButtonType() == ButtonType.Back){
 			new EditorTypeSelectorCopy( null, permission).menuOpen(player);
@@ -193,7 +195,8 @@ public class WBRecipeEditorCopy<RecipeT extends EnhancedRecipe> extends MenuHold
 			Messenger.Message("The result slot is empty.", player);
 			return;
 		}
-
+		System.out.println("newContents cccc " + Arrays.toString(newContents));
+		System.out.println("newContents cccc " + newResult);
 		recipe.setContent(newContents);
 		recipe.setResult(newResult);
 
@@ -209,29 +212,36 @@ public class WBRecipeEditorCopy<RecipeT extends EnhancedRecipe> extends MenuHold
 	}
 
 	private void beforeSave() {
+		if (recipe instanceof WBRecipe){
+			((WBRecipe)recipe).setShapeless(shapeless);
+		}
+
 	}
 	@Nullable
 	private ItemStack[] getIngredients(Map<Integer, ItemStack> map,Player player) {
-		int result = -1;
+
 		System.out.println("recipe.getContent().length " + recipe.getContent().length);
 		int resultSlot = this.menuTemplate.getFillSlots().get(recipe.getContent().length);
 		System.out.println("recipe.getContent().length " + resultSlot);
-		for (Entry<Integer, ItemStack> itemStackEntry : map.entrySet()) {
-			result = itemStackEntry.getKey();
-			ItemStack itemStack = itemStackEntry.getValue();
-			if (itemStack != null && itemStack.getAmount() > 1 && result != resultSlot) {
+		List<ItemStack> arrays = new ArrayList<>(recipe.getContent().length);
+		System.out.println("recipe.getContent().length " + map.entrySet());
+		int index = 0;
+		for (Integer slot : this.menuTemplate.getFillSlots()) {
+			ItemStack itemStack =  map.get(slot );
+			if (itemStack != null && itemStack.getAmount() > 1 && slot != resultSlot) {
 				Messenger.Message("Recipes only support amounts of 1 in the content.", player);
 				itemStack.setAmount(1);
 			}
+			if (slot != resultSlot)
+				arrays.add(index, itemStack);
+			index++;
+
 		}
-
-		if (result >= 0 && result == resultSlot)
-			 this.result = map.remove(result);
-
-		if (!map.values().stream().anyMatch(x -> x != null)) {
+		this.result = map.remove(resultSlot);
+		if (!arrays.stream().anyMatch(x -> x != null)) {
 			return null;
 		}
-		return map.values().toArray(new ItemStack[map.values().size() + 1]);
+		return arrays.toArray(new ItemStack[9]);
 	}
 
 	private boolean handlePermissionSetCB(String message) {
