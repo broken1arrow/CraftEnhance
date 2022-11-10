@@ -188,22 +188,33 @@ public class Adapter {
     }
 
     public static void SetIngredient(ShapedRecipe recipe, char key, ItemStack ingredient){
-        if(!self().getConfig().getBoolean("learn-recipes")){
-            MaterialData md = ingredient.getData();
-            if(md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)){
-                recipe.setIngredient(key, ingredient.getType());
-            }else{
-                recipe.setIngredient(key, md);
-            }
-            return;
-        }
-        try{
-            recipe.getClass().getMethod("setIngredient", char.class, Class.forName("org.bukkit.inventory.RecipeChoice.ExactChoice")).invoke(recipe,
-                    key, Class.forName("org.bukkit.inventory.RecipeChoice.ExactChoice").getConstructor(ItemStack.class).newInstance(ingredient)
-            );
-        }catch(Exception e){
-            recipe.setIngredient(key, ingredient.getType());
-        }
+	    if (!self().getConfig().getBoolean("learn-recipes")) {
+		    if (self().getVersionChecker().newerThan(VersionChecker.ServerVersion.v1_14)) {
+			    if (ingredient == null) return;
+			    Material md = ingredient.getType();
+			    if (md != ingredient.getType() || md == Material.AIR) {
+				    recipe.setIngredient(key, ingredient.getType());
+			    } else {
+				    recipe.setIngredient(key, md);
+			    }
+			    return;
+		    } else {
+			    MaterialData md = ingredient.getData();
+			    if (md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)) {
+				    recipe.setIngredient(key, ingredient.getType());
+			    } else {
+				    recipe.setIngredient(key, md);
+			    }
+		    }
+		    return;
+	    }
+	    try {
+		    recipe.getClass().getMethod("setIngredient", char.class, Class.forName("org.bukkit.inventory.RecipeChoice.ExactChoice")).invoke(recipe,
+				    key, Class.forName("org.bukkit.inventory.RecipeChoice.ExactChoice").getConstructor(ItemStack.class).newInstance(ingredient)
+		    );
+	    } catch (Exception e) {
+		    recipe.setIngredient(key, ingredient.getType());
+	    }
     }
 
     public static void AddIngredient(ShapelessRecipe recipe, ItemStack ingredient){

@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.api.CraftEnhanceAPI;
 import com.dutchjelly.craftenhance.commandhandling.CustomCmdHandler;
 import com.dutchjelly.craftenhance.commands.ceh.ChangeKeyCmd;
 import com.dutchjelly.craftenhance.commands.ceh.CleanItemFileCmd;
@@ -18,7 +19,9 @@ import com.dutchjelly.craftenhance.commands.edititem.LocalizedNameCmd;
 import com.dutchjelly.craftenhance.commands.edititem.LoreCmd;
 import com.dutchjelly.craftenhance.crafthandling.RecipeInjector;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
+import com.dutchjelly.craftenhance.crafthandling.customcraftevents.ExecuteCommand;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
+import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.files.ConfigFormatter;
 import com.dutchjelly.craftenhance.files.FileManager;
 import com.dutchjelly.craftenhance.files.GuiTemplatesFile;
@@ -32,12 +35,15 @@ import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import com.dutchjelly.craftenhance.util.Metrics;
 import lombok.Getter;
 import org.brokenarrow.menu.library.RegisterMenuAPI;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -67,33 +73,38 @@ public class CraftEnhance extends JavaPlugin{
 	private MenuSettingsCache menuSettingsCache;
 	@Override
 	public void onEnable(){
-
-	    plugin = this;
+		plugin = this;
 		//The file manager needs serialization, so firstly register the classes.
 		registerSerialization();
-		new RegisterMenuAPI(this);
-		saveDefaultConfig();
-		Debug.init(this);
 
+		saveDefaultConfig();
+		new RegisterMenuAPI(this);
+		Debug.init(this);
+		Debug.Send("Checking for config updates.");
+		File configFile = new File(getDataFolder(), "config.yml");
+		FileManager.EnsureResourceUpdate("config.yml", configFile, YamlConfiguration.loadConfiguration(configFile), this);
 		Debug.Send("Coloring config messages.");
 		ConfigFormatter.init(this).formatConfigMessages();
 		Messenger.Init(this);
+		versionChecker = VersionChecker.init(this);
+		ItemMatchers.init(getConfig().getBoolean("enable-backwards-compatible-item-matching"));
 
+		this.usingItemsAdder = this.getServer().getPluginManager().getPlugin("ItemsAdder") != null;
+		menuSettingsCache = new MenuSettingsCache(this);
+		menuSettingsCache.reload();
 		//Most other instances use the file manager, so setup before everything.
-        Debug.Send("Setting up the file manager for recipes.");
+		Debug.Send("Setting up the file manager for recipes.");
 		setupFileManager();
 
-
-
-        Debug.Send("Loading recipes");
-        RecipeLoader loader = RecipeLoader.getInstance();
+		Debug.Send("Loading recipes");
+		RecipeLoader loader = RecipeLoader.getInstance();
 		fm.getRecipes().stream().filter(x -> x.validate() == null).forEach(loader::loadRecipe);
 		loader.printGroupsDebugInfo();
 		loader.disableServerRecipes(
-		        fm.readDisabledServerRecipes().stream().map(x ->
-                        Adapter.FilterRecipes(loader.getServerRecipes(), x)
-                ).collect(Collectors.toList())
-        );
+				fm.readDisabledServerRecipes().stream().map(x ->
+						Adapter.FilterRecipes(loader.getServerRecipes(), x)
+				).collect(Collectors.toList())
+		);
 
 		injector = new RecipeInjector(this);
 		injector.registerContainerOwners(fm.getContainerOwners());
@@ -101,27 +112,27 @@ public class CraftEnhance extends JavaPlugin{
 		Debug.Send("Loading gui templates");
 		guiTemplatesFile = new GuiTemplatesFile(this);
 		guiTemplatesFile.load();
-		menuSettingsCache = new MenuSettingsCache(this);
-		menuSettingsCache.reload();
-		guiManager = new GuiManager(this);
 
+		guiManager = new GuiManager(this);
 
 		Debug.Send("Setting up listeners and commands");
 		setupListeners();
 		setupCommands();
 
 		Messenger.Message("CraftEnhance is managed and developed by DutchJelly.");
-		Messenger.Message("If you find a bug in the plugin, please report it to https://dev.bukkit.org/projects/craftenhance.");
-		VersionChecker checker = VersionChecker.init(this);
-		if(!checker.runVersionCheck()){
-			for(int i = 0; i < 4; i++)
-		    	Messenger.Message("WARN: The installed version isn't tested to work with the game version of the server.");
-        }
-		checker.runUpdateCheck();
+		Messenger.Message("If you find a bug in the plugin, please report it to https://github.com/DutchJelly/CraftEnhance/issues.");
+		if (!versionChecker.runVersionCheck()) {
+			for (int i = 0; i < 4; i++)
+				Messenger.Message("WARN: The installed version isn't tested to work with the game version of the server.");
+		}
+		Bukkit.getScheduler().runTaskAsynchronously(this, versionChecker::runUpdateCheck);
 
 
 		final int metricsId = 9023;
 		new Metrics(this, metricsId);
+
+
+		CraftEnhanceAPI.registerListener(new ExecuteCommand());
 	}
 
 

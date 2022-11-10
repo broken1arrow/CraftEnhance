@@ -22,6 +22,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -44,15 +45,16 @@ public class WBRecipeEditorCopy<RecipeT extends EnhancedRecipe> extends MenuHold
 	private boolean shapeless;
 
 	public  WBRecipeEditorCopy(RecipeT recipe,String permission) {
-		super(Arrays.asList(recipe.getContent()));
+		super( recipe.getContent() != null ? Arrays.asList(recipe.getContent()): new ArrayList<>());
 		if (permission == null || permission.equals(""))
 			this.permission = recipe.getPermissions();
 		else this.permission = permission;
 		this.recipe = recipe;
 		if (recipe instanceof WBRecipe)
 			shapeless = ((WBRecipe) this.recipe).isShapeless();
+		matchType = recipe.getMatchType();
 		menuTemplate = menuSettingsCache.getTemplates().get("WBRecipeEditor");
-		setMenuSize(36);
+		setMenuSize(27);
 		setSlotsYouCanAddItems(true);
 		if (menuTemplate != null) {
 			setTitle(menuTemplate.getMenuTitel());
@@ -106,6 +108,8 @@ public class WBRecipeEditorCopy<RecipeT extends EnhancedRecipe> extends MenuHold
 			public ItemStack getItem() {
 				Map<String, String> placeHolders = new HashMap<String, String>() {{
 					put(InfoItemPlaceHolders.Key.getPlaceHolder(), recipe.getKey() == null ? "null" : recipe.getKey());
+					if (recipe instanceof WBRecipe)
+					put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), shapeless ? "shapeless" : "shaped");
 					put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), matchType.getDescription());
 					put(InfoItemPlaceHolders.MatchType.getPlaceHolder(), matchType.getDescription());
 					put(InfoItemPlaceHolders.Hidden.getPlaceHolder(), hidden ? "hide recipe in menu" : "show recipe in menu");
@@ -212,12 +216,13 @@ public class WBRecipeEditorCopy<RecipeT extends EnhancedRecipe> extends MenuHold
 		System.out.println("recipe.getContent().length " + recipe.getContent().length);
 		int resultSlot = this.menuTemplate.getFillSlots().get(recipe.getContent().length);
 		System.out.println("recipe.getContent().length " + resultSlot);
-		for (Entry<Integer, ItemStack> itemStackEntry : map.entrySet()){
-				result = itemStackEntry.getKey();
-				if (itemStackEntry.getValue().getAmount() > 1 && result != resultSlot) {
-					Messenger.Message("Recipes only support amounts of 1 in the content.", player);
-					itemStackEntry.getValue().setAmount(1);
-				}
+		for (Entry<Integer, ItemStack> itemStackEntry : map.entrySet()) {
+			result = itemStackEntry.getKey();
+			ItemStack itemStack = itemStackEntry.getValue();
+			if (itemStack != null && itemStack.getAmount() > 1 && result != resultSlot) {
+				Messenger.Message("Recipes only support amounts of 1 in the content.", player);
+				itemStack.setAmount(1);
+			}
 		}
 
 		if (result >= 0 && result == resultSlot)
