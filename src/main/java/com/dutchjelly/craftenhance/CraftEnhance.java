@@ -20,8 +20,10 @@ import com.dutchjelly.craftenhance.commands.edititem.LoreCmd;
 import com.dutchjelly.craftenhance.crafthandling.RecipeInjector;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.crafthandling.customcraftevents.ExecuteCommand;
+import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
+import com.dutchjelly.craftenhance.files.CategoryDataCache;
 import com.dutchjelly.craftenhance.files.ConfigFormatter;
 import com.dutchjelly.craftenhance.files.FileManager;
 import com.dutchjelly.craftenhance.files.GuiTemplatesFile;
@@ -71,12 +73,16 @@ public class CraftEnhance extends JavaPlugin{
 	private boolean usingItemsAdder;
 	@Getter
 	private MenuSettingsCache menuSettingsCache;
+	@Getter
+	private CategoryDataCache categoryDataCache;
+
 	@Override
 	public void onEnable(){
 		plugin = this;
 		//The file manager needs serialization, so firstly register the classes.
 		registerSerialization();
-
+		categoryDataCache = new CategoryDataCache();
+		categoryDataCache.reload();
 		saveDefaultConfig();
 		new RegisterMenuAPI(this);
 		Debug.init(this);
@@ -137,17 +143,11 @@ public class CraftEnhance extends JavaPlugin{
 
 
 	public void reload(){
-		Messenger.Message("WARN: This reload function is causing some issues currently. It's being worked on.");
-	    saveDefaultConfig();
-	    fm = FileManager.init(this);
-		fm.cacheItems();
-		fm.cacheRecipes();
-		RecipeLoader loader = RecipeLoader.getInstance();
-		loader.unloadAll();
-        fm.getRecipes().forEach(loader::loadRecipe);
-        guiTemplatesFile.load();
-        reloadConfig();
-        ConfigFormatter.init(this).formatConfigMessages();
+		onDisable();
+		RecipeLoader.clearInstance();
+		reloadConfig();
+		onEnable();
+
 	}
 
 	@Override
@@ -179,8 +179,9 @@ public class CraftEnhance extends JavaPlugin{
 	
 	//Registers the classes that extend ConfigurationSerializable.
 	private void registerSerialization(){
-		ConfigurationSerialization.registerClass(WBRecipe.class, "WBRecipe");
-        ConfigurationSerialization.registerClass(WBRecipe.class, "Recipe");
+		ConfigurationSerialization.registerClass(WBRecipe.class, "EnhancedRecipe");
+		ConfigurationSerialization.registerClass(WBRecipe.class, "Recipe");
+		ConfigurationSerialization.registerClass(FurnaceRecipe.class, "FurnaceRecipe");
 	}
 	
 	//Assigns executor classes for the commands.

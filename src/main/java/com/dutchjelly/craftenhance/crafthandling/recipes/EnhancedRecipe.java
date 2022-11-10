@@ -54,6 +54,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
         for(int i = 0; i < content.length; i++){
             content[i] = fm.getItem(recipeKeys.get(i));
         }
+        this.deserialize = args;
     }
 
     @Getter @Setter
@@ -83,7 +84,10 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 
     @Getter
     private RecipeType type;
-
+    @Getter
+    private Map<String,Object> deserialize;
+    @Getter
+    private Map<String,Object> serialize;
     @Override
     public Map<String, Object> serialize() {
         FileManager fm = CraftEnhance.getPlugin(CraftEnhance.class).getFm();
@@ -95,6 +99,8 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
             put("oncraftcommand", onCraftCommand);
             put("result", fm.getItemKey(result));
             put("recipe", Arrays.stream(content).map(x -> fm.getItemKey(x)).toArray(String[]::new));
+            if (serialize != null && !serialize.isEmpty())
+                putAll(serialize);
         }};
     }
 

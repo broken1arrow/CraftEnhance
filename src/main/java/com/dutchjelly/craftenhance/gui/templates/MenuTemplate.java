@@ -23,7 +23,7 @@ public class MenuTemplate {
 		return fillSlots;
 	}
 
-	public Map<List<Integer>, MenuButton> getMenuButton() {
+	public Map<List<Integer>, MenuButton> getMenuButtons() {
 		return menuButtons;
 	}
 }

@@ -1,11 +1,12 @@
 package com.dutchjelly.craftenhance.crafthandling;
 
 import com.dutchjelly.bukkitadapter.Adapter;
-import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
+import com.dutchjelly.craftenhance.files.CategoryData;
+import com.dutchjelly.craftenhance.files.CategoryDataCache;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import lombok.Getter;
@@ -18,16 +19,24 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
+
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class RecipeLoader implements Listener {
 
 	@EventHandler
 	public void onJoin(PlayerJoinEvent e) {
-		if (CraftEnhance.self().getConfig().getBoolean("learn-recipes"))
+		if (self().getConfig().getBoolean("learn-recipes"))
 			Adapter.DiscoverRecipes(e.getPlayer(), getLoadedServerRecipes());
 	}
 
@@ -57,7 +66,9 @@ public class RecipeLoader implements Listener {
 	private final Map<RecipeType, List<RecipeGroup>> mappedGroupedRecipes = new HashMap<>();
 
 	@Getter
-	private List<EnhancedRecipe> loadedRecipes = new ArrayList<>();
+	private final CategoryDataCache categoryDataCache = self().getCategoryDataCache();
+	@Getter
+	private final List<EnhancedRecipe> loadedRecipes = new ArrayList<>();
 
 	private RecipeLoader(Server server) {
 		this.server = server;
@@ -74,7 +85,7 @@ public class RecipeLoader implements Listener {
 
 	//Adds or merges group with existing group.
 	private RecipeGroup addGroup(List<Recipe> serverRecipes, EnhancedRecipe enhancedRecipe) {
-		Debug.Send("AddGroupe.");
+		Debug.Send("[AddGroup] is now add recipe group.");
 		List<RecipeGroup> groupedRecipes = mappedGroupedRecipes.get(enhancedRecipe.getType());
 		//            Debug.Send("Looking if two enhanced recipes are similar for merge.");
 		if (groupedRecipes == null)
@@ -177,6 +188,11 @@ public class RecipeLoader implements Listener {
 	public void unloadRecipe(EnhancedRecipe recipe) {
 		RecipeGroup group = findGroup(recipe);
 		loadedRecipes.remove(recipe);
+
+		CategoryData enhancedRecipes = categoryDataCache.getRecipeCategorys().get(recipe.getRecipeCategory());
+		if (enhancedRecipes.getEnhancedRecipes() != null)
+			enhancedRecipes.getEnhancedRecipes().remove(recipe);
+
 		if (group == null) {
 			printGroupsDebugInfo();
 			Bukkit.getLogger().log(Level.SEVERE, "Could not unload recipe from groups because it doesn't exist.");
@@ -234,12 +250,25 @@ public class RecipeLoader implements Listener {
 
 			Debug.Send("Added server recipe for " + serverRecipe.getResult().toString());
 			loaded.put(recipe.getKey(), serverRecipe);
-			if (CraftEnhance.self().getConfig().getBoolean("learn-recipes"))
+			if (self().getConfig().getBoolean("learn-recipes"))
 				Bukkit.getServer().getOnlinePlayers().forEach(x -> Adapter.DiscoverRecipes(x, Arrays.asList(serverRecipe)));
 		} else {
 			Debug.Send("Didn't add server recipe for " + recipe.getKey() + " because a similar one was already loaded: " + alwaysSimilar.toString() + " with the result " + alwaysSimilar.getResult().toString());
 		}
-
+		String category = recipe.getRecipeCategory();
+		CategoryData recipeCategory = this.categoryDataCache.getRecipeCategorys().get(category);
+		List<EnhancedRecipe> enhancedRecipeList;
+		if (recipe instanceof FurnaceRecipe)
+			category = category == null || category.equals("") ? "furnace" : category;
+		else
+			category = category == null || category.equals("") ? "default" : category;
+		if (recipeCategory != null){
+			enhancedRecipeList = recipeCategory.getEnhancedRecipes();
+			if (!enhancedRecipeList.contains(recipe))
+				enhancedRecipeList.add(recipe);
+		}
+		if (recipe.getRecipeCategory() == null)
+			recipe.setRecipeCategory(category);
 		addGroup(similarServerRecipes, recipe);
 		Debug.Send("AddGroupe done.");
 		loadedRecipes.add(recipe);

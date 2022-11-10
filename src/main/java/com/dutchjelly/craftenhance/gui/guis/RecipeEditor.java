@@ -2,6 +2,7 @@ package com.dutchjelly.craftenhance.gui.guis;
 
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.exceptions.ConfigError;
@@ -23,7 +24,6 @@ import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +32,7 @@ import java.util.Map.Entry;
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 import static com.dutchjelly.craftenhance.util.FormatRecipeContents.formatRecipes;
 
-public class WBRecipeEditorCopy<RecipeT extends EnhancedRecipe> extends MenuHolder {
+public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
 	private String permission;
@@ -44,20 +44,28 @@ public class WBRecipeEditorCopy<RecipeT extends EnhancedRecipe> extends MenuHold
 	private boolean hidden;
 	private ItemMatchers.MatchType matchType;
 	private boolean shapeless;
-
-	public  WBRecipeEditorCopy(RecipeT recipe,String permission) {
+	private final ButtonType editorType;
+	private short duration;
+	private float exp;
+	public RecipeEditor(RecipeT recipe, String permission, ButtonType editorType) {
 		super( formatRecipes(recipe));
 		if (permission == null || permission.equals(""))
 			this.permission = recipe.getPermissions();
 		else this.permission = permission;
+		this.editorType = editorType;
 		this.recipe = recipe;
+		if (recipe instanceof FurnaceRecipe) {
+			this.duration = (short) ((FurnaceRecipe) recipe).getDuration();
+			this.exp = ((FurnaceRecipe) recipe).getExp();
+		}
 		if (recipe instanceof WBRecipe)
 			shapeless = ((WBRecipe) this.recipe).isShapeless();
 		matchType = recipe.getMatchType();
-		menuTemplate = menuSettingsCache.getTemplates().get("WBRecipeEditor");
+		menuTemplate = menuSettingsCache.getTemplates().get(editorType.getType());
 		setMenuSize(27);
 		setSlotsYouCanAddItems(true);
 		if (menuTemplate != null) {
+			System.out.println("menuTemplate keySet() " + menuTemplate.getMenuButtons().keySet().size());
 			setTitle(menuTemplate.getMenuTitel());
 			setFillSpace(menuTemplate.getFillSlots());
 		}
@@ -88,7 +96,7 @@ public class WBRecipeEditorCopy<RecipeT extends EnhancedRecipe> extends MenuHold
 	@Override
 	public MenuButton getButtonAt(int slot) {
 		if (this.menuTemplate == null) return null;
-		for (Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButton().entrySet()){
+		for (Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()){
 			if (menuTemplate.getKey().contains(slot)){
 				return registerButtons(menuTemplate.getValue());
 			}
@@ -111,6 +119,10 @@ public class WBRecipeEditorCopy<RecipeT extends EnhancedRecipe> extends MenuHold
 					put(InfoItemPlaceHolders.Key.getPlaceHolder(), recipe.getKey() == null ? "null" : recipe.getKey());
 					if (recipe instanceof WBRecipe)
 					put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), shapeless ? "shapeless" : "shaped");
+					if (recipe instanceof FurnaceRecipe) {
+						put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(exp));
+						put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(duration));
+					}
 					put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), matchType.getDescription());
 					put(InfoItemPlaceHolders.MatchType.getPlaceHolder(), matchType.getDescription());
 					put(InfoItemPlaceHolders.Hidden.getPlaceHolder(), hidden ? "hide recipe in menu" : "show recipe in menu");
@@ -129,6 +141,44 @@ public class WBRecipeEditorCopy<RecipeT extends EnhancedRecipe> extends MenuHold
 					manager.openGUI(player, gui);*/
 			return true;
 		}
+		if (value.getButtonType() == ButtonType.SetCookTime){
+			Messenger.Message("Please input a cook duration.", getViewer());
+			self().getGuiManager().waitForChatInput(null, getViewer(), (msg) -> {
+				short parsed;
+				if (msg.equals("cancel")||msg.equals("quit") ||msg.equals("exit"))
+					return false;
+				try{
+					parsed = Short.valueOf(msg);
+				}catch(NumberFormatException e){
+					Messenger.Message("Error, you didn't input a number. your input " +msg, getViewer());
+					return true;
+				}
+				if(parsed < 0) parsed = 0;
+				Messenger.Message("Successfully set duration to " + parsed, getViewer());
+				this.duration = parsed;
+				return false;
+			});
+			return true;
+		}
+		if (value.getButtonType() == ButtonType.SetExp){
+			Messenger.Message("Please input an exp amount.", getViewer());
+			self().getGuiManager().waitForChatInput(null, getViewer(), (msg) -> {
+				int parsed;
+				if (msg.equals("cancel")||msg.equals("quit") ||msg.equals("exit"))
+					return false;
+				try{
+					parsed = Integer.parseInt(msg);
+				}catch(NumberFormatException e){
+					Messenger.Message("Error, you didn't input a number. your input " +msg, getViewer());
+					return true;
+				}
+				if(parsed < 0) parsed = 0;
+				Messenger.Message("Successfully set exp to " + parsed, getViewer());
+				exp = parsed;
+				return false;
+			});
+			return true;
+		}
 		if (value.getButtonType() == ButtonType.SwitchShaped){
 			this.shapeless = !this.shapeless;
 			return true;
@@ -136,7 +186,7 @@ public class WBRecipeEditorCopy<RecipeT extends EnhancedRecipe> extends MenuHold
 		if (value.getButtonType() == ButtonType.DeleteRecipe){
 			self().getFm().removeRecipe(recipe);
 			RecipeLoader.getInstance().unloadRecipe(recipe);
-			new EditorTypeSelectorCopy( null, permission).menuOpen(player);
+			new EditorTypeSelector( null, permission).menuOpen(player);
 			return true;
 		}
 		if (value.getButtonType() == ButtonType.SwitchHidden){
@@ -161,10 +211,10 @@ public class WBRecipeEditorCopy<RecipeT extends EnhancedRecipe> extends MenuHold
 			checkItemsInsideInventory.setSlotsToCheck(menuTemplate.getFillSlots());
 			final Map<Integer, ItemStack> map = checkItemsInsideInventory.getItemsOnSpecifiedSlots( menu, player,false);
 			save( map, player,true);
-			new WBRecipeEditorCopy<>(recipe, permission).menuOpen(player);
+			new RecipeEditor<>(recipe, permission,editorType).menuOpen(player);
 		}
 		if (value.getButtonType() == ButtonType.Back){
-			new EditorTypeSelectorCopy( null, permission).menuOpen(player);
+			new EditorTypeSelector( null, permission).menuOpen(player);
 		}
 		return false;
 	}
@@ -195,8 +245,6 @@ public class WBRecipeEditorCopy<RecipeT extends EnhancedRecipe> extends MenuHold
 			Messenger.Message("The result slot is empty.", player);
 			return;
 		}
-		System.out.println("newContents cccc " + Arrays.toString(newContents));
-		System.out.println("newContents cccc " + newResult);
 		recipe.setContent(newContents);
 		recipe.setResult(newResult);
 
@@ -215,16 +263,16 @@ public class WBRecipeEditorCopy<RecipeT extends EnhancedRecipe> extends MenuHold
 		if (recipe instanceof WBRecipe){
 			((WBRecipe)recipe).setShapeless(shapeless);
 		}
-
+		if (recipe instanceof FurnaceRecipe) {
+			((FurnaceRecipe) recipe).setDuration(duration);
+			((FurnaceRecipe) recipe).setExp(exp);
+		}
 	}
 	@Nullable
 	private ItemStack[] getIngredients(Map<Integer, ItemStack> map,Player player) {
 
-		System.out.println("recipe.getContent().length " + recipe.getContent().length);
 		int resultSlot = this.menuTemplate.getFillSlots().get(recipe.getContent().length);
-		System.out.println("recipe.getContent().length " + resultSlot);
 		List<ItemStack> arrays = new ArrayList<>(recipe.getContent().length);
-		System.out.println("recipe.getContent().length " + map.entrySet());
 		int index = 0;
 		for (Integer slot : this.menuTemplate.getFillSlots()) {
 			ItemStack itemStack =  map.get(slot );
@@ -234,6 +282,8 @@ public class WBRecipeEditorCopy<RecipeT extends EnhancedRecipe> extends MenuHold
 			}
 			if (slot != resultSlot)
 				arrays.add(index, itemStack);
+			if (slot == resultSlot)
+				this.recipe.setResultSlot(index);
 			index++;
 
 		}
@@ -241,6 +291,8 @@ public class WBRecipeEditorCopy<RecipeT extends EnhancedRecipe> extends MenuHold
 		if (!arrays.stream().anyMatch(x -> x != null)) {
 			return null;
 		}
+		if (recipe instanceof FurnaceRecipe)
+			return arrays.toArray(new ItemStack[1]);
 		return arrays.toArray(new ItemStack[9]);
 	}
 

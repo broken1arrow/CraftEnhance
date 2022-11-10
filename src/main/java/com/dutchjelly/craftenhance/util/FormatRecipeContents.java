@@ -11,7 +11,13 @@ public class FormatRecipeContents {
 	public static <RecipeT extends EnhancedRecipe> List<?> formatRecipes(RecipeT recipe ){
 		if (recipe == null) return new ArrayList<>();
 		List<Object> list = new ArrayList<>(Arrays.asList(recipe.getContent()));
-		list.add(6,recipe.getResult());
+		System.out.println("recipe.getResultSlot() " + recipe.getResultSlot());
+		int index;
+		if (list.size() < 6)
+			index = 1;
+		else
+			index = 6;
+		list.add(index,recipe.getResult());
 		return list;
 	}
 }
