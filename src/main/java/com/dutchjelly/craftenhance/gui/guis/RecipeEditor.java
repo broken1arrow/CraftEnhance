@@ -6,7 +6,8 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.exceptions.ConfigError;
-import com.dutchjelly.craftenhance.gui.templates.MenuSettingsCache;
+import com.dutchjelly.craftenhance.files.CategoryData;
+import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
@@ -17,6 +18,7 @@ import lombok.Getter;
 import org.brokenarrow.menu.library.CheckItemsInsideInventory;
 import org.brokenarrow.menu.library.MenuButton;
 import org.brokenarrow.menu.library.MenuHolder;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -47,13 +49,16 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	private final ButtonType editorType;
 	private short duration;
 	private float exp;
-	public RecipeEditor(RecipeT recipe, String permission, ButtonType editorType) {
+	private CategoryData categoryData;
+
+	public RecipeEditor(RecipeT recipe,CategoryData categoryData, String permission, ButtonType editorType) {
 		super( formatRecipes(recipe));
 		if (permission == null || permission.equals(""))
 			this.permission = recipe.getPermissions();
 		else this.permission = permission;
 		this.editorType = editorType;
 		this.recipe = recipe;
+		this.categoryData = categoryData;
 		if (recipe instanceof FurnaceRecipe) {
 			this.duration = (short) ((FurnaceRecipe) recipe).getDuration();
 			this.exp = ((FurnaceRecipe) recipe).getExp();
@@ -65,7 +70,6 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		setMenuSize(27);
 		setSlotsYouCanAddItems(true);
 		if (menuTemplate != null) {
-			System.out.println("menuTemplate keySet() " + menuTemplate.getMenuButtons().keySet().size());
 			setTitle(menuTemplate.getMenuTitel());
 			setFillSpace(menuTemplate.getFillSlots());
 		}
@@ -136,14 +140,14 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	}
 	public boolean run(com.dutchjelly.craftenhance.gui.templates.MenuButton value, Inventory menu, Player player, ClickType click) {
 		if (value.getButtonType() == ButtonType.SetPosition){
-			self().getGuiManager().waitForChatInput(null, player, this::handlePositionChange);
+			self().getGuiManager().waitForChatInput(this, player, this::handlePositionChange);
 	/*				WBRecipeEditor gui = new WBRecipeEditor(self().getGuiManager(), self().getGuiTemplatesFile().getTemplate(WBRecipeEditor.class), null, player, newRecipe);
 					manager.openGUI(player, gui);*/
 			return true;
 		}
 		if (value.getButtonType() == ButtonType.SetCookTime){
 			Messenger.Message("Please input a cook duration.", getViewer());
-			self().getGuiManager().waitForChatInput(null, getViewer(), (msg) -> {
+			self().getGuiManager().waitForChatInput(this, getViewer(), (msg) -> {
 				short parsed;
 				if (msg.equals("cancel")||msg.equals("quit") ||msg.equals("exit"))
 					return false;
@@ -162,7 +166,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		}
 		if (value.getButtonType() == ButtonType.SetExp){
 			Messenger.Message("Please input an exp amount.", getViewer());
-			self().getGuiManager().waitForChatInput(null, getViewer(), (msg) -> {
+			self().getGuiManager().waitForChatInput(this, getViewer(), (msg) -> {
 				int parsed;
 				if (msg.equals("cancel")||msg.equals("quit") ||msg.equals("exit"))
 					return false;
@@ -203,7 +207,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 		}
 		if (value.getButtonType() == ButtonType.SetPermission){
-			self().getGuiManager().waitForChatInput(null, player, this::handlePermissionSetCB);
+			self().getGuiManager().waitForChatInput(this, player, this::handlePermissionSetCB);
 			return true;
 		}
 		if (value.getButtonType() == ButtonType.SaveRecipe){
@@ -211,10 +215,16 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			checkItemsInsideInventory.setSlotsToCheck(menuTemplate.getFillSlots());
 			final Map<Integer, ItemStack> map = checkItemsInsideInventory.getItemsOnSpecifiedSlots( menu, player,false);
 			save( map, player,true);
-			new RecipeEditor<>(recipe, permission,editorType).menuOpen(player);
+			new RecipeEditor<>(recipe, this.categoryData,permission,editorType).menuOpen(player);
 		}
 		if (value.getButtonType() == ButtonType.Back){
-			new EditorTypeSelector( null, permission).menuOpen(player);
+			if (this.categoryData != null)
+				new RecipesViewerCopy(this.categoryData, "", player).menuOpen(player);
+			else
+				new EditorTypeSelector(null, permission).menuOpen(player);
+		}
+		if (value.getButtonType() == ButtonType.changeCategory) {
+			self().getGuiManager().waitForChatInput(this, getViewer(), this::changeCategory);
 		}
 		return false;
 	}
@@ -233,6 +243,36 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		matchType = recipe.getMatchType();
 		hidden = recipe.isHidden();
 		//onRecipeDisplayUpdate();
+	}
+	private boolean changeCategory(String msg){
+		Messenger.Message("Change category name and you can also change item (if not set it will use the old one). Like this 'category new_category_name crafting_table' without '. If you want create new category recomend use this format 'category crafting_table' without '", getViewer());
+		if (msg.equals("cancel") || msg.equals("quit") || msg.equals("exit"))
+			return false;
+		if (!msg.isEmpty()) {
+			String[] split = msg.split(" ");
+			if (split.length > 1) {
+				Material material = null;
+				CategoryData categoryData = self().getCategoryDataCache().getRecipeCategorys().get(split[0]);
+				if (split.length >= 3)
+					material = Material.getMaterial(split[2]);
+				if (categoryData == null) {
+					if (material == null)
+						material = Material.getMaterial(split[1]);
+					if (material == null) {
+						Messenger.Message("Please input valid item name. Your input " + msg, getViewer());
+						return true;
+					}
+					self().getCategoryDataCache().addCategory(split[0], new ItemStack(material));
+				} else {
+					CategoryData newCategoryData = new CategoryData(material != null ? new ItemStack(material) : categoryData.getRecipeCategoryItem(), split[1]);
+					self().getCategoryDataCache().getRecipeCategorys().remove(split[0]);
+					newCategoryData.setEnhancedRecipes(categoryData.getEnhancedRecipes());
+					self().getCategoryDataCache().getRecipeCategorys().put(split[1], newCategoryData);
+				}
+				return false;
+			}
+		}
+		return true;
 	}
 	private void save(final Map<Integer, ItemStack> map,Player player, boolean loadRecipe) {
 		ItemStack[] newContents = getIngredients(map,player);

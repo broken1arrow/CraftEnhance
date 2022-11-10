@@ -1,14 +1,11 @@
-package com.dutchjelly.craftenhance.gui.guis;
+package com.dutchjelly.craftenhance.gui.guis.viewers;
 
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
-import com.dutchjelly.craftenhance.gui.guis.viewers.RecipeViewRecipeCopy;
+import com.dutchjelly.craftenhance.gui.guis.RecipesViewerCopy;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
-import com.dutchjelly.craftenhance.util.PermissionTypes;
 import org.brokenarrow.menu.library.MenuButton;
 import org.brokenarrow.menu.library.MenuHolder;
 import org.bukkit.entity.Player;
@@ -20,19 +17,20 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
-import static com.dutchjelly.craftenhance.util.FormatRecipeContents.canSeeRecipes;
+import static com.dutchjelly.craftenhance.util.FormatRecipeContents.formatRecipes;
 
-public class RecipesViewerCopy extends MenuHolder {
+public class RecipeViewRecipeCopy<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
 	private final MenuTemplate menuTemplate;
 	private final CategoryData categoryData;
-	public RecipesViewerCopy(CategoryData categoryData,String recipeSeachFor, Player player) {
-		super(canSeeRecipes(categoryData.getEnhancedRecipes(recipeSeachFor),  player));
-		this.menuTemplate = menuSettingsCache.getTemplates().get("RecipesViewer");
+
+	public RecipeViewRecipeCopy(CategoryData categoryData, RecipeT recipe, String menuType) {
+		super( formatRecipes(recipe));
 		this.categoryData = categoryData;
+		this.menuTemplate = menuSettingsCache.getTemplates().get( menuType);
 		setFillSpace(this.menuTemplate.getFillSlots());
 		setTitle(this.menuTemplate.getMenuTitel());
-		setMenuSize(54);
+		setMenuSize(27);
 	}
 
 	@Override
@@ -40,25 +38,13 @@ public class RecipesViewerCopy extends MenuHolder {
 		return new MenuButton() {
 			@Override
 			public void onClickInsideMenu(Player player, Inventory inventory, ClickType clickType, ItemStack itemStack, Object o) {
-				if (o instanceof WBRecipe) {
-					if ((clickType == ClickType.MIDDLE || clickType == ClickType.RIGHT) && getViewer().hasPermission(PermissionTypes.Edit.getPerm()))
-						new RecipeEditor<>((WBRecipe) o, categoryData, null,ButtonType.ChooseWorkbenchType).menuOpen(player);
-					else
-						new RecipeViewRecipeCopy<>(categoryData, (WBRecipe) o, "WBRecipeViewer").menuOpen(player);
-				}
-				if (o instanceof FurnaceRecipe) {
-					if ((clickType == ClickType.MIDDLE || clickType == ClickType.RIGHT) && getViewer().hasPermission(PermissionTypes.Edit.getPerm()))
-						new RecipeEditor<>((FurnaceRecipe) o, categoryData,null, ButtonType.ChooseFurnaceType).menuOpen(player);
-					else
-						new RecipeViewRecipeCopy<>(categoryData, (FurnaceRecipe) o, "FurnaceRecipeViewer").menuOpen(player);
-				}
+
 			}
 
 			@Override
 			public ItemStack getItem(Object object) {
-				if (object instanceof EnhancedRecipe){
-					return ((EnhancedRecipe)object).getDisplayItem();
-				}
+				if (object instanceof ItemStack)
+					return (ItemStack) object;
 				return null;
 			}
 
@@ -68,7 +54,6 @@ public class RecipesViewerCopy extends MenuHolder {
 			}
 		};
 	}
-
 
 	@Override
 	public MenuButton getButtonAt(int slot) {
@@ -97,19 +82,8 @@ public class RecipesViewerCopy extends MenuHolder {
 		};
 	}
 	public boolean run(com.dutchjelly.craftenhance.gui.templates.MenuButton value, Inventory menu, Player player, ClickType click) {
-		if (value.getButtonType() == ButtonType.PrvPage){
-            previousPage();
-			return true;
-		}
-		if (value.getButtonType() == ButtonType.NxtPage){
-			nextPage();
-			return true;
-		}
-		if (value.getButtonType() == ButtonType.Search){
-			new RecipesViewerCopy( categoryData,"",player).menuOpen(player);
-		}
-		if (value.getButtonType() == ButtonType.Back){
-			new RecipesViewerCategorys( "").menuOpen(player);
+		if (value.getButtonType() == ButtonType.Back) {
+			new RecipesViewerCopy(categoryData, "",player).menuOpen(player);
 		}
 		return false;
 	}

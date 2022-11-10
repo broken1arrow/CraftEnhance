@@ -20,6 +20,7 @@ import com.dutchjelly.craftenhance.commands.edititem.LoreCmd;
 import com.dutchjelly.craftenhance.crafthandling.RecipeInjector;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.crafthandling.customcraftevents.ExecuteCommand;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
@@ -30,7 +31,7 @@ import com.dutchjelly.craftenhance.files.GuiTemplatesFile;
 import com.dutchjelly.craftenhance.gui.GuiManager;
 import com.dutchjelly.craftenhance.gui.guis.CustomCraftingTable;
 import com.dutchjelly.craftenhance.gui.guis.viewers.WBRecipeViewer;
-import com.dutchjelly.craftenhance.gui.templates.MenuSettingsCache;
+import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
@@ -152,11 +153,15 @@ public class CraftEnhance extends JavaPlugin{
 
 	@Override
 	public void onDisable() {
-		Debug.Send("Saving container owners...");
-		fm.saveContainerOwners(injector.getContainerOwners());
-		Debug.Send("Saving disabled recipes...");
-		fm.saveDisabledServerRecipes(RecipeLoader.getInstance().getDisabledServerRecipes().stream().map(x -> Adapter.GetRecipeIdentifier(x)).collect(Collectors.toList()));
+		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+			Debug.Send("Saving container owners...");
+			fm.saveContainerOwners(injector.getContainerOwners());
+			Debug.Send("Saving disabled recipes...");
+			fm.saveDisabledServerRecipes(RecipeLoader.getInstance().getDisabledServerRecipes().stream().map(x -> Adapter.GetRecipeIdentifier(x)).collect(Collectors.toList()));
+			fm.getRecipes().forEach(EnhancedRecipe::save);
+		});
 		getServer().resetRecipes();
+		categoryDataCache.save();
 	}
 	
 	@Override

@@ -1,151 +1,199 @@
 RecipesViewer:
-  name: "recipes viewer"
-  fill-space: "0-45"
-  button-mapping:
-    48: PrvPage
-    49: Back
-    50: NxtPage
-  template:
+  menu_settings:
+    name: "recipes viewer"
+    fill-space: "0-44"
+  buttons:
     48:
+      buttonType: PrvPage
       color: LIGHT_BLUE
       material: STAINED_GLASS_PANE
       name: "Previous Page"
       lore:
-      - "Go to the previous page"
+        - "Go to the previous page"
       glow: true
     49:
+      buttonType: Back
       material: GLOWSTONE_DUST
       name: "Back"
       lore:
-      - "Go back to the previous GUI"
+        - "Go back to the previous GUI"
       glow: true
     50:
+      buttonType: NxtPage
       color: LIGHT_BLUE
       material: STAINED_GLASS_PANE
       name: "Next Page"
       lore:
-      - "Go to the next page"
+        - "Go to the next page"
       glow: true
-
+RecipesCategorys:
+  menu_settings:
+    name: "categorys"
+    fill-space: "0-45"
+  buttons:
+    46:
+      buttonType: newCategory
+      material: PAPER
+      name: "New category"
+      lore:
+        - "Add new category"
+      glow: true
+    47:
+      buttonType: changeCategory
+      material: PAPER
+      name: "New category"
+      lore:
+        - "Add new category"
+      glow: true
+    48:
+      buttonType: PrvPage
+      color: LIGHT_BLUE
+      material: STAINED_GLASS_PANE
+      name: "Previous Page"
+      lore:
+        - "Go to the previous page"
+      glow: true
+    49:
+      buttonType: Back
+      material: GLOWSTONE_DUST
+      name: "Back"
+      lore:
+        - "Go back to the previous GUI"
+      glow: true
+    50:
+      buttonType: NxtPage
+      color: LIGHT_BLUE
+      material: STAINED_GLASS_PANE
+      name: "Next Page"
+      lore:
+        - "Go to the next page"
+      glow: true
 WBRecipeViewer:
-  name: "recipe viewer"
-  fill-space: "0-2,9-11,18-20,13"
-  button-mapping:
-    26: Back
-  template:
+  menu_settings:
+    name: "Workbench Recipe"
+    fill-space: "0-2,9-11,18-20,13"
+  buttons:
     3-8,14-17,21-25:
       color: GRAY
       material: STAINED_GLASS_PANE
       name: ""
       lore:
-      - ""
+        - ""
       glow: false
     26:
+      buttonType: Back
       material: GLOWSTONE_DUST
       name: "Back"
       lore:
-      - "Go back to the previous GUI"
+        - "Go back to the previous GUI"
       glow: true
     12:
       material: WORKBENCH
       name: "&6Enhanced crafting table recipe"
       lore:
-      - "&fThe recipe is &3[shaped]&f"
-      - "&fThe ingredients need &3[match meta]"
+        - "&fThe recipe is &3[shaped]&f"
+        - "&fThe ingredients need &3[match meta]"
       glow: true
 WBRecipeEditor:
-  name: "recipe editor"
-  fill-space: "0-2,9-11,18-20,13"
-  button-mapping:
-    6: SetPosition
-    7: SwitchShaped
-    8: DeleteRecipe
-    15: SwitchHidden
-    16: SwitchMatchMeta
-    17: ResetRecipe
-    24: SetPermission
-    25: SaveRecipe
-    26: Back
-
-#    15: ChangeCategory
-  template:
-    3-5,14-15,21-24:
+  menu_settings:
+    name: "recipe editor"
+    fill-space: "0-2,9-11,18-20,13"
+  buttons:
+    3-5,14-15,21-22:
       color: GRAY
       material: STAINED_GLASS_PANE
       name: ""
       lore:
-      - ""
+        - ""
       glow: false
+    23:
+      buttonType: changeCategory
+      material: PAPER
+      name: "Change category"
+      lore:
+        - "Change category, if it not exist"
+        - "create new one."
+      glow: true
     24:
+      buttonType: SetPermission
       material: PAPER
       name: "Click to set permission"
       lore:
-      - "current: [permission]"
+        - "current: [permission]"
       glow: true
     15:
       material: DIAMOND
       name: "Click to change: &e[hidden]"
+      buttonType: SwitchHidden
       glow: true
     26:
+      buttonType: Back
       material: GLOWSTONE_DUST
       name: "Back"
       lore:
-      - "Go back to the previous GUI"
+        - "Go back to the previous GUI"
       glow: true
     12:
       material: WORKBENCH
       name: "&6Enhanced crafting table recipe"
       lore:
-      - "&fThe recipe is &3[shaped]&f"
-      - "&fThe ingredients need &3[match meta]"
-      - "&fThe key of the recipe is &3[key]"
-      - "&fThe permission of the recipe is &3[permission]"
+        - "&fThe recipe is &3[shaped]&f"
+        - "&fThe ingredients need &3[match meta]"
+        - "&fThe key of the recipe is &3[key]"
+        - "&fThe permission of the recipe is &3[permission]"
       glow: true
     25:
+      buttonType: SaveRecipe
       material: EMERALD
       name: "&aSave &fthe recipe"
       lore:
-      - ""
+        - ""
       glow: true
     8:
+      buttonType: DeleteRecipe
       material: REDSTONE
       name: "&cDelete &fthe recipe"
       lore:
-      - "&7&oNote that there's no going back"
-      - "&7&oonce you delete your recipe."
+        - "&7&oNote that there's no going back"
+        - "&7&oonce you delete your recipe."
       glow: true
     17:
+      buttonType: ResetRecipe
       material: STONE
       name: "&7Reset &fthe recipe"
       lore:
-      - ""
+        - ""
       glow: true
     16:
+      buttonType: SwitchMatchMeta
       material: ENCHANTED_BOOK
       name: "&fClick to change: &e[match meta]"
       lore:
-      - ""
+        - ""
       glow: true
     7:
+      buttonType: SwitchShaped
       material: WEB
       name: "&fClick to change: &e[shaped]"
       lore:
-      - ""
+        - ""
       glow: true
     6:
+      buttonType: SetPosition
       material: PAPER
       name: "&fClick to set the position"
       lore:
-      - "&fCurrent position"
-      - "&fSlot &3[slot]"
-      - "&fPage &3[page]"
+        - "&fCurrent position"
+        - "&fSlot &3[slot]"
+        - "&fPage &3[page]"
       glow: true
 RecipeDisabler:
   name: "       Server Recipe Toggler"
   fill-space: "10-16,19-25,28-34,37-43"
   button-mapping:
     47: PrvPage
-    49: SwitchDisablerMode
+    48: SwitchDisablerMode
+    50: Search
     51: NxtPage
   template:
     47:
@@ -153,21 +201,25 @@ RecipeDisabler:
       material: "GUI_SKULL_ITEM"
       name: "Previous Page"
       lore:
-      - "Go to the previous page"
+        - "Go to the previous page"
       glow: true
-    49:
+    48:
       color: base64eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOGU5YjI3ZmNjZDgwOTIxYmQyNjNjOTFkYzUxMWQwOWU5YTc0NjU1NWU2YzljYWQ1MmU4NTYyZWQwMTgyYTJmIn19fQ==
       material: "GUI_SKULL_ITEM"
       name: "&f[mode] &7- click to toggle"
+      glow: true
+    50:
+      material: "PAPER"
+      name: "&f[mode] &7- click to seach for recipe"
       glow: true
     51:
       color: base64eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWFiOTVhODc1MWFlYWEzYzY3MWE4ZTkwYjgzZGU3NmEwMjA0ZjFiZTY1NzUyYWMzMWJlMmY5OGZlYjY0YmY3ZiJ9fX0=
       material: "GUI_SKULL_ITEM"
       name: "Next Page"
       lore:
-      - "Go to the next page"
+        - "Go to the next page"
       glow: true
-    0-8,45-46,48,50,52-53:
+    0-8,45-46,49,52-53:
       color: BLUE
       material: STAINED_GLASS_PANE
       name: "&f"
@@ -179,3 +231,156 @@ RecipeDisabler:
       name: "&f"
       lore:
       glow: false
+FurnaceRecipeViewer:
+  menu_settings:
+    name: "Furnace Recipe"
+    fill-space: "10,12"
+  buttons:
+    0-9,13-25:
+      color: GRAY
+      material: STAINED_GLASS_PANE
+      name: ""
+      lore:
+        - ""
+      glow: false
+    26:
+      buttonType: Back
+      material: GLOWSTONE_DUST
+      name: "Back"
+      lore:
+        - "Go back to the previous GUI"
+      glow: true
+    11:
+      material: FURNACE
+      name: "&6Enhanced furnace recipe"
+      lore:
+        - "&fThe recipe rewards &3[exp] &fexp"
+        - "&fThe cooking time is &3[duration] &fticks"
+        - "&fThe ingredients need &3[match meta]"
+      glow: true
+FurnaceRecipeEditor:
+  menu_settings:
+    name: "furnace editor"
+    fill-space: "10,12"
+  buttons:
+    0-5,9,13,18-22:
+      color: GRAY
+      material: STAINED_GLASS_PANE
+      name: " "
+      lore:
+        - ""
+      glow: false
+    23:
+      buttonType: changeCategory
+      material: PAPER
+      name: "Change category"
+      lore:
+        - "Change category, if it not exist"
+        - "create new one."
+      glow: true
+    24:
+      buttonType: SetPermission
+      material: PAPER
+      name: "Click to set permission"
+      lore:
+        - "current: [permission]"
+      glow: true
+    7:
+      buttonType: SetCookTime
+      material: CLOCK
+      name: "Click to set the cook time"
+      lore:
+        - "current: [duration]"
+      glow: true
+    14:
+      buttonType: SetExp
+      material: EXP_BOTTLE
+      name: "Click to set the rewarded exp amount"
+      lore:
+        - "current: [exp]"
+      glow: true
+    15:
+      buttonType: SwitchHidden
+      material: DIAMOND
+      name: "Click to change: &e[hidden]"
+      glow: true
+    26:
+      buttonType: Back
+      material: GLOWSTONE_DUST
+      name: "Back"
+      lore:
+        - "Go back to the previous GUI"
+      glow: true
+    11:
+      material: FURNACE
+      name: "&6Enhanced furance recipe"
+      lore:
+        - "&fThe ingredients need &3[match meta]"
+        - "&fThe key of the recipe is &3[key]"
+        - "&fThe permission of the recipe is &3[permission]"
+      glow: true
+    25:
+      buttonType: SaveRecipe
+      material: EMERALD
+      name: "&aSave &fthe recipe"
+      lore:
+        - ""
+      glow: true
+    8:
+      buttonType: DeleteRecipe
+      material: REDSTONE
+      name: "&cDelete &fthe recipe"
+      lore:
+        - "&7&oNote that there's no going back"
+        - "&7&oonce you delete your recipe."
+      glow: true
+    17:
+      buttonType: ResetRecipe
+      material: STONE
+      name: "&7Reset &fthe recipe"
+      lore:
+        - ""
+      glow: true
+    16:
+      buttonType: SwitchMatchMeta
+      material: ENCHANTED_BOOK
+      name: "&fClick to change: &e[match meta]"
+      lore:
+        - ""
+      glow: true
+    6:
+      buttonType: SetPosition
+      material: PAPER
+      name: "&fClick to set the position"
+      lore:
+        - "&fCurrent position"
+        - "&fSlot &3[slot]"
+        - "&fPage &3[page]"
+      glow: true
+EditorTypeSelector:
+  menu_settings:
+    name: "select recipe type"
+  buttons:
+    3:
+      buttonType:  ChooseFurnaceType
+      material: FURNACE
+      name: "&fClick to create a furnace recipe"
+      lore:
+        - ""
+      glow: true
+    5:
+      buttonType: ChooseWorkbenchType
+      material: WORKBENCH
+      name: "&fClick to create a workbench recipe"
+      lore:
+        - ""
+      glow: true
+    0-2,4,6-8:
+      color: GRAY
+      material: STAINED_GLASS_PANE
+      name: ""
+      lore:
+        - ""
+      glow: false
+#Do not change this.
+Version: 1

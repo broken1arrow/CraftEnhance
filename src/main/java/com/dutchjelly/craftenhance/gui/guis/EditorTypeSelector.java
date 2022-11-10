@@ -3,7 +3,7 @@ package com.dutchjelly.craftenhance.gui.guis;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
-import com.dutchjelly.craftenhance.gui.templates.MenuSettingsCache;
+import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import org.brokenarrow.menu.library.MenuButton;
@@ -80,7 +80,7 @@ public class EditorTypeSelector extends MenuHolder {
 		}
 		if (newRecipe != null) {
 			newRecipe.setKey(getFreshKey(recipeKey));
-			RecipeEditor<EnhancedRecipe> recipeEditor = new RecipeEditor<>(newRecipe, permission, value.getButtonType());
+			RecipeEditor<EnhancedRecipe> recipeEditor = new RecipeEditor<>(newRecipe, null,permission, value.getButtonType());
 			recipeEditor.menuOpen(player);
 		}
 	}

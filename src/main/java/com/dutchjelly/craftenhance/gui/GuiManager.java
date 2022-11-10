@@ -6,6 +6,7 @@ import com.dutchjelly.craftenhance.gui.interfaces.IChatInputHandler;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.util.Pair;
+import org.brokenarrow.menu.library.MenuHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -24,7 +25,7 @@ public class GuiManager implements Listener {
 	private static final int MaxPreviousPageBuffer = 20;
 
 	private final Map<UUID, Pair<GUIElement, IChatInputHandler>> chatWaiting = new HashMap<>();
-
+	private final Map<UUID, Pair<MenuHolder, IChatInputHandler>> chatWaitingCopy = new HashMap<>();
 	private final CraftEnhance main;
 
 	public GuiManager(CraftEnhance main) {
@@ -80,9 +81,33 @@ public class GuiManager implements Listener {
 	public void onChat(AsyncPlayerChatEvent e) {
 		if (e.getPlayer() == null) return;
 
-		UUID id = e.getPlayer().getUniqueId();
+		if (chatWaiting(e))
+			e.setCancelled(true);
+	}
+	@EventHandler
+	public void onChatold(AsyncPlayerChatEvent e) {
+		if (e.getPlayer() == null) return;
 
-		if (!chatWaiting.containsKey(id)) return;
+		if (chatWaitingOld(e))
+			e.setCancelled(true);
+	}
+	public boolean chatWaiting(AsyncPlayerChatEvent e){
+		UUID id = e.getPlayer().getUniqueId();
+		if (!chatWaitingCopy.containsKey(id)) return false;
+
+		Bukkit.getScheduler().runTask(getMain(), () -> {
+			IChatInputHandler callback = chatWaitingCopy.get(id).getSecond();
+			if (callback.handle(e.getMessage())) return;
+			MenuHolder gui = chatWaitingCopy.get(id).getFirst();
+			if (gui != null)
+				gui.menuOpen(e.getPlayer());
+			chatWaitingCopy.remove(id);
+		});
+		return true;
+	}
+	public boolean chatWaitingOld(AsyncPlayerChatEvent e){
+		UUID id = e.getPlayer().getUniqueId();
+		if (!chatWaiting.containsKey(id)) return false;
 
 		Bukkit.getScheduler().runTask(getMain(), () -> {
 			IChatInputHandler callback = chatWaiting.get(id).getSecond();
@@ -92,10 +117,8 @@ public class GuiManager implements Listener {
 				openGUI(e.getPlayer(), gui);
 			chatWaiting.remove(id);
 		});
-
-		e.setCancelled(true);
+		return true;
 	}
-
 	public void openGUI(Player p, GUIElement gui) {
 		if (countPreviousPages(gui) >= MaxPreviousPageBuffer) {
 			Messenger.Message("For performance reasons you cannot open more gui's in that chain (the server keeps track of the previous gui's so you can go back).", p);
@@ -124,5 +147,10 @@ public class GuiManager implements Listener {
 		UUID playerId = p.getUniqueId();
 		p.closeInventory();
 		chatWaiting.put(playerId, new Pair(gui, callback));
+	}
+	public void waitForChatInput(MenuHolder gui, Player p, IChatInputHandler callback) {
+		UUID playerId = p.getUniqueId();
+		p.closeInventory();
+		chatWaitingCopy.put(playerId, new Pair(gui, callback));
 	}
 }

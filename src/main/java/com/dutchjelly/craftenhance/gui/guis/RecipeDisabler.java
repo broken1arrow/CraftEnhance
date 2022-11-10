@@ -53,7 +53,7 @@ public class RecipeDisabler extends GUIElement {
         this.addBtnListener(ButtonType.Search, (click, btn, type) -> {
             if (click.isLeftClick()) {
                 Messenger.Message("Please input your item to seach for.", getPlayer());
-                this.getManager().waitForChatInput(null, getPlayer(), (msg) -> {
+                this.getManager().waitForChatInput((GUIElement)null, getPlayer(), (msg) -> {
                     if (msg.equals("cancel") || msg.equals("quit") || msg.equals("exit"))
                         return false;
                     if (!msg.isEmpty()) {

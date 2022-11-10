@@ -9,18 +9,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class CategoryData implements ConfigurationSerializeUtility {
 
-	private String recipeCategory;
-	private ItemStack recipeCategoryItem;
-	private final List<EnhancedRecipe> enhancedRecipes = new ArrayList<>();
+	private final String recipeCategory;
+	private final ItemStack recipeCategoryItem;
+	private List<EnhancedRecipe> enhancedRecipes = new ArrayList<>();
 
-	public CategoryData() {
-
-	}
-
-	private CategoryData(ItemStack recipeCategoryItem, String recipeCategory) {
+	public CategoryData(ItemStack recipeCategoryItem, String recipeCategory) {
 		this.recipeCategoryItem = recipeCategoryItem;
 		this.recipeCategory = recipeCategory;
 	}
@@ -38,11 +35,18 @@ public class CategoryData implements ConfigurationSerializeUtility {
 	public List<EnhancedRecipe> getEnhancedRecipes() {
 		return enhancedRecipes;
 	}
-
-	public void setEnhancedRecipes(EnhancedRecipe enhancedRecipes) {
+	public List<EnhancedRecipe> getEnhancedRecipes(String recipeSeachFor) {
+		if (recipeSeachFor == null || recipeSeachFor.equals(""))
+		return enhancedRecipes;
+		return enhancedRecipes.stream().filter(x -> x.getKey().contains(recipeSeachFor)).collect(Collectors.toList());
+	}
+	public void addEnhancedRecipes(EnhancedRecipe enhancedRecipes) {
 		this.enhancedRecipes.add(enhancedRecipes);
 	}
 
+	public void setEnhancedRecipes(List<EnhancedRecipe> enhancedRecipes) {
+		this.enhancedRecipes = enhancedRecipes;
+	}
 
 	@Override
 	public Map<String, Object> serialize() {

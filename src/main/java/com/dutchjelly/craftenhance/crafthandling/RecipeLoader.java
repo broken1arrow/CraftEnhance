@@ -12,6 +12,7 @@ import com.dutchjelly.craftenhance.messaging.Messenger;
 import lombok.Getter;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -65,8 +66,7 @@ public class RecipeLoader implements Listener {
 	@Getter
 	private final Map<RecipeType, List<RecipeGroup>> mappedGroupedRecipes = new HashMap<>();
 
-	@Getter
-	private final CategoryDataCache categoryDataCache = self().getCategoryDataCache();
+	private  CategoryDataCache categoryDataCache = self().getCategoryDataCache();
 	@Getter
 	private final List<EnhancedRecipe> loadedRecipes = new ArrayList<>();
 
@@ -81,6 +81,7 @@ public class RecipeLoader implements Listener {
 		for (RecipeType type : RecipeType.values()) {
 			mappedGroupedRecipes.put(type, new ArrayList<>());
 		}
+
 	}
 
 	//Adds or merges group with existing group.
@@ -218,7 +219,8 @@ public class RecipeLoader implements Listener {
 	}
 
 	public void loadRecipe(@NonNull EnhancedRecipe recipe) {
-
+		if (categoryDataCache == null)
+			categoryDataCache = self().getCategoryDataCache();
 		if (recipe.validate() != null) {
 			Messenger.Error("There's an issue with recipe " + recipe.getKey() + ": " + recipe.validate());
 			return;
@@ -256,19 +258,31 @@ public class RecipeLoader implements Listener {
 			Debug.Send("Didn't add server recipe for " + recipe.getKey() + " because a similar one was already loaded: " + alwaysSimilar.toString() + " with the result " + alwaysSimilar.getResult().toString());
 		}
 		String category = recipe.getRecipeCategory();
-		CategoryData recipeCategory = this.categoryDataCache.getRecipeCategorys().get(category);
-		List<EnhancedRecipe> enhancedRecipeList;
 		if (recipe instanceof FurnaceRecipe)
 			category = category == null || category.equals("") ? "furnace" : category;
 		else
 			category = category == null || category.equals("") ? "default" : category;
+		if (recipe.getRecipeCategory() == null)
+			recipe.setRecipeCategory(category);
+		CategoryData recipeCategory = this.categoryDataCache.getRecipeCategorys().get(category);
+		List<EnhancedRecipe> enhancedRecipeList;
+
 		if (recipeCategory != null){
 			enhancedRecipeList = recipeCategory.getEnhancedRecipes();
 			if (!enhancedRecipeList.contains(recipe))
 				enhancedRecipeList.add(recipe);
+		}else {
+			ItemStack itemStack;
+			if (recipe instanceof FurnaceRecipe)
+				itemStack = new ItemStack(Material.FURNACE);
+			else
+				itemStack = new ItemStack(Material.CRAFTING_TABLE);
+			CategoryData categoryData = this.categoryDataCache.of(category,itemStack);
+			categoryData.addEnhancedRecipes(recipe);
+			this.categoryDataCache.getRecipeCategorys().put(category, categoryData);
+
 		}
-		if (recipe.getRecipeCategory() == null)
-			recipe.setRecipeCategory(category);
+
 		addGroup(similarServerRecipes, recipe);
 		Debug.Send("AddGroupe done.");
 		loadedRecipes.add(recipe);

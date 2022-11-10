@@ -18,7 +18,9 @@ public enum ButtonType {
     SetExp(""),
     ChooseWorkbenchType("WBRecipeEditor"),
     ChooseFurnaceType("FurnaceRecipeEditor"),
-    Search("");
+    Search(""),
+    newCategory(""),
+    changeCategory("");
 
     private String type;
 
