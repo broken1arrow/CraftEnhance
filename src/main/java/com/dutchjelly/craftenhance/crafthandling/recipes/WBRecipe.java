@@ -10,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +49,7 @@ public class WBRecipe extends EnhancedRecipe {
     }
 
     @Override
+    @NotNull
     public Map<String, Object> serialize() {
         return new HashMap<String, Object>(){{
             putAll(WBRecipe.super.serialize());

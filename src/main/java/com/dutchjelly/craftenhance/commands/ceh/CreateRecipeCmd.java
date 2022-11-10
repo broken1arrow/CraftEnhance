@@ -4,7 +4,6 @@ import com.dutchjelly.craftenhance.commandhandling.CommandRoute;
 import com.dutchjelly.craftenhance.commandhandling.CustomCmdHandler;
 import com.dutchjelly.craftenhance.commandhandling.ICommand;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
-import com.dutchjelly.craftenhance.gui.guis.EditorTypeSelector;
 import com.dutchjelly.craftenhance.gui.guis.EditorTypeSelectorCopy;
 import com.dutchjelly.craftenhance.gui.guis.editors.WBRecipeEditor;
 import com.dutchjelly.craftenhance.messaging.Messenger;
@@ -37,7 +36,7 @@ public class CreateRecipeCmd implements ICommand {
             newRecipe.setKey("recipe" + uniqueKeyIndex);
             /*EditorTypeSelector gui = new EditorTypeSelector(handler.getMain().getGuiManager(), handler.getMain().getGuiTemplatesFile().getTemplate(EditorTypeSelector.class), null, p, "recipe" + uniqueKeyIndex, null);
             handler.getMain().getGuiManager().openGUI(p, gui);*/
-		    EditorTypeSelectorCopy guis  = new EditorTypeSelectorCopy(handler.getMain().getGuiManager(), handler.getMain().getGuiTemplatesFile().getTemplate(EditorTypeSelector.class), null, "recipe" + uniqueKeyIndex, null);
+		    EditorTypeSelectorCopy guis  = new EditorTypeSelectorCopy("recipe" + uniqueKeyIndex, null);
 		    guis.menuOpen(p);
 	        return;
         }

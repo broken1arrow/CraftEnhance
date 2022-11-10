@@ -1,7 +1,6 @@
 package com.dutchjelly.craftenhance.gui.guis;
 
-import com.dutchjelly.craftenhance.gui.GuiManager;
-import com.dutchjelly.craftenhance.gui.templates.GuiTemplate;
+import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.gui.templates.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
@@ -19,74 +18,17 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class EditorTypeSelectorCopy extends MenuHolder {
 
-	private final GuiTemplate template;
 	private final MenuSettingsCache menuSettingsCache  = self().getMenuSettingsCache();
 	private final MenuTemplate menuTemplate;
 	private final String permission;
 	private final String recipeKey;
 	private int slots;
-	public EditorTypeSelectorCopy(GuiManager manager, GuiTemplate template, GUIElement previousGui, String recipeKey, String permission) {
-		this.template = template;
+	public EditorTypeSelectorCopy(String recipeKey, String permission) {
 		this.permission = permission;
 		this.recipeKey = recipeKey;
-		setMenuSize(template.getTemplate().length);
-		setTitle(template.getInvTitle());
 		menuTemplate = menuSettingsCache.getTemplates().get("EditorTypeSelector");
-
-/*		chooseWorkbenchType = new MenuButton() {
-			@Override
-			public void onClickInsideMenu(Player player, Inventory menu, ClickType click, ItemStack clickedItem, Object object) {
-				WBRecipe newRecipe = new WBRecipe(permission, null, new ItemStack[9]);
-				newRecipe.setKey(getFreshKey(recipeKey));
-
-				WBRecipeEditor gui = new WBRecipeEditor(self().getGuiManager(), self().getGuiTemplatesFile().getTemplate(WBRecipeEditor.class), previousGui, player, newRecipe);
-				manager.openGUI(player, gui);
-			}
-
-			@Override
-			public ItemStack getItem() {
-				ItemStack[] itemStack = template.getTemplate();
-				if (itemStack.length > slots) return itemStack[slots];
-				return null;
-			}
-		};
-		chooseFurnaceType = new MenuButton() {
-			@Override
-			public void onClickInsideMenu(Player player, Inventory menu, ClickType click, ItemStack clickedItem, Object object) {
-				WBRecipe newRecipe = new WBRecipe(permission, null, new ItemStack[9]);
-
-				newRecipe.setKey(getFreshKey(recipeKey));
-
-				WBRecipeEditor gui = new WBRecipeEditor(self().getGuiManager(), self().getGuiTemplatesFile().getTemplate(WBRecipeEditor.class), previousGui, player, newRecipe);
-				manager.openGUI(player, gui);
-			}
-
-			@Override
-			public ItemStack getItem() {
-				ItemStack[] itemStack = template.getTemplate();
-				if (itemStack.length > 	slots) return itemStack[slots];
-				return null;
-			}
-		};
-		placeholderItems = new MenuButton() {
-			@Override
-			public void onClickInsideMenu(Player player, Inventory menu, ClickType click, ItemStack clickedItem, Object object) {
-
-			}
-
-			@Override
-			public ItemStack getItem(int slot, @Nullable Object object) {
-				ItemStack[] itemStack = template.getTemplate();
-				if (itemStack.length > 	slot && !template.getButtonMapping().containsKey(slot)) return itemStack[slot];
-				return null;
-			}
-
-
-			@Override
-			public ItemStack getItem() {
-				return null;
-			}
-		};*/
+		setMenuSize(45);
+		setTitle(menuTemplate.getMenuTitel());
 
 	}
 
@@ -116,7 +58,7 @@ public class EditorTypeSelectorCopy extends MenuHolder {
 		return new MenuButton() {
 			@Override
 			public void onClickInsideMenu(Player player, Inventory menu, ClickType click, ItemStack clickedItem, Object object) {
-				run( value);
+				run( value,player);
 			}
 
 			@Override
@@ -126,18 +68,19 @@ public class EditorTypeSelectorCopy extends MenuHolder {
 		};
 	}
 
-	public void run(com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
+	public void run(com.dutchjelly.craftenhance.gui.templates.MenuButton value,Player player) {
 		if (value.getButtonType() == ButtonType.ChooseWorkbenchType){
-				/*		WBRecipe newRecipe = new WBRecipe(permission, null, new ItemStack[9]);
+						WBRecipe newRecipe = new WBRecipe(permission, null, new ItemStack[9]);
 					newRecipe.setKey(getFreshKey(recipeKey));
-
-					WBRecipeEditor gui = new WBRecipeEditor(self().getGuiManager(), self().getGuiTemplatesFile().getTemplate(WBRecipeEditor.class), previousGui, player, newRecipe);
+			 WBRecipeEditorCopy<WBRecipe> recipeEditor = new WBRecipeEditorCopy<>( newRecipe,permission);
+			recipeEditor.menuOpen(player);
+	/*				WBRecipeEditor gui = new WBRecipeEditor(self().getGuiManager(), self().getGuiTemplatesFile().getTemplate(WBRecipeEditor.class), null, player, newRecipe);
 					manager.openGUI(player, gui);*/
 		}
 		if (value.getButtonType() == ButtonType.ChooseFurnaceType){
 				/*			WBRecipe newRecipe = new WBRecipe(permission, null, new ItemStack[9]);
 				newRecipe.setKey(getFreshKey(recipeKey));
-				WBRecipeEditor gui = new WBRecipeEditor(self().getGuiManager(), self().getGuiTemplatesFile().getTemplate(WBRecipeEditor.class), previousGui, player, newRecipe);
+				WBRecipeEditorCopy gui = new WBRecipeEditorCopy(self().getGuiManager(), self().getGuiTemplatesFile().getTemplate(WBRecipeEditorCopy.class), previousGui, player, newRecipe);
 				manager.openGUI(player, gui);*/
 		}
 	}
