@@ -11,14 +11,14 @@ public enum InfoItemPlaceHolders {
     DisableMode("[mode]"),
     Exp("[exp]"),
     Duration("[duration]"),
-    Page("[page]");
+    Page("[page]"),
+    Category("[category]");
 
+    private final String placeHolder;
 
-    private String placeHolder;
     public String getPlaceHolder(){
         return placeHolder;
     }
-
     InfoItemPlaceHolders(String placeHolder){
         this.placeHolder = placeHolder;
     }

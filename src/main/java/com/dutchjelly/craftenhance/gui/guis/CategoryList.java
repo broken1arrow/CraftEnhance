@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.gui.guis;
 
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
@@ -21,15 +22,26 @@ import java.util.Map.Entry;
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 import static menulibrary.dependencies.rbglib.TextTranslator.toSpigotFormat;
 
-public class RecipesViewerCategorys extends MenuHolder {
-	private final MenuSettingsCache menuSettingsCache  = self().getMenuSettingsCache();
-	private final MenuTemplate menuTemplate;
+public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
-	public RecipesViewerCategorys(String grupSeachFor) {
+	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
+	private final MenuTemplate menuTemplate;
+	private final RecipeT recipe;
+	private final CategoryData categoryData;
+	private final String permission;
+	private final ButtonType editorType;
+
+	public CategoryList(RecipeT recipe, CategoryData categoryData, String permission, ButtonType editorType, String grupSeachFor) {
 		super(FormatListContents.getCategorys(self().getCategoryDataCache().getRecipeCategorys().values(), grupSeachFor));
-		this.menuTemplate = menuSettingsCache.getTemplates().get("RecipesCategorys");
-		setFillSpace(this.menuTemplate.getFillSlots());
-		setTitle(this.menuTemplate.getMenuTitel());
+		this.menuTemplate = menuSettingsCache.getTemplates().get("CategoryList");
+		this.recipe = recipe;
+		this.categoryData = categoryData;
+		this.permission = permission;
+		this.editorType = editorType;
+		if (this.menuTemplate != null) {
+			setFillSpace(this.menuTemplate.getFillSlots());
+			setTitle(this.menuTemplate.getMenuTitel());
+		}
 		setMenuSize(54);
 	}
 
@@ -38,8 +50,15 @@ public class RecipesViewerCategorys extends MenuHolder {
 		return new MenuButton() {
 			@Override
 			public void onClickInsideMenu(Player player, Inventory inventory, ClickType clickType, ItemStack itemStack, Object o) {
-				if (o instanceof CategoryData)
-					new RecipesViewerCopy((CategoryData) o,"",player).menuOpen(player);
+				if (o instanceof CategoryData){
+					String category = ((CategoryData) object).getRecipeCategory();
+					recipe.setRecipeCategory(category);
+					recipe.save();
+					CategoryData newCategoryData = self().getCategoryDataCache().of(  category,categoryData.getRecipeCategoryItem());
+					if (!self().getCategoryDataCache().move(categoryData.getRecipeCategory(),  recipe, category, newCategoryData))
+						Messenger.Message("Could not find category, so it create new one insted");
+					new RecipeEditor<>(recipe, newCategoryData, null,  editorType).menuOpen(player);
+				}
 			}
 
 			@Override
@@ -47,7 +66,7 @@ public class RecipesViewerCategorys extends MenuHolder {
 				if (object instanceof CategoryData) {
 					ItemStack itemStack = ((CategoryData) object).getRecipeCategoryItem();
 					ItemMeta meta = itemStack.getItemMeta();
-					if (meta != null){
+					if (meta != null) {
 						String displayName = ((CategoryData) object).getDisplayName();
 						if (displayName == null || displayName.equals(""))
 							displayName = ((CategoryData) object).getRecipeCategory();
@@ -65,11 +84,12 @@ public class RecipesViewerCategorys extends MenuHolder {
 			}
 		};
 	}
+
 	@Override
 	public MenuButton getButtonAt(int slot) {
 		if (this.menuTemplate == null) return null;
-		for (Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()){
-			if (menuTemplate.getKey().contains(slot)){
+		for (Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()) {
+			if (menuTemplate.getKey().contains(slot)) {
 				return registerButtons(menuTemplate.getValue());
 			}
 		}
@@ -91,58 +111,31 @@ public class RecipesViewerCategorys extends MenuHolder {
 			}
 		};
 	}
+
 	public boolean run(com.dutchjelly.craftenhance.gui.templates.MenuButton value, Inventory menu, Player player, ClickType click) {
-		if (value.getButtonType() == ButtonType.PrvPage){
+		if (value.getButtonType() == ButtonType.PrvPage) {
 			previousPage();
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.NxtPage){
+		if (value.getButtonType() == ButtonType.NxtPage) {
 			nextPage();
 			return true;
 		}
+		if (value.getButtonType() == ButtonType.Back){
+				new RecipeEditor<>(this.recipe, this.categoryData, null,  editorType).menuOpen(player);
+		}
+
 		if (value.getButtonType() == ButtonType.Search) {
 			if (click == ClickType.RIGHT) {
 				Messenger.Message("Search for categorys.", getViewer());
-				self().getGuiManager().waitForChatInput(this, getViewer(), msg-> {
-					if (GuiUtil.seachCategory(msg)){
-						new RecipesViewerCategorys( msg).menuOpen(getViewer());
+				self().getGuiManager().waitForChatInput(this, getViewer(), msg -> {
+					if (GuiUtil.seachCategory(msg)) {
+						new CategoryList<>( recipe, categoryData, permission,  editorType,msg).menuOpen(getViewer());
 						return false;
 					}
 					return true;
 				});
-			}
-			else new RecipesViewerCategorys("").menuOpen(player);
-		}
-		if (value.getButtonType() == ButtonType.changeCategoryName){
-			Messenger.Message("Please input your category name and new display name. Like this 'category name' without '.", getViewer());
-			self().getGuiManager().waitForChatInput(new RecipesViewerCategorys(""), getViewer(), msg-> {
-				if(!GuiUtil.changeCategoryName(msg,player)){
-					new RecipesViewerCategorys("").menuOpen(player);
-					return false;
-				}
-				return true;
-			});
-		}
-		if (value.getButtonType() == ButtonType.newCategory){
-			Messenger.Message("Please input your category name and item type you want. Like this 'category crafting_table' without '.", getViewer());
-			self().getGuiManager().waitForChatInput(new RecipesViewerCategorys(""), getViewer(), msg-> {
-				if (!GuiUtil.newCategory(msg, player)) {
-					new RecipesViewerCategorys("").menuOpen(player);
-					return false;
-				}
-				return true;
-			});
-		}
-		if (value.getButtonType() == ButtonType.changeCategory){
-			Messenger.Message("Change category name and you can also change item (if not set it will use the old one). Like this 'category new_category_name crafting_table' without '.", getViewer());
-			self().getGuiManager().waitForChatInput(new RecipesViewerCategorys(""), getViewer(), msg-> {
-				if (GuiUtil.changeCategory(msg, player)) {
-					new RecipesViewerCategorys("").menuOpen(player);
-					return false;
-				}
-				return true;
-			});
-			return true;
+			} else new CategoryList<>(recipe, categoryData, permission,  editorType,"").menuOpen(player);
 		}
 		return false;
 	}

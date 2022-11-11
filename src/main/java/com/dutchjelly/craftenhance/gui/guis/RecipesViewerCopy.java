@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
-import static com.dutchjelly.craftenhance.util.FormatRecipeContents.canSeeRecipes;
+import static com.dutchjelly.craftenhance.gui.util.FormatListContents.canSeeRecipes;
 
 public class RecipesViewerCopy extends MenuHolder {
 	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
@@ -106,11 +106,23 @@ public class RecipesViewerCopy extends MenuHolder {
 			return true;
 		}
 		if (value.getButtonType() == ButtonType.Search){
-			new RecipesViewerCopy( categoryData,"",player).menuOpen(player);
+			if (click == ClickType.RIGHT)
+				self().getGuiManager().waitForChatInput(this, getViewer(), this::seachCategory);
+			else new RecipesViewerCopy( categoryData,"",player).menuOpen(player);
 		}
 		if (value.getButtonType() == ButtonType.Back){
 			new RecipesViewerCategorys( "").menuOpen(player);
 		}
 		return false;
+	}
+
+	private boolean seachCategory(String msg){
+		if (msg.equals("cancel") || msg.equals("quit") || msg.equals("exit"))
+			return false;
+		if (!msg.isEmpty()) {
+			new RecipesViewerCategorys( msg).menuOpen(getViewer());
+			return false;
+		}
+		return true;
 	}
 }

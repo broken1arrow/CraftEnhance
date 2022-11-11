@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 public class CategoryData implements ConfigurationSerializeUtility {
 
 	private final String recipeCategory;
+	private String displayName;
 	private final ItemStack recipeCategoryItem;
 	private List<EnhancedRecipe> enhancedRecipes = new ArrayList<>();
 
@@ -22,7 +23,13 @@ public class CategoryData implements ConfigurationSerializeUtility {
 		this.recipeCategory = recipeCategory;
 	}
 
+	public String getDisplayName() {
+		return displayName;
+	}
 
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
 
 	public String getRecipeCategory() {
 		return recipeCategory;
@@ -53,18 +60,31 @@ public class CategoryData implements ConfigurationSerializeUtility {
 		return new HashMap<String, Object>() {{
 			put("category.name", recipeCategory);
 			put("category.category_item", recipeCategoryItem);
+			put("category.display_name", displayName);
 		}};
 	}
 	public static CategoryData deserialize(Map< String, Object> map) {
 		String recipeCategory = (String) map.getOrDefault("category.name", null);
 		ItemStack itemStack = (ItemStack) map.getOrDefault("category.category_item", null);
+		String displayName = (String) map.getOrDefault("category.display_name", null);
 		if (itemStack == null) {
 			Material material = Adapter.getMaterial("CRAFTING_TABLE");
 			if (material == null)
 				material = Material.CRAFTING_TABLE;
 			itemStack = new ItemStack(material);
 		}
-		return new CategoryData(itemStack,recipeCategory);
+		CategoryData categoryData =  new CategoryData(itemStack,recipeCategory);
+		categoryData.setDisplayName(displayName);
+		return categoryData;
 	}
 
+	@Override
+	public String toString() {
+		return "CategoryData{" +
+				"recipeCategory='" + recipeCategory + '\'' +
+				", displayName='" + displayName + '\'' +
+				", recipeCategoryItem=" + recipeCategoryItem +
+				", enhancedRecipes=" + enhancedRecipes +
+				'}';
+	}
 }

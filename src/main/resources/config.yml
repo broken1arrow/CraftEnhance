@@ -9,7 +9,7 @@ enable-recipes: true
 enable-updatechecker: true
 
 # If this option is enabled, people can only see recipes that they have permissions to.
-only-show-available: false
+only-show-available: true
 
 # Enable this to make the players learn the recipes (making them show up in the green recipe book)
 learn-recipes: false

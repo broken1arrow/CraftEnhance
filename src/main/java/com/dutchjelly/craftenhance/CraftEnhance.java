@@ -144,7 +144,7 @@ public class CraftEnhance extends JavaPlugin{
 
 
 	public void reload(){
-		onDisable();
+		Bukkit.getScheduler().runTaskAsynchronously(this, this::onDisable);
 		RecipeLoader.clearInstance();
 		reloadConfig();
 		onEnable();
@@ -153,15 +153,14 @@ public class CraftEnhance extends JavaPlugin{
 
 	@Override
 	public void onDisable() {
-		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
-			Debug.Send("Saving container owners...");
-			fm.saveContainerOwners(injector.getContainerOwners());
-			Debug.Send("Saving disabled recipes...");
-			fm.saveDisabledServerRecipes(RecipeLoader.getInstance().getDisabledServerRecipes().stream().map(x -> Adapter.GetRecipeIdentifier(x)).collect(Collectors.toList()));
-			fm.getRecipes().forEach(EnhancedRecipe::save);
-		});
 		getServer().resetRecipes();
+		Debug.Send("Saving container owners...");
+		fm.saveContainerOwners(injector.getContainerOwners());
+		Debug.Send("Saving disabled recipes...");
+		fm.saveDisabledServerRecipes(RecipeLoader.getInstance().getDisabledServerRecipes().stream().map(x -> Adapter.GetRecipeIdentifier(x)).collect(Collectors.toList()));
+		fm.getRecipes().forEach(EnhancedRecipe::save);
 		categoryDataCache.save();
+
 	}
 	
 	@Override

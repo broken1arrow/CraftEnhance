@@ -34,8 +34,8 @@ public class MenuSettingsCache extends SimpleYamlHelper {
 		File file = new File(plugin.getDataFolder(),"guitemplates.yml");
 		if (file.exists()){
 			FileConfiguration templateConfig = 	YamlConfiguration.loadConfiguration(file);
-			if(templateConfig.contains("version")){
-				int version = templateConfig.getInt("version");
+			if(templateConfig.contains("Version")){
+				int version = templateConfig.getInt("Version");
 				if (version < 1){
 					updateFile(file);
 				}
@@ -63,6 +63,7 @@ public class MenuSettingsCache extends SimpleYamlHelper {
 		FileConfiguration templateConfig = this.getCustomConfig();
 
 		for (String key : templateConfig.getKeys(false)) {
+			if (key.equalsIgnoreCase("Version")) continue;
 			ConfigurationSection menuData = templateConfig.getConfigurationSection(key + ".buttons");
 			Map<List<Integer>, MenuButton> menuButtonMap = new HashMap<>();
 
@@ -77,10 +78,7 @@ public class MenuSettingsCache extends SimpleYamlHelper {
 			}
 			System.out.println("menuButtonMap " + menuButtonMap);
 			MenuTemplate menuTemplate = new MenuTemplate(menuSettings,fillSpace, menuButtonMap);
-			int amountOfButtonssecond = 0;
-			for (List<Integer> slots : menuButtonMap.keySet()){
-				amountOfButtonssecond += slots.size();
-			}
+
 			templates.put(key,  menuTemplate);
 
 			//Messenger.Error("There is a problem with loading the gui template of " + key + ". You're probably missing some new templates, which will automatically generate when just removing the guitemplates.yml file.\n");

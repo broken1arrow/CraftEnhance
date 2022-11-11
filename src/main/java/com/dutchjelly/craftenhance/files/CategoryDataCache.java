@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.files;
 
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import lombok.Getter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
@@ -21,6 +22,20 @@ public class CategoryDataCache extends SimpleYamlHelper  {
 	public CategoryData of(String category, ItemStack itemStack){
 	return new CategoryData(itemStack,category);
 	}
+
+	public boolean move(String oldCategory, EnhancedRecipe recipe, String category, CategoryData categoryData){
+		CategoryData categoryDataOld = this.getRecipeCategorys().get(oldCategory);
+		if (categoryDataOld != null){
+				categoryDataOld.getEnhancedRecipes().remove(recipe);
+		}
+		CategoryData newCategory = this.getRecipeCategorys().get(category);
+		if (newCategory != null) {
+			newCategory.getEnhancedRecipes().add(recipe);
+			return true;
+		}
+		recipeCategorys.put(category, categoryData);
+		return false;
+	}
 	public boolean addCategory(String category, ItemStack itemStack) {
 		CategoryData categoryData = this.getRecipeCategorys().get(category);
 		if (categoryData != null) return true;
@@ -37,7 +52,6 @@ public class CategoryDataCache extends SimpleYamlHelper  {
 				e.printStackTrace();
 			}
 		}
-		System.out.println("recipeCategorys " + recipeCategorys);
 		for (Entry<String, CategoryData> entry : recipeCategorys.entrySet())
 			this.setData(file, entry.getKey(), entry.getValue());
 	}

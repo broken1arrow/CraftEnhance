@@ -18,7 +18,6 @@ import lombok.Getter;
 import org.brokenarrow.menu.library.CheckItemsInsideInventory;
 import org.brokenarrow.menu.library.MenuButton;
 import org.brokenarrow.menu.library.MenuHolder;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -32,7 +31,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
-import static com.dutchjelly.craftenhance.util.FormatRecipeContents.formatRecipes;
+import static com.dutchjelly.craftenhance.gui.util.FormatListContents.formatRecipes;
 
 public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
@@ -133,6 +132,10 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 					put(InfoItemPlaceHolders.Permission.getPlaceHolder(), permission == null || permission.trim().equals("") ? "none" : permission);
 					put(InfoItemPlaceHolders.Slot.getPlaceHolder(), String.valueOf(recipe.getSlot()));
 					put(InfoItemPlaceHolders.Page.getPlaceHolder(), String.valueOf(recipe.getPage()));
+					if (categoryData != null)
+						put(InfoItemPlaceHolders.Category.getPlaceHolder(), categoryData.getRecipeCategory());
+					else
+						put(InfoItemPlaceHolders.Category.getPlaceHolder(), recipe.getRecipeCategory());
 				}};
 				return GuiUtil.ReplaceAllPlaceHolders(value.getItemStack().clone(), placeHolders);
 			}
@@ -141,20 +144,18 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	public boolean run(com.dutchjelly.craftenhance.gui.templates.MenuButton value, Inventory menu, Player player, ClickType click) {
 		if (value.getButtonType() == ButtonType.SetPosition){
 			self().getGuiManager().waitForChatInput(this, player, this::handlePositionChange);
-	/*				WBRecipeEditor gui = new WBRecipeEditor(self().getGuiManager(), self().getGuiTemplatesFile().getTemplate(WBRecipeEditor.class), null, player, newRecipe);
-					manager.openGUI(player, gui);*/
 			return true;
 		}
 		if (value.getButtonType() == ButtonType.SetCookTime){
-			Messenger.Message("Please input a cook duration.", getViewer());
+			Messenger.Message("Please input a cook duration.Type q, exit, cancel to turn it off.", getViewer());
 			self().getGuiManager().waitForChatInput(this, getViewer(), (msg) -> {
 				short parsed;
 				if (msg.equals("cancel")||msg.equals("quit") ||msg.equals("exit"))
 					return false;
 				try{
-					parsed = Short.valueOf(msg);
+					parsed = Short.parseShort(msg);
 				}catch(NumberFormatException e){
-					Messenger.Message("Error, you didn't input a number. your input " +msg, getViewer());
+					Messenger.Message("Error, you didn't input a number. your input " + msg, getViewer());
 					return true;
 				}
 				if(parsed < 0) parsed = 0;
@@ -165,7 +166,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			return true;
 		}
 		if (value.getButtonType() == ButtonType.SetExp){
-			Messenger.Message("Please input an exp amount.", getViewer());
+			Messenger.Message("Please input an exp amount.Type q, exit, cancel to turn it off.", getViewer());
 			self().getGuiManager().waitForChatInput(this, getViewer(), (msg) -> {
 				int parsed;
 				if (msg.equals("cancel")||msg.equals("quit") ||msg.equals("exit"))
@@ -207,6 +208,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 		}
 		if (value.getButtonType() == ButtonType.SetPermission){
+			Messenger.Message("Set your own permission on a recipe.Only players some has this permission can craft the item.Type q,exit,cancel to turn it off", getViewer());
 			self().getGuiManager().waitForChatInput(this, player, this::handlePermissionSetCB);
 			return true;
 		}
@@ -215,7 +217,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			checkItemsInsideInventory.setSlotsToCheck(menuTemplate.getFillSlots());
 			final Map<Integer, ItemStack> map = checkItemsInsideInventory.getItemsOnSpecifiedSlots( menu, player,false);
 			save( map, player,true);
-			new RecipeEditor<>(recipe, this.categoryData,permission,editorType).menuOpen(player);
+			new RecipeEditor<>(this.recipe, this.categoryData,this.permission,this.editorType).menuOpen(player);
 		}
 		if (value.getButtonType() == ButtonType.Back){
 			if (this.categoryData != null)
@@ -223,8 +225,19 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			else
 				new EditorTypeSelector(null, permission).menuOpen(player);
 		}
+		if (value.getButtonType() == ButtonType.changeCategoryList) {
+			new CategoryList<>( this.recipe, this.categoryData, this.permission,  this.editorType, "").menuOpen(player);
+		}
 		if (value.getButtonType() == ButtonType.changeCategory) {
-			self().getGuiManager().waitForChatInput(this, getViewer(), this::changeCategory);
+			Messenger.Message("Change category name and you can also change item (if not set it will use the old one). Like this 'category new_category_name crafting_table' without '. If you want create new category recomend use this format 'category crafting_table' without '", getViewer());
+			Messenger.Message("Type q,exit,cancel to turn it off.", getViewer());
+			self().getGuiManager().waitForChatInput(this, getViewer(), msg->{
+				if (!GuiUtil.changeOrCreateCategory(msg, player)){
+					new RecipeEditor<>(this.recipe,this.categoryData,this.permission,this.editorType);
+					return false;
+				}
+				return true;
+			});
 		}
 		return false;
 	}
@@ -244,36 +257,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		hidden = recipe.isHidden();
 		//onRecipeDisplayUpdate();
 	}
-	private boolean changeCategory(String msg){
-		Messenger.Message("Change category name and you can also change item (if not set it will use the old one). Like this 'category new_category_name crafting_table' without '. If you want create new category recomend use this format 'category crafting_table' without '", getViewer());
-		if (msg.equals("cancel") || msg.equals("quit") || msg.equals("exit"))
-			return false;
-		if (!msg.isEmpty()) {
-			String[] split = msg.split(" ");
-			if (split.length > 1) {
-				Material material = null;
-				CategoryData categoryData = self().getCategoryDataCache().getRecipeCategorys().get(split[0]);
-				if (split.length >= 3)
-					material = Material.getMaterial(split[2]);
-				if (categoryData == null) {
-					if (material == null)
-						material = Material.getMaterial(split[1]);
-					if (material == null) {
-						Messenger.Message("Please input valid item name. Your input " + msg, getViewer());
-						return true;
-					}
-					self().getCategoryDataCache().addCategory(split[0], new ItemStack(material));
-				} else {
-					CategoryData newCategoryData = new CategoryData(material != null ? new ItemStack(material) : categoryData.getRecipeCategoryItem(), split[1]);
-					self().getCategoryDataCache().getRecipeCategorys().remove(split[0]);
-					newCategoryData.setEnhancedRecipes(categoryData.getEnhancedRecipes());
-					self().getCategoryDataCache().getRecipeCategorys().put(split[1], newCategoryData);
-				}
-				return false;
-			}
-		}
-		return true;
-	}
+
 	private void save(final Map<Integer, ItemStack> map,Player player, boolean loadRecipe) {
 		ItemStack[] newContents = getIngredients(map,player);
 		if (newContents == null) {
@@ -341,7 +325,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 		message = message.trim();
 
-		if (message.toLowerCase().equals("q")) return false;
+		if (message.equalsIgnoreCase("q")|| message.equalsIgnoreCase("cancel") || message.equalsIgnoreCase("quit") || message.equalsIgnoreCase("exit")) return false;
 
 		if (message.equals("-")) {
 			permission = "";
@@ -374,7 +358,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	public boolean handlePositionChange(String message) {
 		if (message == null || message.trim() == "") return false;
 
-		if (message.toLowerCase().equals("q")) return false;
+		if (message.equals("") || message.equalsIgnoreCase("q")|| message.equalsIgnoreCase("cancel") || message.equalsIgnoreCase("quit") || message.equalsIgnoreCase("exit")) return false;
 
 		String[] args = message.split(" ");
 

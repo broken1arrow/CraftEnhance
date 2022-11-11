@@ -1,12 +1,10 @@
 package com.dutchjelly.craftenhance.commands.ceh;
 
-import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.commandhandling.CommandRoute;
 import com.dutchjelly.craftenhance.commandhandling.CustomCmdHandler;
 import com.dutchjelly.craftenhance.commandhandling.ICommand;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
-import com.dutchjelly.craftenhance.gui.guis.RecipeDisabler;
-import com.dutchjelly.craftenhance.gui.templates.GuiTemplate;
+import com.dutchjelly.craftenhance.gui.guis.RecipeDisablerCopy;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -27,19 +25,21 @@ public class Disabler implements ICommand {
 
 	@Override
 	public void handlePlayerCommand(Player p, String[] args) {
-		final CraftEnhance main = handler.getMain();
-		final GuiTemplate template = main.getGuiTemplatesFile().getTemplate(RecipeDisabler.class);
+		//final CraftEnhance main = handler.getMain();
+		RecipeDisablerCopy menu = new RecipeDisablerCopy(RecipeLoader.getInstance().getServerRecipes(), RecipeLoader.getInstance().getDisabledServerRecipes(),false,"");
+		menu.menuOpen(p);
+		/*	final GuiTemplate template = main.getGuiTemplatesFile().getTemplate(RecipeDisabler.class);
 		final RecipeDisabler gui = new RecipeDisabler(main.getGuiManager(), template, null, p, RecipeLoader.getInstance().getServerRecipes(), RecipeLoader.getInstance().getDisabledServerRecipes(),"");
-
+*/
 		if(args.length == 1){
 			try{
 				int pageIndex = Integer.valueOf(args[0]);
-				gui.setPage(pageIndex); //setpage will handle invalid indexes and will jump to the nearest valid page
+				//gui.setPage(pageIndex); //setpage will handle invalid indexes and will jump to the nearest valid page
 			}catch(NumberFormatException e){
 				p.sendMessage("that's not a number");
 			}
 		}
-		handler.getMain().getGuiManager().openGUI(p, gui);
+		//handler.getMain().getGuiManager().openGUI(p, gui);
 	}
 
 	@Override

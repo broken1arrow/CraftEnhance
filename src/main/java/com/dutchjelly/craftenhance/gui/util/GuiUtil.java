@@ -1,8 +1,11 @@
 package com.dutchjelly.craftenhance.gui.util;
 
 import com.dutchjelly.craftenhance.exceptions.ConfigError;
+import com.dutchjelly.craftenhance.files.CategoryData;
+import com.dutchjelly.craftenhance.messaging.Messenger;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -13,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class GuiUtil {
 
@@ -130,5 +135,106 @@ public class GuiUtil {
 
     public static boolean isNull(ItemStack item){
         return item == null || item.getType().equals(Material.AIR);
+    }
+
+    public static boolean changeCategoryName(String msg, Player player){
+        if (msg.equals("") || msg.equals("cancel") || msg.equals("quit") || msg.equals("exit"))
+            return false;
+        if (!msg.isEmpty()) {
+            String[] split = msg.split(" ");
+            if (split.length > 1){
+                CategoryData categoryData = self().getCategoryDataCache().getRecipeCategorys().get(split[0]);
+                if (categoryData == null){
+                    Messenger.Message("Your category name not exist", player);
+                    return true;
+                } else {
+                    CategoryData newCategoryData = new CategoryData(categoryData.getRecipeCategoryItem(),split[1]);
+                    newCategoryData.setEnhancedRecipes(categoryData.getEnhancedRecipes());
+                    newCategoryData.setDisplayName(split[1]);
+                    self().getCategoryDataCache().getRecipeCategorys().put(split[0],newCategoryData);
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public static boolean changeCategory(String msg, Player player){
+        if (msg.equals("") || msg.equals("cancel") || msg.equals("quit") || msg.equals("exit"))
+            return false;
+        if (!msg.isEmpty()) {
+            String[] split = msg.split(" ");
+            if (split.length > 1){
+                CategoryData categoryData = self().getCategoryDataCache().getRecipeCategorys().get(split[0]);
+                if (categoryData == null){
+                    Messenger.Message("Your category name not exist", player);
+                    return true;
+                } else {
+                    Material material = null;
+                    if (split.length >= 3)
+                        material = Material.getMaterial(split[2].toUpperCase());
+                    CategoryData newCategoryData = new CategoryData(material != null ? new ItemStack( material) :categoryData.getRecipeCategoryItem(),split[1]);
+                    self().getCategoryDataCache().getRecipeCategorys().remove(split[0]);
+                    newCategoryData.setEnhancedRecipes(categoryData.getEnhancedRecipes());
+                    self().getCategoryDataCache().getRecipeCategorys().put(split[1],newCategoryData);
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    public static boolean newCategory(String msg, Player player) {
+        if (msg.equals("") || msg.equals("cancel") || msg.equals("quit") || msg.equals("exit"))
+            return false;
+        if (!msg.isEmpty()) {
+            String[] split = msg.split(" ");
+            if (split.length > 1) {
+                Material material = Material.getMaterial(split[1].toUpperCase());
+                if (material == null) {
+                    Messenger.Message("Please input valid item name. Your input " + split[1],   player);
+                    return true;
+                }
+                if (self().getCategoryDataCache().addCategory(split[0], new ItemStack(material))) {
+                    Messenger.Message("Your category name alredy exist",  player);
+                    return true;
+                } else return false;
+            }
+        }
+        return true;
+
+    }
+    public static boolean changeOrCreateCategory(String msg,Player player){
+        if (msg.equals("") || msg.equalsIgnoreCase("q") || msg.equalsIgnoreCase("cancel") || msg.equalsIgnoreCase("quit") || msg.equalsIgnoreCase("exit"))
+            return false;
+        if (!msg.isEmpty()) {
+            String[] split = msg.split(" ");
+            if (split.length > 1) {
+                Material material = null;
+                CategoryData categoryData = self().getCategoryDataCache().getRecipeCategorys().get(split[0]);
+                if (split.length >= 3)
+                    material = Material.getMaterial(split[2].toUpperCase());
+                if (categoryData == null) {
+                    if (material == null)
+                        material = Material.getMaterial(split[1].toUpperCase());
+                    if (material == null) {
+                        Messenger.Message("Please input valid item name. Your input " + msg, player);
+                        return true;
+                    }
+                    self().getCategoryDataCache().addCategory(split[0], new ItemStack(material));
+                } else {
+                    CategoryData newCategoryData = new CategoryData(material != null ? new ItemStack(material) : categoryData.getRecipeCategoryItem(), split[1]);
+                    self().getCategoryDataCache().getRecipeCategorys().remove(split[0]);
+                    newCategoryData.setEnhancedRecipes(categoryData.getEnhancedRecipes());
+                    self().getCategoryDataCache().getRecipeCategorys().put(split[1], newCategoryData);
+                }
+                return false;
+            }
+        }
+        return true;
+    }
+    public static boolean seachCategory(String msg){
+        if (msg.equals(""))
+            return false;
+        return !msg.equals("cancel") && !msg.equals("quit") && !msg.equals("exit");
     }
 }

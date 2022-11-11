@@ -99,8 +99,8 @@ public class GuiManager implements Listener {
 			IChatInputHandler callback = chatWaitingCopy.get(id).getSecond();
 			if (callback.handle(e.getMessage())) return;
 			MenuHolder gui = chatWaitingCopy.get(id).getFirst();
-			if (gui != null)
-				gui.menuOpen(e.getPlayer());
+		/*	if (gui != null)
+				gui.menuOpen(e.getPlayer());*/
 			chatWaitingCopy.remove(id);
 		});
 		return true;

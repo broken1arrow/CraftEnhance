@@ -20,7 +20,9 @@ public enum ButtonType {
     ChooseFurnaceType("FurnaceRecipeEditor"),
     Search(""),
     newCategory(""),
-    changeCategory("");
+    changeCategory(""),
+    changeCategoryName(""),
+    changeCategoryList("");
 
     private String type;
 

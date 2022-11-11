@@ -353,7 +353,8 @@ public class RecipeLoader implements Listener {
 			Debug.Send("[Recipe Loader] enabling server recipe for " + r.getResult().getType().name());
 			serverRecipes.add(r);
 			disabledServerRecipes.remove(r);
-			server.addRecipe(r);
+			if (server.getRecipe(r.getResult().getType().getKey()) == null)
+				server.addRecipe(r);
 
 			RecipeType type = RecipeType.getType(r);
 			if (type != null) {
