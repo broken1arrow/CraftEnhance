@@ -1,5 +1,7 @@
 package com.dutchjelly.craftenhance.gui.guis;
 
+import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
@@ -9,12 +11,14 @@ import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import org.brokenarrow.menu.library.MenuButton;
 import org.brokenarrow.menu.library.MenuHolder;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -22,7 +26,7 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 import static menulibrary.dependencies.rbglib.TextTranslator.toSpigotFormat;
 
 public class RecipesViewerCategorys extends MenuHolder {
-	private final MenuSettingsCache menuSettingsCache  = self().getMenuSettingsCache();
+	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
 	private final MenuTemplate menuTemplate;
 
 	public RecipesViewerCategorys(String grupSeachFor) {
@@ -38,8 +42,28 @@ public class RecipesViewerCategorys extends MenuHolder {
 		return new MenuButton() {
 			@Override
 			public void onClickInsideMenu(Player player, Inventory inventory, ClickType clickType, ItemStack itemStack, Object o) {
-				if (o instanceof CategoryData)
-					new RecipesViewerCopy((CategoryData) o,"",player).menuOpen(player);
+				if (o instanceof CategoryData) {
+					if (clickType == ClickType.LEFT)
+						new RecipesViewerCopy((CategoryData) o, "", player).menuOpen(player);
+					else {
+
+						CategoryData categoryData = self().getCategoryDataCache().getRecipeCategorys().get(((CategoryData) o).getRecipeCategory());
+						List<EnhancedRecipe> enhancedRecipes = categoryData.getEnhancedRecipes();
+						if (enhancedRecipes != null && !enhancedRecipes.isEmpty()) {
+							CategoryData categoryDataold = self().getCategoryDataCache().getRecipeCategorys().get("defult");
+							if (categoryDataold == null)
+								categoryDataold = self().getCategoryDataCache().of("defult", new ItemStack(Adapter.getMaterial("CRAFTING_TABLE")));
+							for (EnhancedRecipe recipe : enhancedRecipes) {
+								recipe.setRecipeCategory("defult");
+								categoryDataold.addEnhancedRecipes(recipe);
+							}
+							self().getCategoryDataCache().getRecipeCategorys().put("defult", categoryDataold);
+						}
+						self().getCategoryDataCache().getRecipeCategorys().remove(((CategoryData) o).getRecipeCategory());
+						Bukkit.getScheduler().runTaskLaterAsynchronously(self(), () -> self().getCategoryDataCache().save(), 1);
+						new RecipesViewerCategorys("").menuOpen(player);
+					}
+				}
 			}
 
 			@Override
@@ -52,6 +76,7 @@ public class RecipesViewerCategorys extends MenuHolder {
 						if (displayName == null || displayName.equals(""))
 							displayName = ((CategoryData) object).getRecipeCategory();
 						meta.setDisplayName(toSpigotFormat(displayName));
+						meta.setLore(Arrays.asList("","&fLeftclick to open","&fRightclick to remove Category"));
 					}
 					itemStack.setItemMeta(meta);
 					return itemStack;

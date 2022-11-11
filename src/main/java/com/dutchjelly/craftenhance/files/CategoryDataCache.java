@@ -2,7 +2,7 @@ package com.dutchjelly.craftenhance.files;
 
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import lombok.Getter;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
@@ -52,15 +52,18 @@ public class CategoryDataCache extends SimpleYamlHelper  {
 				e.printStackTrace();
 			}
 		}
+		System.out.println("recipeCategorys "+ recipeCategorys.keySet());
+		this.getCustomConfig().set("Categorys",null);
 		for (Entry<String, CategoryData> entry : recipeCategorys.entrySet())
-			this.setData(file, entry.getKey(), entry.getValue());
+			this.setData(file, "Categorys." + entry.getKey(), entry.getValue());
 	}
 
 	@Override
 	protected void loadSettingsFromYaml(File file) {
-		FileConfiguration templateConfig = this.getCustomConfig();
+		ConfigurationSection templateConfig = this.getCustomConfig().getConfigurationSection("Categorys");
+		if (templateConfig == null) return;
 		for (String category : templateConfig.getKeys(false)) {
-			CategoryData categoryData = this.getData(category, CategoryData.class);
+			CategoryData categoryData = this.getData( "Categorys." + category, CategoryData.class);
 			if (categoryData == null) continue;
 			recipeCategorys.put(category, categoryData);
 		}

@@ -267,7 +267,7 @@ WBRecipeEditor:
       glow: true
 RecipeDisabler:
   menu_settings:
-    name: "       Server recipe toggler"
+    name: "     Server recipe toggler"
     fill-space: "10-16,19-25,28-34,37-43"
   buttons:
     47:
@@ -287,7 +287,10 @@ RecipeDisabler:
     50:
       buttonType: Search
       material: "WRITTEN_BOOK"
-      name: "&7-&f click to seach for recipe"
+      name: "&fclick to seach for recipe"
+      lore:
+        - "&fLeftclick to reset"
+        - "&fRightclick to seach"
       glow: true
     51:
       buttonType: NxtPage
