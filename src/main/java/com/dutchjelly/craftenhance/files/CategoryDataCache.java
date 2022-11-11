@@ -52,7 +52,6 @@ public class CategoryDataCache extends SimpleYamlHelper  {
 				e.printStackTrace();
 			}
 		}
-		System.out.println("recipeCategorys "+ recipeCategorys.keySet());
 		this.getCustomConfig().set("Categorys",null);
 		for (Entry<String, CategoryData> entry : recipeCategorys.entrySet())
 			this.setData(file, "Categorys." + entry.getKey(), entry.getValue());

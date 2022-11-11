@@ -135,8 +135,9 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 					if (categoryData != null)
 						put(InfoItemPlaceHolders.Category.getPlaceHolder(), categoryData.getRecipeCategory());
 					else
-						put(InfoItemPlaceHolders.Category.getPlaceHolder(), recipe.getRecipeCategory());
+						put(InfoItemPlaceHolders.Category.getPlaceHolder(), recipe.getRecipeCategory() != null? recipe.getRecipeCategory(): "default");
 				}};
+				if (value.getItemStack() == null) return null;
 				return GuiUtil.ReplaceAllPlaceHolders(value.getItemStack().clone(), placeHolders);
 			}
 		};

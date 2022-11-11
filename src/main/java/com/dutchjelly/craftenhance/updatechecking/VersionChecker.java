@@ -71,7 +71,6 @@ public class VersionChecker {
         return false;
     }
 
-
     public CraftEnhance getPlugin() {
         return plugin;
     }

@@ -191,6 +191,8 @@ WBRecipeEditor:
         - "&fChose categorys you have"
         - "&fcreated.All categorys"
         - "&fis listed here."
+        - ""
+        - "&fCurrently set category:&3 [category]"
       glow: true
     24:
       buttonType: SetPermission

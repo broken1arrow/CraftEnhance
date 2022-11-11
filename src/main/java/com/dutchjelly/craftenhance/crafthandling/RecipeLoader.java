@@ -190,9 +190,9 @@ public class RecipeLoader implements Listener {
 		RecipeGroup group = findGroup(recipe);
 		loadedRecipes.remove(recipe);
 
-		CategoryData enhancedRecipes = categoryDataCache.getRecipeCategorys().get(recipe.getRecipeCategory());
-		if (enhancedRecipes.getEnhancedRecipes() != null)
-			enhancedRecipes.getEnhancedRecipes().remove(recipe);
+		CategoryData categoryData = categoryDataCache.getRecipeCategorys().get(recipe.getRecipeCategory());
+		if (categoryData != null && categoryData.getEnhancedRecipes() != null)
+			categoryData.getEnhancedRecipes().remove(recipe);
 
 		if (group == null) {
 			printGroupsDebugInfo();

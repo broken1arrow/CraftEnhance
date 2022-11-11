@@ -49,15 +49,16 @@ public class RecipesViewerCategorys extends MenuHolder {
 
 						CategoryData categoryData = self().getCategoryDataCache().getRecipeCategorys().get(((CategoryData) o).getRecipeCategory());
 						List<EnhancedRecipe> enhancedRecipes = categoryData.getEnhancedRecipes();
+						String defaultCategory = "default";
 						if (enhancedRecipes != null && !enhancedRecipes.isEmpty()) {
-							CategoryData categoryDataold = self().getCategoryDataCache().getRecipeCategorys().get("defult");
+							CategoryData categoryDataold = self().getCategoryDataCache().getRecipeCategorys().get(defaultCategory);
 							if (categoryDataold == null)
-								categoryDataold = self().getCategoryDataCache().of("defult", new ItemStack(Adapter.getMaterial("CRAFTING_TABLE")));
+								categoryDataold = self().getCategoryDataCache().of(defaultCategory, new ItemStack(Adapter.getMaterial("CRAFTING_TABLE")));
 							for (EnhancedRecipe recipe : enhancedRecipes) {
-								recipe.setRecipeCategory("defult");
+								recipe.setRecipeCategory(defaultCategory);
 								categoryDataold.addEnhancedRecipes(recipe);
 							}
-							self().getCategoryDataCache().getRecipeCategorys().put("defult", categoryDataold);
+							self().getCategoryDataCache().getRecipeCategorys().put(defaultCategory, categoryDataold);
 						}
 						self().getCategoryDataCache().getRecipeCategorys().remove(((CategoryData) o).getRecipeCategory());
 						Bukkit.getScheduler().runTaskLaterAsynchronously(self(), () -> self().getCategoryDataCache().save(), 1);
@@ -76,7 +77,7 @@ public class RecipesViewerCategorys extends MenuHolder {
 						if (displayName == null || displayName.equals(""))
 							displayName = ((CategoryData) object).getRecipeCategory();
 						meta.setDisplayName(toSpigotFormat(displayName));
-						meta.setLore(Arrays.asList("","&fLeftclick to open","&fRightclick to remove Category"));
+						meta.setLore(Arrays.asList("",toSpigotFormat("&fLeftclick to open"),toSpigotFormat("&fRightclick to remove Category")));
 					}
 					itemStack.setItemMeta(meta);
 					return itemStack;
