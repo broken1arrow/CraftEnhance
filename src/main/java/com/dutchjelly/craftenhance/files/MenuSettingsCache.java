@@ -9,8 +9,12 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -26,34 +30,61 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 public class MenuSettingsCache extends SimpleYamlHelper {
 
 	private Plugin plugin;
+	private static final int version = 2;
 	private final Map<String, MenuTemplate> templates = new HashMap<>();
 
 
 	public MenuSettingsCache(Plugin plugin) {
-		super("guitemplates.yml",true, true);
+		super("guitemplates.yml", true, true);
 		this.plugin = plugin;
-		File file = new File(plugin.getDataFolder(),"guitemplates.yml");
-		if (file.exists()){
-			FileConfiguration templateConfig = 	YamlConfiguration.loadConfiguration(file);
-			if(templateConfig.contains("Version")){
-				int version = templateConfig.getInt("Version");
-				if (version < 1){
+		checkFileVersion();
+	}
+	public void checkFileVersion() {
+		File file = new File(plugin.getDataFolder(), "guitemplates.yml");
+		if (file.exists()) {
+			FileConfiguration templateConfig = YamlConfiguration.loadConfiguration(file);
+			if (templateConfig.contains("Version")) {
+				int configVersion = templateConfig.getInt("Version");
+				if (configVersion < version) {
 					updateFile(file);
 				}
-			}else {
+			} else {
 				updateFile(file);
 			}
 		}
 	}
-
 	public void updateFile(File file) {
 
 		try {
-			Files.move(Paths.get(file.getPath()), Paths.get(plugin.getDataFolder().getPath(), "guitemplates_backup.yml"), REPLACE_EXISTING);
+			Files.move(Paths.get(file.getPath()), Paths.get(plugin.getDataFolder().getPath(), "guitemplates_backup_"+ version +".yml"), REPLACE_EXISTING);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		this.plugin.getResource("guitemplates.yml");
+		InputStream file1 = this.plugin.getResource("guitemplates.yml");
+		if (file1 != null) {
+			FileConfiguration templateConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(file1));
+			System.out.println("templateConfig" + templateConfig);
+			templateConfig.set("Version",null);
+			for (String templet : templateConfig.getKeys(true)) {
+				System.out.println("templateConfig" + templet);
+				templateConfig.set(templet, templateConfig.get(templet));
+			}
+			//templateConfig.set("Version", version);
+			try {
+				templateConfig.save(file);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			File newFile = new File(plugin.getDataFolder(), "guitemplates.yml");
+			try {
+				BufferedWriter bw = new BufferedWriter(new FileWriter( newFile, true));
+				bw.append("#Do not change this.\n");
+				bw.append("Version: "+ version);
+				bw.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public Map<String, MenuTemplate> getTemplates() {

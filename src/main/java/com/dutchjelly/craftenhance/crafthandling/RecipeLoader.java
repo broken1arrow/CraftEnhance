@@ -12,7 +12,6 @@ import com.dutchjelly.craftenhance.messaging.Messenger;
 import lombok.Getter;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -274,9 +273,9 @@ public class RecipeLoader implements Listener {
 		}else {
 			ItemStack itemStack;
 			if (recipe instanceof FurnaceRecipe)
-				itemStack = new ItemStack(Material.FURNACE);
+				itemStack = new ItemStack(Adapter.getMaterial("FURNACE"));
 			else
-				itemStack = new ItemStack(Material.CRAFTING_TABLE);
+				itemStack = new ItemStack(Adapter.getMaterial("CRAFTING_TABLE") );
 			CategoryData categoryData = this.categoryDataCache.of(category,itemStack,null);
 			categoryData.addEnhancedRecipes(recipe);
 			this.categoryDataCache.getRecipeCategorys().put(category, categoryData);

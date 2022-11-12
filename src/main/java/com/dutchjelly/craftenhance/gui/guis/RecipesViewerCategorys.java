@@ -145,7 +145,7 @@ public class RecipesViewerCategorys extends MenuHolder {
 			}
 			else new RecipesViewerCategorys("").menuOpen(player);
 		}
-		if (value.getButtonType() == ButtonType.changeCategoryName){
+		if (value.getButtonType() == ButtonType.ChangeCategoryName){
 			Messenger.Message("Please input your category name and new display name. Like this 'category name' without '.", getViewer());
 			self().getGuiManager().waitForChatInput(new RecipesViewerCategorys(""), getViewer(), msg-> {
 				if(!GuiUtil.changeCategoryName(msg,player)){
@@ -155,7 +155,7 @@ public class RecipesViewerCategorys extends MenuHolder {
 				return true;
 			});
 		}
-		if (value.getButtonType() == ButtonType.newCategory){
+		if (value.getButtonType() == ButtonType.NewCategory){
 			Messenger.Message("Please input your category name and item type you want. Like this 'category crafting_table' without '.", getViewer());
 			self().getGuiManager().waitForChatInput(new RecipesViewerCategorys(""), getViewer(), msg-> {
 				if (!GuiUtil.newCategory(msg, player)) {
@@ -165,7 +165,7 @@ public class RecipesViewerCategorys extends MenuHolder {
 				return true;
 			});
 		}
-		if (value.getButtonType() == ButtonType.changeCategory){
+		if (value.getButtonType() == ButtonType.ChangeCategory){
 			Messenger.Message("Change category name and you can also change item (if not set it will use the old one). Like this 'category new_category_name crafting_table' without '.", getViewer());
 			self().getGuiManager().waitForChatInput(new RecipesViewerCategorys(""), getViewer(), msg-> {
 				if (GuiUtil.changeCategory(msg, player)) {

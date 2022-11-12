@@ -1,8 +1,8 @@
 package com.dutchjelly.bukkitadapter;
 
 
-import com.dutchjelly.craftenhance.exceptions.ConfigError;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.exceptions.ConfigError;
 import com.dutchjelly.craftenhance.gui.util.SkullCreator;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
@@ -109,8 +109,13 @@ public class Adapter {
 		if (name == null) return null;
 		name = name.toUpperCase();
 		Material material = Material.getMaterial(name);
-		if (material != null)
+		if (material != null){
+			if (self().getVersionChecker().olderThan(VersionChecker.ServerVersion.v1_13)) {
+				if (name.equals("WRITTEN_BOOK"))
+					return Material.valueOf("PAPER");
+			}
 			return material;
+		}
 		if (self().getVersionChecker().newerThan(VersionChecker.ServerVersion.v1_12)) {
 			switch (name) {
 				case "WORKBENCH":
@@ -119,13 +124,28 @@ public class Adapter {
 					return Material.valueOf("COBWEB");
 				case "EXP_BOTTLE":
 					return Material.valueOf("EXPERIENCE_BOTTLE");
+				case "BOOK_AND_QUILL":
+					return Material.valueOf("WRITABLE_BOOK");
 				default:
 					Messenger.Error("Could not find " + name + " try load legacy suport");
 					return Material.matchMaterial("LEGACY_" + name);
 			}
 		} else {
-			if (name.equals("CLOCK"))
-				return Material.valueOf("WATCH");
+			switch (name) {
+				case "CRAFTING_TABLE":
+					return Material.valueOf("WORKBENCH");
+				case "WEB":
+					return Material.valueOf("COBWEB");
+				case "EXP_BOTTLE":
+					return Material.valueOf("EXPERIENCE_BOTTLE");
+				case "CLOCK":
+					return Material.valueOf("WATCH");
+				case "WRITABLE_BOOK":
+					return Material.valueOf("BOOK_AND_QUILL");
+				case "WRITTEN_BOOK":
+				case "BOOK":
+					return Material.valueOf("COAL");
+			}
 		}
 		return null;
 	}

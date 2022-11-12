@@ -49,14 +49,14 @@ RecipesCategorys:
         - "&fRightclick to remove Category"
       glow: true
     47:
-      buttonType: newCategory
+      buttonType: NewCategory
       material: BOOK
       name: "&aNew category"
       lore:
         - "&fAdd new category"
       glow: true
     48:
-      buttonType: changeCategory
+      buttonType: ChangeCategory
       material: WRITTEN_BOOK
       name: "&aChange category"
       lore:
@@ -64,7 +64,7 @@ RecipesCategorys:
         - "&fcan also change the item."
       glow: true
     50:
-      buttonType: changeCategoryName
+      buttonType: ChangeCategoryName
       material: WRITABLE_BOOK
       name: "&aChange category name"
       lore:

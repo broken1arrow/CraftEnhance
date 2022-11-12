@@ -195,7 +195,10 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		if (value.getButtonType() == ButtonType.DeleteRecipe){
 			self().getFm().removeRecipe(recipe);
 			RecipeLoader.getInstance().unloadRecipe(recipe);
-			new EditorTypeSelector( null, permission).menuOpen(player);
+			if (this.categoryData != null)
+				new RecipesViewer(this.categoryData, "", player).menuOpen(player);
+			else
+				new EditorTypeSelector(null, permission).menuOpen(player);
 			return true;
 		}
 		if (value.getButtonType() == ButtonType.SwitchHidden){
@@ -229,10 +232,10 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			else
 				new EditorTypeSelector(null, permission).menuOpen(player);
 		}
-		if (value.getButtonType() == ButtonType.changeCategoryList) {
+		if (value.getButtonType() == ButtonType.ChangeCategoryList) {
 			new CategoryList<>( this.recipe, this.categoryData, this.permission,  this.editorType, "").menuOpen(player);
 		}
-		if (value.getButtonType() == ButtonType.changeCategory) {
+		if (value.getButtonType() == ButtonType.ChangeCategory) {
 			Messenger.Message("Change category name and you can also change item (if not set it will use the old one). Like this 'category new_category_name crafting_table' without '. If you want create new category recomend use this format 'category crafting_table' without '", getViewer());
 			Messenger.Message("Type q,exit,cancel to turn it off.", getViewer());
 			self().getGuiManager().waitForChatInput(this, getViewer(), msg->{
