@@ -1,28 +1,26 @@
-package com.dutchjelly.craftenhance.gui.guis;
+package com.dutchjelly.craftenhance.gui.customcrafting;
 
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.util.CustomPrepareCraftEvent;
 import com.dutchjelly.craftenhance.gui.GuiManager;
+import com.dutchjelly.craftenhance.gui.guis.GUIElement;
 import com.dutchjelly.craftenhance.gui.templates.GuiTemplate;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.messaging.Debug;
-import org.apache.commons.lang.math.IntRange;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.*;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
-import java.lang.reflect.Array;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-public class CustomCraftingTable extends GUIElement {
+public class CustomCraftingTable extends com.dutchjelly.craftenhance.gui.guis.GUIElement {
 
     private Inventory inventory;
 

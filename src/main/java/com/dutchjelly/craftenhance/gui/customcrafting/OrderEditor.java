@@ -1,7 +1,8 @@
-package com.dutchjelly.craftenhance.gui.guis;
+package com.dutchjelly.craftenhance.gui.customcrafting;
 
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.gui.GuiManager;
+import com.dutchjelly.craftenhance.gui.guis.GUIElement;
 import com.dutchjelly.craftenhance.gui.templates.GuiTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;

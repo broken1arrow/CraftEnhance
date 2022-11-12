@@ -28,10 +28,9 @@ import com.dutchjelly.craftenhance.files.CategoryDataCache;
 import com.dutchjelly.craftenhance.files.ConfigFormatter;
 import com.dutchjelly.craftenhance.files.FileManager;
 import com.dutchjelly.craftenhance.files.GuiTemplatesFile;
-import com.dutchjelly.craftenhance.gui.GuiManager;
-import com.dutchjelly.craftenhance.gui.guis.CustomCraftingTable;
-import com.dutchjelly.craftenhance.gui.guis.viewers.WBRecipeViewer;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
+import com.dutchjelly.craftenhance.gui.GuiManager;
+import com.dutchjelly.craftenhance.gui.customcrafting.CustomCraftingTable;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
@@ -82,8 +81,10 @@ public class CraftEnhance extends JavaPlugin{
 		plugin = this;
 		//The file manager needs serialization, so firstly register the classes.
 		registerSerialization();
+
 		categoryDataCache = new CategoryDataCache();
 		categoryDataCache.reload();
+
 		saveDefaultConfig();
 		new RegisterMenuAPI(this);
 		Debug.init(this);
@@ -97,6 +98,7 @@ public class CraftEnhance extends JavaPlugin{
 		ItemMatchers.init(getConfig().getBoolean("enable-backwards-compatible-item-matching"));
 
 		this.usingItemsAdder = this.getServer().getPluginManager().getPlugin("ItemsAdder") != null;
+		Debug.Send("Loading gui templates");
 		menuSettingsCache = new MenuSettingsCache(this);
 		menuSettingsCache.reload();
 		//Most other instances use the file manager, so setup before everything.
@@ -115,10 +117,6 @@ public class CraftEnhance extends JavaPlugin{
 
 		injector = new RecipeInjector(this);
 		injector.registerContainerOwners(fm.getContainerOwners());
-
-		Debug.Send("Loading gui templates");
-		guiTemplatesFile = new GuiTemplatesFile(this);
-		guiTemplatesFile.load();
 
 		guiManager = new GuiManager(this);
 
@@ -230,7 +228,7 @@ public class CraftEnhance extends JavaPlugin{
 	public void openEnhancedCraftingTable(Player p){
 		CustomCraftingTable table = new CustomCraftingTable(
 				getGuiManager(),
-				getGuiTemplatesFile().getTemplate(WBRecipeViewer.class),
+				getGuiTemplatesFile().getTemplate(null),
 				null, p
 		);
 		getGuiManager().openGUI(p, table);

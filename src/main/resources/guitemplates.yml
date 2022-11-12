@@ -40,6 +40,14 @@ RecipesCategorys:
     name: "Categorys"
     fill-space: "0-45"
   buttons:
+    -1:
+      buttonType: FillItems
+      material: STONE
+      name: "&aCategory:&3 [display_name]"
+      lore:
+        - "&fLeftclick to open"
+        - "&fRightclick to remove Category"
+      glow: true
     47:
       buttonType: newCategory
       material: BOOK
@@ -103,6 +111,14 @@ CategoryList:
     name: "Category list"
     fill-space: "0-45"
   buttons:
+    -1:
+      buttonType: FillItems
+      material: STONE
+      name: "&aCategory:&3 [display_name]"
+      lore:
+        - " "
+        - "&fClick to choose this Category"
+      glow: true
     46:
       buttonType: PrvPage
       color: LIGHT_BLUE

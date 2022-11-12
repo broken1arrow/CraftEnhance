@@ -12,7 +12,8 @@ public enum InfoItemPlaceHolders {
     Exp("[exp]"),
     Duration("[duration]"),
     Page("[page]"),
-    Category("[category]");
+    Category("[category]"),
+    DisplayName("[display_name]");
 
     private final String placeHolder;
 

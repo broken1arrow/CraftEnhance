@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.files;
 
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
+import com.dutchjelly.craftenhance.files.util.SimpleYamlHelper;
 import lombok.Getter;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
@@ -11,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class CategoryDataCache extends SimpleYamlHelper  {
+public class CategoryDataCache extends SimpleYamlHelper {
 
 	@Getter
 	private final Map<String, CategoryData> recipeCategorys = new HashMap<>();
@@ -19,8 +20,13 @@ public class CategoryDataCache extends SimpleYamlHelper  {
 	public CategoryDataCache() {
 		super("categorys.yml", true, true);
 	}
-	public CategoryData of(String category, ItemStack itemStack){
-	return new CategoryData(itemStack,category);
+
+	public CategoryData of(String category, ItemStack itemStack,String displayName) {
+		return CategoryData.of(itemStack, category, displayName);
+	}
+
+	public void put(String category, ItemStack itemStack,String displayName){
+		recipeCategorys.put(category,of(category,itemStack,displayName));
 	}
 
 	public boolean move(String oldCategory, EnhancedRecipe recipe, String category, CategoryData categoryData){
@@ -36,10 +42,10 @@ public class CategoryDataCache extends SimpleYamlHelper  {
 		recipeCategorys.put(category, categoryData);
 		return false;
 	}
-	public boolean addCategory(String category, ItemStack itemStack) {
+	public boolean addCategory(String category, ItemStack itemStack,String displayname) {
 		CategoryData categoryData = this.getRecipeCategorys().get(category);
 		if (categoryData != null) return true;
-		 recipeCategorys.put(category,new CategoryData(itemStack,category));
+		 recipeCategorys.put(category,of(category,itemStack,displayname));
 		return false;
 	}
 

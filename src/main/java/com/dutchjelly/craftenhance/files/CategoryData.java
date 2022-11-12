@@ -18,11 +18,14 @@ public class CategoryData implements ConfigurationSerializeUtility {
 	private final ItemStack recipeCategoryItem;
 	private List<EnhancedRecipe> enhancedRecipes = new ArrayList<>();
 
-	public CategoryData(ItemStack recipeCategoryItem, String recipeCategory) {
+	private CategoryData(ItemStack recipeCategoryItem, String recipeCategory,String displayName) {
 		this.recipeCategoryItem = recipeCategoryItem;
 		this.recipeCategory = recipeCategory;
+		this.displayName = displayName;
 	}
-
+	public static CategoryData of(ItemStack recipeCategoryItem, String recipeCategory, String displayName) {
+		return new CategoryData(recipeCategoryItem,recipeCategory,displayName);
+	}
 	public String getDisplayName() {
 		return displayName;
 	}
@@ -73,7 +76,7 @@ public class CategoryData implements ConfigurationSerializeUtility {
 				material = Material.CRAFTING_TABLE;
 			itemStack = new ItemStack(material);
 		}
-		CategoryData categoryData =  new CategoryData(itemStack,recipeCategory);
+		CategoryData categoryData =  new CategoryData(itemStack,recipeCategory,displayName);
 		categoryData.setDisplayName(displayName);
 		return categoryData;
 	}

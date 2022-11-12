@@ -3,10 +3,12 @@ package com.dutchjelly.craftenhance.gui.guis;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
 import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.FormatListContents;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
+import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import org.brokenarrow.menu.library.MenuButton;
 import org.brokenarrow.menu.library.MenuHolder;
@@ -14,13 +16,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
-import static menulibrary.dependencies.rbglib.TextTranslator.toSpigotFormat;
+import static com.dutchjelly.craftenhance.gui.util.GuiUtil.setTextItem;
 
 public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
@@ -54,7 +58,7 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 					String category = ((CategoryData) object).getRecipeCategory();
 					recipe.setRecipeCategory(category);
 					recipe.save();
-					CategoryData newCategoryData = self().getCategoryDataCache().of(  category,categoryData.getRecipeCategoryItem());
+					CategoryData newCategoryData = self().getCategoryDataCache().of(  category,categoryData.getRecipeCategoryItem(),categoryData.getDisplayName());
 					if (!self().getCategoryDataCache().move(categoryData.getRecipeCategory(),  recipe, category, newCategoryData))
 						Messenger.Message("Could not find category, so it create new one insted");
 					new RecipeEditor<>(recipe, newCategoryData, null,  editorType).menuOpen(player);
@@ -64,16 +68,22 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			@Override
 			public ItemStack getItem(Object object) {
 				if (object instanceof CategoryData) {
-					ItemStack itemStack = ((CategoryData) object).getRecipeCategoryItem();
-					ItemMeta meta = itemStack.getItemMeta();
-					if (meta != null) {
-						String displayName = ((CategoryData) object).getDisplayName();
-						if (displayName == null || displayName.equals(""))
-							displayName = ((CategoryData) object).getRecipeCategory();
-						meta.setDisplayName(toSpigotFormat(displayName));
+					String displayName = " ";
+					List<String> lore = new ArrayList<>();
+					Map<String, String> placeHolders = new HashMap<>();
+					com.dutchjelly.craftenhance.gui.templates.MenuButton menuButton = menuTemplate.getMenuButton(-1);
+					if (menuButton != null) {
+						displayName = menuButton.getDisplayName();
+						lore = menuButton.getLore();
 					}
-					itemStack.setItemMeta(meta);
-					return itemStack;
+					ItemStack itemStack = ((CategoryData) object).getRecipeCategoryItem();
+					setTextItem(itemStack, displayName, lore);
+					String categoryName = ((CategoryData) object).getDisplayName();
+					if (categoryName == null || categoryName.equals(""))
+						categoryName = ((CategoryData) object).getRecipeCategory();
+					placeHolders.put(InfoItemPlaceHolders.DisplayName.getPlaceHolder(), categoryName);
+
+					return GuiUtil.ReplaceAllPlaceHolders(itemStack.clone(), placeHolders);
 				}
 				return null;
 			}

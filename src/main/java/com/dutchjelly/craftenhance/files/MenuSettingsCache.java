@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.files;
 
 import com.dutchjelly.craftenhance.exceptions.ConfigError;
+import com.dutchjelly.craftenhance.files.util.SimpleYamlHelper;
 import com.dutchjelly.craftenhance.gui.templates.MenuButton;
 import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import org.bukkit.configuration.ConfigurationSection;
@@ -97,10 +98,15 @@ public class MenuSettingsCache extends SimpleYamlHelper {
 			for (String subRange : range.split(",")) {
 				if (Objects.equals(subRange, "")) continue;
 				if (subRange.contains("-")) {
-					int first = Integer.parseInt(subRange.split("-")[0]);
-					int second = Integer.parseInt(subRange.split("-")[1]);
+					String[] numbers = subRange.split("-");
+					if (numbers[0].isEmpty() || numbers[1].isEmpty()) {
+						slots.add(Integer.parseInt(subRange));
+						continue;
+					}
+					int first = Integer.parseInt(numbers [0]);
+					int second = Integer.parseInt(numbers [1]);
 					slots.addAll(IntStream.range(first, second + 1).boxed().collect(Collectors.toList()));
-				} else slots.add(Integer.valueOf(subRange));
+				} else slots.add(Integer.parseInt(subRange));
 			}
 		} catch (NumberFormatException e) {
 			throw new ConfigError("Couldn't parse range " + range);

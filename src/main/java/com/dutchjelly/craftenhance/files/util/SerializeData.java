@@ -1,4 +1,4 @@
-package com.dutchjelly.craftenhance.files;
+package com.dutchjelly.craftenhance.files.util;
 
 import com.google.gson.Gson;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -26,7 +26,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.dutchjelly.craftenhance.files.SerializeingLocation.serializeLoc;
+import static com.dutchjelly.craftenhance.files.util.SerializeingLocation.serializeLoc;
 
 public class SerializeData {
 

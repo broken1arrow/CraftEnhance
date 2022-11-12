@@ -3,9 +3,12 @@ package com.dutchjelly.craftenhance.commands.ceh;
 import com.dutchjelly.craftenhance.commandhandling.CommandRoute;
 import com.dutchjelly.craftenhance.commandhandling.CustomCmdHandler;
 import com.dutchjelly.craftenhance.commandhandling.ICommand;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.gui.guis.EditorTypeSelector;
-import com.dutchjelly.craftenhance.gui.guis.editors.WBRecipeEditor;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
+import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -54,10 +57,18 @@ public class CreateRecipeCmd implements ICommand {
             Messenger.Message("The specified recipe key isn't unique.", p);
 			return;
 		}
+
         WBRecipe newRecipe = new WBRecipe(args[1], null, new ItemStack[9]);
-	    newRecipe.setKey(args[0]);
-        WBRecipeEditor gui = new WBRecipeEditor(handler.getMain().getGuiManager(), handler.getMain().getGuiTemplatesFile().getTemplate(WBRecipeEditor.class), null, p, newRecipe);
-		handler.getMain().getGuiManager().openGUI(p, gui);
+		ButtonType buttonType = ButtonType.ChooseWorkbenchType;
+		if (newRecipe.getType() == RecipeType.FURNACE) {
+			buttonType = com.dutchjelly.craftenhance.gui.util.ButtonType.ChooseFurnaceType;
+			newRecipe = new WBRecipe(args[1], null, new ItemStack[1]);
+		}
+		newRecipe.setKey(args[0]);
+		RecipeEditor<EnhancedRecipe> menu= new RecipeEditor<EnhancedRecipe>(newRecipe, null,null, buttonType);
+		menu.menuOpen(p);
+/*		WBRecipeEditor gui = new WBRecipeEditor(handler.getMain().getGuiManager(), handler.getMain().getGuiTemplatesFile().getTemplate(WBRecipeEditor.class), null, p, newRecipe);
+		handler.getMain().getGuiManager().openGUI(p, gui);*/
 	}
 
 	@Override

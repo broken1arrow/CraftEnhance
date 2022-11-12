@@ -22,7 +22,8 @@ public enum ButtonType {
     newCategory(""),
     changeCategory(""),
     changeCategoryName(""),
-    changeCategoryList("");
+    changeCategoryList(""),
+    FillItems("");
 
     private String type;
 

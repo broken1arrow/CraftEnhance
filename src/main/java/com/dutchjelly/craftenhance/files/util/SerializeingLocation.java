@@ -1,4 +1,4 @@
-package com.dutchjelly.craftenhance.files;
+package com.dutchjelly.craftenhance.files.util;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

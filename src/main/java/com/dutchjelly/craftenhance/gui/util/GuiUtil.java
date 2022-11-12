@@ -10,7 +10,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
+import static menulibrary.dependencies.rbglib.TextTranslator.toSpigotFormat;
 
 public class GuiUtil {
 
@@ -31,8 +34,6 @@ public class GuiUtil {
             copy.setItem(i, copiedItems.get(i));
         return copy;
     }
-
-
 
     public static Inventory FillInventory(Inventory inv, List<Integer> fillSpots, List<ItemStack> items){
         if(inv == null)
@@ -48,16 +49,42 @@ public class GuiUtil {
         }
         return inv;
     }
+    @NotNull
+    public static ItemStack setTextItem(@NotNull ItemStack itemStack, String displayName , List<String> lore){
+        ItemMeta meta = itemStack.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(setcolorName( displayName));
+            meta.setLore(setcolorLore( lore));
+        }
+        itemStack.setItemMeta(meta);
+        return itemStack;
+    }
+    public static String setcolorName(String name){
+            if ( name == null) return null;
 
+        return toSpigotFormat(name);
+    }
+
+    public static List<String> setcolorLore(List<String> lore){
+        List<String> lores = new ArrayList<>();
+        for ( String text :lore){
+           if ( text == null) {
+               lores.add(null);
+               continue;
+           }
+            lores.add( toSpigotFormat( text));
+        }
+        return lores;
+    }
     public static ItemStack ReplaceAllPlaceHolders(ItemStack item, Map<String,String> placeholders){
         if(item == null) return null;
-        placeholders.keySet().forEach(x -> ReplacePlaceHolder(item, x, placeholders.get(x)));
+        placeholders.forEach((key, value) -> ReplacePlaceHolder(item, key, value));
         return item;
     }
 
     public static ItemStack ReplacePlaceHolder(ItemStack item, String placeHolder, String value){
         if(item == null) return null;
-
+        if(value == null) return null;
 
         ItemMeta meta = item.getItemMeta();
         if(meta.getDisplayName().contains(placeHolder)){
@@ -148,9 +175,8 @@ public class GuiUtil {
                     Messenger.Message("Your category name not exist", player);
                     return true;
                 } else {
-                    CategoryData newCategoryData = new CategoryData(categoryData.getRecipeCategoryItem(),split[1]);
+                    CategoryData newCategoryData = self().getCategoryDataCache().of(split[0],categoryData.getRecipeCategoryItem(),split[1]);
                     newCategoryData.setEnhancedRecipes(categoryData.getEnhancedRecipes());
-                    newCategoryData.setDisplayName(split[1]);
                     self().getCategoryDataCache().getRecipeCategorys().put(split[0],newCategoryData);
                     return false;
                 }
@@ -173,7 +199,7 @@ public class GuiUtil {
                     Material material = null;
                     if (split.length >= 3)
                         material = Material.getMaterial(split[2].toUpperCase());
-                    CategoryData newCategoryData = new CategoryData(material != null ? new ItemStack( material) :categoryData.getRecipeCategoryItem(),split[1]);
+                    CategoryData newCategoryData = self().getCategoryDataCache().of(split[1],material != null ? new ItemStack( material) :categoryData.getRecipeCategoryItem(),null);
                     self().getCategoryDataCache().getRecipeCategorys().remove(split[0]);
                     newCategoryData.setEnhancedRecipes(categoryData.getEnhancedRecipes());
                     self().getCategoryDataCache().getRecipeCategorys().put(split[1],newCategoryData);
@@ -194,7 +220,7 @@ public class GuiUtil {
                     Messenger.Message("Please input valid item name. Your input " + split[1],   player);
                     return true;
                 }
-                if (self().getCategoryDataCache().addCategory(split[0], new ItemStack(material))) {
+                if (self().getCategoryDataCache().addCategory(split[0], new ItemStack(material),null)) {
                     Messenger.Message("Your category name alredy exist",  player);
                     return true;
                 } else return false;
@@ -220,9 +246,9 @@ public class GuiUtil {
                         Messenger.Message("Please input valid item name. Your input " + msg, player);
                         return true;
                     }
-                    self().getCategoryDataCache().addCategory(split[0], new ItemStack(material));
+                    self().getCategoryDataCache().addCategory(split[0], new ItemStack(material),null);
                 } else {
-                    CategoryData newCategoryData = new CategoryData(material != null ? new ItemStack(material) : categoryData.getRecipeCategoryItem(), split[1]);
+                    CategoryData newCategoryData =  self().getCategoryDataCache().of(split[1],material != null ? new ItemStack(material) : categoryData.getRecipeCategoryItem(), null);
                     self().getCategoryDataCache().getRecipeCategorys().remove(split[0]);
                     newCategoryData.setEnhancedRecipes(categoryData.getEnhancedRecipes());
                     self().getCategoryDataCache().getRecipeCategorys().put(split[1], newCategoryData);

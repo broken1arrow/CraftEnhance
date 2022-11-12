@@ -277,7 +277,7 @@ public class RecipeLoader implements Listener {
 				itemStack = new ItemStack(Material.FURNACE);
 			else
 				itemStack = new ItemStack(Material.CRAFTING_TABLE);
-			CategoryData categoryData = this.categoryDataCache.of(category,itemStack);
+			CategoryData categoryData = this.categoryDataCache.of(category,itemStack,null);
 			categoryData.addEnhancedRecipes(recipe);
 			this.categoryDataCache.getRecipeCategorys().put(category, categoryData);
 

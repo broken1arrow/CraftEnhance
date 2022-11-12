@@ -8,6 +8,7 @@ import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.FormatListContents;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
+import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import org.brokenarrow.menu.library.MenuButton;
 import org.brokenarrow.menu.library.MenuHolder;
@@ -16,14 +17,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
-import static menulibrary.dependencies.rbglib.TextTranslator.toSpigotFormat;
+import static com.dutchjelly.craftenhance.gui.util.GuiUtil.setTextItem;
 
 public class RecipesViewerCategorys extends MenuHolder {
 	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
@@ -44,7 +46,7 @@ public class RecipesViewerCategorys extends MenuHolder {
 			public void onClickInsideMenu(Player player, Inventory inventory, ClickType clickType, ItemStack itemStack, Object o) {
 				if (o instanceof CategoryData) {
 					if (clickType == ClickType.LEFT)
-						new RecipesViewerCopy((CategoryData) o, "", player).menuOpen(player);
+						new RecipesViewer((CategoryData) o, "", player).menuOpen(player);
 					else {
 
 						CategoryData categoryData = self().getCategoryDataCache().getRecipeCategorys().get(((CategoryData) o).getRecipeCategory());
@@ -53,7 +55,7 @@ public class RecipesViewerCategorys extends MenuHolder {
 						if (enhancedRecipes != null && !enhancedRecipes.isEmpty()) {
 							CategoryData categoryDataold = self().getCategoryDataCache().getRecipeCategorys().get(defaultCategory);
 							if (categoryDataold == null)
-								categoryDataold = self().getCategoryDataCache().of(defaultCategory, new ItemStack(Adapter.getMaterial("CRAFTING_TABLE")));
+								categoryDataold = self().getCategoryDataCache().of(defaultCategory, new ItemStack(Adapter.getMaterial("CRAFTING_TABLE")),null);
 							for (EnhancedRecipe recipe : enhancedRecipes) {
 								recipe.setRecipeCategory(defaultCategory);
 								categoryDataold.addEnhancedRecipes(recipe);
@@ -70,17 +72,21 @@ public class RecipesViewerCategorys extends MenuHolder {
 			@Override
 			public ItemStack getItem(Object object) {
 				if (object instanceof CategoryData) {
-					ItemStack itemStack = ((CategoryData) object).getRecipeCategoryItem();
-					ItemMeta meta = itemStack.getItemMeta();
-					if (meta != null){
-						String displayName = ((CategoryData) object).getDisplayName();
-						if (displayName == null || displayName.equals(""))
-							displayName = ((CategoryData) object).getRecipeCategory();
-						meta.setDisplayName(toSpigotFormat(displayName));
-						meta.setLore(Arrays.asList("",toSpigotFormat("&fLeftclick to open"),toSpigotFormat("&fRightclick to remove Category")));
+					String displayName = " ";
+					List<String> lore = new ArrayList<>();
+					Map<String, String> placeHolders = new HashMap<>();
+					com.dutchjelly.craftenhance.gui.templates.MenuButton menuButton = menuTemplate.getMenuButton(-1);
+					if (menuButton != null) {
+						displayName = menuButton.getDisplayName();
+						lore = menuButton.getLore();
 					}
-					itemStack.setItemMeta(meta);
-					return itemStack;
+					ItemStack itemStack = ((CategoryData) object).getRecipeCategoryItem();
+					setTextItem(itemStack, displayName, lore);
+					String categoryName = ((CategoryData) object).getDisplayName();
+					if (categoryName == null || categoryName.equals(""))
+						categoryName = ((CategoryData) object).getRecipeCategory();
+					placeHolders.put(InfoItemPlaceHolders.DisplayName.getPlaceHolder(), categoryName);
+					return GuiUtil.ReplaceAllPlaceHolders(itemStack.clone(), placeHolders);
 				}
 				return null;
 			}

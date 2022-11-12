@@ -1,5 +1,6 @@
-package com.dutchjelly.craftenhance.files;
+package com.dutchjelly.craftenhance.files.util;
 
+import com.dutchjelly.craftenhance.files.ConfigurationSerializeUtility;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -228,7 +229,7 @@ public abstract class SimpleYamlHelper {
 
 		this.getCustomConfig().set(path, null);
 		for (final Map.Entry<String, Object> key : configuration.serialize().entrySet()) {
-			this.getCustomConfig().set(path + "." + key.getKey(),SerializeData.serialize( key.getValue()));
+			this.getCustomConfig().set(path + "." + key.getKey(), SerializeData.serialize( key.getValue()));
 		}
 		try {
 			this.getCustomConfig().save(file);

@@ -2,6 +2,7 @@ package com.dutchjelly.craftenhance.gui.templates;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class MenuTemplate {
 
@@ -30,6 +31,15 @@ public class MenuTemplate {
 
 	public Map<List<Integer>, MenuButton> getMenuButtons() {
 		return menuButtons;
+	}
+
+	public MenuButton getMenuButton(int slot) {
+		for (Entry<List<Integer>, MenuButton> slots : menuButtons.entrySet()) {
+			for (int menuSlot : slots.getKey())
+				if (menuSlot == slot)
+					return slots.getValue();
+		}
+		return null;
 	}
 	public int calculateAmountOfButtons(Map<List<Integer>, MenuButton> menuButtons) {
 		int amountOfButtons = 0;

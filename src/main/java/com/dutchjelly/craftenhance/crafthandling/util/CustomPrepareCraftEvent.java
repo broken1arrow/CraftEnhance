@@ -1,6 +1,6 @@
 package com.dutchjelly.craftenhance.crafthandling.util;
 
-import com.dutchjelly.craftenhance.gui.guis.CustomCraftingTable;
+import com.dutchjelly.craftenhance.gui.customcrafting.CustomCraftingTable;
 import lombok.Getter;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
