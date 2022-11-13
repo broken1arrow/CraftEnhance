@@ -6,7 +6,6 @@ public enum ButtonType {
     Back(""),
     SaveRecipe(""),
     DeleteRecipe(""),
-    ChangeCategory(""),
     SwitchShaped(""),
     SwitchMatchMeta(""),
     ResetRecipe(""),
@@ -22,6 +21,9 @@ public enum ButtonType {
     NewCategory(""),
     ChangeCategoryName(""),
     ChangeCategoryList(""),
+    ChangeCategory(""),
+    ChangeCategoryItem(""),
+    RemoveCategory(""),
     FillItems("");
 
     private String type;

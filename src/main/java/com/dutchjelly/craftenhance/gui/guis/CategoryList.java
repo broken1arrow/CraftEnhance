@@ -35,8 +35,8 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	private final String permission;
 	private final ButtonType editorType;
 
-	public CategoryList(RecipeT recipe, CategoryData categoryData, String permission, ButtonType editorType, String grupSeachFor) {
-		super(FormatListContents.getCategorys(self().getCategoryDataCache().getRecipeCategorys().values(), grupSeachFor));
+	public CategoryList(final RecipeT recipe, final CategoryData categoryData, final String permission, final ButtonType editorType, final String grupSeachFor) {
+		super(FormatListContents.getCategorys(self().getCategoryDataCache().values(), grupSeachFor));
 		this.menuTemplate = menuSettingsCache.getTemplates().get("CategoryList");
 		this.recipe = recipe;
 		this.categoryData = categoryData;
@@ -50,33 +50,38 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	}
 
 	@Override
-	public MenuButton getFillButtonAt(Object object) {
+	public MenuButton getFillButtonAt(final Object object) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(Player player, Inventory inventory, ClickType clickType, ItemStack itemStack, Object o) {
+			public void onClickInsideMenu(final Player player, final Inventory inventory, final ClickType clickType, final ItemStack itemStack, final Object o) {
 				if (o instanceof CategoryData){
-					String category = ((CategoryData) object).getRecipeCategory();
+					final String category = ((CategoryData) o).getRecipeCategory();
 					recipe.setRecipeCategory(category);
 					recipe.save();
-					CategoryData newCategoryData = self().getCategoryDataCache().of(  category,categoryData.getRecipeCategoryItem(),categoryData.getDisplayName());
-					if (!self().getCategoryDataCache().move(categoryData.getRecipeCategory(),  recipe, category, newCategoryData))
-						Messenger.Message("Could not find category, so it create new one insted");
-					new RecipeEditor<>(recipe, newCategoryData, null,  editorType).menuOpen(player);
+					//final CategoryData newCategoryData = self().getCategoryDataCache().of(  category,categoryData.getRecipeCategoryItem(),categoryData.getDisplayName());
+					final CategoryData movedcategoryData = self().getCategoryDataCache().move(categoryData.getRecipeCategory(), category, recipe);
+					if (movedcategoryData == null) {
+						Messenger.Message("Could not add recipe to this " + o + " category.");
+						return;
+					}
+					new RecipeEditor<>(recipe, movedcategoryData, null,  editorType).menuOpen(player);
 				}
 			}
 
 			@Override
-			public ItemStack getItem(Object object) {
+			public ItemStack getItem(final Object object) {
 				if (object instanceof CategoryData) {
 					String displayName = " ";
 					List<String> lore = new ArrayList<>();
-					Map<String, String> placeHolders = new HashMap<>();
-					com.dutchjelly.craftenhance.gui.templates.MenuButton menuButton = menuTemplate.getMenuButton(-1);
-					if (menuButton != null) {
-						displayName = menuButton.getDisplayName();
-						lore = menuButton.getLore();
+					final Map<String, String> placeHolders = new HashMap<>();
+					if (menuTemplate != null) {
+						final com.dutchjelly.craftenhance.gui.templates.MenuButton menuButton = menuTemplate.getMenuButton(-1);
+						if (menuButton != null) {
+							displayName = menuButton.getDisplayName();
+							lore = menuButton.getLore();
+						}
 					}
-					ItemStack itemStack = ((CategoryData) object).getRecipeCategoryItem();
+					final ItemStack itemStack = ((CategoryData) object).getRecipeCategoryItem();
 					setTextItem(itemStack, displayName, lore);
 					String categoryName = ((CategoryData) object).getDisplayName();
 					if (categoryName == null || categoryName.equals(""))
@@ -96,9 +101,9 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	}
 
 	@Override
-	public MenuButton getButtonAt(int slot) {
+	public MenuButton getButtonAt(final int slot) {
 		if (this.menuTemplate == null) return null;
-		for (Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()) {
+		for (final Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()) {
 			if (menuTemplate.getKey().contains(slot)) {
 				return registerButtons(menuTemplate.getValue());
 			}
@@ -107,10 +112,10 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	}
 
 
-	private MenuButton registerButtons(com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
+	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(Player player, Inventory menu, ClickType click, ItemStack clickedItem, Object object) {
+			public void onClickInsideMenu(final Player player, final Inventory menu, final ClickType click, final ItemStack clickedItem, final Object object) {
 				if (run(value, menu, player, click))
 					updateButtons();
 			}
@@ -122,7 +127,7 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		};
 	}
 
-	public boolean run(com.dutchjelly.craftenhance.gui.templates.MenuButton value, Inventory menu, Player player, ClickType click) {
+	public boolean run(final com.dutchjelly.craftenhance.gui.templates.MenuButton value, final Inventory menu, final Player player, final ClickType click) {
 		if (value.getButtonType() == ButtonType.PrvPage) {
 			previousPage();
 			return true;

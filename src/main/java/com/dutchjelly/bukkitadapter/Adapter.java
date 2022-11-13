@@ -98,7 +98,7 @@ public class Adapter {
 		DyeColor[] dyeColors = DyeColor.values();
 
 		for (DyeColor color :dyeColors) {
-			if ( color .name().equalsIgnoreCase(dyeColor)){
+			if ( color.name().equalsIgnoreCase(dyeColor)){
 				return color;
 			}
 		}

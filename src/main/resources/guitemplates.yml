@@ -46,7 +46,7 @@ RecipesCategorys:
       name: "&aCategory:&3 [display_name]"
       lore:
         - "&fLeftclick to open"
-        - "&fRightclick to remove Category"
+        - "&fRightclick to edit Category"
       glow: true
     47:
       buttonType: NewCategory
@@ -54,25 +54,6 @@ RecipesCategorys:
       name: "&aNew category"
       lore:
         - "&fAdd new category"
-      glow: true
-    48:
-      buttonType: ChangeCategory
-      material: WRITTEN_BOOK
-      name: "&aChange category"
-      lore:
-        - "&fChange category and you"
-        - "&fcan also change the item."
-      glow: true
-    50:
-      buttonType: ChangeCategoryName
-      material: WRITABLE_BOOK
-      name: "&aChange category name"
-      lore:
-        - "&fChange category name"
-        - "&ftype the category name"
-        - "&fand name you want your"
-        - "&fcategory shall have(you"
-        - "&fcan use colorcodes)."
       glow: true
     51:
       buttonType: Search
@@ -105,6 +86,56 @@ RecipesCategorys:
       name: "&aNext Page"
       lore:
         - "&fGo to the next page"
+      glow: true
+CategorysSettings:
+  menu_settings:
+    name: "Category settings"
+  buttons:
+    0-8,9,11,13,15,17,19-26:
+      color: GRAY
+      material: STAINED_GLASS_PANE
+      name: ""
+      lore:
+        - ""
+      glow: false
+    10:
+      buttonType: RemoveCategory
+      material: BARRIER
+      name: "&aChange category"
+      lore:
+        - "&fChange category and you"
+        - "&fcan also change the item."
+      glow: true
+    12:
+      buttonType: ChangeCategoryName
+      material: BOOK
+      name: "&aChange category name"
+      lore:
+        - "&fChange category name."
+      glow: true
+    14:
+      buttonType: ChangeCategory
+      material: WRITTEN_BOOK
+      name: "&aChange category"
+      lore:
+        - "&fMove this category to"
+        - "&fnew category."
+      glow: true
+    16:
+      buttonType: ChangeCategoryItem
+      material: STONE
+      name: "&aChange category item"
+      lore:
+        - "&fChange category item"
+        - "&fsome you use for this"
+        - "&fcategory."
+      glow: true
+    18:
+      buttonType: Back
+      material: GLOWSTONE_DUST
+      name: "&aBack"
+      lore:
+        - "&fGo back to the previous GUI"
       glow: true
 CategoryList:
   menu_settings:
