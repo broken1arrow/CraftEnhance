@@ -24,13 +24,13 @@ public class ItemMatchers {
 //        MATCH_NAME_AND_TYPE(constructIMatcher(ItemMatchers::matchName, ItemMatchers::matchType), "match name and type");
 
         @Getter
-        private final IMatcher matcher;
+        private final IMatcher<ItemStack> matcher;
 
         @Getter
         private final String description;
 
 
-        MatchType(IMatcher matcher, String description) {
+        MatchType(final IMatcher<ItemStack> matcher, final String description) {
             this.matcher = matcher;
             this.description = description;
         }
@@ -38,25 +38,26 @@ public class ItemMatchers {
 
     private static boolean backwardsCompatibleMatching = false;
 
-    public static void init(boolean backwardsCompatibleMatching) {
+    public static void init(final boolean backwardsCompatibleMatching) {
         ItemMatchers.backwardsCompatibleMatching = backwardsCompatibleMatching;
     }
 
-    public static boolean matchItems(ItemStack a, ItemStack b) {
+    public static boolean matchItems(final ItemStack a, final ItemStack b) {
         if (a == null || b == null) return a == null && b == null;
         return a.equals(b);
     }
 
-    public static boolean matchModelData(ItemStack a, ItemStack b) {
-        ItemMeta am = a.getItemMeta(), bm = b.getItemMeta();
+    public static boolean matchModelData(final ItemStack a, final ItemStack b) {
+        final ItemMeta am = a.getItemMeta();
+        final ItemMeta bm = b.getItemMeta();
         if (am == null) return bm == null || !bm.hasCustomModelData();
         if (bm == null) return am == null || !am.hasCustomModelData();
         return am.hasCustomModelData() == bm.hasCustomModelData() && (!am.hasCustomModelData() || am.getCustomModelData() == bm.getCustomModelData());
     }
 
-    public static boolean matchMeta(ItemStack a, ItemStack b) {
+    public static boolean matchMeta(final ItemStack a, final ItemStack b) {
         if (a == null || b == null) return a == null && b == null;
-        boolean canUseModeldata = Adapter.canUseModeldata();
+        final boolean canUseModeldata = Adapter.canUseModeldata();
 
         if (backwardsCompatibleMatching) {
             return a.getType().equals(b.getType()) && a.getDurability() == b.getDurability() && a.hasItemMeta() == b.hasItemMeta() && (!a.hasItemMeta() || (
@@ -68,28 +69,29 @@ public class ItemMatchers {
         return a.isSimilar(b) && (!canUseModeldata || matchModelData(a, b));
     }
 
-    public static boolean matchType(ItemStack a, ItemStack b) {
+    public static boolean matchType(final ItemStack a, final ItemStack b) {
         if (a == null || b == null) return a == null && b == null;
         return a.getType().equals(b.getType());
     }
 
-    public static <T> IMatcher<T> constructIMatcher(IMatcher<T>... matchers) {
+    @SafeVarargs
+    public static <T> IMatcher<T> constructIMatcher(final IMatcher<T>... matchers) {
         return (a, b) -> Arrays.stream(matchers).allMatch(x -> x.match(a, b));
     }
 
-    public static boolean matchCustomModelData(ItemStack a, ItemStack b) {
+    public static boolean matchCustomModelData(final ItemStack a, final ItemStack b) {
         if (a == null || b == null) return a == null && b == null;
 
         if (a.hasItemMeta() && b.hasItemMeta()) {
-            ItemMeta itemMetaA = a.getItemMeta();
-            ItemMeta itemMetaB = b.getItemMeta();
+            final ItemMeta itemMetaA = a.getItemMeta();
+            final ItemMeta itemMetaB = b.getItemMeta();
             if (itemMetaA != null && itemMetaB != null && itemMetaA.hasCustomModelData() && itemMetaB.hasCustomModelData())
                 return itemMetaA.getCustomModelData() == itemMetaB.getCustomModelData();
         }
         return false;
     }
 
-    public static boolean matchTypeData(ItemStack a, ItemStack b) {
+    public static boolean matchTypeData(final ItemStack a, final ItemStack b) {
 
         if (a == null || b == null) return a == null && b == null;
 
@@ -105,7 +107,7 @@ public class ItemMatchers {
         }
     }
 
-    public static boolean matchName(ItemStack a, ItemStack b) {
+    public static boolean matchName(final ItemStack a, final ItemStack b) {
         if (a.hasItemMeta() && b.hasItemMeta()) {
             return a.getItemMeta().getDisplayName().equals(b.getItemMeta().getDisplayName());
         }
@@ -113,10 +115,10 @@ public class ItemMatchers {
         return a.hasItemMeta() == b.hasItemMeta() && a.getType() == b.getType();
     }
 
-    public static boolean matchNameLore(ItemStack a, ItemStack b) {
+    public static boolean matchNameLore(final ItemStack a, final ItemStack b) {
         if (a.hasItemMeta() && b.hasItemMeta()) {
-            ItemMeta itemMetaA = a.getItemMeta();
-            ItemMeta itemMetaB = b.getItemMeta();
+            final ItemMeta itemMetaA = a.getItemMeta();
+            final ItemMeta itemMetaB = b.getItemMeta();
 
             if (itemMetaA != null && itemMetaB != null) {
                 boolean hasSameLore = itemMetaA.getLore() == null || itemMetaA.getLore().equals(itemMetaB.getLore());
