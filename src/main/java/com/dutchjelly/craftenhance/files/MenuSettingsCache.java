@@ -29,22 +29,22 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class MenuSettingsCache extends SimpleYamlHelper {
 
-	private Plugin plugin;
-	private static final int version = 2;
+	private final Plugin plugin;
+	private static final int version = 3;
 	private final Map<String, MenuTemplate> templates = new HashMap<>();
 
 
-	public MenuSettingsCache(Plugin plugin) {
+	public MenuSettingsCache(final Plugin plugin) {
 		super("guitemplates.yml", true, true);
 		this.plugin = plugin;
 		checkFileVersion();
 	}
 	public void checkFileVersion() {
-		File file = new File(plugin.getDataFolder(), "guitemplates.yml");
+		final File file = new File(plugin.getDataFolder(), "guitemplates.yml");
 		if (file.exists()) {
-			FileConfiguration templateConfig = YamlConfiguration.loadConfiguration(file);
+			final FileConfiguration templateConfig = YamlConfiguration.loadConfiguration(file);
 			if (templateConfig.contains("Version")) {
-				int configVersion = templateConfig.getInt("Version");
+				final int configVersion = templateConfig.getInt("Version");
 				if (configVersion < version) {
 					updateFile(file);
 				}
@@ -53,35 +53,35 @@ public class MenuSettingsCache extends SimpleYamlHelper {
 			}
 		}
 	}
-	public void updateFile(File file) {
+	public void updateFile(final File file) {
 
 		try {
 			Files.move(Paths.get(file.getPath()), Paths.get(plugin.getDataFolder().getPath(), "guitemplates_backup_"+ version +".yml"), REPLACE_EXISTING);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			e.printStackTrace();
 		}
-		InputStream file1 = this.plugin.getResource("guitemplates.yml");
+		final InputStream file1 = this.plugin.getResource("guitemplates.yml");
 		if (file1 != null) {
-			FileConfiguration templateConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(file1));
+			final FileConfiguration templateConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(file1));
 			System.out.println("templateConfig" + templateConfig);
 			templateConfig.set("Version",null);
-			for (String templet : templateConfig.getKeys(true)) {
+			for (final String templet : templateConfig.getKeys(true)) {
 				System.out.println("templateConfig" + templet);
 				templateConfig.set(templet, templateConfig.get(templet));
 			}
 			//templateConfig.set("Version", version);
 			try {
 				templateConfig.save(file);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				e.printStackTrace();
 			}
-			File newFile = new File(plugin.getDataFolder(), "guitemplates.yml");
+			final File newFile = new File(plugin.getDataFolder(), "guitemplates.yml");
 			try {
-				BufferedWriter bw = new BufferedWriter(new FileWriter( newFile, true));
+				final BufferedWriter bw = new BufferedWriter(new FileWriter( newFile, true));
 				bw.append("#Do not change this.\n");
 				bw.append("Version: "+ version);
 				bw.close();
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				e.printStackTrace();
 			}
 		}
@@ -91,25 +91,26 @@ public class MenuSettingsCache extends SimpleYamlHelper {
 		return templates;
 	}
 
-	public void loadSettingsFromYaml(File file) {
-		FileConfiguration templateConfig = this.getCustomConfig();
+	@Override
+	public void loadSettingsFromYaml(final File file) {
+		final FileConfiguration templateConfig = this.getCustomConfig();
 
-		for (String key : templateConfig.getKeys(false)) {
+		for (final String key : templateConfig.getKeys(false)) {
 			if (key.equalsIgnoreCase("Version")) continue;
-			ConfigurationSection menuData = templateConfig.getConfigurationSection(key + ".buttons");
-			Map<List<Integer>, MenuButton> menuButtonMap = new HashMap<>();
+			final ConfigurationSection menuData = templateConfig.getConfigurationSection(key + ".buttons");
+			final Map<List<Integer>, MenuButton> menuButtonMap = new HashMap<>();
 
-			String menuSettings = templateConfig.getString(key + ".menu_settings.name");
-			List<Integer> fillSpace = parseRange(templateConfig.getString(key + ".menu_settings.fill-space"));
+			final String menuSettings = templateConfig.getString(key + ".menu_settings.name");
+			final List<Integer> fillSpace = parseRange(templateConfig.getString(key + ".menu_settings.fill-space"));
 
 			if (menuData != null) {
-				for (String menuButtons : menuData.getKeys(false)) {
-					MenuButton menuButton = this.getData(key + ".buttons." + menuButtons, MenuButton.class);
+				for (final String menuButtons : menuData.getKeys(false)) {
+					final MenuButton menuButton = this.getData(key + ".buttons." + menuButtons, MenuButton.class);
 					menuButtonMap.put(parseRange(menuButtons), menuButton);
 				}
 			}
 			System.out.println("menuButtonMap " + menuButtonMap);
-			MenuTemplate menuTemplate = new MenuTemplate(menuSettings,fillSpace, menuButtonMap);
+			final MenuTemplate menuTemplate = new MenuTemplate(menuSettings,fillSpace, menuButtonMap);
 
 			templates.put(key,  menuTemplate);
 
@@ -119,34 +120,34 @@ public class MenuSettingsCache extends SimpleYamlHelper {
 		}
 	}
 
-	private List<Integer> parseRange(String range) {
-		List<Integer> slots = new ArrayList<>();
+	private List<Integer> parseRange(final String range) {
+		final List<Integer> slots = new ArrayList<>();
 
 		//Allow empty ranges.
 		if (range == null || range.equals("")) return slots;
 
 		try {
-			for (String subRange : range.split(",")) {
+			for (final String subRange : range.split(",")) {
 				if (Objects.equals(subRange, "")) continue;
 				if (subRange.contains("-")) {
-					String[] numbers = subRange.split("-");
+					final String[] numbers = subRange.split("-");
 					if (numbers[0].isEmpty() || numbers[1].isEmpty()) {
 						slots.add(Integer.parseInt(subRange));
 						continue;
 					}
-					int first = Integer.parseInt(numbers [0]);
-					int second = Integer.parseInt(numbers [1]);
+					final int first = Integer.parseInt(numbers [0]);
+					final int second = Integer.parseInt(numbers [1]);
 					slots.addAll(IntStream.range(first, second + 1).boxed().collect(Collectors.toList()));
 				} else slots.add(Integer.parseInt(subRange));
 			}
-		} catch (NumberFormatException e) {
+		} catch (final NumberFormatException e) {
 			throw new ConfigError("Couldn't parse range " + range);
 		}
 		return slots;
 	}
 
 	@Override
-	protected void saveDataToFile(File file) {
+	protected void saveDataToFile(final File file) {
 
 	}
 
