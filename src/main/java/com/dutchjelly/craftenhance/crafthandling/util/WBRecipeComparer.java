@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.crafthandling.util;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
@@ -8,18 +9,19 @@ import java.util.logging.Level;
 
 public class WBRecipeComparer {
 
-    private static ItemStack[] mirror(ItemStack[] content, int size){
+    private static ItemStack[] mirror(final ItemStack[] content, final int size){
         if(content == null) return null;
         if(content.length == 0) return content;
-        ItemStack[] mirrored = new ItemStack[content.length];
+        final ItemStack[] mirrored = new ItemStack[content.length];
 
 
         for(int i = 0; i < size; i++){
 
             //Walk through right and left elements of this row and swab them.
             for(int j = 0; j < size/2; j++){
-                mirrored[i*size+j] = content[i*size+(size-j-1)];
-                mirrored[i*size+(size-j-1)] = content[i*size+j];
+                final int i1 = i * size + (size - j - 1);
+                mirrored[i*size+j] = content[i1];
+                mirrored[i1] = content[i*size+j];
             }
 
             //Copy middle item to mirrored.
@@ -31,67 +33,61 @@ public class WBRecipeComparer {
 
     //This compares shapes and doesn't take mirrored recipes into account.
     //public for testing purposes. Not very professional I know, but it gets the job done.
-    public static boolean shapeIterationMatches(ItemStack[] content, ItemStack[] r, IMatcher<ItemStack> matcher, int rowSize){
+    public static boolean shapeIterationMatches(final ItemStack[] itemsOne, final ItemStack[] itemsTwo, final IMatcher<ItemStack> matcher, final int rowSize){
         //Find the first element of r and content.
-        int i = -1, j = -1;
-        while(++i < r.length && r[i] == null);
-        while(++j < content.length && content[j] == null);
+        int indexTwo = -1, indexOne = -1;
+        while(++indexTwo < itemsTwo.length && (itemsTwo[indexTwo] == null|| itemsTwo[indexTwo].getType() == Material.AIR));
+        while(++indexOne < itemsOne.length && (itemsOne[indexOne] == null || itemsOne[indexOne].getType() == Material.AIR));
 
         //Look if one or both recipes are empty. Return true if both are empty.
-        if(i == r.length || j == content.length) return i == r.length && j == content.length;
+        if(indexTwo == itemsTwo.length || indexOne == itemsOne.length) return indexTwo == itemsTwo.length && indexOne == itemsOne.length;
 
-        if(!matcher.match(r[i],content[j])){
+        if(!matcher.match(itemsTwo[indexTwo],itemsOne[indexOne])){
             return false;
         }
 
         //Offsets relative to the first item of the recipe.
-        int iOffx, iOffy, jOffx, jOffy;
+        int iIndex, twoRowOffset, jIndex, oneRowOffset;
         for(;;) {
-            iOffx = iOffy = 0;
-            jOffx = jOffy = 0;
-            while (++i < r.length) {
-                iOffx++;
-                if (i % rowSize == 0) iOffy++;
+            iIndex = twoRowOffset = 0;
+            jIndex = oneRowOffset = 0;
+            while (++indexTwo < itemsTwo.length) {
+                iIndex++;
+                if (indexTwo % rowSize == 0) twoRowOffset++;
 
-                if(r[i] != null) break;
+                if(itemsTwo[indexTwo] != null && itemsTwo[indexTwo].getType() != Material.AIR) break;
 
             }
-//            if (i % rowSize == 0) iOffy++;
 
-            while (++j < content.length) {
-                jOffx++;
-                if (j % rowSize == 0) jOffy++;
+            while (++indexOne < itemsOne.length) {
+                jIndex++;
+                if (indexOne % rowSize == 0) oneRowOffset++;
 
-                if(content[j] != null) break;
-            }
-//            if (j % rowSize == 0) jOffy++;
-
-//            Debug.Send("i: " + i + ", j: " + j);
-
-            if (i == r.length || j == content.length) {
-//                Debug.Send("reached end");
-                return i == r.length && j == content.length;
+                if(itemsOne[indexOne] != null && itemsOne[indexOne].getType() != Material.AIR) break;
             }
 
-            if (!matcher.match(r[i], content[j]))
+            if (indexTwo == itemsTwo.length || indexOne == itemsOne.length) {
+                return indexTwo == itemsTwo.length && indexOne == itemsOne.length;
+            }
+            if (!matcher.match(itemsTwo[indexTwo], itemsOne[indexOne]))
                 return false;
 
             //The offsets have to be the same, otherwise the shape isn't equal.
-            if (iOffx != jOffx || iOffy != jOffy) return false;
+            if (iIndex != jIndex || twoRowOffset != oneRowOffset) return false;
         }
     }
 
-    public static boolean shapeMatches(ItemStack[] content, ItemStack[] r, IMatcher<ItemStack> matcher){
-        int rowSize = content == null ? 0 : (int)Math.sqrt(content.length);
+    public static boolean shapeMatches(final ItemStack[] content, final ItemStack[] stacks, final IMatcher<ItemStack> matcher){
+        final int rowSize = content == null ? 0 : (int)Math.sqrt(content.length);
 
-        return shapeIterationMatches(content, r, matcher, rowSize) || shapeIterationMatches(mirror(content, rowSize), r, matcher, rowSize);
+        return shapeIterationMatches(content, stacks, matcher, rowSize) || shapeIterationMatches(mirror(content, rowSize), stacks, matcher, rowSize);
     }
 
-    private static ItemStack[] ensureNoGaps(ItemStack[] items){
-        return Arrays.asList(items).stream().filter(x -> x != null).toArray(ItemStack[]::new);
+    private static ItemStack[] ensureNoGaps(final ItemStack[] items){
+        return Arrays.asList(items).stream().filter(x -> x != null && x.getType() != Material.AIR).toArray(ItemStack[]::new);
     }
 
-    public static boolean ingredientsMatch(ItemStack[] a, ItemStack[] b, IMatcher<ItemStack> matcher){
+    public static boolean ingredientsMatch(ItemStack[] a, ItemStack[] b, final IMatcher<ItemStack> matcher){
         //array with all values to false.
         a = ensureNoGaps(a);
         b = ensureNoGaps(b);
@@ -100,10 +96,10 @@ public class WBRecipeComparer {
         if(a.length != b.length) return false;
 
         //use no primitive type to allow Boolean stream of objects instead of arrays.
-        Boolean[] used = new Boolean[a.length];
+        final Boolean[] used = new Boolean[a.length];
         Arrays.fill(used, false);
 
-        for(ItemStack inRecipe : a){
+        for(final ItemStack inRecipe : a){
             if(inRecipe == null) continue;
             //Look if inRecipe matches with an ingredient.
             for(int i = 0; i < used.length; i++) {

@@ -12,17 +12,18 @@ import java.util.List;
 
 public class CraftEnhanceAPI {
 
-    private static List<CustomCraftListener> customCraftListeners = new ArrayList<>();
+    private static final List<CustomCraftListener> customCraftListeners = new ArrayList<>();
 
-    public static void registerListener(CustomCraftListener listener){
+    public static void registerListener(final CustomCraftListener listener){
         if(!customCraftListeners.contains(listener))
             customCraftListeners.add(listener);
     }
 
-    public static boolean fireEvent(EnhancedRecipe recipe, Player p, Inventory craftingInventory, RecipeGroup alternatives){
+    public static boolean fireEvent(final EnhancedRecipe recipe, final Player p, final Inventory craftingInventory, final RecipeGroup alternatives){
         try{
+            System.out.println("customCraftListeners " + customCraftListeners);
             return customCraftListeners.stream().map(x -> x.listener(recipe, p, craftingInventory, alternatives)).anyMatch(x -> x);
-        }catch(Exception e){
+        }catch(final Exception e){
             e.printStackTrace();
         }
         return false;

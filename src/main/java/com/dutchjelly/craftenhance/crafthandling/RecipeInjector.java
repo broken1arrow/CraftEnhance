@@ -52,10 +52,10 @@ import static com.dutchjelly.craftenhance.util.FurnaceDefultValues.getExp;
 
 public class RecipeInjector implements Listener {
 
-    private JavaPlugin plugin;
-    private RecipeLoader loader;
-    private boolean disableDefaultModeldataCrafts;
-    private boolean makeItemsadderCompatible;
+    private final JavaPlugin plugin;
+    private final RecipeLoader loader;
+    private final boolean disableDefaultModeldataCrafts;
+    private final boolean makeItemsadderCompatible;
 
     //Stores info to pause furnaces from running their burn event every tick.
     private final Map<Furnace, LocalDateTime> pausedFurnaces = new HashMap<>();
@@ -65,7 +65,7 @@ public class RecipeInjector implements Listener {
     private final Map<Location, UUID> containerOwners = new HashMap<>();
     private final Set<Location> notCustomItem = new HashSet<>();
 
-    public RecipeInjector(JavaPlugin plugin) {
+    public RecipeInjector(final JavaPlugin plugin) {
         this.plugin = plugin;
         loader = RecipeLoader.getInstance();
         disableDefaultModeldataCrafts = plugin.getConfig().getBoolean("disable-default-custom-model-data-crafts");
@@ -73,7 +73,7 @@ public class RecipeInjector implements Listener {
     }
 
     //Add registrations of owners of containers.
-    public void registerContainerOwners(Map<Location, UUID> containerOwners) {
+    public void registerContainerOwners(final Map<Location, UUID> containerOwners) {
         //Make sure to only register containers, in case some are non existent anymore.
         containerOwners.forEach((key, value) -> {
             if (key != null && key.getWorld() != null)
@@ -81,7 +81,7 @@ public class RecipeInjector implements Listener {
         });
     }
 
-    private boolean containsModeldata(CraftingInventory inv) {
+    private boolean containsModeldata(final CraftingInventory inv) {
         return Arrays.stream(inv.getMatrix()).anyMatch(x -> x != null && x.hasItemMeta() && x.getItemMeta().hasCustomModelData());
     }
 
@@ -92,25 +92,24 @@ public class RecipeInjector implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void handleCrafting(PrepareItemCraftEvent e) {
-
+    public void handleCrafting(final PrepareItemCraftEvent e) {
         if (e.getRecipe() == null || e.getRecipe().getResult() == null || !plugin.getConfig().getBoolean("enable-recipes"))
             return;
         if (!(e.getInventory() instanceof CraftingInventory)) return;
 
-        CraftingInventory inv = e.getInventory();
-        Recipe serverRecipe = e.getRecipe();
-
+        final CraftingInventory inv = e.getInventory();
+        final Recipe serverRecipe = e.getRecipe();
         Debug.Send("The server wants to inject " + serverRecipe.getResult().toString() + " ceh will check or modify this.");
 
-        List<RecipeGroup> possibleRecipeGroups = loader.findGroupsByResult(serverRecipe.getResult(), RecipeType.WORKBENCH);
-        List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
+        final List<RecipeGroup> possibleRecipeGroups = loader.findGroupsByResult(serverRecipe.getResult(), RecipeType.WORKBENCH);
+        final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
         if (disabledServerRecipes != null && !disabledServerRecipes.isEmpty())
-            for (Recipe disabledRecipe : disabledServerRecipes)
+            for (final Recipe disabledRecipe : disabledServerRecipes) {
                 if (disabledRecipe.getResult().isSimilar(serverRecipe.getResult())) {
                     inv.setResult(null);
                     return;
                 }
+            }
         if (possibleRecipeGroups == null || possibleRecipeGroups.size() == 0) {
             if (disableDefaultModeldataCrafts && Adapter.canUseModeldata() && containsModeldata(inv)) {
                 inv.setResult(null);
@@ -118,20 +117,17 @@ public class RecipeInjector implements Listener {
             Debug.Send("no matching groups");
             return;
         }
-
-        for (RecipeGroup group : possibleRecipeGroups) {
-
+        for (final RecipeGroup group : possibleRecipeGroups) {
+            System.out.println("handleCrafting group  " + group);
             //Check if any grouped enhanced recipe is a match.
-            for (EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
+            for (final EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
                 if (!(eRecipe instanceof WBRecipe)) return;
-
-                WBRecipe wbRecipe = (WBRecipe) eRecipe;
+                final WBRecipe wbRecipe = (WBRecipe) eRecipe;
                 Debug.Send("Checking if enhanced recipe for " + wbRecipe.getResult().toString() + " matches.");
 
                 if (wbRecipe.matches(inv.getMatrix())
                         && e.getViewers().stream().allMatch(x -> entityCanCraft(x, wbRecipe))
                         && !CraftEnhanceAPI.fireEvent(wbRecipe, e.getViewers().size() > 0 ? (Player) e.getViewers().get(0) : null, inv, group)) {
-
                     Debug.Send("Recipe matches, injecting " + wbRecipe.getResult().toString());
                     if (makeItemsadderCompatible && containsModeldata(inv)) {
                         Bukkit.getScheduler().runTask(CraftEnhance.self(), () -> {
@@ -139,22 +135,24 @@ public class RecipeInjector implements Listener {
                                 inv.setResult(wbRecipe.getResult());
                             }
                         });
-                    } else inv.setResult(wbRecipe.getResult());
+                    } else {
+                        inv.setResult(wbRecipe.getResult());
+                    }
                     return;
                 }
                 Debug.Send("Recipe doesn't match.");
             }
 
             //Check for similar server recipes if no enhanced ones match.
-            for (Recipe sRecipe : group.getServerRecipes()) {
+            for (final Recipe sRecipe : group.getServerRecipes()) {
                 if (sRecipe instanceof ShapedRecipe) {
-                    ItemStack[] content = ServerRecipeTranslator.translateShapedRecipe((ShapedRecipe) sRecipe);
+                    final ItemStack[] content = ServerRecipeTranslator.translateShapedRecipe((ShapedRecipe) sRecipe);
                     if (WBRecipeComparer.shapeMatches(content, inv.getMatrix(), getTypeMatcher())) {
                         inv.setResult(sRecipe.getResult());
                         return;
                     }
                 } else if (sRecipe instanceof ShapelessRecipe) {
-                    ItemStack[] ingredients = ServerRecipeTranslator.translateShapelessRecipe((ShapelessRecipe) sRecipe);
+                    final ItemStack[] ingredients = ServerRecipeTranslator.translateShapelessRecipe((ShapelessRecipe) sRecipe);
                     if (WBRecipeComparer.ingredientsMatch(ingredients, inv.getMatrix(), getTypeMatcher())) {
                         inv.setResult(sRecipe.getResult());
                         return;
@@ -165,28 +163,28 @@ public class RecipeInjector implements Listener {
         inv.setResult(null); //We found similar custom recipes, but none matched exactly. So set result to null.
     }
 
-    public RecipeGroup getMatchingRecipeGroup(ItemStack source) {
-        ItemStack[] srcMatrix = new ItemStack[]{source};
-        FurnaceRecipe recipe = new FurnaceRecipe(null, null, srcMatrix);
+    public RecipeGroup getMatchingRecipeGroup(final ItemStack source) {
+        final ItemStack[] srcMatrix = new ItemStack[]{source};
+        final FurnaceRecipe recipe = new FurnaceRecipe(null, null, srcMatrix);
         return RecipeLoader.getInstance().findSimilarGroup(recipe);
     }
 
-    public Optional<ItemStack> getFurnaceResult(RecipeGroup group, ItemStack source, Furnace furnace) {
-        ItemStack[] srcMatrix = new ItemStack[]{source};
+    public Optional<ItemStack> getFurnaceResult(final RecipeGroup group, final ItemStack source, final Furnace furnace) {
+        final ItemStack[] srcMatrix = new ItemStack[]{source};
         //FurnaceRecipe recipe = new FurnaceRecipe(null, null, srcMatrix);
         //RecipeGroup group = RecipeLoader.getInstance().findSimilarGroup(recipe);
         if (group == null) {
             Debug.Send("furnace recipe does not match any group, so not changing the outcome");
             return null;
         }
-        UUID playerId = containerOwners.get(furnace.getLocation());
-        Player p = playerId == null ? null : plugin.getServer().getPlayer(playerId);
+        final UUID playerId = containerOwners.get(furnace.getLocation());
+        final Player p = playerId == null ? null : plugin.getServer().getPlayer(playerId);
         Debug.Send("Furnace belongs to player: " + p + " the id " + playerId);
         Debug.Send("Furnace source item: " + source);
 
         //Check if any grouped enhanced recipe is a match.
-        for (EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
-            FurnaceRecipe fRecipe = (FurnaceRecipe) eRecipe;
+        for (final EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
+            final FurnaceRecipe fRecipe = (FurnaceRecipe) eRecipe;
 
             Debug.Send("Checking if enhanced recipe for " + fRecipe.getResult().toString() + " matches.");
 
@@ -212,8 +210,8 @@ public class RecipeInjector implements Listener {
             }
         }
         //Check for similar server recipes if no enhanced ones match.
-        for (Recipe sRecipe : group.getServerRecipes()) {
-            org.bukkit.inventory.FurnaceRecipe fRecipe = (org.bukkit.inventory.FurnaceRecipe) sRecipe;
+        for (final Recipe sRecipe : group.getServerRecipes()) {
+            final org.bukkit.inventory.FurnaceRecipe fRecipe = (org.bukkit.inventory.FurnaceRecipe) sRecipe;
             if (getTypeMatcher().match(fRecipe.getInput(), source)) {
                 Debug.Send("found similar server recipe for furnace");
                 return Optional.empty();
@@ -223,7 +221,7 @@ public class RecipeInjector implements Listener {
     }
 
     @EventHandler
-    public void exstract(FurnaceExtractEvent e) {
+    public void exstract(final FurnaceExtractEvent e) {
 
         if (!notCustomItem.isEmpty() && notCustomItem.contains(e.getBlock().getLocation())) {
             e.setExpToDrop(getExp(e.getItemType()));
@@ -232,22 +230,22 @@ public class RecipeInjector implements Listener {
     }
 
     @EventHandler
-    public void smelt(FurnaceSmeltEvent e) {
+    public void smelt(final FurnaceSmeltEvent e) {
         Debug.Send("furnace smelt");
-        RecipeGroup group = getMatchingRecipeGroup(e.getSource());
-        Optional<ItemStack> result = getFurnaceResult(group, e.getSource(), (Furnace) e.getBlock().getState());
+        final RecipeGroup group = getMatchingRecipeGroup(e.getSource());
+        final Optional<ItemStack> result = getFurnaceResult(group, e.getSource(), (Furnace) e.getBlock().getState());
         if (result == null) return;
 
         if (result.isPresent()) {
             e.setResult(result.get());
         } else {
-            ItemStack itemStack = RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(e.getSource().getType()));
+            final ItemStack itemStack = RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(e.getSource().getType()));
             if (itemStack != null) {
                 //Adapter.GetFurnaceRecipe(CraftEnhance.self(), ServerRecipeTranslator.GetFreeKey(itemStack.getType().name().toLowerCase()), itemStack, e.getSource().getType(), 160, getExp(itemStack.getType()));
                 //pausedFurnaces.put((Furnace) e.getBlock().getState(), LocalDateTime.now().plusSeconds(10L));
                 e.setResult(itemStack);
-                for (EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
-                    FurnaceRecipe fRecipe = (FurnaceRecipe) eRecipe;
+                for (final EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
+                    final FurnaceRecipe fRecipe = (FurnaceRecipe) eRecipe;
                     if (fRecipe.matcheType(new ItemStack[]{e.getSource()})) {
                         notCustomItem.add(e.getBlock().getLocation());
                         break;
@@ -261,18 +259,18 @@ public class RecipeInjector implements Listener {
     }
 
     @EventHandler (ignoreCancelled = false)
-    public void burn(FurnaceBurnEvent e) {
+    public void burn(final FurnaceBurnEvent e) {
         Debug.Send("furnace burn");
         if (e.isCancelled()) return;
-        Furnace f = (Furnace) e.getBlock().getState();
+        final Furnace f = (Furnace) e.getBlock().getState();
         //Reduce computing time by pausing furnaces. This can be removed if we also check for hoppers
         //instead of only clicks to unpause.
         if (pausedFurnaces.getOrDefault(f, LocalDateTime.now()).isAfter(LocalDateTime.now())) {
             e.setCancelled(true);
             return;
         }
-        RecipeGroup recipe = getMatchingRecipeGroup(f.getInventory().getSmelting());
-        Optional<ItemStack> result = getFurnaceResult(recipe, f.getInventory().getSmelting(), (Furnace) e.getBlock().getState());
+        final RecipeGroup recipe = getMatchingRecipeGroup(f.getInventory().getSmelting());
+        final Optional<ItemStack> result = getFurnaceResult(recipe, f.getInventory().getSmelting(), (Furnace) e.getBlock().getState());
         if (result != null && !result.isPresent()) {
             if (f.getInventory().getSmelting() != null && RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(f.getInventory().getSmelting().getType())) != null)
                 return;
@@ -282,17 +280,17 @@ public class RecipeInjector implements Listener {
     }
 
     @EventHandler
-    public void furnaceClick(InventoryClickEvent e) {
+    public void furnaceClick(final InventoryClickEvent e) {
         if (e.isCancelled()) return;
         if (e.getView().getTopInventory() instanceof FurnaceInventory) {
-            Furnace f = (Furnace) e.getView().getTopInventory().getHolder();
+            final Furnace f = (Furnace) e.getView().getTopInventory().getHolder();
 
             pausedFurnaces.remove(f);
         }
     }
 
     @EventHandler
-    public void furnacePlace(BlockPlaceEvent e) {
+    public void furnacePlace(final BlockPlaceEvent e) {
         if (e.isCancelled()) return;
         if (e.getBlock().getType().equals(Material.FURNACE)) {
             containerOwners.put(e.getBlock().getLocation(), e.getPlayer().getUniqueId());
@@ -300,7 +298,7 @@ public class RecipeInjector implements Listener {
     }
 
     @EventHandler
-    public void furnaceBreak(BlockBreakEvent e) {
+    public void furnaceBreak(final BlockBreakEvent e) {
         if (e.isCancelled()) return;
         if (e.getBlock().getType().equals(Material.FURNACE)) {
             containerOwners.remove(e.getBlock().getLocation());
@@ -308,7 +306,7 @@ public class RecipeInjector implements Listener {
         }
     }
 
-    private boolean entityCanCraft(Permissible entity, EnhancedRecipe group) {
+    private boolean entityCanCraft(final Permissible entity, final EnhancedRecipe group) {
         return group.getPermissions() == null || group.getPermissions().equals("")
                 || (entity != null && entity.hasPermission(group.getPermissions()));
     }

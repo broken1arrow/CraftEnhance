@@ -7,6 +7,7 @@ import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import lombok.SneakyThrows;
+import org.brokenarrow.menu.library.utility.ServerVersion;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -40,13 +41,13 @@ public class FileManager {
 	private Map<String, ItemStack> items;
 	private List<EnhancedRecipe> recipes;
 
-	private FileManager(boolean useJson) {
+	private FileManager(final boolean useJson) {
 		this.useJson = useJson;
 	}
 
-	public static FileManager init(CraftEnhance main) {
+	public static FileManager init(final CraftEnhance main) {
 //		FileManager fm = new FileManager(main.getConfig().getBoolean("use-json"));
-		FileManager fm = new FileManager(main.getConfig().getBoolean("use-json"));
+		final FileManager fm = new FileManager(main.getConfig().getBoolean("use-json"));
 		fm.items = new HashMap<>();
 		fm.recipes = new ArrayList<>();
 		fm.logger = main.getLogger();
@@ -60,23 +61,29 @@ public class FileManager {
 	}
 
 	@SneakyThrows
-	public static boolean EnsureResourceUpdate(String resourceName, File file, FileConfiguration fileConfig, JavaPlugin plugin) {
+	public static boolean EnsureResourceUpdate(final String resourceName, final File file, final FileConfiguration fileConfig, final JavaPlugin plugin) {
 		if (!file.exists()) {
 			plugin.saveResource(resourceName, false);
 			return false;
 		}
 
-		Reader jarConfigReader = new InputStreamReader(plugin.getResource(resourceName));
-		FileConfiguration jarResourceConfig = YamlConfiguration.loadConfiguration(jarConfigReader);
+		final Reader jarConfigReader = new InputStreamReader(plugin.getResource(resourceName));
+		final FileConfiguration jarResourceConfig = YamlConfiguration.loadConfiguration(jarConfigReader);
 		jarConfigReader.close();
 
 		boolean unsavedChanges = false;
 
-		for (String key : jarResourceConfig.getKeys(false)) {
-			if (!fileConfig.contains(key, false)) {
-				fileConfig.set(key, jarResourceConfig.get(key));
-				unsavedChanges = true;
-			}
+		for (final String key : jarResourceConfig.getKeys(false)) {
+			if (ServerVersion.newerThan(ServerVersion.v1_8))
+				if (!fileConfig.contains(key, false)) {
+					fileConfig.set(key, jarResourceConfig.get(key));
+					unsavedChanges = true;
+				} else {
+					if (!fileConfig.contains(key)) {
+						fileConfig.set(key, jarResourceConfig.get(key));
+						unsavedChanges = true;
+					}
+				}
 		}
 
 		if (unsavedChanges)
@@ -84,12 +91,12 @@ public class FileManager {
 		return true;
 	}
 
-	private File ensureCreated(File file) {
+	private File ensureCreated(final File file) {
 		if (!file.exists()) {
 			logger.info(file.getName() + " doesn't exist... creating it.");
 			try {
 				file.createNewFile();
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				logger.warning("The file " + file.getName()
 						+ " couldn't be created!");
 			}
@@ -97,13 +104,13 @@ public class FileManager {
 		return file;
 	}
 
-	private File getFile(String name) {
-		File file = new File(dataFolder, name);
+	private File getFile(final String name) {
+		final File file = new File(dataFolder, name);
 		ensureCreated(file);
 		return file;
 	}
 
-	private FileConfiguration getYamlConfig(File file) {
+	private FileConfiguration getYamlConfig(final File file) {
 		return YamlConfiguration.loadConfiguration(file);
 	}
 
@@ -112,10 +119,10 @@ public class FileManager {
 		EnhancedRecipe keyValue;
 		recipesConfig = getYamlConfig(recipesFile);
 		recipes.clear();
-		for (String key : recipesConfig.getKeys(false)) {
+		for (final String key : recipesConfig.getKeys(false)) {
 			Debug.Send("Caching recipe with key " + key);
 			keyValue = (EnhancedRecipe) recipesConfig.get(key);
-			String validation = keyValue.validate();
+			final String validation = keyValue.validate();
 			if (validation != null) {
 				Messenger.Error("Recipe with key " + key + " has issues: " + validation);
 				Messenger.Error("This recipe will not be cached and loaded.");
@@ -131,15 +138,15 @@ public class FileManager {
 
 		if (useJson) {
 
-			StringBuilder json = new StringBuilder("");
-			Scanner scanner = new Scanner(itemsFile);
+			final StringBuilder json = new StringBuilder("");
+			final Scanner scanner = new Scanner(itemsFile);
 			while (scanner.hasNextLine())
 				json.append(scanner.nextLine());
 			scanner.close();
 			items.clear();
-			Type typeToken = new TypeToken<HashMap<String, Map<String, Object>>>() {
+			final Type typeToken = new TypeToken<HashMap<String, Map<String, Object>>>() {
 			}.getType();
-			Gson gson = new Gson();
+			final Gson gson = new Gson();
 			final Map<String, Map<String, Object>> serialized = gson.fromJson(json.toString(), typeToken);
 			if (serialized != null)
 				serialized.keySet().forEach(x -> items.put(x, ItemStack.deserialize(serialized.get(x))));
@@ -148,7 +155,7 @@ public class FileManager {
 
 		itemsConfig = getYamlConfig(itemsFile);
 		items.clear();
-		for (String key : itemsConfig.getKeys(false)) {
+		for (final String key : itemsConfig.getKeys(false)) {
 			items.put(key, itemsConfig.getItemStack(key));
 		}
 	}
@@ -157,22 +164,22 @@ public class FileManager {
 		return items;
 	}
 
-	public ItemStack getItem(String key) {
+	public ItemStack getItem(final String key) {
 		return items.get(key);
 	}
 
-	public String getItemKey(ItemStack item) {
+	public String getItemKey(final ItemStack item) {
 		if (item == null) return null;
-		for (String key : items.keySet()) {
+		for (final String key : items.keySet()) {
 			if (item.equals(items.get(key)))
 				return key;
 		}
-		String uniqueKey = getUniqueItemKey(item);
+		final String uniqueKey = getUniqueItemKey(item);
 		saveItem(uniqueKey, item);
 		return uniqueKey;
 	}
 
-	private String getUniqueItemKey(ItemStack item) {
+	private String getUniqueItemKey(final ItemStack item) {
 		if (item == null) return null;
 		String base = item.hasItemMeta() && item.getItemMeta().hasDisplayName() ?
 				item.getItemMeta().getDisplayName() : item.getType().name();
@@ -188,29 +195,29 @@ public class FileManager {
 		return recipes;
 	}
 
-	public EnhancedRecipe getRecipe(String key) {
-		for (EnhancedRecipe recipe : recipes) {
+	public EnhancedRecipe getRecipe(final String key) {
+		for (final EnhancedRecipe recipe : recipes) {
 			if (recipe.getKey().equals(key))
 				return recipe;
 		}
 		return null;
 	}
 
-	public boolean isUniqueRecipeKey(String key) {
+	public boolean isUniqueRecipeKey(final String key) {
 		return getRecipe(key) == null;
 	}
 
 	@SneakyThrows
-	public boolean saveItem(String key, ItemStack item) {
+	public boolean saveItem(final String key, final ItemStack item) {
 
 		if (useJson) {
 			items.put(key, item);
-			Gson gson = new Gson();
-			Map<String, Map<String, Object>> serialized = new HashMap<>();
+			final Gson gson = new Gson();
+			final Map<String, Map<String, Object>> serialized = new HashMap<>();
 			items.keySet().forEach(x -> serialized.put(x, items.get(x).serialize()));
 			itemsJson = gson.toJson(serialized, new TypeToken<HashMap<String, Map<String, Object>>>() {
 			}.getType());
-			FileWriter writer = new FileWriter(itemsFile);
+			final FileWriter writer = new FileWriter(itemsFile);
 			writer.write(itemsJson);
 			writer.close();
 			return true;
@@ -223,7 +230,7 @@ public class FileManager {
 				itemsConfig.save(itemsFile);
 				items.put(key, item);
 				return true;
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				logger.severe("Error saving an item to the items.yml file.");
 			}
 		}
@@ -236,11 +243,11 @@ public class FileManager {
 		return serverRecipeConfig.getStringList("disabled");
 	}
 
-	public boolean saveDisabledServerRecipes(List<String> keys) {
+	public boolean saveDisabledServerRecipes(final List<String> keys) {
 		serverRecipeConfig.set("disabled", keys);
 		try {
 			serverRecipeConfig.save(serverRecipeFile);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			return false;
 		}
 		return true;
@@ -248,13 +255,13 @@ public class FileManager {
 
 	public Map<Location, UUID> getContainerOwners() {
 		containerOwnerConfig = getYamlConfig(containerOwnerFile);
-		Map<Location, UUID> blockOwners = new HashMap<>();
-		for (String key : containerOwnerConfig.getKeys(false)) {
+		final Map<Location, UUID> blockOwners = new HashMap<>();
+		for (final String key : containerOwnerConfig.getKeys(false)) {
 			if (key == null) continue;
-			String[] parsedKey = key.split(",");
-			World world = Bukkit.getServer().getWorld(UUID.fromString(parsedKey[3]));
+			final String[] parsedKey = key.split(",");
+			final World world = Bukkit.getServer().getWorld(UUID.fromString(parsedKey[3]));
 			if ( world != null){
-			Location loc = new Location(
+			final Location loc = new Location(
 					world,
 					Integer.parseInt(parsedKey[0]),
 					Integer.parseInt(parsedKey[1]),
@@ -265,22 +272,22 @@ public class FileManager {
 		return blockOwners;
 	}
 
-	public boolean saveContainerOwners(Map<Location, UUID> blockOwners) {
+	public boolean saveContainerOwners(final Map<Location, UUID> blockOwners) {
 		containerOwnerConfig.getKeys(false).forEach(x -> containerOwnerConfig.set(x, null));
-		for (Map.Entry<Location, UUID> blockOwnerSet : blockOwners.entrySet()) {
-			Location key = blockOwnerSet.getKey();
-			String keyString = key.getBlockX() + "," + key.getBlockY() + "," + key.getBlockZ() + "," + key.getWorld().getUID();
+		for (final Map.Entry<Location, UUID> blockOwnerSet : blockOwners.entrySet()) {
+			final Location key = blockOwnerSet.getKey();
+			final String keyString = key.getBlockX() + "," + key.getBlockY() + "," + key.getBlockZ() + "," + key.getWorld().getUID();
 			containerOwnerConfig.set(keyString, blockOwnerSet.getValue().toString());
 		}
 		try {
 			containerOwnerConfig.save(containerOwnerFile);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			return false;
 		}
 		return true;
 	}
 
-	public void saveRecipe(EnhancedRecipe recipe) {
+	public void saveRecipe(final EnhancedRecipe recipe) {
 		Debug.Send("Saving recipe " + recipe.toString() + " with key " + recipe.getKey());
 		String recipeKey = recipe.getKey();
 		if (recipe.getKey().contains(".")) {
@@ -296,12 +303,12 @@ public class FileManager {
 			if (getRecipe(recipe.getKey()) == null)
 				recipes.add(recipe);
 			Debug.Send("Succesfully saved the recipe, there are now " + recipes.size() + " recipes cached.");
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			logger.severe("Error saving a recipe to the recipes.yml file.");
 		}
 	}
 
-	public void removeRecipe(EnhancedRecipe recipe) {
+	public void removeRecipe(final EnhancedRecipe recipe) {
 		Debug.Send("Removing recipe " + recipe.toString() + " with key " + recipe.getKey());
 		String recipeKey = recipe.getKey();
 		if (recipe.getKey().contains(".")) {
@@ -315,14 +322,14 @@ public class FileManager {
 		recipes.remove(recipe);
 		try {
 			recipesConfig.save(recipesFile);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			logger.severe("Error removing a recipe.");
 		}
 	}
 
 	public void overrideSave() {
 		Debug.Send("Overriding saved recipes with new list..");
-		List<EnhancedRecipe> cloned = new ArrayList<>();
+		final List<EnhancedRecipe> cloned = new ArrayList<>();
 		recipes.forEach(x -> cloned.add(x));
 		removeAllRecipes();
 		cloned.forEach(x -> saveRecipe(x));
@@ -338,23 +345,23 @@ public class FileManager {
 
 	public void cleanItemFile() {
 		Debug.Send("Cleaning up unused items.");
-		for (String itemKey : items.keySet()) {
+		for (final String itemKey : items.keySet()) {
 			if (!isItemInUse(items.get(itemKey))) {
 				Debug.Send("Item with key " + itemKey + " is not used and will be removed.");
 				itemsConfig.set(itemKey, null);
 				try {
 					itemsConfig.save(itemsFile);
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					Debug.Send("Failed saving itemsConfig");
 				}
 			}
 		}
 	}
 
-	private boolean isItemInUse(ItemStack item) {
-		for (EnhancedRecipe r : recipes) {
+	private boolean isItemInUse(final ItemStack item) {
+		for (final EnhancedRecipe r : recipes) {
 			if (r.getResult().equals(item)) return true;
-			for (ItemStack inRecipe : r.getContent()) {
+			for (final ItemStack inRecipe : r.getContent()) {
 				if (inRecipe != null && inRecipe.equals(item)) return true;
 			}
 

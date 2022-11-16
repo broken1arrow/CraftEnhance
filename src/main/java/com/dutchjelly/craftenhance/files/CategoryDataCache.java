@@ -4,6 +4,8 @@ import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.util.SimpleYamlHelper;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nullable;
@@ -101,7 +103,10 @@ public class CategoryDataCache extends SimpleYamlHelper {
 				e.printStackTrace();
 			}
 		}
-		this.getCustomConfig().set("Categorys",null);
+		FileConfiguration fileConfiguration = this.getCustomConfig();
+		if (fileConfiguration == null)
+			fileConfiguration = YamlConfiguration.loadConfiguration(file);
+		fileConfiguration.set("Categorys",null);
 		for (final Entry<String, CategoryData> entry : recipeCategorys.entrySet())
 			this.setData(file, "Categorys." + entry.getKey(), entry.getValue());
 	}
