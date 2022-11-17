@@ -21,7 +21,6 @@ public class CraftEnhanceAPI {
 
     public static boolean fireEvent(final EnhancedRecipe recipe, final Player p, final Inventory craftingInventory, final RecipeGroup alternatives){
         try{
-            System.out.println("customCraftListeners " + customCraftListeners);
             return customCraftListeners.stream().map(x -> x.listener(recipe, p, craftingInventory, alternatives)).anyMatch(x -> x);
         }catch(final Exception e){
             e.printStackTrace();

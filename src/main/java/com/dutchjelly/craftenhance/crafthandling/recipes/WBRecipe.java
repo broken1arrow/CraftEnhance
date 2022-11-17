@@ -12,7 +12,6 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -126,9 +125,7 @@ public class WBRecipe extends EnhancedRecipe {
 
     @Override
     public boolean matches(final ItemStack[] content) {
-        System.out.println("content " + Arrays.toString(content));
-        System.out.println("getContent() " + Arrays.toString(getContent()));
-        System.out.println("isShapeless " + isShapeless());
+
         if(isShapeless() && WBRecipeComparer.ingredientsMatch(content, getContent(),  getMatchType().getMatcher())){
             return true;
         }

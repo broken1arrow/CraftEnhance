@@ -16,9 +16,18 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 public class FileManager {
@@ -152,9 +161,9 @@ public class FileManager {
 				serialized.keySet().forEach(x -> items.put(x, ItemStack.deserialize(serialized.get(x))));
 			return;
 		}
-
 		itemsConfig = getYamlConfig(itemsFile);
 		items.clear();
+		if (itemsConfig != null)
 		for (final String key : itemsConfig.getKeys(false)) {
 			items.put(key, itemsConfig.getItemStack(key));
 		}

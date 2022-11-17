@@ -63,10 +63,8 @@ public class MenuSettingsCache extends SimpleYamlHelper {
 		final InputStream file1 = this.plugin.getResource("guitemplates.yml");
 		if (file1 != null) {
 			final FileConfiguration templateConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(file1));
-			System.out.println("templateConfig" + templateConfig);
 			templateConfig.set("Version",null);
 			for (final String templet : templateConfig.getKeys(true)) {
-				System.out.println("templateConfig" + templet);
 				templateConfig.set(templet, templateConfig.get(templet));
 			}
 			//templateConfig.set("Version", version);

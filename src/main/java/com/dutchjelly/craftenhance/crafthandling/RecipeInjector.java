@@ -118,7 +118,6 @@ public class RecipeInjector implements Listener {
             return;
         }
         for (final RecipeGroup group : possibleRecipeGroups) {
-            System.out.println("handleCrafting group  " + group);
             //Check if any grouped enhanced recipe is a match.
             for (final EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
                 if (!(eRecipe instanceof WBRecipe)) return;
