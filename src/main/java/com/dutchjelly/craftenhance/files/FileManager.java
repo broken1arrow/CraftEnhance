@@ -161,7 +161,10 @@ public class FileManager {
 				serialized.keySet().forEach(x -> items.put(x, ItemStack.deserialize(serialized.get(x))));
 			return;
 		}
-		itemsConfig = getYamlConfig(itemsFile);
+		if (itemsConfig == null)
+			itemsConfig = new YamlConfiguration();
+		itemsConfig.load(itemsFile);
+		//itemsConfig = getYamlConfig(itemsFile);
 		items.clear();
 		if (itemsConfig != null)
 		for (final String key : itemsConfig.getKeys(false)) {

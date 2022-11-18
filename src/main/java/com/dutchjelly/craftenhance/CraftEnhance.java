@@ -81,7 +81,7 @@ public class CraftEnhance extends JavaPlugin{
 		plugin = this;
 		//The file manager needs serialization, so firstly register the classes.
 		registerSerialization();
-
+		versionChecker = VersionChecker.init(this);
 		categoryDataCache = new CategoryDataCache();
 		categoryDataCache.reload();
 
@@ -89,12 +89,11 @@ public class CraftEnhance extends JavaPlugin{
 		new RegisterMenuAPI(this);
 		Debug.init(this);
 		Debug.Send("Checking for config updates.");
-		File configFile = new File(getDataFolder(), "config.yml");
+		final File configFile = new File(getDataFolder(), "config.yml");
 		FileManager.EnsureResourceUpdate("config.yml", configFile, YamlConfiguration.loadConfiguration(configFile), this);
 		Debug.Send("Coloring config messages.");
 		ConfigFormatter.init(this).formatConfigMessages();
 		Messenger.Init(this);
-		versionChecker = VersionChecker.init(this);
 		ItemMatchers.init(getConfig().getBoolean("enable-backwards-compatible-item-matching"));
 
 		this.usingItemsAdder = this.getServer().getPluginManager().getPlugin("ItemsAdder") != null;
@@ -106,7 +105,7 @@ public class CraftEnhance extends JavaPlugin{
 		setupFileManager();
 
 		Debug.Send("Loading recipes");
-		RecipeLoader loader = RecipeLoader.getInstance();
+		final RecipeLoader loader = RecipeLoader.getInstance();
 		fm.getRecipes().stream().filter(x -> x.validate() == null).forEach(loader::loadRecipe);
 		loader.printGroupsDebugInfo();
 		loader.disableServerRecipes(
@@ -162,7 +161,7 @@ public class CraftEnhance extends JavaPlugin{
 	}
 	
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
+	public boolean onCommand(final CommandSender sender, final Command cmd, final String label, final String[] args){
 
 		//Make sure that the user doesn't get a whole stacktrace when using an unsupported server jar.
 		//Note that this error could only get caused by onEnable() not being called.
@@ -225,8 +224,8 @@ public class CraftEnhance extends JavaPlugin{
 		fm.cacheRecipes();
 	}
 
-	public void openEnhancedCraftingTable(Player p){
-		CustomCraftingTable table = new CustomCraftingTable(
+	public void openEnhancedCraftingTable(final Player p){
+		final CustomCraftingTable table = new CustomCraftingTable(
 				getGuiManager(),
 				getGuiTemplatesFile().getTemplate(null),
 				null, p

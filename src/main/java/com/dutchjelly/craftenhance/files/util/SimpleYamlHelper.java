@@ -266,21 +266,12 @@ public abstract class SimpleYamlHelper {
 	}
 
 	public File[] getAllFilesInPluginJar() {
-		final File[] files;
 		if (this.shallGenerateFiles) {
-			files = getFilesInPluginFolder(getName());
 			final List<String> filenamesFromDir = getFilenamesForDirnameFromCP(getName());
-			if (filenamesFromDir == null) return null;
-			filesFromResource = new HashSet<>();
-
-			for (final String file : filenamesFromDir) {
-				if (!fileExists(file))
-					this.plugin.saveResource(file, false);
-				filesFromResource.add(file);
-			}
-		} else
-			files = getFilesInPluginFolder(getName());
-		return files;
+			if (filenamesFromDir != null)
+				filesFromResource = new HashSet<>(filenamesFromDir);
+		}
+		return getFilesInPluginFolder(getName());
 	}
 
 	public List<String> getFiles() {
@@ -520,7 +511,7 @@ public abstract class SimpleYamlHelper {
 			public CatchExceptions(final String message) {
 				super(message);
 			}
-			public CatchExceptions(Exception ex,final String message) {
+			public CatchExceptions(final Exception ex, final String message) {
 				super(message,ex);
 			}
 		}
