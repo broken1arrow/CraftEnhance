@@ -2,6 +2,7 @@ package com.dutchjelly.craftenhance.files;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
+import com.dutchjelly.craftenhance.files.util.ConfigurationSerializeUtility;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 

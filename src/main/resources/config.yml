@@ -17,6 +17,8 @@ learn-recipes: false
 debug-prefix: "[DEBUG] "
 global-prefix: "&7[&bCraft&dEnhance&7] &r"
 
+#If it shall save the recipe when close menu
+save_on_close: false
 # These permissions are used globally by all features of the plugin.
 perms:
   recipe-editor: "craftenhance.edit"

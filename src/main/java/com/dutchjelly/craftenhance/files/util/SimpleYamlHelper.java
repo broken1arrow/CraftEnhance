@@ -1,6 +1,5 @@
 package com.dutchjelly.craftenhance.files.util;
 
-import com.dutchjelly.craftenhance.files.ConfigurationSerializeUtility;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -137,7 +136,7 @@ public abstract class SimpleYamlHelper {
 	}
 
 	public void load(final File[] files) throws IOException, InvalidConfigurationException {
-		if (files != null)
+		if (files != null && files.length > 0) {
 			for (final File file : files) {
 				if (file == null) continue;
 				if (getCustomConfigFile() == null) {
@@ -153,6 +152,14 @@ public abstract class SimpleYamlHelper {
 					this.customConfig.load(file);
 				loadSettingsFromYaml(file);
 			}
+		} else if (shallGenerateFiles) {
+			final File file = new File(this.getDataFolder(), this.getName());
+			if (!dataFolder.exists() && !isSingelFile())
+				dataFolder.mkdirs();
+			if (isSingelFile())
+				file.createNewFile();
+			this.customConfig = YamlConfiguration.loadConfiguration(file);
+		}
 	}
 
 	public File getDataFolder() {

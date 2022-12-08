@@ -1,7 +1,7 @@
 package com.dutchjelly.craftenhance.gui.templates;
 
 import com.dutchjelly.bukkitadapter.Adapter;
-import com.dutchjelly.craftenhance.files.ConfigurationSerializeUtility;
+import com.dutchjelly.craftenhance.files.util.ConfigurationSerializeUtility;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
@@ -22,7 +22,7 @@ public class MenuButton implements ConfigurationSerializeUtility {
 	private final boolean glow;
 	private final ButtonType buttonType;
 
-	public MenuButton(Builder builder) {
+	public MenuButton(final Builder builder) {
 		this.itemStack = builder.itemStack;
 		this.color = builder.color;
 		this.material = builder.material;
@@ -70,37 +70,37 @@ public class MenuButton implements ConfigurationSerializeUtility {
 		private boolean glow;
 		private ButtonType buttonType;
 
-		public Builder setItemStack(ItemStack itemStack) {
+		public Builder setItemStack(final ItemStack itemStack) {
 			this.itemStack = itemStack;
 			return this;
 		}
 
-		public Builder setColor(DyeColor color) {
+		public Builder setColor(final DyeColor color) {
 			this.color = color;
 			return this;
 		}
 
-		public Builder setMaterial(Material material) {
+		public Builder setMaterial(final Material material) {
 			this.material = material;
 			return this;
 		}
 
-		public Builder setDisplayName(String displayName) {
+		public Builder setDisplayName(final String displayName) {
 			this.displayName = displayName;
 			return this;
 		}
 
-		public Builder setLore(List<String> lore) {
+		public Builder setLore(final List<String> lore) {
 			this.lore = lore;
 			return this;
 		}
 
-		public Builder setGlow(boolean glow) {
+		public Builder setGlow(final boolean glow) {
 			this.glow = glow;
 			return this;
 		}
 
-		public Builder setButtonType(ButtonType buttonType) {
+		public Builder setButtonType(final ButtonType buttonType) {
 			this.buttonType = buttonType;
 			return this;
 		}
@@ -112,7 +112,7 @@ public class MenuButton implements ConfigurationSerializeUtility {
 
 	@Override
 	public Map<String, Object> serialize() {
-		Map<String, Object> map = new LinkedHashMap<>();
+		final Map<String, Object> map = new LinkedHashMap<>();
 		map.put("color", color);
 		map.put("material", material + "");
 		map.put("name", displayName);
@@ -123,16 +123,16 @@ public class MenuButton implements ConfigurationSerializeUtility {
 		return map;
 	}
 
-	public static MenuButton deserialize(Map< String, Object> map) {
-		String color = (String) map.get("color");
-		String material = (String) map.get("material");
-		String displayName = (String) map.get("name");
-		List<String> lore = (List<String>) map.get("lore");
-		boolean glow = (boolean) map.getOrDefault("glow", false);
-		String buttonType = (String) map.get("buttonType");
+	public static MenuButton deserialize(final Map< String, Object> map) {
+		final String color = (String) map.get("color");
+		final String material = (String) map.get("material");
+		final String displayName = (String) map.get("name");
+		final List<String> lore = (List<String>) map.get("lore");
+		final boolean glow = (boolean) map.getOrDefault("glow", false);
+		final String buttonType = (String) map.get("buttonType");
 
-		ItemStack itemStack = Adapter.getItemStack(material, displayName, lore, color, glow);
-		Builder builder = new Builder();
+		final ItemStack itemStack = Adapter.getItemStack(material, displayName, lore, color, glow);
+		final Builder builder = new Builder();
 		builder.setButtonType(ButtonType.valueOfType(buttonType))
 				.setItemStack(itemStack)
 				.setColor(Adapter.dyeColor(color))
