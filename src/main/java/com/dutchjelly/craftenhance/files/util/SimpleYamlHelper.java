@@ -483,7 +483,13 @@ public abstract class SimpleYamlHelper {
 
 	private void createMissingFiles(final File[] listFiles) {
 		if (this.filesFromResource == null) return;
-		if (listFiles == null ||listFiles.length < 1) return;
+		if (listFiles == null || listFiles.length < 1) {
+			this.filesFromResource.forEach(files -> {
+						if (files.endsWith(getExtension()))
+							this.plugin.saveResource(files, false);
+					});
+			return;
+		}
 
 		this.filesFromResource.stream().filter((files) -> {
 			if (!files.endsWith(getExtension())) return false;
