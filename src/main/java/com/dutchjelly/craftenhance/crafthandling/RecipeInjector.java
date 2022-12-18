@@ -3,12 +3,13 @@ package com.dutchjelly.craftenhance.crafthandling;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
-import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
 import com.dutchjelly.craftenhance.api.CraftEnhanceAPI;
+import com.dutchjelly.craftenhance.api.event.crafting.BeforeCraftOutputEvent;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
+import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.crafthandling.util.WBRecipeComparer;
@@ -131,11 +132,17 @@ public class RecipeInjector implements Listener {
                     if (makeItemsadderCompatible && containsModeldata(inv)) {
                         Bukkit.getScheduler().runTask(CraftEnhance.self(), () -> {
                             if (wbRecipe.matches(inv.getMatrix())) {
-                                inv.setResult(wbRecipe.getResult());
+                                final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(eRecipe,  wbRecipe, wbRecipe.getResult().clone());
+                                if (beforeCraftOutputEvent.isCancelled())
+                                    return;
+                                inv.setResult(beforeCraftOutputEvent.getResultItem());
                             }
                         });
                     } else {
-                        inv.setResult(wbRecipe.getResult());
+                        final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(eRecipe,  wbRecipe, wbRecipe.getResult().clone());
+                        if (beforeCraftOutputEvent.isCancelled())
+                            continue;
+                        inv.setResult(beforeCraftOutputEvent.getResultItem());
                     }
                     return;
                 }

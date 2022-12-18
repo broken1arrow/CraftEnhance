@@ -30,7 +30,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 public class MenuSettingsCache extends SimpleYamlHelper {
 
 	private final Plugin plugin;
-	private static final int version = 3;
+	private static final int version = 4;
 	private final Map<String, MenuTemplate> templates = new HashMap<>();
 
 

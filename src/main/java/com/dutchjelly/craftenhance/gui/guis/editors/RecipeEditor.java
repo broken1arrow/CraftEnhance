@@ -47,6 +47,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	private final MenuTemplate menuTemplate;
 	@Getter
 	private ItemStack result;
+
 	private boolean hidden;
 	private ItemMatchers.MatchType matchType;
 	private boolean shapeless;
@@ -167,6 +168,12 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 				if(parsed < 0) parsed = 0;
 				Messenger.Message("Successfully set duration to " + parsed, getViewer());
 				this.duration = parsed;
+				final CheckItemsInsideInventory checkItemsInsideInventory = new CheckItemsInsideInventory();
+				checkItemsInsideInventory.setSlotsToCheck(menuTemplate.getFillSlots());
+				final Map<Integer, ItemStack> map = checkItemsInsideInventory.getItemsOnSpecifiedSlots( menu, player,false);
+				getIngredients(map, player);
+				this.menuOpen(player);
+				//new RecipeEditor<>(this.recipe, this.categoryData,this.permission,this.editorType).menuOpen(player);
 				return false;
 			});
 			return true;
@@ -186,6 +193,8 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 				if(parsed < 0) parsed = 0;
 				Messenger.Message("Successfully set exp to " + parsed, getViewer());
 				exp = parsed;
+				this.menuOpen(player);
+				//new RecipeEditor<>(this.recipe, this.categoryData,this.permission,this.editorType).menuOpen(player);
 				return false;
 			});
 			return true;
@@ -218,7 +227,13 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		}
 		if (value.getButtonType() == ButtonType.SetPermission){
 			Messenger.Message("Set your own permission on a recipe.Only players some has this permission can craft the item.Type q,exit,cancel to turn it off", getViewer());
-			self().getGuiManager().waitForChatInput(this, player, this::handlePermissionSetCB);
+			self().getGuiManager().waitForChatInput(this, player, (message) ->{
+				if (!handlePermissionSetCB(message)) {
+					this.menuOpen(player);
+					return false;
+				}
+				return true;
+			});
 			return true;
 		}
 		if (value.getButtonType() == ButtonType.SaveRecipe){
@@ -332,6 +347,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			index++;
 
 		}
+
 		this.result = map.remove(resultSlot);
 		if (!arrays.stream().anyMatch(x -> x != null)) {
 			return null;

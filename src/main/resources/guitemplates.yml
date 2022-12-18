@@ -101,10 +101,10 @@ CategorysSettings:
     10:
       buttonType: RemoveCategory
       material: BARRIER
-      name: "&aChange category"
+      name: "&aRemove category"
       lore:
-        - "&fChange category and you"
-        - "&fcan also change the item."
+        - "&fRemove category it will"
+        - "&fmove all recipes to defult."
       glow: true
     12:
       buttonType: ChangeCategoryName
@@ -148,7 +148,8 @@ CategoryList:
       name: "&aCategory:&3 [display_name]"
       lore:
         - " "
-        - "&fClick to choose this Category"
+        - "&fLeftclick to open this Category"
+        - "&fRightclick to edit this Category"
       glow: true
     46:
       buttonType: PrvPage
@@ -203,8 +204,13 @@ WBRecipeViewer:
       glow: true
     12:
       material: WORKBENCH
-      name: "&aEnhanced crafting table recipe"
+      name: "&aCustom crafting table recipe"
       lore:
+        - "&fThis is a presentation on how you add"
+        - "&fthe items in the real crafting table. If"
+        - "&fit shaped recipe you need put the items"
+        - "&fin exact same patern."
+        - "&f"
         - "&fThe recipe is &3[shaped]&f"
         - "&fThe ingredients need &3[match meta]"
       glow: true

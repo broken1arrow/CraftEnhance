@@ -9,6 +9,7 @@ import com.dutchjelly.craftenhance.gui.util.FormatListContents;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.messaging.Messenger;
+import com.dutchjelly.craftenhance.util.PermissionTypes;
 import org.brokenarrow.menu.library.MenuButton;
 import org.brokenarrow.menu.library.MenuHolder;
 import org.bukkit.entity.Player;
@@ -45,7 +46,7 @@ public class RecipesViewerCategorys extends MenuHolder {
 				if (o instanceof CategoryData) {
 					if (clickType == ClickType.LEFT)
 						new RecipesViewer((CategoryData) o, "", player).menuOpen(player);
-					else {
+					else if (player.hasPermission(PermissionTypes.Categorys_editor.getPerm())){
 						new RecipesViewerCategorysSettings(((CategoryData) o).getRecipeCategory()).menuOpen(player);
 					}
 				}

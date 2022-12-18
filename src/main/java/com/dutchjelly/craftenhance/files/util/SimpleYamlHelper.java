@@ -67,6 +67,9 @@ public abstract class SimpleYamlHelper {
 		this.singelFile = singelFile;
 		this.name = this.checkIfFileHasExtension(name);
 		this.shallGenerateFiles = shallGenerateFiles;
+		final File folder = this.plugin.getDataFolder();
+		if (!folder.exists())
+			folder.mkdir();
 	}
 
 	protected abstract void saveDataToFile(final File file);
