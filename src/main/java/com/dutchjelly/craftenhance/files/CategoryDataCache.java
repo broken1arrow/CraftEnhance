@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public class CategoryDataCache extends SimpleYamlHelper {
 
@@ -89,7 +90,9 @@ public class CategoryDataCache extends SimpleYamlHelper {
 		 recipeCategorys.put(category,of(category,itemStack,displayname));
 		return false;
 	}
-
+	public Set<String> getCategoryNames() {
+		return recipeCategorys.keySet();
+	}
 	private Map<String, CategoryData> getRecipeCategorys() {
 		return recipeCategorys;
 	}

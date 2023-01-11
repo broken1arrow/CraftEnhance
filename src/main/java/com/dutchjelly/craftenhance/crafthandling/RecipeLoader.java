@@ -267,7 +267,6 @@ public class RecipeLoader implements Listener {
 			recipe.setRecipeCategory(category);
 		final CategoryData recipeCategory = this.categoryDataCache.get(category);
 		final List<EnhancedRecipe> enhancedRecipeList;
-		System.out.println("this.categoryDataCache " + this.categoryDataCache);
 		if (recipeCategory != null){
 			enhancedRecipeList = recipeCategory.getEnhancedRecipes();
 			if (!enhancedRecipeList.contains(recipe))

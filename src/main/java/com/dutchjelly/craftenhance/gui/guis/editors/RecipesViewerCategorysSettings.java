@@ -98,7 +98,6 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 			});
 		}
 		if (value.getButtonType() == ButtonType.ChangeCategoryItem){
-			System.out.println("this.category " + this.category);
 			Messenger.Message("Change category item. Like this 'stone' without '.Type cancel, quit, exit to close this without change.", getViewer());
 			self().getGuiManager().waitForChatInput(new RecipesViewerCategorys(""), getViewer(), msg-> {
 				if (!GuiUtil.changeCategoryItem(this.category,msg, player)) {

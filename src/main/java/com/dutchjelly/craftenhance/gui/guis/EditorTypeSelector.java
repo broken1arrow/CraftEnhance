@@ -52,7 +52,6 @@ public class EditorTypeSelector extends MenuHolder {
 		if (this.menuTemplate == null) return null;
 		for (final Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()){
 			if (menuTemplate.getKey().contains(slot)){
-				System.out.println("menuTemplate.getKey() " + menuTemplate.getValue());
 				return registerButtons(menuTemplate.getValue());
 			}
 		}

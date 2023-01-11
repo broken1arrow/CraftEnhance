@@ -19,7 +19,10 @@ public class MenuTemplate {
 		this.menuTitel = menuTitel;
 		this.fillSlots = fillSlots;
 		this.menuButtons = menuButtons;
-		this.amountOfButtons = calculateAmountOfButtons( menuButtons);
+		if (fillSlots != null && !fillSlots.isEmpty())
+			this.amountOfButtons = calculateAmountOfButtons( menuButtons, fillSlots);
+		else
+			this.amountOfButtons = calculateAmountOfButtons(menuButtons);
 		this.sound = SoundUtillity.getSound( sound);
 	}
 
@@ -51,6 +54,16 @@ public class MenuTemplate {
 		}
 		return null;
 	}
+	public int calculateAmountOfButtons(final Map<List<Integer>, MenuButton> menuButtons, final List<Integer> fillSlots) {
+		int lastButton = 0;
+		for (final List<Integer> slots : menuButtons.keySet()){
+			for (final Integer slot : slots) {
+				lastButton = Math.max(lastButton,slot);
+			}
+		}
+		return lastButton;
+	}
+
 	public int calculateAmountOfButtons(final Map<List<Integer>, MenuButton> menuButtons) {
 		int amountOfButtons = 0;
 		for (final List<Integer> slots : menuButtons.keySet()){
