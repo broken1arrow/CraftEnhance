@@ -21,7 +21,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
-import static menulibrary.dependencies.rbglib.TextTranslator.toSpigotFormat;
+import static org.brokenarrow.menu.library.dependencies.rbglib.TextTranslator.toSpigotFormat;
+
 
 public class GuiUtil {
 

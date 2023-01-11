@@ -7,6 +7,7 @@ import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
 import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
+import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import org.brokenarrow.menu.library.MenuButton;
 import org.brokenarrow.menu.library.MenuHolder;
 import org.bukkit.entity.Player;
@@ -26,13 +27,13 @@ public class EditorTypeSelector extends MenuHolder {
 	private final String permission;
 	private final String recipeKey;
 	private int slots;
-	public EditorTypeSelector(String recipeKey, String permission) {
+	public EditorTypeSelector(final String recipeKey, final String permission) {
 		this.permission = permission;
 		this.recipeKey = recipeKey;
 		menuTemplate = menuSettingsCache.getTemplates().get("EditorTypeSelector");
-		setMenuSize(9);
+		setMenuSize(GuiUtil.invSize("EditorTypeSelector",menuTemplate.getAmountOfButtons()));
 		setTitle(menuTemplate.getMenuTitel());
-
+		setMenuOpenSound(this.menuTemplate.getSound());
 	}
 
 	private String getFreshKey(String keySeed) {
@@ -47,20 +48,21 @@ public class EditorTypeSelector extends MenuHolder {
 	}
 
 	@Override
-	public MenuButton getButtonAt(int slot) {
+	public MenuButton getButtonAt(final int slot) {
 		if (this.menuTemplate == null) return null;
-		for (Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()){
+		for (final Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()){
 			if (menuTemplate.getKey().contains(slot)){
+				System.out.println("menuTemplate.getKey() " + menuTemplate.getValue());
 				return registerButtons(menuTemplate.getValue());
 			}
 		}
 		return null;
 	}
 
-	private MenuButton registerButtons(com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
+	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(Player player, Inventory menu, ClickType click, ItemStack clickedItem, Object object) {
+			public void onClickInsideMenu(final Player player, final Inventory menu, final ClickType click, final ItemStack clickedItem, final Object object) {
 				run( value,player);
 			}
 
@@ -71,7 +73,7 @@ public class EditorTypeSelector extends MenuHolder {
 		};
 	}
 
-	public void run(com.dutchjelly.craftenhance.gui.templates.MenuButton value,Player player) {
+	public void run(final com.dutchjelly.craftenhance.gui.templates.MenuButton value, final Player player) {
 		EnhancedRecipe newRecipe = null;
 		if (value.getButtonType() == ButtonType.ChooseWorkbenchType){
 			newRecipe = new WBRecipe(permission, null, new ItemStack[9]);
@@ -81,7 +83,7 @@ public class EditorTypeSelector extends MenuHolder {
 		}
 		if (newRecipe != null) {
 			newRecipe.setKey(getFreshKey(recipeKey));
-			RecipeEditor<EnhancedRecipe> recipeEditor = new RecipeEditor<>(newRecipe, null,permission, value.getButtonType());
+			final RecipeEditor<EnhancedRecipe> recipeEditor = new RecipeEditor<>(newRecipe, null,permission, value.getButtonType());
 			recipeEditor.menuOpen(player);
 		}
 	}

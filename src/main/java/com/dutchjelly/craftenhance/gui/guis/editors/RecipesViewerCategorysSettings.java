@@ -34,6 +34,7 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 			setFillSpace(this.menuTemplate.getFillSlots());
 			setTitle(this.menuTemplate.getMenuTitel());
 			setMenuSize(GuiUtil.invSize("CategorysSettings",this.menuTemplate.getAmountOfButtons()));
+			setMenuOpenSound(this.menuTemplate.getSound());
 		}
 		this.category = category;
 	}

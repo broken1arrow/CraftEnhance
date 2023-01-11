@@ -18,11 +18,11 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class FormatListContents {
 
-	public static <RecipeT extends EnhancedRecipe> List<?> formatRecipes(RecipeT recipe) {
+	public static <RecipeT extends EnhancedRecipe> List<?> formatRecipes(final RecipeT recipe) {
 		if (recipe == null) return new ArrayList<>();
-		List<Object> list = new ArrayList<>(Arrays.asList(recipe.getContent()));
+		final List<Object> list = new ArrayList<>(Arrays.asList(recipe.getContent()));
 		//todo fix so it auto set right craftingslot System.out.println("recipe.getResultSlot() " + recipe.getResultSlot());
-		int index;
+		final int index;
 		if (list.size() < 6)
 			index = 1;
 		else
@@ -31,7 +31,7 @@ public class FormatListContents {
 		return list;
 	}
 
-	public static List<EnhancedRecipe> canSeeRecipes(List<EnhancedRecipe> enhancedRecipes, Player p) {
+	public static List<EnhancedRecipe> canSeeRecipes(final List<EnhancedRecipe> enhancedRecipes, final Player p) {
 		return enhancedRecipes.stream().filter(x -> (
 				!self().getConfig().getBoolean("only-show-available") ||
 						x.getPermissions() == null ||
@@ -52,8 +52,8 @@ public class FormatListContents {
 			return new ArrayList<>(categoryNames);
 		return categoryNames.stream().filter(x -> x.contains(grupSeachFor)).collect(Collectors.toList());
 	}
-	public static List<Recipe> getRecipes(final List<Recipe> enabledRecipes,final List<Recipe> disabledRecipes, boolean enableMode, final String grupSeachFor) {
-		List<Recipe> recipes = !enableMode ? enabledRecipes : disabledRecipes;
+	public static List<Recipe> getRecipes(final List<Recipe> enabledRecipes, final List<Recipe> disabledRecipes, final boolean enableMode, final String grupSeachFor) {
+		final List<Recipe> recipes = !enableMode ? enabledRecipes : disabledRecipes;
 		if (grupSeachFor == null || grupSeachFor.equals("")) {
 			return recipes;
 		}

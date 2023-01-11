@@ -70,6 +70,7 @@ public class MenuButton implements ConfigurationSerializeUtility {
 		private boolean glow;
 		private ButtonType buttonType;
 
+
 		public Builder setItemStack(final ItemStack itemStack) {
 			this.itemStack = itemStack;
 			return this;

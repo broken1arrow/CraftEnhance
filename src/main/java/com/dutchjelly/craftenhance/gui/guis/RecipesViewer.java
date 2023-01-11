@@ -28,20 +28,21 @@ public class RecipesViewer extends MenuHolder {
 	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
 	private final MenuTemplate menuTemplate;
 	private final CategoryData categoryData;
-	public RecipesViewer(CategoryData categoryData, String recipeSeachFor, Player player) {
+	public RecipesViewer(final CategoryData categoryData, final String recipeSeachFor, final Player player) {
 		super(canSeeRecipes(categoryData.getEnhancedRecipes(recipeSeachFor),  player));
 		this.menuTemplate = menuSettingsCache.getTemplates().get("RecipesViewer");
 		this.categoryData = categoryData;
 		setFillSpace(this.menuTemplate.getFillSlots());
 		setTitle(this.menuTemplate.getMenuTitel());
-		setMenuSize(54);
+		setMenuSize(GuiUtil.invSize("RecipesViewer",this.menuTemplate.getAmountOfButtons()));
+		setMenuOpenSound(this.menuTemplate.getSound());
 	}
 
 	@Override
-	public MenuButton getFillButtonAt(Object object) {
+	public MenuButton getFillButtonAt(final Object object) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(Player player, Inventory inventory, ClickType clickType, ItemStack itemStack, Object o) {
+			public void onClickInsideMenu(final Player player, final Inventory inventory, final ClickType clickType, final ItemStack itemStack, final Object o) {
 				if (o instanceof WBRecipe) {
 					if ((clickType == ClickType.MIDDLE || clickType == ClickType.RIGHT) && getViewer().hasPermission(PermissionTypes.Edit.getPerm()))
 						new RecipeEditor<>((WBRecipe) o, categoryData, null,ButtonType.ChooseWorkbenchType).menuOpen(player);
@@ -57,7 +58,7 @@ public class RecipesViewer extends MenuHolder {
 			}
 
 			@Override
-			public ItemStack getItem(Object object) {
+			public ItemStack getItem(final Object object) {
 				if (object instanceof EnhancedRecipe){
 					return ((EnhancedRecipe)object).getDisplayItem();
 				}
@@ -73,9 +74,9 @@ public class RecipesViewer extends MenuHolder {
 
 
 	@Override
-	public MenuButton getButtonAt(int slot) {
+	public MenuButton getButtonAt(final int slot) {
 		if (this.menuTemplate == null) return null;
-		for (Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()){
+		for (final Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()){
 			if (menuTemplate.getKey().contains(slot)){
 				return registerButtons(menuTemplate.getValue());
 			}
@@ -84,10 +85,10 @@ public class RecipesViewer extends MenuHolder {
 	}
 
 
-	private MenuButton registerButtons(com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
+	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(Player player, Inventory menu, ClickType click, ItemStack clickedItem, Object object) {
+			public void onClickInsideMenu(final Player player, final Inventory menu, final ClickType click, final ItemStack clickedItem, final Object object) {
 				if (run(value, menu, player, click))
 					updateButtons();
 			}
@@ -98,7 +99,7 @@ public class RecipesViewer extends MenuHolder {
 			}
 		};
 	}
-	public boolean run(com.dutchjelly.craftenhance.gui.templates.MenuButton value, Inventory menu, Player player, ClickType click) {
+	public boolean run(final com.dutchjelly.craftenhance.gui.templates.MenuButton value, final Inventory menu, final Player player, final ClickType click) {
 		if (value.getButtonType() == ButtonType.PrvPage){
             previousPage();
 			return true;

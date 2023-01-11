@@ -4,6 +4,7 @@ import com.dutchjelly.craftenhance.exceptions.ConfigError;
 import com.dutchjelly.craftenhance.files.util.SimpleYamlHelper;
 import com.dutchjelly.craftenhance.gui.templates.MenuButton;
 import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
+import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -25,12 +26,13 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class MenuSettingsCache extends SimpleYamlHelper {
 
 	private final Plugin plugin;
-	private static final int version = 4;
+	private static final int version = 5;
 	private final Map<String, MenuTemplate> templates = new HashMap<>();
 
 
@@ -100,6 +102,7 @@ public class MenuSettingsCache extends SimpleYamlHelper {
 
 			final String menuSettings = templateConfig.getString(key + ".menu_settings.name");
 			final List<Integer> fillSpace = parseRange(templateConfig.getString(key + ".menu_settings.fill-space"));
+			String sound = templateConfig.getString(key + ".menu_settings.sound");
 
 			if (menuData != null) {
 				for (final String menuButtons : menuData.getKeys(false)) {
@@ -107,7 +110,11 @@ public class MenuSettingsCache extends SimpleYamlHelper {
 					menuButtonMap.put(parseRange(menuButtons), menuButton);
 				}
 			}
-			final MenuTemplate menuTemplate = new MenuTemplate(menuSettings,fillSpace, menuButtonMap);
+			if (self().getVersionChecker().olderThan(ServerVersion.v1_13) && sound != null && sound.equals("BLOCK_NOTE_BLOCK_BASEDRUM")){
+				sound = "BLOCK_NOTE_BASEDRUM";
+			}
+
+			final MenuTemplate menuTemplate = new MenuTemplate(menuSettings,fillSpace, menuButtonMap,sound);
 
 			templates.put(key,  menuTemplate);
 			final YamlConfiguration configuration = YamlConfiguration.loadConfiguration(file);

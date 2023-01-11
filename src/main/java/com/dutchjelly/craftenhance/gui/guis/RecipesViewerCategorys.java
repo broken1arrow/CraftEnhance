@@ -35,7 +35,8 @@ public class RecipesViewerCategorys extends MenuHolder {
 		this.menuTemplate = menuSettingsCache.getTemplates().get("RecipesCategorys");
 		setFillSpace(this.menuTemplate.getFillSlots());
 		setTitle(this.menuTemplate.getMenuTitel());
-		setMenuSize(54);
+		setMenuSize(GuiUtil.invSize("RecipesCategorys",this.menuTemplate.getAmountOfButtons()));
+		setMenuOpenSound(this.menuTemplate.getSound());
 	}
 
 	@Override
@@ -130,7 +131,7 @@ public class RecipesViewerCategorys extends MenuHolder {
 			}
 			else new RecipesViewerCategorys("").menuOpen(player);
 		}
-		if (value.getButtonType() == ButtonType.NewCategory){
+		if (value.getButtonType() == ButtonType.NewCategory && player.hasPermission(PermissionTypes.Categorys_editor.getPerm())){
 			Messenger.Message("Please input your category name and item type you want. Like this 'category' without '.Type cancel, quit, exit to close this without change.", getViewer());
 			self().getGuiManager().waitForChatInput(new RecipesViewerCategorys(""), getViewer(), msg-> {
 				if (!GuiUtil.newCategory(msg, player)) {

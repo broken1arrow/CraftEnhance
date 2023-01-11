@@ -45,8 +45,9 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		if (this.menuTemplate != null) {
 			setFillSpace(this.menuTemplate.getFillSlots());
 			setTitle(this.menuTemplate.getMenuTitel());
+			setMenuSize(GuiUtil.invSize("CategoryList",menuTemplate.getAmountOfButtons()));
+			setMenuOpenSound(this.menuTemplate.getSound());
 		}
-		setMenuSize(54);
 	}
 
 	@Override

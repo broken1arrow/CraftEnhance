@@ -20,17 +20,17 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 
     public EnhancedRecipe() { }
 
-    public EnhancedRecipe(String perm, ItemStack result, ItemStack[] content){
+    public EnhancedRecipe(final String perm, final ItemStack result, final ItemStack[] content){
         this.permissions = perm;
         this.result = result;
         this.content = content;
     }
 
-    protected EnhancedRecipe(Map<String,Object> args){
+    protected EnhancedRecipe(final Map<String,Object> args){
         super(args);
-        FileManager fm = CraftEnhance.self().getFm();
+        final FileManager fm = CraftEnhance.self().getFm();
 
-        List<String> recipeKeys;
+        final List<String> recipeKeys;
         result = fm.getItem((String)args.get("result"));
         permissions = (String)args.get("permission");
         if(args.containsKey("matchtype")){
@@ -90,7 +90,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
     private Map<String,Object> serialize;
     @Override
     public Map<String, Object> serialize() {
-        FileManager fm = CraftEnhance.getPlugin(CraftEnhance.class).getFm();
+        final FileManager fm = CraftEnhance.getPlugin(CraftEnhance.class).getFm();
         return new HashMap<String, Object>(){{
             putAll(EnhancedRecipe.super.serialize());
             put("permission", permissions);
@@ -105,6 +105,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
     }
 
     public String validate(){
+
         if(result == null)
             return "recipe cannot have null result";
         if(!Adapter.canUseModeldata() && matchType == ItemMatchers.MatchType.MATCH_MODELDATA_AND_TYPE)

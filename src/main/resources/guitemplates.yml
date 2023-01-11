@@ -2,6 +2,7 @@ RecipesViewer:
   menu_settings:
     name: "Recipes viewer"
     fill-space: "0-44"
+    sound: BLOCK_NOTE_BLOCK_BASEDRUM
   buttons:
     46:
       buttonType: PrvPage
@@ -39,6 +40,7 @@ RecipesCategorys:
   menu_settings:
     name: "Categorys"
     fill-space: "0-45"
+    sound: BLOCK_NOTE_BLOCK_BASEDRUM
   buttons:
     -1:
       buttonType: FillItems
@@ -90,6 +92,7 @@ RecipesCategorys:
 CategorysSettings:
   menu_settings:
     name: "Category settings"
+    sound: BLOCK_NOTE_BLOCK_BASEDRUM
   buttons:
     0-8,9,11,13,15,17,19-26:
       color: GRAY
@@ -141,6 +144,7 @@ CategoryList:
   menu_settings:
     name: "Category list"
     fill-space: "0-45"
+    sound: BLOCK_NOTE_BLOCK_BASEDRUM
   buttons:
     -1:
       buttonType: FillItems
@@ -187,6 +191,7 @@ WBRecipeViewer:
   menu_settings:
     name: "Workbench recipe"
     fill-space: "0-2,9-11,18-20,13"
+    sound: BLOCK_NOTE_BLOCK_BASEDRUM
   buttons:
     3-8,14-17,21-25:
       color: GRAY
@@ -206,7 +211,7 @@ WBRecipeViewer:
       material: WORKBENCH
       name: "&aCustom crafting table recipe"
       lore:
-        - "&fThis is a presentation on how you add"
+        - "&fThis is a example on how you add"
         - "&fthe items in the real crafting table. If"
         - "&fit shaped recipe you need put the items"
         - "&fin exact same patern."
@@ -218,6 +223,7 @@ WBRecipeEditor:
   menu_settings:
     name: "Recipe editor"
     fill-space: "0-2,9-11,18-20,13"
+    sound: BLOCK_NOTE_BLOCK_BASEDRUM
   buttons:
     3-4,14,21-22:
       color: GRAY
@@ -324,6 +330,7 @@ RecipeDisabler:
   menu_settings:
     name: "     Server recipe toggler"
     fill-space: "10-16,19-25,28-34,37-43"
+    sound: BLOCK_NOTE_BLOCK_BASEDRUM
   buttons:
     47:
       buttonType: PrvPage
@@ -371,6 +378,7 @@ FurnaceRecipeViewer:
   menu_settings:
     name: "Furnace recipe"
     fill-space: "10,12"
+    sound: BLOCK_NOTE_BLOCK_BASEDRUM
   buttons:
     0-9,13-25:
       color: GRAY
@@ -398,6 +406,7 @@ FurnaceRecipeEditor:
   menu_settings:
     name: "Furnace editor"
     fill-space: "10,12"
+    sound: BLOCK_NOTE_BLOCK_BASEDRUM
   buttons:
     0-4,9,13,18-22:
       color: GRAY
@@ -507,6 +516,7 @@ FurnaceRecipeEditor:
 EditorTypeSelector:
   menu_settings:
     name: "Select recipe type"
+    sound: BLOCK_NOTE_BLOCK_BASEDRUM
   buttons:
     3:
       buttonType:  ChooseFurnaceType

@@ -75,8 +75,10 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		setMenuSize(27);
 		setSlotsYouCanAddItems(true);
 		if (menuTemplate != null) {
+			setMenuSize(GuiUtil.invSize("RecipeEditor",this.menuTemplate.getAmountOfButtons()));
 			setTitle(menuTemplate.getMenuTitel());
 			setFillSpace(menuTemplate.getFillSlots());
+			setMenuOpenSound(this.menuTemplate.getSound());
 		}
 	}
 
@@ -118,8 +120,10 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		return new MenuButton() {
 			@Override
 			public void onClickInsideMenu(final Player player, final Inventory menu, final ClickType click, final ItemStack clickedItem, final Object object) {
-				if (run(value, menu, player, click))
-					updateButtons();
+				if (run(value, menu, player, click)) {
+					RecipeEditor.super.updateButton(this);
+					//updateButtons();
+				}
 			}
 
 			@Override
@@ -201,6 +205,8 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		}
 		if (value.getButtonType() == ButtonType.SwitchShaped){
 			this.shapeless = !this.shapeless;
+
+			//this.menuOpen(player);
 			return true;
 		}
 		if (value.getButtonType() == ButtonType.DeleteRecipe){

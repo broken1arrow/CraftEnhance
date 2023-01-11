@@ -75,7 +75,7 @@ public class CategoryData implements ConfigurationSerializeUtility {
 		final String recipeCategory = (String) map.getOrDefault("category.name", null);
 		ItemStack itemStack = (ItemStack) map.getOrDefault("category.category_item", null);
 		final String displayName = (String) map.getOrDefault("category.display_name", null);
-		if (itemStack == null) {
+		if (itemStack == null || itemStack.getType() == Material.AIR || itemStack.getType() == Material.getMaterial("END_PORTAL")) {
 			Material material = Adapter.getMaterial("CRAFTING_TABLE");
 			if (material == null)
 				material = Material.CRAFTING_TABLE;

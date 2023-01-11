@@ -5,7 +5,6 @@ import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.crafthandling.util.WBRecipeComparer;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
@@ -14,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 
 public class WBRecipe extends EnhancedRecipe {
 
@@ -75,13 +73,8 @@ public class WBRecipe extends EnhancedRecipe {
         if(r instanceof ShapelessRecipe){
             final ItemStack[] ingredients = ServerRecipeTranslator.translateShapelessRecipe((ShapelessRecipe) r);
             final boolean result = WBRecipeComparer.ingredientsMatch(getContent(), ingredients, ItemMatchers::matchType);
-            if(result) {
-                Bukkit.getLogger().log(Level.INFO, "[WBRecipe isSimilar] matching shapeless for recipe " + getResult() + ": " + r.getResult());
-            }
-
             return result;
         }
-
 
         if(r instanceof ShapedRecipe){
             final ItemStack[] shapedContent = ServerRecipeTranslator.translateShapedRecipe((ShapedRecipe)r);

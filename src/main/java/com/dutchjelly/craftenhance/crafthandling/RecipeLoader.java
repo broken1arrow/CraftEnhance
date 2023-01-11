@@ -52,22 +52,19 @@ public class RecipeLoader implements Listener {
 	}
 
 	@Getter
-	private final List<Recipe> serverRecipes = new ArrayList<>();
-
+	private List<Recipe> serverRecipes = new ArrayList<>();
 	@Getter
-	private final List<Recipe> disabledServerRecipes = new ArrayList<>();
+	private List<Recipe> disabledServerRecipes = new ArrayList<>();
 	@Getter
-	private final Map<ItemStack,ItemStack> similarVanillaRecipe = new HashMap<>();
+	private List<EnhancedRecipe> loadedRecipes = new ArrayList<>();
+	@Getter
+	private  Map<ItemStack,ItemStack> similarVanillaRecipe = new HashMap<>();
+	private Map<String, Recipe> loaded = new HashMap<>();
+	@Getter
+	private Map<RecipeType, List<RecipeGroup>> mappedGroupedRecipes = new HashMap<>();
 
-	private final Map<String, Recipe> loaded = new HashMap<>();
+	private  CategoryDataCache categoryDataCache;
 	private final Server server;
-
-	@Getter
-	private final Map<RecipeType, List<RecipeGroup>> mappedGroupedRecipes = new HashMap<>();
-
-	private  CategoryDataCache categoryDataCache = self().getCategoryDataCache();
-	@Getter
-	private final List<EnhancedRecipe> loadedRecipes = new ArrayList<>();
 
 	private RecipeLoader(final Server server) {
 		this.server = server;
@@ -80,7 +77,7 @@ public class RecipeLoader implements Listener {
 		for (final RecipeType type : RecipeType.values()) {
 			mappedGroupedRecipes.put(type, new ArrayList<>());
 		}
-
+		this.categoryDataCache = self().getCategoryDataCache();
 	}
 
 	//Adds or merges group with existing group.
@@ -218,7 +215,6 @@ public class RecipeLoader implements Listener {
 	}
 
 	public void loadRecipe(@NonNull final EnhancedRecipe recipe) {
-		if (categoryDataCache == null)
 			categoryDataCache = self().getCategoryDataCache();
 		if (recipe.validate() != null) {
 			Messenger.Error("There's an issue with recipe " + recipe.getKey() + ": " + recipe.validate());
@@ -234,6 +230,7 @@ public class RecipeLoader implements Listener {
 				similarServerRecipes.add(r);
 			}
 		}
+
 		Recipe alwaysSimilar = null;
 		for (final Recipe r : similarServerRecipes) {
 			if (recipe.isAlwaysSimilar(r)) {
@@ -247,9 +244,14 @@ public class RecipeLoader implements Listener {
 		//Only load the recipe if there is not a server recipe that's always similar.
 		if (alwaysSimilar == null) {
 			final Recipe serverRecipe = recipe.getServerRecipe();
+			if (serverRecipe == null) {
+				Debug.Send("Added server recipe is null for " + recipe.getKey());
+				self().getLogger().log(Level.WARNING, "Recipe will not be cached becuse the result is null or invalid material type.");
+				return;
+			}
 			server.addRecipe(serverRecipe);
+			Debug.Send("Added server recipe for " + serverRecipe.getResult());
 
-			Debug.Send("Added server recipe for " + serverRecipe.getResult().toString());
 			loaded.put(recipe.getKey(), serverRecipe);
 			if (self().getConfig().getBoolean("learn-recipes"))
 				Bukkit.getServer().getOnlinePlayers().forEach(x -> Adapter.DiscoverRecipes(x, Arrays.asList(serverRecipe)));
@@ -265,12 +267,13 @@ public class RecipeLoader implements Listener {
 			recipe.setRecipeCategory(category);
 		final CategoryData recipeCategory = this.categoryDataCache.get(category);
 		final List<EnhancedRecipe> enhancedRecipeList;
-
+		System.out.println("this.categoryDataCache " + this.categoryDataCache);
 		if (recipeCategory != null){
 			enhancedRecipeList = recipeCategory.getEnhancedRecipes();
 			if (!enhancedRecipeList.contains(recipe))
 				enhancedRecipeList.add(recipe);
-		}else {
+			this.categoryDataCache.put(category, recipeCategory);
+		} else {
 			final ItemStack itemStack;
 			if (recipe instanceof FurnaceRecipe)
 				itemStack = new ItemStack(Adapter.getMaterial("FURNACE"));
@@ -378,5 +381,14 @@ public class RecipeLoader implements Listener {
 	public void disableServerRecipes(final List<Recipe> disabledServerRecipes) {
 		//No need to be efficient here, this'll only run once.
 		disabledServerRecipes.forEach(x -> disableServerRecipe(x));
+	}
+
+	public void clearCache() {
+		this.serverRecipes = new ArrayList<>();
+		this.disabledServerRecipes = new ArrayList<>();
+		this.similarVanillaRecipe = new HashMap<>();
+		this.loaded = new HashMap<>();
+		this.loadedRecipes = new ArrayList<>();
+		this.mappedGroupedRecipes = new HashMap<>();
 	}
 }

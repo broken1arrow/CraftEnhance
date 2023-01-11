@@ -22,10 +22,10 @@ public class ServerRecipeTranslator {
 
     public static final String KeyPrefix = "cehrecipe";
 
-    private static List<String> UsedKeys = new ArrayList<>();
+    private static final List<String> UsedKeys = new ArrayList<>();
 
-    public static String GetFreeKey(String seed) {
-        Random r = new Random();
+    public static String GetFreeKey(final String seed) {
+        final Random r = new Random();
         String recipeKey = seed.toLowerCase().replaceAll("[^a-z0-9 ]", "");
         recipeKey = recipeKey.trim();
         while (UsedKeys.contains(recipeKey)) recipeKey += String.valueOf(r.nextInt(10));
@@ -34,53 +34,53 @@ public class ServerRecipeTranslator {
         return recipeKey;
     }
 
-    public static ShapedRecipe translateShapedEnhancedRecipe(ItemStack[] content, ItemStack result, String key) {
+    public static ShapedRecipe translateShapedEnhancedRecipe(final ItemStack[] content, final ItemStack result, final String key) {
         if (!Arrays.asList(content).stream().anyMatch(x -> x != null))
             return null;
-        String recipeKey = GetFreeKey(key);
-        ShapedRecipe shaped = null;
+        final String recipeKey = GetFreeKey(key);
+        final ShapedRecipe shaped;
         try {
             shaped = Adapter.GetShapedRecipe(
                     CraftEnhance.getPlugin(CraftEnhance.class), KeyPrefix + recipeKey, result
             );
             shaped.shape(GetShape(content));
             MapIngredients(shaped, content);
-        } catch (IllegalArgumentException e) {
-            self().getLogger().log(Level.WARNING, "Recipe: " + recipeKey + " do have AIR or null as result.\n ");
-            e.printStackTrace();
+        } catch (final IllegalArgumentException e) {
+            self().getLogger().log(Level.WARNING, "Recipe: " + recipeKey + " do have AIR or null as result.");
+            return null;
         }
         return shaped;
     }
 
-    public static ShapedRecipe translateShapedEnhancedRecipe(WBRecipe recipe) {
+    public static ShapedRecipe translateShapedEnhancedRecipe(final WBRecipe recipe) {
         return translateShapedEnhancedRecipe(recipe.getContent(), recipe.getResult(), recipe.getKey());
     }
 
 
-    public static ShapelessRecipe translateShapelessEnhancedRecipe(ItemStack[] content, ItemStack result, String key) {
-        List<ItemStack> ingredients = Arrays.stream(content).filter(x -> x != null).collect(Collectors.toList());
+    public static ShapelessRecipe translateShapelessEnhancedRecipe(final ItemStack[] content, final ItemStack result, final String key) {
+        final List<ItemStack> ingredients = Arrays.stream(content).filter(x -> x != null).collect(Collectors.toList());
         if (ingredients.size() == 0)
             return null;
-        String recipeKey = GetFreeKey(key);
-        ShapelessRecipe shapeless = Adapter.GetShapelessRecipe(
+        final String recipeKey = GetFreeKey(key);
+        final ShapelessRecipe shapeless = Adapter.GetShapelessRecipe(
                 CraftEnhance.getPlugin(CraftEnhance.class), KeyPrefix + recipeKey, result
         );
         ingredients.forEach(x -> Adapter.AddIngredient(shapeless, x));
         return shapeless;
     }
 
-    public static ShapelessRecipe translateShapelessEnhancedRecipe(WBRecipe recipe) {
+    public static ShapelessRecipe translateShapelessEnhancedRecipe(final WBRecipe recipe) {
         return translateShapelessEnhancedRecipe(recipe.getContent(), recipe.getResult(), recipe.getKey());
     }
 
 
-    public static ItemStack[] translateShapedRecipe(ShapedRecipe recipe) {
-        ItemStack[] content = new ItemStack[9];
-        String[] shape = recipe.getShape();
+    public static ItemStack[] translateShapedRecipe(final ShapedRecipe recipe) {
+        final ItemStack[] content = new ItemStack[9];
+        final String[] shape = recipe.getShape();
         int columnIndex;
         for (int i = 0; i < shape.length; i++) {
             columnIndex = 0;
-            for (char c : shape[i].toCharArray()) {
+            for (final char c : shape[i].toCharArray()) {
                 content[(i * 3) + columnIndex] = recipe.getIngredientMap().get(c);
                 columnIndex++;
             }
@@ -88,15 +88,15 @@ public class ServerRecipeTranslator {
         return content;
     }
 
-    public static ItemStack[] translateShapelessRecipe(ShapelessRecipe recipe) {
+    public static ItemStack[] translateShapelessRecipe(final ShapelessRecipe recipe) {
         if (recipe == null || recipe.getIngredientList() == null) return null;
         return recipe.getIngredientList().stream().toArray(ItemStack[]::new);
     }
 
 
     //Gets the shape of the recipe 'content'.
-    private static String[] GetShape(ItemStack[] content) {
-        String recipeShape[] = {"", "", ""};
+    private static String[] GetShape(final ItemStack[] content) {
+        final String[] recipeShape = {"", "", ""};
         for (int i = 0; i < 9; i++) {
             if (content[i] != null)
                 recipeShape[i / 3] += (char) ('A' + i);
@@ -107,7 +107,7 @@ public class ServerRecipeTranslator {
     }
 
     //Trims the shape so that there are no redundant spaces or elements in shape.
-    private static String[] TrimShape(String[] shape) {
+    private static String[] TrimShape(final String[] shape) {
         if (shape.length == 0) return shape;
 
         //Trim the start and end of the list
@@ -126,7 +126,7 @@ public class ServerRecipeTranslator {
         int firstIndex = trimmed.get(0).length();
         int lastIndex = 0;
 
-        for (String line : trimmed) {
+        for (final String line : trimmed) {
             int firstChar = 0;
             while (firstChar < line.length() && line.charAt(firstChar) == ' ') firstChar++;
             firstIndex = Math.min(firstChar, firstIndex);
@@ -138,7 +138,7 @@ public class ServerRecipeTranslator {
         return trimmed.stream().map(x -> x.substring(first, last)).toArray(String[]::new);
     }
 
-    private static void MapIngredients(ShapedRecipe recipe, ItemStack[] content) {
+    private static void MapIngredients(final ShapedRecipe recipe, final ItemStack[] content) {
         for (int i = 0; i < 9; i++) {
             if (content[i] != null) {
                 Adapter.SetIngredient(recipe, (char) ('A' + i), content[i]);

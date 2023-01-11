@@ -32,21 +32,22 @@ import static com.dutchjelly.craftenhance.gui.util.FormatListContents.getRecipes
 public class RecipeDisabler extends MenuHolder {
 	private final MenuSettingsCache menuSettingsCache  = self().getMenuSettingsCache();
 	private final MenuTemplate menuTemplate;
-	private MenuButton fillSlots;
+	private final MenuButton fillSlots;
 	//If true, you can enable *disabled* recipes.
 	boolean enableMode;
 
-	public RecipeDisabler(List<Recipe> enabledRecipes, List<Recipe> disabledRecipes, boolean enableMode, String recipesSeachFor) {
+	public RecipeDisabler(final List<Recipe> enabledRecipes, final List<Recipe> disabledRecipes, final boolean enableMode, final String recipesSeachFor) {
 		super(getRecipes( enabledRecipes,disabledRecipes, enableMode,recipesSeachFor));
 		this.menuTemplate = menuSettingsCache.getTemplates().get("RecipeDisabler");
         this.enableMode = enableMode;
 		setFillSpace(this.menuTemplate.getFillSlots());
 		setTitle(this.menuTemplate.getMenuTitel());
-		setMenuSize(54);
+		setMenuSize(GuiUtil.invSize("RecipeDisabler",this.menuTemplate.getAmountOfButtons()));
+		setMenuOpenSound(this.menuTemplate.getSound());
 
 		fillSlots = new MenuButton() {
 			@Override
-			public void onClickInsideMenu(Player player, Inventory inventory, ClickType clickType, ItemStack itemStack, Object o) {
+			public void onClickInsideMenu(final Player player, final Inventory inventory, final ClickType clickType, final ItemStack itemStack, final Object o) {
 				if (o instanceof Recipe) {
 					if (enableMode) {
 						if (RecipeLoader.getInstance().enableServerRecipe((Recipe) o)) {
@@ -65,18 +66,18 @@ public class RecipeDisabler extends MenuHolder {
 			}
 
 			@Override
-			public ItemStack getItem(Object object) {
+			public ItemStack getItem(final Object object) {
 				if (object instanceof Recipe) {
 					ItemStack result = ((Recipe)object).getResult();
 					if(GuiUtil.isNull(result)) {
 						result = new ItemStack(Material.BARRIER);
-						ItemMeta meta = result.getItemMeta();
+						final ItemMeta meta = result.getItemMeta();
 						meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&4Complex Recipe: " + Adapter.GetRecipeIdentifier(((Recipe)object))));
 						meta.setLore(Arrays.asList("&eWARN: &fThis recipe is complex, which", "&f means that the result is only known", " &f&oafter&r&f the content of the crafting table is sent", " &fto the server. Think of repairing or coloring recipes.", " &f&nSo disabling is not recommended!"));
 						meta.setLore(meta.getLore().stream().map(x -> ChatColor.translateAlternateColorCodes('&', x)).collect(Collectors.toList()));
 						result.setItemMeta(meta);
 					} else{
-						ItemMeta meta = result.getItemMeta();
+						final ItemMeta meta = result.getItemMeta();
 						meta.setLore(Arrays.asList(ChatColor.translateAlternateColorCodes('&', "&3key: &f" + Adapter.GetRecipeIdentifier(((Recipe)object)))));
 						result.setItemMeta(meta);
 					}
@@ -92,13 +93,13 @@ public class RecipeDisabler extends MenuHolder {
 		};
 	}
 	@Override
-	public MenuButton getFillButtonAt(Object object) {
+	public MenuButton getFillButtonAt(final Object object) {
 		return fillSlots;
 	}
 	@Override
-	public MenuButton getButtonAt(int slot) {
+	public MenuButton getButtonAt(final int slot) {
 		if (this.menuTemplate == null) return null;
-		for (Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()){
+		for (final Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()){
 			if (menuTemplate.getKey().contains(slot)){
 				return registerButtons(menuTemplate.getValue());
 			}
@@ -107,17 +108,17 @@ public class RecipeDisabler extends MenuHolder {
 	}
 
 
-	private MenuButton registerButtons(com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
+	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(Player player, Inventory menu, ClickType click, ItemStack clickedItem, Object object) {
+			public void onClickInsideMenu(final Player player, final Inventory menu, final ClickType click, final ItemStack clickedItem, final Object object) {
 				if (run(value, menu, player, click))
 					updateButtons();
 			}
 
 			@Override
 			public ItemStack getItem() {
-				Map<String, String> placeHolders = new HashMap<String,String>(){{
+				final Map<String, String> placeHolders = new HashMap<String,String>(){{
 					put(InfoItemPlaceHolders.DisableMode.getPlaceHolder(), enableMode ? "enable recipes by clicking them" : "disable recipes by clicking them");
 				}};
 				if (value.getItemStack() == null)
@@ -126,7 +127,7 @@ public class RecipeDisabler extends MenuHolder {
 			}
 		};
 	}
-	public boolean run(com.dutchjelly.craftenhance.gui.templates.MenuButton value, Inventory menu, Player player, ClickType click) {
+	public boolean run(final com.dutchjelly.craftenhance.gui.templates.MenuButton value, final Inventory menu, final Player player, final ClickType click) {
 		if (value.getButtonType() == ButtonType.PrvPage){
 			previousPage();
 			return true;

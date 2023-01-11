@@ -54,7 +54,7 @@ import static com.dutchjelly.craftenhance.util.FurnaceDefultValues.getExp;
 public class RecipeInjector implements Listener {
 
     private final JavaPlugin plugin;
-    private final RecipeLoader loader;
+    private RecipeLoader loader;
     private final boolean disableDefaultModeldataCrafts;
     private final boolean makeItemsadderCompatible;
 
@@ -68,11 +68,13 @@ public class RecipeInjector implements Listener {
 
     public RecipeInjector(final JavaPlugin plugin) {
         this.plugin = plugin;
-        loader = RecipeLoader.getInstance();
         disableDefaultModeldataCrafts = plugin.getConfig().getBoolean("disable-default-custom-model-data-crafts");
         makeItemsadderCompatible = plugin.getConfig().getBoolean("make-itemsadder-compatible");
     }
 
+    public void setLoader(final RecipeLoader loader) {
+        this.loader = loader;
+    }
     //Add registrations of owners of containers.
     public void registerContainerOwners(final Map<Location, UUID> containerOwners) {
         //Make sure to only register containers, in case some are non existent anymore.
@@ -179,6 +181,7 @@ public class RecipeInjector implements Listener {
         final ItemStack[] srcMatrix = new ItemStack[]{source};
         //FurnaceRecipe recipe = new FurnaceRecipe(null, null, srcMatrix);
         //RecipeGroup group = RecipeLoader.getInstance().findSimilarGroup(recipe);
+
         if (group == null) {
             Debug.Send("furnace recipe does not match any group, so not changing the outcome");
             return null;
@@ -220,7 +223,9 @@ public class RecipeInjector implements Listener {
             final org.bukkit.inventory.FurnaceRecipe fRecipe = (org.bukkit.inventory.FurnaceRecipe) sRecipe;
             if (getTypeMatcher().match(fRecipe.getInput(), source)) {
                 Debug.Send("found similar server recipe for furnace");
-                return Optional.empty();
+                Debug.Send("Source " + source);
+                Debug.Send("Input: " + fRecipe.getInput());
+                return null;
             }
         }
         return Optional.empty();

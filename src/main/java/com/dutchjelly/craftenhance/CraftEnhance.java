@@ -49,45 +49,192 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public class CraftEnhance extends JavaPlugin{
+public class CraftEnhance extends JavaPlugin {
 
-    private static CraftEnhance plugin;
-	public static CraftEnhance self(){
-	    return plugin;
-    }
+	private static CraftEnhance plugin;
 
-    @Getter
+	public static CraftEnhance self() {
+		return plugin;
+	}
+
+	private Metrics metrics;
+	@Getter
 	private FileManager fm;
-
 	@Getter
 	private GuiManager guiManager;
 
 	@Getter
 	private GuiTemplatesFile guiTemplatesFile;
-
+	private RegisterMenuAPI registerMenuAPI;
 	private CustomCmdHandler commandHandler;
 	private RecipeInjector injector;
 	@Getter
 	VersionChecker versionChecker;
 	@Getter
 	private boolean usingItemsAdder;
+	private boolean isReloding;
 	@Getter
 	private MenuSettingsCache menuSettingsCache;
 	@Getter
 	private CategoryDataCache categoryDataCache;
 
 	@Override
-	public void onEnable(){
+	public void onEnable() {
 		plugin = this;
 		//The file manager needs serialization, so firstly register the classes.
 		registerSerialization();
 		versionChecker = VersionChecker.init(this);
-		categoryDataCache = new CategoryDataCache();
-		categoryDataCache.reload();
+		if (registerMenuAPI == null)
+			registerMenuAPI = new RegisterMenuAPI(this);
 
 		saveDefaultConfig();
-		new RegisterMenuAPI(this);
 		Debug.init(this);
+		if (isReloding)
+			Bukkit.getScheduler().runTaskAsynchronously(this, this::loadPluginData);
+		else {
+			this.loadPluginData();
+
+			this.usingItemsAdder = this.getServer().getPluginManager().getPlugin("ItemsAdder") != null;
+			//Most other instances use the file manager, so setup before everything.
+			Debug.Send("Setting up the file manager for recipes.");
+			setupFileManager();
+
+			Debug.Send("Loading recipes");
+			final RecipeLoader loader = RecipeLoader.getInstance();
+			fm.getRecipes().stream().filter(x -> x.validate() == null).forEach(loader::loadRecipe);
+			loader.printGroupsDebugInfo();
+			loader.disableServerRecipes(
+					fm.readDisabledServerRecipes().stream().map(x ->
+							Adapter.FilterRecipes(loader.getServerRecipes(), x)
+					).collect(Collectors.toList())
+			);
+			if (injector == null)
+				injector = new RecipeInjector(this);
+			injector.registerContainerOwners(fm.getContainerOwners());
+			injector.setLoader(loader);
+		}
+		guiManager = new GuiManager(this);
+
+		Debug.Send("Setting up listeners and commands");
+		if (!isReloding)
+			setupListeners();
+		setupCommands();
+
+		Messenger.Message("CraftEnhance is managed and developed by DutchJelly.");
+		Messenger.Message("If you find a bug in the plugin, please report it to https://github.com/DutchJelly/CraftEnhance/issues.");
+		if (!versionChecker.runVersionCheck()) {
+			for (int i = 0; i < 4; i++)
+				Messenger.Message("WARN: The installed version isn't tested to work with the game version of the server.");
+		}
+		Bukkit.getScheduler().runTaskAsynchronously(this, versionChecker::runUpdateCheck);
+
+		if (metrics == null) {
+			final int metricsId = 9023;
+			metrics = new Metrics(this, metricsId);
+		}
+		CraftEnhanceAPI.registerListener(new ExecuteCommand());
+	}
+
+
+	public void reload() {
+		isReloding = true;
+		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+			this.onDisable();
+			Bukkit.getScheduler().runTask(this, () -> {
+				//RecipeLoader.getInstance().clearCache();
+				RecipeLoader.clearInstance();
+				reloadConfig();
+				this.onEnable();
+			});
+		});
+		isReloding = false;
+	}
+
+	@Override
+	public void onDisable() {
+		System.out.println("resetRecipes ");
+		Bukkit.getScheduler().runTask(this, () -> getServer().resetRecipes());
+		Debug.Send("Saving container owners...");
+		fm.saveContainerOwners(injector.getContainerOwners());
+		Debug.Send("Saving disabled recipes...");
+		fm.saveDisabledServerRecipes(RecipeLoader.getInstance().getDisabledServerRecipes().stream().map(x -> Adapter.GetRecipeIdentifier(x)).collect(Collectors.toList()));
+		fm.getRecipes().forEach(EnhancedRecipe::save);
+		RecipeLoader.getInstance().clearCache();
+		categoryDataCache.save();
+
+	}
+
+	@Override
+	public boolean onCommand(final CommandSender sender, final Command cmd, final String label, final String[] args) {
+
+		//Make sure that the user doesn't get a whole stacktrace when using an unsupported server jar.
+		//Note that this error could only get caused by onEnable() not being called.
+		if (commandHandler == null) {
+			Messenger.Message("Could not execute the command.", sender);
+			Messenger.Message("Something went wrong with initializing the commandHandler. Please make sure to use" +
+					" Spigot or Bukkit when using this plugin. If you are using Spigot or Bukkit and still experiencing this " +
+					"issue, please send a bug report here: https://dev.bukkit.org/projects/craftenhance.");
+			Messenger.Message("Disabling the plugin...");
+			getPluginLoader().disablePlugin(this);
+		}
+
+		commandHandler.handleCommand(sender, label, args);
+		return true;
+	}
+
+	//Registers the classes that extend ConfigurationSerializable.
+	private void registerSerialization() {
+		ConfigurationSerialization.registerClass(WBRecipe.class, "EnhancedRecipe");
+		ConfigurationSerialization.registerClass(WBRecipe.class, "Recipe");
+		ConfigurationSerialization.registerClass(FurnaceRecipe.class, "FurnaceRecipe");
+	}
+
+	//Assigns executor classes for the commands.
+	private void setupCommands() {
+		commandHandler = new CustomCmdHandler(this);
+		//All commands with the base /edititem
+		commandHandler.loadCommandClasses(Arrays.asList(
+				new DisplayNameCmd(commandHandler),
+				new DurabilityCmd(commandHandler),
+				new EnchantCmd(commandHandler),
+				new ItemFlagCmd(commandHandler),
+				new LocalizedNameCmd(commandHandler),
+				new LoreCmd(commandHandler))
+		);
+		//All command with the base /ceh
+		commandHandler.loadCommandClasses(Arrays.asList(
+				new CreateRecipeCmd(commandHandler),
+				new RecipesCmd(commandHandler),
+				new SpecsCommand(commandHandler),
+				new ChangeKeyCmd(commandHandler),
+				new CleanItemFileCmd(commandHandler),
+				new SetPermissionCmd(commandHandler),
+				new ReloadCmd(),
+				new Disabler(commandHandler))
+		);
+	}
+
+	//Registers the listener class to the server.
+	private void setupListeners() {
+	/*	HandlerList.unregisterAll(injector);
+		HandlerList.unregisterAll(guiManager);
+		HandlerList.unregisterAll(RecipeLoader.getInstance());*/
+		guiManager = new GuiManager(this);
+		getServer().getPluginManager().registerEvents(injector, this);
+		getServer().getPluginManager().registerEvents(guiManager, this);
+		getServer().getPluginManager().registerEvents(RecipeLoader.getInstance(), this);
+	}
+
+	private void setupFileManager() {
+		fm = FileManager.init(this);
+		fm.cacheItems();
+		fm.cacheRecipes();
+	}
+
+	private void loadPluginData() {
+		if (categoryDataCache == null)
+			categoryDataCache = new CategoryDataCache();
+		categoryDataCache.reload();
 		Debug.Send("Checking for config updates.");
 		final File configFile = new File(getDataFolder(), "config.yml");
 		FileManager.EnsureResourceUpdate("config.yml", configFile, YamlConfiguration.loadConfiguration(configFile), this);
@@ -95,11 +242,16 @@ public class CraftEnhance extends JavaPlugin{
 		ConfigFormatter.init(this).formatConfigMessages();
 		Messenger.Init(this);
 		ItemMatchers.init(getConfig().getBoolean("enable-backwards-compatible-item-matching"));
-
-		this.usingItemsAdder = this.getServer().getPluginManager().getPlugin("ItemsAdder") != null;
 		Debug.Send("Loading gui templates");
-		menuSettingsCache = new MenuSettingsCache(this);
+		if (menuSettingsCache == null)
+			menuSettingsCache = new MenuSettingsCache(this);
 		menuSettingsCache.reload();
+		if (isReloding)
+			Bukkit.getScheduler().runTask(this, this::loadRecipes);
+	}
+
+	private void loadRecipes() {
+		this.usingItemsAdder = this.getServer().getPluginManager().getPlugin("ItemsAdder") != null;
 		//Most other instances use the file manager, so setup before everything.
 		Debug.Send("Setting up the file manager for recipes.");
 		setupFileManager();
@@ -113,118 +265,12 @@ public class CraftEnhance extends JavaPlugin{
 						Adapter.FilterRecipes(loader.getServerRecipes(), x)
 				).collect(Collectors.toList())
 		);
-
-		injector = new RecipeInjector(this);
+		if (injector == null)
+			injector = new RecipeInjector(this);
 		injector.registerContainerOwners(fm.getContainerOwners());
-
-		guiManager = new GuiManager(this);
-
-		Debug.Send("Setting up listeners and commands");
-		setupListeners();
-		setupCommands();
-
-		Messenger.Message("CraftEnhance is managed and developed by DutchJelly.");
-		Messenger.Message("If you find a bug in the plugin, please report it to https://github.com/DutchJelly/CraftEnhance/issues.");
-		if (!versionChecker.runVersionCheck()) {
-			for (int i = 0; i < 4; i++)
-				Messenger.Message("WARN: The installed version isn't tested to work with the game version of the server.");
-		}
-		Bukkit.getScheduler().runTaskAsynchronously(this, versionChecker::runUpdateCheck);
-
-
-		final int metricsId = 9023;
-		new Metrics(this, metricsId);
-
-
-		CraftEnhanceAPI.registerListener(new ExecuteCommand());
+		injector.setLoader(loader);
 	}
-
-
-	public void reload(){
-		Bukkit.getScheduler().runTaskAsynchronously(this, this::onDisable);
-		RecipeLoader.clearInstance();
-		reloadConfig();
-		onEnable();
-
-	}
-
-	@Override
-	public void onDisable() {
-		getServer().resetRecipes();
-		Debug.Send("Saving container owners...");
-		fm.saveContainerOwners(injector.getContainerOwners());
-		Debug.Send("Saving disabled recipes...");
-		fm.saveDisabledServerRecipes(RecipeLoader.getInstance().getDisabledServerRecipes().stream().map(x -> Adapter.GetRecipeIdentifier(x)).collect(Collectors.toList()));
-		fm.getRecipes().forEach(EnhancedRecipe::save);
-		categoryDataCache.save();
-
-	}
-	
-	@Override
-	public boolean onCommand(final CommandSender sender, final Command cmd, final String label, final String[] args){
-
-		//Make sure that the user doesn't get a whole stacktrace when using an unsupported server jar.
-		//Note that this error could only get caused by onEnable() not being called.
-		if(commandHandler == null){
-			Messenger.Message("Could not execute the command.", sender);
-			Messenger.Message("Something went wrong with initializing the commandHandler. Please make sure to use" +
-			" Spigot or Bukkit when using this plugin. If you are using Spigot or Bukkit and still experiencing this " +
-			"issue, please send a bug report here: https://dev.bukkit.org/projects/craftenhance.");
-			Messenger.Message("Disabling the plugin...");
-			getPluginLoader().disablePlugin(this);
-		}
-
-		commandHandler.handleCommand(sender, label, args);
-		return true;
-	}
-	
-	//Registers the classes that extend ConfigurationSerializable.
-	private void registerSerialization(){
-		ConfigurationSerialization.registerClass(WBRecipe.class, "EnhancedRecipe");
-		ConfigurationSerialization.registerClass(WBRecipe.class, "Recipe");
-		ConfigurationSerialization.registerClass(FurnaceRecipe.class, "FurnaceRecipe");
-	}
-	
-	//Assigns executor classes for the commands.
-	private void setupCommands() {
-        commandHandler = new CustomCmdHandler(this);
-        //All commands with the base /edititem
-        commandHandler.loadCommandClasses(Arrays.asList(
-                new DisplayNameCmd(commandHandler),
-                new DurabilityCmd(commandHandler),
-                new EnchantCmd(commandHandler),
-                new ItemFlagCmd(commandHandler),
-                new LocalizedNameCmd(commandHandler),
-                new LoreCmd(commandHandler))
-        );
-        //All command with the base /ceh
-        commandHandler.loadCommandClasses(Arrays.asList(
-                new CreateRecipeCmd(commandHandler),
-                new RecipesCmd(commandHandler),
-                new SpecsCommand(commandHandler),
-                new ChangeKeyCmd(commandHandler),
-                new CleanItemFileCmd(commandHandler),
-                new SetPermissionCmd(commandHandler),
-                new ReloadCmd(),
-                new Disabler(commandHandler))
-        );
-    }
-	
-	//Registers the listener class to the server.
-	private void setupListeners(){
-        guiManager = new GuiManager(this);
-		getServer().getPluginManager().registerEvents(new RecipeInjector(this), this);
-		getServer().getPluginManager().registerEvents(guiManager, this);
-		getServer().getPluginManager().registerEvents(RecipeLoader.getInstance(), this);
-	}
-	
-	private void setupFileManager(){
-		fm = FileManager.init(this);
-		fm.cacheItems();
-		fm.cacheRecipes();
-	}
-
-	public void openEnhancedCraftingTable(final Player p){
+	public void openEnhancedCraftingTable(final Player p) {
 		final CustomCraftingTable table = new CustomCraftingTable(
 				getGuiManager(),
 				getGuiTemplatesFile().getTemplate(null),
@@ -232,5 +278,5 @@ public class CraftEnhance extends JavaPlugin{
 		);
 		getGuiManager().openGUI(p, table);
 	}
-	
+
 }
