@@ -38,7 +38,7 @@ public class RecipesCmd implements ICommand {
 					final int pageIndex = Integer.parseInt(args[1]);
 					 final boolean b = menu.setPage(pageIndex);
 					if (!b)
-						p.sendMessage("Could not set this page "+ args[1] +" , will open first page.");
+						p.sendMessage("Could not open this page "+ args[1] +" , will open first page.");
 					//gui.setPage(pageIndex); //setpage will handle invalid indexes and will jump to the nearest valid page
 				} catch (final NumberFormatException e) {
 					p.sendMessage("that's not a number " + args[1]);

@@ -14,9 +14,9 @@ public class CraftEnhanceAPI {
 
     private static final List<CustomCraftListener> customCraftListeners = new ArrayList<>();
 
-    public static void registerListener(final CustomCraftListener listener){
-        if(!customCraftListeners.contains(listener))
-            customCraftListeners.add(listener);
+    public static void registerListener(final CustomCraftListener listener) {
+        customCraftListeners.clear();
+        customCraftListeners.add(listener);
     }
 
     public static boolean fireEvent(final EnhancedRecipe recipe, final Player p, final Inventory craftingInventory, final RecipeGroup alternatives){

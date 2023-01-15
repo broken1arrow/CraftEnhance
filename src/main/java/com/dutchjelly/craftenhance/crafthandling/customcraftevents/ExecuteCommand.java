@@ -8,10 +8,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
 public class ExecuteCommand implements CustomCraftListener {
+
+
     @Override
-    public boolean listener(EnhancedRecipe recipe, Player p, Inventory craftingInventory, RecipeGroup alternatives) {
+    public boolean listener(final EnhancedRecipe recipe, final Player p, final Inventory craftingInventory, final RecipeGroup alternatives) {
         if(recipe.getOnCraftCommand() == null || recipe.getOnCraftCommand().trim().equals("")) return false;
         Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), recipe.getOnCraftCommand());
         return false;
     }
+
 }

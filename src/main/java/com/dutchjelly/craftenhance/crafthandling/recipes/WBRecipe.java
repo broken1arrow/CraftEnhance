@@ -21,6 +21,7 @@ public class WBRecipe extends EnhancedRecipe {
 
     @Getter
     private final RecipeType type = RecipeType.WORKBENCH;
+    private Recipe recipe;
 
     public WBRecipe(final String perm, final ItemStack result, final ItemStack[] content){
         super(perm, result, content);
@@ -56,13 +57,14 @@ public class WBRecipe extends EnhancedRecipe {
     }
 
 
-
-
     @Override
     public Recipe getServerRecipe() {
-        if(shapeless)
-            return ServerRecipeTranslator.translateShapelessEnhancedRecipe(this);
-        return ServerRecipeTranslator.translateShapedEnhancedRecipe(this);
+        if (recipe == null) {
+            if (shapeless)
+                recipe = ServerRecipeTranslator.translateShapelessEnhancedRecipe(this);
+            recipe = ServerRecipeTranslator.translateShapedEnhancedRecipe(this);
+        }
+        return recipe;
     }
 
 

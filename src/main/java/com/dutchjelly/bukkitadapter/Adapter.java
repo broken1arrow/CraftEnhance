@@ -38,9 +38,9 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 public class Adapter {
 
 
-    public static List<String> CompatibleVersions(){
-	    return Arrays.asList("1.9", "1.10", "1.11", "1.12", "1.13", "1.14", "1.15", "1.16", "1.17", "1.18","1.19");
-    }
+	public static List<String> CompatibleVersions() {
+		return Arrays.asList("1.9", "1.10", "1.11", "1.12", "1.13", "1.14", "1.15", "1.16", "1.17", "1.18", "1.19");
+	}
 
 	public final static String GUI_SKULL_MATERIAL_NAME = "GUI_SKULL_ITEM";
 
@@ -93,23 +93,25 @@ public class Adapter {
 		}
 		return item;
 	}
+
 	@Nullable
-	public static DyeColor dyeColor(final String dyeColor){
+	public static DyeColor dyeColor(final String dyeColor) {
 		final DyeColor[] dyeColors = DyeColor.values();
 
-		for (final DyeColor color :dyeColors) {
-			if ( color.name().equalsIgnoreCase(dyeColor)){
+		for (final DyeColor color : dyeColors) {
+			if (color.name().equalsIgnoreCase(dyeColor)) {
 				return color;
 			}
 		}
 		return null;
 	}
+
 	@Nullable
 	public static Material getMaterial(String name) {
 		if (name == null) return null;
 		name = name.toUpperCase();
 		final Material material = Material.getMaterial(name);
-		if (material != null){
+		if (material != null) {
 			if (self().getVersionChecker().olderThan(VersionChecker.ServerVersion.v1_13)) {
 				if (name.equals("WRITTEN_BOOK"))
 					return Material.valueOf("PAPER");
@@ -180,81 +182,80 @@ public class Adapter {
 
 	private static Object getNameSpacedKey(final JavaPlugin plugin, final String key) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 //        return new NamespacedKey(plugin, key);
-        return Class.forName("org.bukkit.NamespacedKey").getConstructor(org.bukkit.plugin.Plugin.class, String.class).newInstance(plugin, key);
-    }
+		return Class.forName("org.bukkit.NamespacedKey").getConstructor(org.bukkit.plugin.Plugin.class, String.class).newInstance(plugin, key);
+	}
 
-    public static ShapedRecipe GetShapedRecipe(final JavaPlugin plugin, final String key, final ItemStack result){
-        try{
-            return ShapedRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class).newInstance(getNameSpacedKey(plugin, key), result);
-        }
-        catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
-            Debug.Send("Couldn't use namespaced key: " + e.getMessage() + "\n" + e.getStackTrace());
-        }
-        return new ShapedRecipe(result);
-    }
+	public static ShapedRecipe GetShapedRecipe(final JavaPlugin plugin, final String key, final ItemStack result) {
+		try {
+			return ShapedRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class).newInstance(getNameSpacedKey(plugin, key), result);
+		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
+			Debug.Send("Couldn't use namespaced key: " + e.getMessage() + "\n" + e.getStackTrace());
+		}
+		return new ShapedRecipe(result);
+	}
 
-    public static ShapelessRecipe GetShapelessRecipe(final JavaPlugin plugin, final String key, final ItemStack result){
-        try {
-            return ShapelessRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class).newInstance(getNameSpacedKey(plugin, key), result);
-        } catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
-            Debug.Send("Couldn't use namespaced key: " + e.getMessage() + "\n" + e.getStackTrace());
-        }
-        return new ShapelessRecipe(result);
-    }
+	public static ShapelessRecipe GetShapelessRecipe(final JavaPlugin plugin, final String key, final ItemStack result) {
+		try {
+			return ShapelessRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class).newInstance(getNameSpacedKey(plugin, key), result);
+		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
+			Debug.Send("Couldn't use namespaced key: " + e.getMessage() + "\n" + e.getStackTrace());
+		}
+		return new ShapelessRecipe(result);
+	}
 
-    public static ItemStack SetDurability(final ItemStack item, final int damage){
-        item.setDurability((short)damage);
-        return item;
-    }
+	public static ItemStack SetDurability(final ItemStack item, final int damage) {
+		item.setDurability((short) damage);
+		return item;
+	}
 
-    public static void SetIngredient(final ShapedRecipe recipe, final char key, final ItemStack ingredient){
-	    if (!self().getConfig().getBoolean("learn-recipes")) {
-		    if (self().getVersionChecker().newerThan(VersionChecker.ServerVersion.v1_14)) {
-			    if (ingredient == null) return;
-			    final Material md = ingredient.getType();
-			    if (md != ingredient.getType() || md == Material.AIR) {
-				    recipe.setIngredient(key, ingredient.getType());
-			    } else {
-				    recipe.setIngredient(key, md);
-			    }
-			    return;
-		    } else {
-			    final MaterialData md = ingredient.getData();
-			    if (md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)) {
-				    recipe.setIngredient(key, ingredient.getType());
-			    } else {
-				    recipe.setIngredient(key, md);
-			    }
-		    }
-		    return;
-	    }
-	    try {
-		    recipe.getClass().getMethod("setIngredient", char.class, Class.forName("org.bukkit.inventory.RecipeChoice.ExactChoice")).invoke(recipe,
-				    key, Class.forName("org.bukkit.inventory.RecipeChoice.ExactChoice").getConstructor(ItemStack.class).newInstance(ingredient)
-		    );
-	    } catch (final Exception e) {
-		    recipe.setIngredient(key, ingredient.getType());
-	    }
-    }
+	public static void SetIngredient(final ShapedRecipe recipe, final char key, final ItemStack ingredient) {
+		if (!self().getConfig().getBoolean("learn-recipes")) {
+			if (self().getVersionChecker().newerThan(VersionChecker.ServerVersion.v1_14)) {
+				if (ingredient == null) return;
+				final Material md = ingredient.getType();
+				if (md != ingredient.getType() || md == Material.AIR) {
+					recipe.setIngredient(key, ingredient.getType());
+				} else {
+					recipe.setIngredient(key, md);
+				}
+				return;
+			} else {
+				final MaterialData md = ingredient.getData();
+				if (md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)) {
+					recipe.setIngredient(key, ingredient.getType());
+				} else {
+					recipe.setIngredient(key, md);
+				}
+			}
+			return;
+		}
+		try {
+			recipe.getClass().getMethod("setIngredient", char.class, Class.forName("org.bukkit.inventory.RecipeChoice.ExactChoice")).invoke(recipe,
+					key, Class.forName("org.bukkit.inventory.RecipeChoice.ExactChoice").getConstructor(ItemStack.class).newInstance(ingredient)
+			);
+		} catch (final Exception e) {
+			recipe.setIngredient(key, ingredient.getType());
+		}
+	}
 
-    public static void AddIngredient(final ShapelessRecipe recipe, final ItemStack ingredient){
-        if(!self().getConfig().getBoolean("learn-recipes")){
-            final MaterialData md = ingredient.getData();
-            if(md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)){
-                recipe.addIngredient(ingredient.getType());
-            }else{
-                recipe.addIngredient(md);
-            }
-            return;
-        }
-        try{
-            recipe.getClass().getMethod("addIngredient", Class.forName("org.bukkit.inventory.RecipeChoice.ExactChoice")).invoke(recipe,
-                    Class.forName("org.bukkit.inventory.RecipeChoice.ExactChoice").getConstructor(ItemStack.class).newInstance(ingredient)
-            );
-        }catch(final Exception e){
-            recipe.addIngredient(ingredient.getType());
-        }
-    }
+	public static void AddIngredient(final ShapelessRecipe recipe, final ItemStack ingredient) {
+		if (!self().getConfig().getBoolean("learn-recipes")) {
+			final MaterialData md = ingredient.getData();
+			if (md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)) {
+				recipe.addIngredient(ingredient.getType());
+			} else {
+				recipe.addIngredient(md);
+			}
+			return;
+		}
+		try {
+			recipe.getClass().getMethod("addIngredient", Class.forName("org.bukkit.inventory.RecipeChoice.ExactChoice")).invoke(recipe,
+					Class.forName("org.bukkit.inventory.RecipeChoice.ExactChoice").getConstructor(ItemStack.class).newInstance(ingredient)
+			);
+		} catch (final Exception e) {
+			recipe.addIngredient(ingredient.getType());
+		}
+	}
 
 
 	private static <T> boolean callSingleParamMethod(final String methodName, final T param, final Class<T> paramType, final Object instance, final Class<?> instanceType) {
@@ -266,6 +267,7 @@ public class Adapter {
 			return false;
 		}
 	}
+
 	public static org.bukkit.inventory.FurnaceRecipe GetFurnaceRecipe(final JavaPlugin plugin, final String key, final ItemStack result, final ItemStack source, final int duration, final float exp) {
 		//public FurnaceRecipe(@NotNull NamespacedKey key, @NotNull ItemStack result, @NotNull Material source, float experience, int cookingTime) {
 		try {
@@ -284,54 +286,60 @@ public class Adapter {
 			return recipe;
 		}
 	}
-    public static void DiscoverRecipes(final Player player, final List<Recipe> recipes){
-        try{
-            for (final Recipe recipe : recipes) {
-                if(recipe instanceof ShapedRecipe){
-                    final ShapedRecipe shaped = (ShapedRecipe) recipe;
-                    player.discoverRecipe(shaped.getKey());
-                }else if(recipe instanceof ShapelessRecipe){
-                    final ShapelessRecipe shapeless = (ShapelessRecipe) recipe;
-                    player.discoverRecipe(shapeless.getKey());
-                }
-            }
-        }catch(final Exception e){ }
-    }
 
-    public static void SetOwningPlayer(final SkullMeta meta, final OfflinePlayer player){
-        try{
-            meta.setOwningPlayer(player);
-        }catch(final Exception e){
-            meta.setOwner(player.getName());
-        }
-    }
+	public static void DiscoverRecipes(final Player player, final List<Recipe> recipes) {
+		try {
+			for (final Recipe recipe : recipes) {
+				if (recipe instanceof ShapedRecipe) {
+					final ShapedRecipe shaped = (ShapedRecipe) recipe;;
+					if (shaped.getKey().getNamespace().contains("craftenhance")) {
+						player.discoverRecipe(shaped.getKey());
+					}
+				} else if (recipe instanceof ShapelessRecipe) {
+					final ShapelessRecipe shapeless = (ShapelessRecipe) recipe;
+					if (shapeless.getKey().getNamespace().contains("craftenhance")) {
+						player.discoverRecipe(shapeless.getKey());
+					}
+				}
+			}
+		} catch (final Exception e) {
+		}
+	}
 
-    public static Recipe FilterRecipes(final List<Recipe> recipes, final String name){
-        for(final Recipe r : recipes){
-            final String id = GetRecipeIdentifier(r);
-            if(id == null) continue;
-            if(id.equalsIgnoreCase(name))
-                return r;
-        }
+	public static void SetOwningPlayer(final SkullMeta meta, final OfflinePlayer player) {
+		try {
+			meta.setOwningPlayer(player);
+		} catch (final Exception e) {
+			meta.setOwner(player.getName());
+		}
+	}
 
-        return recipes.stream().filter(x -> x != null).filter(x -> x.getResult().getType().name().equalsIgnoreCase(name)).findFirst().orElse(null);
+	public static Recipe FilterRecipes(final List<Recipe> recipes, final String name) {
+		for (final Recipe r : recipes) {
+			final String id = GetRecipeIdentifier(r);
+			if (id == null) continue;
+			if (id.equalsIgnoreCase(name))
+				return r;
+		}
 
-    }
+		return recipes.stream().filter(x -> x != null).filter(x -> x.getResult().getType().name().equalsIgnoreCase(name)).findFirst().orElse(null);
+
+	}
 
 	public static boolean ContainsSubKey(final Recipe r, final String key) {
 		final String keyString = GetRecipeIdentifier(r);
 		return keyString == null ? key == null : keyString.contains(key);
 	}
 
-    public static String GetRecipeIdentifier(final Recipe r){
-        try{
-            //reflection is so damn powerful!! You can even invoke methods from derived classes.
-            final Object obj = r.getClass().getMethod("getKey").invoke(r);
-            if(obj != null) return obj.toString();
-        }catch(final Exception e){
-        }
+	public static String GetRecipeIdentifier(final Recipe r) {
+		try {
+			//reflection is so damn powerful!! You can even invoke methods from derived classes.
+			final Object obj = r.getClass().getMethod("getKey").invoke(r);
+			if (obj != null) return obj.toString();
+		} catch (final Exception e) {
+		}
 
-        return r.getResult().getType().name();
-    }
+		return r.getResult().getType().name();
+	}
 
 }

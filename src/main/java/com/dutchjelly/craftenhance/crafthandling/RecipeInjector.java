@@ -18,6 +18,7 @@ import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Furnace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -30,6 +31,7 @@ import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.ItemStack;
@@ -37,7 +39,6 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.permissions.Permissible;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -49,11 +50,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
 import static com.dutchjelly.craftenhance.util.FurnaceDefultValues.getExp;
 
 public class RecipeInjector implements Listener {
 
-    private final JavaPlugin plugin;
+    private final CraftEnhance plugin;
     private RecipeLoader loader;
     private final boolean disableDefaultModeldataCrafts;
     private final boolean makeItemsadderCompatible;
@@ -66,7 +68,7 @@ public class RecipeInjector implements Listener {
     private final Map<Location, UUID> containerOwners = new HashMap<>();
     private final Set<Location> notCustomItem = new HashSet<>();
 
-    public RecipeInjector(final JavaPlugin plugin) {
+    public RecipeInjector(final CraftEnhance plugin) {
         this.plugin = plugin;
         disableDefaultModeldataCrafts = plugin.getConfig().getBoolean("disable-default-custom-model-data-crafts");
         makeItemsadderCompatible = plugin.getConfig().getBoolean("make-itemsadder-compatible");
@@ -92,6 +94,20 @@ public class RecipeInjector implements Listener {
         return Adapter.canUseModeldata() && disableDefaultModeldataCrafts ?
                 ItemMatchers.constructIMatcher(ItemMatchers::matchType, ItemMatchers::matchModelData)
                 : ItemMatchers::matchType;
+    }
+
+    @EventHandler
+    public void onJoin(final PlayerJoinEvent e) {
+        if (self().getConfig().getBoolean("learn-recipes")) {
+            try {
+                for (final NamespacedKey namespacedKey : e.getPlayer().getDiscoveredRecipes()) {
+                    if (namespacedKey.getNamespace().contains("craftenhance")) {
+                        e.getPlayer().undiscoverRecipe(namespacedKey);
+                    }
+                }
+            } catch (final Exception ignored) {}
+            Adapter.DiscoverRecipes(e.getPlayer(), RecipeLoader.getInstance().getLoadedServerRecipes());
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

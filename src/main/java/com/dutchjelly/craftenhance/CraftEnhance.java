@@ -89,10 +89,11 @@ public class CraftEnhance extends JavaPlugin {
 
 		saveDefaultConfig();
 		Debug.init(this);
+
 		if (isReloding)
-			Bukkit.getScheduler().runTaskAsynchronously(this, this::loadPluginData);
+			Bukkit.getScheduler().runTaskAsynchronously(this, ()-> loadPluginData(isReloding));
 		else {
-			this.loadPluginData();
+			this.loadPluginData(false);
 
 			this.usingItemsAdder = this.getServer().getPluginManager().getPlugin("ItemsAdder") != null;
 			//Most other instances use the file manager, so setup before everything.
@@ -141,24 +142,22 @@ public class CraftEnhance extends JavaPlugin {
 		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
 			this.onDisable();
 			Bukkit.getScheduler().runTask(this, () -> {
-				//RecipeLoader.getInstance().clearCache();
 				RecipeLoader.clearInstance();
 				reloadConfig();
 				this.onEnable();
 			});
 		});
-		isReloding = false;
 	}
 
 	@Override
 	public void onDisable() {
-		Bukkit.getScheduler().runTask(this, () -> getServer().resetRecipes());
+		if (!this.isReloding)
+			Bukkit.getScheduler().runTask(this, () -> getServer().resetRecipes());
 		Debug.Send("Saving container owners...");
 		fm.saveContainerOwners(injector.getContainerOwners());
 		Debug.Send("Saving disabled recipes...");
 		fm.saveDisabledServerRecipes(RecipeLoader.getInstance().getDisabledServerRecipes().stream().map(x -> Adapter.GetRecipeIdentifier(x)).collect(Collectors.toList()));
 		fm.getRecipes().forEach(EnhancedRecipe::save);
-		RecipeLoader.getInstance().clearCache();
 		categoryDataCache.save();
 
 	}
@@ -221,7 +220,7 @@ public class CraftEnhance extends JavaPlugin {
 		guiManager = new GuiManager(this);
 		getServer().getPluginManager().registerEvents(injector, this);
 		getServer().getPluginManager().registerEvents(guiManager, this);
-		getServer().getPluginManager().registerEvents(RecipeLoader.getInstance(), this);
+		//getServer().getPluginManager().registerEvents(RecipeLoader.getInstance(), this);
 	}
 
 	private void setupFileManager() {
@@ -230,7 +229,7 @@ public class CraftEnhance extends JavaPlugin {
 		fm.cacheRecipes();
 	}
 
-	private void loadPluginData() {
+	private void loadPluginData(final Boolean isReloding) {
 		if (categoryDataCache == null)
 			categoryDataCache = new CategoryDataCache();
 		categoryDataCache.reload();
@@ -245,6 +244,7 @@ public class CraftEnhance extends JavaPlugin {
 		if (menuSettingsCache == null)
 			menuSettingsCache = new MenuSettingsCache(this);
 		menuSettingsCache.reload();
+		System.out.println("isReloding " + isReloding);
 		if (isReloding)
 			Bukkit.getScheduler().runTask(this, this::loadRecipes);
 	}
@@ -268,6 +268,11 @@ public class CraftEnhance extends JavaPlugin {
 			injector = new RecipeInjector(this);
 		injector.registerContainerOwners(fm.getContainerOwners());
 		injector.setLoader(loader);
+		//todo learn recipes are little broken. when you reload it.
+		if (self().getConfig().getBoolean("learn-recipes"))
+			for (final Player player : Bukkit.getOnlinePlayers())
+				Adapter.DiscoverRecipes(player, getCategoryDataCache().getServerRecipes());
+		isReloding = false;
 	}
 	public void openEnhancedCraftingTable(final Player p) {
 		final CustomCraftingTable table = new CustomCraftingTable(

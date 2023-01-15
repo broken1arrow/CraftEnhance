@@ -41,8 +41,7 @@ public class ServerRecipeTranslator {
         final ShapedRecipe shaped;
         try {
             shaped = Adapter.GetShapedRecipe(
-                    CraftEnhance.getPlugin(CraftEnhance.class), KeyPrefix + recipeKey, result
-            );
+                    CraftEnhance.getPlugin(CraftEnhance.class), KeyPrefix + recipeKey, result);
             shaped.shape(GetShape(content));
             MapIngredients(shaped, content);
         } catch (final IllegalArgumentException e) {

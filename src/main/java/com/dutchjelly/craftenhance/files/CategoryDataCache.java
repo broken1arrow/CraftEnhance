@@ -2,11 +2,13 @@ package com.dutchjelly.craftenhance.files;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.ServerLoadable;
 import com.dutchjelly.craftenhance.files.util.SimpleYamlHelper;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class CategoryDataCache extends SimpleYamlHelper {
 
@@ -36,6 +39,10 @@ public class CategoryDataCache extends SimpleYamlHelper {
 		return  recipeCategorys.values();
 	}
 
+	public List<Recipe> getServerRecipes(){
+		return  recipeCategorys.values().stream().flatMap(categoryData->categoryData.getEnhancedRecipes()
+				.stream().map(ServerLoadable::getServerRecipe)).collect(Collectors.toList());
+	}
 	@Nullable
 	public CategoryData get(final String category){
 		return recipeCategorys.get(category);
