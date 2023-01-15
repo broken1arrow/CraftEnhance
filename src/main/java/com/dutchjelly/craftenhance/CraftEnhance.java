@@ -94,25 +94,7 @@ public class CraftEnhance extends JavaPlugin {
 			Bukkit.getScheduler().runTaskAsynchronously(this, ()-> loadPluginData(isReloding));
 		else {
 			this.loadPluginData(false);
-
-			this.usingItemsAdder = this.getServer().getPluginManager().getPlugin("ItemsAdder") != null;
-			//Most other instances use the file manager, so setup before everything.
-			Debug.Send("Setting up the file manager for recipes.");
-			setupFileManager();
-
-			Debug.Send("Loading recipes");
-			final RecipeLoader loader = RecipeLoader.getInstance();
-			fm.getRecipes().stream().filter(x -> x.validate() == null).forEach(loader::loadRecipe);
-			loader.printGroupsDebugInfo();
-			loader.disableServerRecipes(
-					fm.readDisabledServerRecipes().stream().map(x ->
-							Adapter.FilterRecipes(loader.getServerRecipes(), x)
-					).collect(Collectors.toList())
-			);
-			if (injector == null)
-				injector = new RecipeInjector(this);
-			injector.registerContainerOwners(fm.getContainerOwners());
-			injector.setLoader(loader);
+			loadRecipes();
 		}
 		guiManager = new GuiManager(this);
 
@@ -244,7 +226,6 @@ public class CraftEnhance extends JavaPlugin {
 		if (menuSettingsCache == null)
 			menuSettingsCache = new MenuSettingsCache(this);
 		menuSettingsCache.reload();
-		System.out.println("isReloding " + isReloding);
 		if (isReloding)
 			Bukkit.getScheduler().runTask(this, this::loadRecipes);
 	}
@@ -269,9 +250,10 @@ public class CraftEnhance extends JavaPlugin {
 		injector.registerContainerOwners(fm.getContainerOwners());
 		injector.setLoader(loader);
 		//todo learn recipes are little broken. when you reload it.
-		if (self().getConfig().getBoolean("learn-recipes"))
-			for (final Player player : Bukkit.getOnlinePlayers())
-				Adapter.DiscoverRecipes(player, getCategoryDataCache().getServerRecipes());
+		if (isReloding && Bukkit.getOnlinePlayers().size() > 0)
+			if (self().getConfig().getBoolean("learn-recipes"))
+				for (final Player player : Bukkit.getOnlinePlayers())
+					Adapter.DiscoverRecipes(player, getCategoryDataCache().getServerRecipes());
 		isReloding = false;
 	}
 	public void openEnhancedCraftingTable(final Player p) {
