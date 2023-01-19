@@ -266,6 +266,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 					new RecipeEditor<>(this.recipe,this.categoryData,this.permission,this.editorType);
 					return false;
 				}
+
 				return true;
 			});
 		}

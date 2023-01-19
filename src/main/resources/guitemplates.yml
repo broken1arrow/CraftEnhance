@@ -1,6 +1,6 @@
 RecipesViewer:
   menu_settings:
-    name: "Recipes viewer"
+    name: "Recipes viewer "
     fill-space: "0-44"
     sound: BLOCK_NOTE_BLOCK_BASEDRUM
   buttons:

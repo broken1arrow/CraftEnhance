@@ -270,6 +270,9 @@ public class GuiUtil {
                     Bukkit.getScheduler().runTaskLaterAsynchronously( self(),()-> self().getCategoryDataCache().save(),1L);
                     return false;
                 }
+            }else {
+                Messenger.Message("Please input valid item name and category. Your input " + msg, player);
+                Messenger.Message("Type it like this 'category' 'itemname' ", player);
             }
         }
         return true;
@@ -301,6 +304,9 @@ public class GuiUtil {
                     self().getCategoryDataCache().put(split[1], newCategoryData);
                 }
                 return false;
+            } else {
+                Messenger.Message("Please input valid item name and category. Your input " + msg, player);
+                Messenger.Message("Type it like this 'category' 'itemname' ", player);
             }
         }
         return true;

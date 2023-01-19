@@ -55,17 +55,24 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		return new MenuButton() {
 			@Override
 			public void onClickInsideMenu(final Player player, final Inventory inventory, final ClickType clickType, final ItemStack itemStack, final Object o) {
-				if (o instanceof CategoryData){
+				if (o instanceof CategoryData) {
 					final String category = ((CategoryData) o).getRecipeCategory();
+					final CategoryData changedCategory = ((CategoryData) o);
 					recipe.setRecipeCategory(category);
 					recipe.save();
-					//final CategoryData newCategoryData = self().getCategoryDataCache().of(  category,categoryData.getRecipeCategoryItem(),categoryData.getDisplayName());
-					final CategoryData movedcategoryData = self().getCategoryDataCache().move(categoryData.getRecipeCategory(), category, recipe);
-					if (movedcategoryData == null) {
-						Messenger.Message("Could not add recipe to this " + o + " category.");
-						return;
+					CategoryData moveCategoryData = null;
+
+					/*if (categoryData == null) {
+						 self().getCategoryDataCache().of(category, changedCategory.getRecipeCategoryItem(), changedCategory.getDisplayName());
+					} */
+					if (categoryData != null) {
+						moveCategoryData = self().getCategoryDataCache().move(categoryData.getRecipeCategory(), category, recipe);
+						if (moveCategoryData == null) {
+							Messenger.Message("Could not add recipe to this " + o + " category.");
+							return;
+						}
 					}
-					new RecipeEditor<>(recipe, movedcategoryData, null,  editorType).menuOpen(player);
+					new RecipeEditor<>(recipe, moveCategoryData, null, editorType).menuOpen(player);
 				}
 			}
 

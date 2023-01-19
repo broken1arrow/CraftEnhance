@@ -253,7 +253,8 @@ public class RecipeLoader {
 				self().getLogger().log(Level.WARNING, "Recipe will not be cached becuse the result is null or invalid material type.");
 				return;
 			}
-			server.addRecipe(serverRecipe);
+			if (!containsRecipe)
+				server.addRecipe(serverRecipe);
 			Debug.Send("Added server recipe for " + serverRecipe.getResult());
 
 			loaded.put(recipe.getKey(), serverRecipe);
