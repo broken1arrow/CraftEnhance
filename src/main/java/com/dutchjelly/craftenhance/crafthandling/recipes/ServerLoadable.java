@@ -1,6 +1,5 @@
 package com.dutchjelly.craftenhance.crafthandling.recipes;
 
-import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import org.bukkit.inventory.Recipe;
 
 
@@ -15,5 +14,6 @@ public interface ServerLoadable {
     boolean isSimilar(EnhancedRecipe r);
 
     boolean isAlwaysSimilar(Recipe r);
+
 
 }

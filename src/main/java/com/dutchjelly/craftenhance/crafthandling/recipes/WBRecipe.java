@@ -106,6 +106,25 @@ public class WBRecipe extends EnhancedRecipe {
         return false;
     }
 
+
+    public boolean isEqual(final Recipe r) {
+        if(r instanceof ShapelessRecipe){
+            if (!shapeless) return false;
+            final ItemStack[] ingredients = ServerRecipeTranslator.translateShapelessRecipe((ShapelessRecipe) r);
+            final boolean result = WBRecipeComparer.ingredientsMatch(getContent(), ingredients, ItemMatchers::matchType);
+            return result;
+        }
+
+        if(r instanceof ShapedRecipe){
+            final ItemStack[] shapedContent = ServerRecipeTranslator.translateShapedRecipe((ShapedRecipe)r);
+            if(shapeless){
+                return WBRecipeComparer.ingredientsMatch(shapedContent, getContent(), ItemMatchers::matchType);
+            }
+            return WBRecipeComparer.shapeMatches(getContent(), shapedContent, ItemMatchers::matchType);
+        }
+        return false;
+    }
+
     @Override
     public boolean isSimilar(final EnhancedRecipe r) {
         if(r == null) return false;

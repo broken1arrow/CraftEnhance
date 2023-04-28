@@ -134,7 +134,7 @@ public class CraftEnhance extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		if (!this.isReloding)
-			Bukkit.getScheduler().runTask(this, () -> getServer().resetRecipes());
+			 getServer().resetRecipes();
 		Debug.Send("Saving container owners...");
 		fm.saveContainerOwners(injector.getContainerOwners());
 		Debug.Send("Saving disabled recipes...");

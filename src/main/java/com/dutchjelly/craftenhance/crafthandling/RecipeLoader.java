@@ -180,7 +180,6 @@ public class RecipeLoader {
 	public void unloadRecipe(final EnhancedRecipe recipe) {
 		final RecipeGroup group = findGroup(recipe);
 		loadedRecipes.remove(recipe);
-		System.out.println("learn-recipes) " + self().getConfig().getBoolean("learn-recipes"));
 
 		final CategoryData categoryData = categoryDataCache.get(recipe.getRecipeCategory());
 		if (categoryData != null && categoryData.getEnhancedRecipes() != null)
