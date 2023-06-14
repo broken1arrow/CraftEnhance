@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 	<groupId>CraftEnhance</groupId>
 	<artifactId>CraftEnhance</artifactId>
-	<version>2.5.7</version>
+	<version>2.5.8</version>
 	<name>CraftEnhance</name>
 	<description>This is a minecraft plugin to enhance crafting.</description>
 	<properties>
@@ -91,7 +91,7 @@
         <dependency>
             <groupId>com.github.broken1arrow</groupId>
             <artifactId>MenuLibrary</artifactId>
-            <version>0.89</version>
+            <version>0.96</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

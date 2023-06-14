@@ -19,9 +19,10 @@ import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import lombok.Getter;
 import org.brokenarrow.menu.library.CheckItemsInsideInventory;
-import org.brokenarrow.menu.library.CreateMenus;
+
 import org.brokenarrow.menu.library.MenuButton;
 import org.brokenarrow.menu.library.MenuHolder;
+import org.brokenarrow.menu.library.MenuUtility;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -274,7 +275,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	}
 
 	@Override
-	public void menuClose(final InventoryCloseEvent event, final CreateMenus menu) {
+	public void menuClose(final InventoryCloseEvent event, final MenuUtility menu) {
 		if (self().getConfig().getBoolean("save_on_close")){
 			final CheckItemsInsideInventory checkItemsInsideInventory = new CheckItemsInsideInventory();
 			checkItemsInsideInventory.setSlotsToCheck(menuTemplate.getFillSlots());

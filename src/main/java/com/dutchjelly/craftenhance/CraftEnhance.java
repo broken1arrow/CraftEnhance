@@ -107,7 +107,7 @@ public class CraftEnhance extends JavaPlugin {
 		Messenger.Message("If you find a bug in the plugin, please report it to https://github.com/DutchJelly/CraftEnhance/issues.");
 		if (!versionChecker.runVersionCheck()) {
 			for (int i = 0; i < 4; i++)
-				Messenger.Message("WARN: The installed version isn't tested to work with the game version of the server.");
+				Messenger.Message("WARN: The installed version isn't tested to work with this version of the server.");
 		}
 		Bukkit.getScheduler().runTaskAsynchronously(this, versionChecker::runUpdateCheck);
 
