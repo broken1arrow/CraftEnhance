@@ -11,8 +11,8 @@ public class VersionChecker {
     private String serverVersion;
     private int currentServerVersion;
 
-    public static VersionChecker init(CraftEnhance plugin) {
-        VersionChecker checker = new VersionChecker();
+    public static VersionChecker init(final CraftEnhance plugin) {
+        final VersionChecker checker = new VersionChecker();
         checker.serverVersion = plugin.getServer().getBukkitVersion();
         String version = checker.serverVersion.split("\\.")[1];
         if (version.contains("-"))
@@ -25,12 +25,12 @@ public class VersionChecker {
     public void runUpdateCheck() {
         if (!plugin.getConfig().getBoolean("enable-updatechecker")) return;
 
-        GithubLoader loader = GithubLoader.init(this);
+        final GithubLoader loader = GithubLoader.init(this);
         loader.readVersion();
         String version = loader.getVersion();
         if (version == null) return;
         version = version.trim();
-        String currentVersion = versionCheck(version);
+        final String currentVersion = versionCheck(version);
         if (!isOutDated(currentVersion)) {
             Messenger.Message("CraftEnhance is up to date.");
         } else {
@@ -38,8 +38,8 @@ public class VersionChecker {
         }
     }
 
-    public String versionCheck(String version) {
-        String[] currentVersions = version.split("\n");
+    public String versionCheck(final String version) {
+        final String[] currentVersions = version.split("\n");
 		/*for (int i = 0; i < currentVersions.length; i++) {
 			String ver = currentVersions[i];
 			String[] values = ver.split("\\.");
@@ -54,7 +54,7 @@ public class VersionChecker {
 
     public boolean runVersionCheck() {
         Messenger.Message("Running a version check to check that the server is compatible with game version " + String.join(", ", Adapter.CompatibleVersions()) + ".");
-        for (String version : Adapter.CompatibleVersions()) {
+        for (final String version : Adapter.CompatibleVersions()) {
             if (serverVersion.contains(version)) {
                 Messenger.Message("The correct version is installed.");
                 return true;
@@ -64,7 +64,8 @@ public class VersionChecker {
         Messenger.Message("!! Incompatibility found !!");
         Messenger.Message("The installed version of CraftEnhance only supports spigot/bukkit versions \"" + String.join(", ", Adapter.CompatibleVersions()) + "\"");
         Messenger.Message("while your server is running " + serverVersion + ".");
-        Messenger.Message("The correct version can be installed here: https://dev.bukkit.org/projects/craftenhance/files");
+        Messenger.Message("The correct version can be installed here: https://www.spigotmc.org/resources/1-9-1-19-custom-recipes-and-crafting-craftenhance.65058/ or https://dev.bukkit.org/projects/craftenhance/files .");
+        Messenger.Message("Alternatively do you find latest here: https://github.com/broken1arrow/CraftEnhance/releases .");
         Messenger.Message("When installing the plugin make sure that the game version matches your bukkit or spigot version.");
         Messenger.Message("Please note that this incompatibility could cause duping glitches.");
         //Messenger.Message("So because the incorrect plugin version is being used, the plugin has to be disabled.");
@@ -75,25 +76,25 @@ public class VersionChecker {
         return plugin;
     }
 
-    private boolean isOutDated(String version) {
-        String currentVersion = plugin.getDescription().getVersion();
+    private boolean isOutDated(final String version) {
+        final String currentVersion = plugin.getDescription().getVersion();
         return !version.equalsIgnoreCase(currentVersion);
         //return !Arrays.stream(version.split("\n")).anyMatch(x -> x.equalsIgnoreCase(currentVersion));
     }
 
-    public boolean equals(ServerVersion version) {
+    public boolean equals(final ServerVersion version) {
         return serverVersion(version) == 0;
     }
 
-    public boolean newerThan(ServerVersion version) {
+    public boolean newerThan(final ServerVersion version) {
         return serverVersion(version) > 0;
     }
 
-    public boolean olderThan(ServerVersion version) {
+    public boolean olderThan(final ServerVersion version) {
         return serverVersion(version) < 0;
     }
 
-    public int serverVersion(ServerVersion version) {
+    public int serverVersion(final ServerVersion version) {
         return this.currentServerVersion - version.getVersion();
     }
 
@@ -117,7 +118,7 @@ public class VersionChecker {
         @Getter
         private final int version;
 
-        ServerVersion(int version) {
+        ServerVersion(final int version) {
             this.version = version;
 
         }
