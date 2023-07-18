@@ -17,9 +17,9 @@ import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
+import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import lombok.Getter;
 import org.brokenarrow.menu.library.CheckItemsInsideInventory;
-
 import org.brokenarrow.menu.library.MenuButton;
 import org.brokenarrow.menu.library.MenuHolder;
 import org.brokenarrow.menu.library.MenuUtility;
@@ -155,15 +155,16 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	}
 	public boolean run(final com.dutchjelly.craftenhance.gui.templates.MenuButton value, final Inventory menu, final Player player, final ClickType click) {
 		if (value.getButtonType() == ButtonType.SetPosition){
-			self().getGuiManager().waitForChatInput(this, player, this::handlePositionChange);
+			new HandleChatInput(this, this::handlePositionChange);
 			return true;
 		}
 		if (value.getButtonType() == ButtonType.SetCookTime){
-			Messenger.Message("Please input a cook duration.Type q, exit, cancel to turn it off.", getViewer());
-			self().getGuiManager().waitForChatInput(this, getViewer(), (msg) -> {
+			new HandleChatInput(this,  (msg) -> {
 				short parsed;
-				if (msg.equals("cancel")||msg.equals("quit") ||msg.equals("exit"))
+				if (msg.equals("cancel")||msg.equals("quit") || msg.equals("exit") || msg.equals("q") ) {
+					this.menuOpen(player);
 					return false;
+				}
 				try{
 					parsed = Short.parseShort(msg);
 				}catch(final NumberFormatException e){
@@ -180,19 +181,21 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 				this.menuOpen(player);
 				//new RecipeEditor<>(this.recipe, this.categoryData,this.permission,this.editorType).menuOpen(player);
 				return false;
-			});
+			}).setMessages("Please input a cook duration.Type q, exit, cancel to turn it off.")
+					.start(player);
 			return true;
 		}
 		if (value.getButtonType() == ButtonType.SetExp){
-			Messenger.Message("Please input an exp amount.Type q, exit, cancel to turn it off.", getViewer());
-			self().getGuiManager().waitForChatInput(this, getViewer(), (msg) -> {
+			new HandleChatInput(this, msg-> {
 				int parsed;
-				if (msg.equals("cancel")||msg.equals("quit") ||msg.equals("exit"))
+				if (msg.equals("cancel")||msg.equals("quit") ||msg.equals("exit")) {
+					this.menuOpen(player);
 					return false;
+				}
 				try{
 					parsed = Integer.parseInt(msg);
 				}catch(final NumberFormatException e){
-					Messenger.Message("Error, you didn't input a number. your input " +msg, getViewer());
+					Messenger.Message("Error, you didn't input a number. your input " + msg, getViewer());
 					return true;
 				}
 				if(parsed < 0) parsed = 0;
@@ -201,7 +204,8 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 				this.menuOpen(player);
 				//new RecipeEditor<>(this.recipe, this.categoryData,this.permission,this.editorType).menuOpen(player);
 				return false;
-			});
+			}).setMessages("Please input an exp amount.Type q, exit, cancel to turn it off.")
+					.start(getViewer());
 			return true;
 		}
 		if (value.getButtonType() == ButtonType.SwitchShaped){
@@ -233,14 +237,14 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 		}
 		if (value.getButtonType() == ButtonType.SetPermission){
-			Messenger.Message("Set your own permission on a recipe.Only players some has this permission can craft the item.Type q,exit,cancel to turn it off", getViewer());
-			self().getGuiManager().waitForChatInput(this, player, (message) ->{
-				if (!handlePermissionSetCB(message)) {
+			new HandleChatInput(this, msg-> {
+				if (!handlePermissionSetCB(msg)) {
 					this.menuOpen(player);
 					return false;
 				}
 				return true;
-			});
+			}).setMessages("Set your own permission on a recipe. Only players some has this permission can craft the item."," Type q,exit,cancel to turn it off")
+					.start(getViewer());
 			return true;
 		}
 		if (value.getButtonType() == ButtonType.SaveRecipe){
@@ -260,16 +264,14 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			new CategoryList<>( this.recipe, this.categoryData, this.permission,  this.editorType, "").menuOpen(player);
 		}
 		if (value.getButtonType() == ButtonType.ChangeCategory) {
-			Messenger.Message("Change category name and you can also change item (if not set it will use the old one). Like this 'category new_category_name crafting_table' without '. If you want create new category recomend use this format 'category crafting_table' without '", getViewer());
-			Messenger.Message("Type q,exit,cancel to turn it off.", getViewer());
-			self().getGuiManager().waitForChatInput(this, getViewer(), msg->{
-				if (!GuiUtil.changeOrCreateCategory(msg, player)){
-					new RecipeEditor<>(this.recipe,this.categoryData,this.permission,this.editorType);
+			new HandleChatInput(this, msg -> {
+				if (!GuiUtil.changeOrCreateCategory(msg, player)) {
+					new RecipeEditor<>(this.recipe, this.categoryData, this.permission, this.editorType);
 					return false;
 				}
-
 				return true;
-			});
+			}).setMessages("Change category name and you can also change item (if not set it will use the old one). Like this 'category new_category_name crafting_table' without '. If you want create new category recomend use this format 'category crafting_table' without '", "Type q,exit,cancel to turn it off.")
+					.start(getViewer());
 		}
 		return false;
 	}

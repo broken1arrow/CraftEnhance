@@ -9,6 +9,7 @@ import com.dutchjelly.craftenhance.gui.util.FormatListContents;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.messaging.Messenger;
+import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import com.dutchjelly.craftenhance.util.PermissionTypes;
 import org.brokenarrow.menu.library.MenuButton;
 import org.brokenarrow.menu.library.MenuHolder;
@@ -121,25 +122,33 @@ public class RecipesViewerCategorys extends MenuHolder {
 		if (value.getButtonType() == ButtonType.Search) {
 			if (click == ClickType.RIGHT) {
 				Messenger.Message("Search for categorys.", getViewer());
-				self().getGuiManager().waitForChatInput(this, getViewer(), msg-> {
+				new HandleChatInput(this, msg-> {
 					if (GuiUtil.seachCategory(msg)){
 						new RecipesViewerCategorys( msg).menuOpen(getViewer());
 						return false;
 					}
 					return true;
-				});
+				}).setMessages("Search for categorys.")
+						.start(getViewer());;
 			}
 			else new RecipesViewerCategorys("").menuOpen(player);
 		}
 		if (value.getButtonType() == ButtonType.NewCategory && player.hasPermission(PermissionTypes.Categorys_editor.getPerm())){
-			Messenger.Message("Please input your category name and item type you want. Like this 'category' without '.Type cancel, quit, exit to close this without change.", getViewer());
-			self().getGuiManager().waitForChatInput(new RecipesViewerCategorys(""), getViewer(), msg-> {
+			new HandleChatInput(this, msg-> {
 				if (!GuiUtil.newCategory(msg, player)) {
 					new RecipesViewerCategorys("").menuOpen(player);
 					return false;
 				}
 				return true;
-			});
+			}).setMessages("Please input your category name and item type you want. Like this 'category' without '.Type cancel, quit, exit or q to close this without change.")
+					.start(getViewer());
+	/*		self().getGuiManager().waitForChatInput(new RecipesViewerCategorys(""), getViewer(), msg-> {
+				if (!GuiUtil.newCategory(msg, player)) {
+					new RecipesViewerCategorys("").menuOpen(player);
+					return false;
+				}
+				return true;
+			});*/
 		}
 		return false;
 	}

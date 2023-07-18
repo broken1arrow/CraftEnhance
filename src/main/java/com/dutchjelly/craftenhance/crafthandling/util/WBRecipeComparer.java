@@ -108,7 +108,6 @@ public class WBRecipeComparer {
                     Bukkit.getLogger().log(Level.SEVERE, "Error, found null ingredient.");
                     return false;
                 }
-
                 if(matcher.match(b[i], inRecipe)){
                     used[i] = true;
                     break;

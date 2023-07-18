@@ -10,6 +10,7 @@ import com.dutchjelly.craftenhance.gui.util.FormatListContents;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.messaging.Messenger;
+import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import org.brokenarrow.menu.library.MenuButton;
 import org.brokenarrow.menu.library.MenuHolder;
 import org.bukkit.entity.Player;
@@ -150,14 +151,22 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 		if (value.getButtonType() == ButtonType.Search) {
 			if (click == ClickType.RIGHT) {
-				Messenger.Message("Search for categorys.", getViewer());
+				new HandleChatInput(this, msg-> {
+					if (GuiUtil.seachCategory(msg)) {
+						new CategoryList<>( recipe, categoryData, permission,  editorType,msg).menuOpen(getViewer());
+						return false;
+					}
+					return true;
+				}).setMessages("Search for categorys.")
+						.start(getViewer());
+			/*	Messenger.Message("Search for categorys.", getViewer());
 				self().getGuiManager().waitForChatInput(this, getViewer(), msg -> {
 					if (GuiUtil.seachCategory(msg)) {
 						new CategoryList<>( recipe, categoryData, permission,  editorType,msg).menuOpen(getViewer());
 						return false;
 					}
 					return true;
-				});
+				});*/
 			} else new CategoryList<>(recipe, categoryData, permission,  editorType,"").menuOpen(player);
 		}
 		return false;

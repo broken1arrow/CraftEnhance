@@ -207,7 +207,8 @@ public class GuiUtil {
     }
 
     public static boolean changeCategoryItem(final String currentCatogory, final String msg, final Player player) {
-        if (msg.equals("") || msg.equals("cancel") || msg.equals("quit") || msg.equals("exit"))
+        System.out.println("msg.equals(\"quit\") " + msg.equals("quit"));
+        if (msg.equals("") || msg.equals("cancel") || msg.equals("quit") || msg.equals("exit")|| msg.equals("q"))
             return false;
         if (!msg.isEmpty()) {
             final CategoryData categoryData = self().getCategoryDataCache().get(currentCatogory);

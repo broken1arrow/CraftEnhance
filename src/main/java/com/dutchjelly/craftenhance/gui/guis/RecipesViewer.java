@@ -10,6 +10,7 @@ import com.dutchjelly.craftenhance.gui.guis.viewers.RecipeViewRecipe;
 import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
+import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import com.dutchjelly.craftenhance.util.PermissionTypes;
 import org.brokenarrow.menu.library.MenuButton;
 import org.brokenarrow.menu.library.MenuHolder;
@@ -112,13 +113,20 @@ public class RecipesViewer extends MenuHolder {
 		}
 		if (value.getButtonType() == ButtonType.Search) {
 			if (click == ClickType.RIGHT)
-				self().getGuiManager().waitForChatInput(this, getViewer(), (msg) -> {
+				new HandleChatInput(this, msg-> {
 					if (GuiUtil.seachCategory(msg)) {
 						new RecipesViewer(categoryData,msg,player).menuOpen(getViewer());
 						return false;
 					}
 					return true;
 				});
+			/*	self().getGuiManager().waitForChatInput(this, getViewer(), (msg) -> {
+					if (GuiUtil.seachCategory(msg)) {
+						new RecipesViewer(categoryData,msg,player).menuOpen(getViewer());
+						return false;
+					}
+					return true;
+				});*/
 			else new RecipesViewer(categoryData, "", player).menuOpen(player);
 		}
 		if (value.getButtonType() == ButtonType.Back) {

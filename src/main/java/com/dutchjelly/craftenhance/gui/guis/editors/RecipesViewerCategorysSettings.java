@@ -8,7 +8,7 @@ import com.dutchjelly.craftenhance.gui.guis.RecipesViewerCategorys;
 import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
-import com.dutchjelly.craftenhance.messaging.Messenger;
+import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import org.brokenarrow.menu.library.MenuButton;
 import org.brokenarrow.menu.library.MenuHolder;
 import org.bukkit.Bukkit;
@@ -88,34 +88,35 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 			}
 		}
 		if (value.getButtonType() == ButtonType.ChangeCategoryName){
-			Messenger.Message("Please input new display name. Like this 'name' without '.Type cancel, quit, exit to close this without change.", getViewer());
-			self().getGuiManager().waitForChatInput(new RecipesViewerCategorys(""), getViewer(), msg-> {
+			new HandleChatInput(this, msg-> {
 				if(!GuiUtil.changeCategoryName(this.category,msg,player)){
 					new RecipesViewerCategorysSettings(this.category).menuOpen(player);
 					return false;
 				}
 				return true;
-			});
+			}).setMessages("Please input new display name. Like this 'name' without '.Type cancel, quit, exit to close this without change.")
+					.start(player);
 		}
 		if (value.getButtonType() == ButtonType.ChangeCategoryItem){
-			Messenger.Message("Change category item. Like this 'stone' without '.Type cancel, quit, exit to close this without change.", getViewer());
-			self().getGuiManager().waitForChatInput(new RecipesViewerCategorys(""), getViewer(), msg-> {
+			new HandleChatInput(this, msg-> {
+				System.out.println("msg " + msg);
 				if (!GuiUtil.changeCategoryItem(this.category,msg, player)) {
 					new RecipesViewerCategorysSettings(this.category).menuOpen(player);
 					return false;
 				}
 				return true;
-			});
+			}).setMessages("Change category item. Like this 'stone' without '.Type cancel, quit, exit or q to close this without change.")
+					.start(player);
 		}
 		if (value.getButtonType() == ButtonType.ChangeCategory){
-			Messenger.Message("Change category name. Like this 'new_category_name' without '.Type cancel, quit, exit to close this without change.", getViewer());
-			self().getGuiManager().waitForChatInput(new RecipesViewerCategorys(""), getViewer(), msg-> {
+			new HandleChatInput(this, msg-> {
 				if (!GuiUtil.changeCategory(this.category,msg, player)) {
 					new RecipesViewerCategorysSettings(this.category).menuOpen(player);
 					return false;
 				}
 				return true;
-			});
+			}).setMessages("Change category name. Like this 'new_category_name' without '.Type cancel, quit, exit or q to close this without change.")
+					.start(player);
 		}
 		if (value.getButtonType() == ButtonType.Back) {
 			new RecipesViewerCategorys("").menuOpen(player);

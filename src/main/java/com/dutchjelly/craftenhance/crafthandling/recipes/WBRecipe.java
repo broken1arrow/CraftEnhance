@@ -57,15 +57,16 @@ public class WBRecipe extends EnhancedRecipe {
     }
 
 
-    @Override
-    public Recipe getServerRecipe() {
-        if (recipe == null) {
-            if (shapeless)
-                recipe = ServerRecipeTranslator.translateShapelessEnhancedRecipe(this);
-            recipe = ServerRecipeTranslator.translateShapedEnhancedRecipe(this);
-        }
-        return recipe;
-    }
+	@Override
+	public Recipe getServerRecipe() {
+		if (recipe == null) {
+			if (shapeless)
+				recipe = ServerRecipeTranslator.translateShapelessEnhancedRecipe(this);
+			else
+				recipe = ServerRecipeTranslator.translateShapedEnhancedRecipe(this);
+		}
+		return recipe;
+	}
 
 
     //The recipe is similar to a server recipe if theyre both shaped and their shapes match, if at least one is shaped and the ingredients match

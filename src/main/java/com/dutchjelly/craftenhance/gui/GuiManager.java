@@ -28,7 +28,7 @@ public class GuiManager implements Listener {
 	private final Map<UUID, Pair<MenuHolder, IChatInputHandler>> chatWaitingCopy = new HashMap<>();
 	private final CraftEnhance main;
 
-	public GuiManager(CraftEnhance main) {
+	public GuiManager(final CraftEnhance main) {
 		this.main = main;
 	}
 
@@ -38,16 +38,16 @@ public class GuiManager implements Listener {
 
 
 	@EventHandler
-	public void onDrag(InventoryDragEvent e) {
+	public void onDrag(final InventoryDragEvent e) {
 		if (!(e.getView().getTopInventory().getHolder() instanceof GUIElement)) return;
-		GUIElement openGUI = (GUIElement) e.getView().getTopInventory().getHolder();
+		final GUIElement openGUI = (GUIElement) e.getView().getTopInventory().getHolder();
 		if (openGUI == null || e.getInventory() == null) return;
 
 		try {
 			openGUI.handleDragging(e);
 			if (!openGUI.isCancelResponsible() && !e.isCancelled())
 				e.setCancelled(true);
-		} catch (Exception exception) {
+		} catch (final Exception exception) {
 			exception.printStackTrace();
 			if (!e.isCancelled())
 				e.setCancelled(true);
@@ -55,10 +55,10 @@ public class GuiManager implements Listener {
 	}
 
 	@EventHandler
-	public void onClick(InventoryClickEvent clickEvent) {
+	public void onClick(final InventoryClickEvent clickEvent) {
 
 		if (!(clickEvent.getView().getTopInventory().getHolder() instanceof GUIElement)) return;
-		GUIElement openGUI = (GUIElement) clickEvent.getView().getTopInventory().getHolder();
+		final GUIElement openGUI = (GUIElement) clickEvent.getView().getTopInventory().getHolder();
 
 		if (openGUI == null) return;
 
@@ -70,7 +70,7 @@ public class GuiManager implements Listener {
 			if (!openGUI.isCancelResponsible() && !clickEvent.isCancelled())
 				clickEvent.setCancelled(true);
 
-		} catch (Exception exception) {
+		} catch (final Exception exception) {
 			exception.printStackTrace();
 			if (!clickEvent.isCancelled())
 				clickEvent.setCancelled(true);
@@ -78,48 +78,48 @@ public class GuiManager implements Listener {
 	}
 
 	@EventHandler
-	public void onChat(AsyncPlayerChatEvent e) {
+	public void onChat(final AsyncPlayerChatEvent e) {
 		if (e.getPlayer() == null) return;
 
-		if (chatWaiting(e))
-			e.setCancelled(true);
+		/*if (chatWaiting(e))
+			e.setCancelled(true);*/
 	}
 	@EventHandler
-	public void onChatold(AsyncPlayerChatEvent e) {
+	public void onChatold(final AsyncPlayerChatEvent e) {
 		if (e.getPlayer() == null) return;
 
-		if (chatWaitingOld(e))
-			e.setCancelled(true);
+/*		if (chatWaitingOld(e))
+			e.setCancelled(true);*/
 	}
-	public boolean chatWaiting(AsyncPlayerChatEvent e){
-		UUID id = e.getPlayer().getUniqueId();
+	public boolean chatWaiting(final AsyncPlayerChatEvent e){
+		final UUID id = e.getPlayer().getUniqueId();
 		if (!chatWaitingCopy.containsKey(id)) return false;
 
 		Bukkit.getScheduler().runTask(getMain(), () -> {
-			IChatInputHandler callback = chatWaitingCopy.get(id).getSecond();
+			final IChatInputHandler callback = chatWaitingCopy.get(id).getSecond();
 			if (callback.handle(e.getMessage())) return;
-			MenuHolder gui = chatWaitingCopy.get(id).getFirst();
+			final MenuHolder gui = chatWaitingCopy.get(id).getFirst();
 		/*	if (gui != null)
 				gui.menuOpen(e.getPlayer());*/
 			chatWaitingCopy.remove(id);
 		});
 		return true;
 	}
-	public boolean chatWaitingOld(AsyncPlayerChatEvent e){
-		UUID id = e.getPlayer().getUniqueId();
+	public boolean chatWaitingOld(final AsyncPlayerChatEvent e){
+		final UUID id = e.getPlayer().getUniqueId();
 		if (!chatWaiting.containsKey(id)) return false;
 
 		Bukkit.getScheduler().runTask(getMain(), () -> {
-			IChatInputHandler callback = chatWaiting.get(id).getSecond();
+			final IChatInputHandler callback = chatWaiting.get(id).getSecond();
 			if (callback.handle(e.getMessage())) return;
-			GUIElement gui = chatWaiting.get(id).getFirst();
+			final GUIElement gui = chatWaiting.get(id).getFirst();
 			if (gui != null)
 				openGUI(e.getPlayer(), gui);
 			chatWaiting.remove(id);
 		});
 		return true;
 	}
-	public void openGUI(Player p, GUIElement gui) {
+	public void openGUI(final Player p, final GUIElement gui) {
 		if (countPreviousPages(gui) >= MaxPreviousPageBuffer) {
 			Messenger.Message("For performance reasons you cannot open more gui's in that chain (the server keeps track of the previous gui's so you can go back).", p);
 			return;
@@ -143,13 +143,13 @@ public class GuiManager implements Listener {
 		return counter;
 	}
 
-	public void waitForChatInput(GUIElement gui, Player p, IChatInputHandler callback) {
-		UUID playerId = p.getUniqueId();
+	public void waitForChatInput(final GUIElement gui, final Player p, final IChatInputHandler callback) {
+		final UUID playerId = p.getUniqueId();
 		p.closeInventory();
 		chatWaiting.put(playerId, new Pair(gui, callback));
 	}
-	public void waitForChatInput(MenuHolder gui, Player p, IChatInputHandler callback) {
-		UUID playerId = p.getUniqueId();
+	public void waitForChatInput(final MenuHolder gui, final Player p, final IChatInputHandler callback) {
+		final UUID playerId = p.getUniqueId();
 		p.closeInventory();
 		chatWaitingCopy.put(playerId, new Pair(gui, callback));
 	}

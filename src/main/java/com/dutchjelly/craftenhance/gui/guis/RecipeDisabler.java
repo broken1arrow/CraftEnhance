@@ -7,7 +7,7 @@ import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
-import com.dutchjelly.craftenhance.messaging.Messenger;
+import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import org.brokenarrow.menu.library.MenuButton;
 import org.brokenarrow.menu.library.MenuHolder;
 import org.bukkit.ChatColor;
@@ -143,14 +143,22 @@ public class RecipeDisabler extends MenuHolder {
 		}
 		if (value.getButtonType() == ButtonType.Search) {
 			if (click == ClickType.RIGHT) {
-				Messenger.Message("Search for recipe items", player);
+				new HandleChatInput(this, msg-> {
+					if (GuiUtil.seachCategory(msg)) {
+						new RecipeDisabler(RecipeLoader.getInstance().getServerRecipes(), RecipeLoader.getInstance().getDisabledServerRecipes(), this.enableMode, msg).menuOpen(getViewer());
+						return false;
+					}
+					return true;
+				}).setMessages("Search for recipe items")
+						.start(getViewer());
+		/*		Messenger.Message("Search for recipe items", player);
 				self().getGuiManager().waitForChatInput(this, getViewer(), msg -> {
 					if (GuiUtil.seachCategory(msg)) {
 						new RecipeDisabler(RecipeLoader.getInstance().getServerRecipes(), RecipeLoader.getInstance().getDisabledServerRecipes(), this.enableMode, msg).menuOpen(getViewer());
 						return false;
 					}
 					return true;
-				});
+				});*/
 			}
 			else new RecipeDisabler(RecipeLoader.getInstance().getServerRecipes(),RecipeLoader.getInstance().getDisabledServerRecipes(), this.enableMode, "").menuOpen(player);
 		}

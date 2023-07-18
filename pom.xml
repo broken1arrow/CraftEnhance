@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 	<groupId>CraftEnhance</groupId>
 	<artifactId>CraftEnhance</artifactId>
-	<version>2.5.8</version>
+	<version>2.5.9</version>
 	<name>CraftEnhance</name>
 	<description>This is a minecraft plugin to enhance crafting.</description>
 	<properties>
@@ -30,6 +30,7 @@
                             <finalName>${project.name}-${project.version}</finalName>
                             <artifactSet>
                                 <includes>
+                                    <include>com.github.broken1arrow.Utility-Library:Conversation-Prompt*</include>
                                     <include>com.github.broken1arrow:MenuLibrary*</include>
                                 </includes>
                             </artifactSet>
@@ -37,6 +38,10 @@
                                 <relocation>
                                     <pattern>org.brokenarrow.menu.library</pattern>
                                     <shadedPattern>craftenhance.libs.menulib</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.broken.arrow</pattern>
+                                    <shadedPattern>craftenhance.libs.prompt</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
@@ -87,7 +92,12 @@
 			<version>1.5.21</version>
 			<scope>provided</scope>
 		</dependency>
-
+        <dependency>
+            <groupId>com.github.broken1arrow.Utility-Library</groupId>
+            <artifactId>Conversation-Prompt</artifactId>
+            <version>0.34</version>
+            <scope>compile</scope>
+        </dependency>
         <dependency>
             <groupId>com.github.broken1arrow</groupId>
             <artifactId>MenuLibrary</artifactId>
