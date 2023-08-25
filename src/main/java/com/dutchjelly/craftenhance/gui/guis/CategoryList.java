@@ -4,6 +4,7 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeSettings;
 import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.FormatListContents;
@@ -17,6 +18,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,10 +54,10 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	}
 
 	@Override
-	public MenuButton getFillButtonAt(final Object object) {
+	public MenuButton getFillButtonAt(final @NotNull Object object) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(final Player player, final Inventory inventory, final ClickType clickType, final ItemStack itemStack, final Object o) {
+			public void onClickInsideMenu(final @NotNull Player player, final @NotNull Inventory inventory, final @NotNull ClickType clickType, final @NotNull ItemStack itemStack, final Object o) {
 				if (o instanceof CategoryData) {
 					final String category = ((CategoryData) o).getRecipeCategory();
 					final CategoryData changedCategory = ((CategoryData) o);
@@ -78,7 +80,7 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			}
 
 			@Override
-			public ItemStack getItem(final Object object) {
+			public ItemStack getItem(final @NotNull Object object) {
 				if (object instanceof CategoryData) {
 					String displayName = " ";
 					List<String> lore = new ArrayList<>();
@@ -124,7 +126,7 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(final Player player, final Inventory menu, final ClickType click, final ItemStack clickedItem, final Object object) {
+			public void onClickInsideMenu(final @NotNull Player player, final @NotNull Inventory menu, final @NotNull ClickType click, final @NotNull ItemStack clickedItem, final Object object) {
 				if (run(value, menu, player, click))
 					updateButtons();
 			}
@@ -146,7 +148,9 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			return true;
 		}
 		if (value.getButtonType() == ButtonType.Back){
-				new RecipeEditor<>(this.recipe, this.categoryData, null,  editorType).menuOpen(player);
+			new RecipeSettings<>(this.recipe, this.categoryData, null,  editorType)
+					.menuOpen(player);
+				//new RecipeEditor<>(this.recipe, this.categoryData, null,  editorType).menuOpen(player);
 		}
 
 		if (value.getButtonType() == ButtonType.Search) {

@@ -31,6 +31,7 @@ import com.dutchjelly.craftenhance.files.GuiTemplatesFile;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.GuiManager;
 import com.dutchjelly.craftenhance.gui.customcrafting.CustomCraftingTable;
+import com.dutchjelly.craftenhance.gui.guis.editors.IngredientsCache;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
@@ -77,6 +78,8 @@ public class CraftEnhance extends JavaPlugin {
 	private MenuSettingsCache menuSettingsCache;
 	@Getter
 	private CategoryDataCache categoryDataCache;
+	@Getter
+	private IngredientsCache ingredientsCache;
 
 	@Override
 	public void onEnable() {
@@ -86,7 +89,7 @@ public class CraftEnhance extends JavaPlugin {
 		versionChecker = VersionChecker.init(this);
 		if (registerMenuAPI == null)
 			registerMenuAPI = new RegisterMenuAPI(this);
-
+		this.ingredientsCache = new IngredientsCache();
 		saveDefaultConfig();
 		Debug.init(this);
 

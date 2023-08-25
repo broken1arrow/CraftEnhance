@@ -65,11 +65,13 @@ public class MenuTemplate {
 	}
 
 	public int calculateAmountOfButtons(final Map<List<Integer>, MenuButton> menuButtons) {
-		int amountOfButtons = 0;
+		int lastButton = 0;
 		for (final List<Integer> slots : menuButtons.keySet()){
-			amountOfButtons += slots.size();
+			for (final Integer slot : slots) {
+				lastButton = Math.max(lastButton,slot);
+			}
 		}
-		return amountOfButtons;
+		return lastButton;
 	}
 
 }

@@ -1,6 +1,5 @@
 package com.dutchjelly.craftenhance.gui.guis.editors;
 
-import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
@@ -8,7 +7,6 @@ import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.exceptions.ConfigError;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
-import com.dutchjelly.craftenhance.gui.guis.CategoryList;
 import com.dutchjelly.craftenhance.gui.guis.EditorTypeSelector;
 import com.dutchjelly.craftenhance.gui.guis.RecipesViewer;
 import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
@@ -17,7 +15,6 @@ import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
-import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import lombok.Getter;
 import org.brokenarrow.menu.library.CheckItemsInsideInventory;
 import org.brokenarrow.menu.library.MenuButton;
@@ -28,6 +25,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -42,6 +40,7 @@ import static com.dutchjelly.craftenhance.gui.util.FormatListContents.formatReci
 public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
+	private final IngredientsCache ingredientsCache;
 	private String permission;
 	@Getter
 	private final RecipeT recipe;
@@ -58,10 +57,17 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	private final CategoryData categoryData;
 
 	public RecipeEditor(final RecipeT recipe, final CategoryData categoryData, final String permission, final ButtonType editorType) {
-		super( formatRecipes(recipe));
+		this(recipe, categoryData, permission, editorType, true);
+	}
+
+	public RecipeEditor(final RecipeT recipe, final CategoryData categoryData, final String permission, final ButtonType editorType, final boolean clearItems) {
+		super(formatRecipes(recipe, self().getIngredientsCache(),!clearItems));
 		if (permission == null || permission.equals(""))
 			this.permission = recipe.getPermissions();
 		else this.permission = permission;
+		ingredientsCache = self().getIngredientsCache();
+		if (clearItems)
+			ingredientsCache.clear();
 		this.editorType = editorType;
 		this.recipe = recipe;
 		this.categoryData = categoryData;
@@ -76,7 +82,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		setMenuSize(27);
 		setSlotsYouCanAddItems(true);
 		if (menuTemplate != null) {
-			setMenuSize(GuiUtil.invSize("RecipeEditor",this.menuTemplate.getAmountOfButtons()));
+			setMenuSize(GuiUtil.invSize("RecipeEditor", this.menuTemplate.getAmountOfButtons()));
 			setTitle(menuTemplate.getMenuTitel());
 			setFillSpace(menuTemplate.getFillSlots());
 			setMenuOpenSound(this.menuTemplate.getSound());
@@ -84,15 +90,15 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	}
 
 	@Override
-	public MenuButton getFillButtonAt(final Object object) {
+	public MenuButton getFillButtonAt(final @NotNull Object object) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(final Player player, final Inventory inventory, final ClickType clickType, final ItemStack itemStack, final Object o) {
+			public void onClickInsideMenu(final @NotNull Player player, final @NotNull Inventory inventory, final @NotNull ClickType clickType, final @NotNull ItemStack itemStack, final Object o) {
 
 			}
 
 			@Override
-			public ItemStack getItem(final Object object) {
+			public ItemStack getItem(final @NotNull Object object) {
 				if (object instanceof ItemStack)
 					return (ItemStack) object;
 				return null;
@@ -108,8 +114,8 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	@Override
 	public MenuButton getButtonAt(final int slot) {
 		if (this.menuTemplate == null) return null;
-		for (final Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()){
-			if (menuTemplate.getKey().contains(slot)){
+		for (final Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()) {
+			if (menuTemplate.getKey().contains(slot)) {
 				return registerButtons(menuTemplate.getValue());
 			}
 		}
@@ -120,9 +126,9 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(final Player player, final Inventory menu, final ClickType click, final ItemStack clickedItem, final Object object) {
+			public void onClickInsideMenu(final @NotNull Player player, final @NotNull Inventory menu, final @NotNull ClickType click, final @NotNull ItemStack clickedItem, final Object object) {
 				if (run(value, menu, player, click)) {
-					RecipeEditor.super.updateButton(this);
+					updateButton(this);
 					//updateButtons();
 				}
 			}
@@ -132,7 +138,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 				final Map<String, String> placeHolders = new HashMap<String, String>() {{
 					put(InfoItemPlaceHolders.Key.getPlaceHolder(), recipe.getKey() == null ? "null" : recipe.getKey());
 					if (recipe instanceof WBRecipe)
-					put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), shapeless ? "shapeless" : "shaped");
+						put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), shapeless ? "shapeless" : "shaped");
 					if (recipe instanceof FurnaceRecipe) {
 						put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(exp));
 						put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(duration));
@@ -146,37 +152,38 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 					if (categoryData != null)
 						put(InfoItemPlaceHolders.Category.getPlaceHolder(), categoryData.getRecipeCategory());
 					else
-						put(InfoItemPlaceHolders.Category.getPlaceHolder(), recipe.getRecipeCategory() != null? recipe.getRecipeCategory(): "default");
+						put(InfoItemPlaceHolders.Category.getPlaceHolder(), recipe.getRecipeCategory() != null ? recipe.getRecipeCategory() : "default");
 				}};
 				if (value.getItemStack() == null) return null;
 				return GuiUtil.ReplaceAllPlaceHolders(value.getItemStack().clone(), placeHolders);
 			}
 		};
 	}
+
 	public boolean run(final com.dutchjelly.craftenhance.gui.templates.MenuButton value, final Inventory menu, final Player player, final ClickType click) {
-		if (value.getButtonType() == ButtonType.SetPosition){
+/*		if (value.getButtonType() == ButtonType.SetPosition) {
 			new HandleChatInput(this, this::handlePositionChange);
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.SetCookTime){
-			new HandleChatInput(this,  (msg) -> {
+		if (value.getButtonType() == ButtonType.SetCookTime) {
+			new HandleChatInput(this, (msg) -> {
 				short parsed;
-				if (msg.equals("cancel")||msg.equals("quit") || msg.equals("exit") || msg.equals("q") ) {
+				if (msg.equals("cancel") || msg.equals("quit") || msg.equals("exit") || msg.equals("q")) {
 					this.menuOpen(player);
 					return false;
 				}
-				try{
+				try {
 					parsed = Short.parseShort(msg);
-				}catch(final NumberFormatException e){
+				} catch (final NumberFormatException e) {
 					Messenger.Message("Error, you didn't input a number. your input " + msg, getViewer());
 					return true;
 				}
-				if(parsed < 0) parsed = 0;
+				if (parsed < 0) parsed = 0;
 				Messenger.Message("Successfully set duration to " + parsed, getViewer());
 				this.duration = parsed;
 				final CheckItemsInsideInventory checkItemsInsideInventory = new CheckItemsInsideInventory();
 				checkItemsInsideInventory.setSlotsToCheck(menuTemplate.getFillSlots());
-				final Map<Integer, ItemStack> map = checkItemsInsideInventory.getItemsOnSpecifiedSlots( menu, player,false);
+				final Map<Integer, ItemStack> map = checkItemsInsideInventory.getItemsOnSpecifiedSlots(menu, player, false);
 				getIngredients(map, player);
 				this.menuOpen(player);
 				//new RecipeEditor<>(this.recipe, this.categoryData,this.permission,this.editorType).menuOpen(player);
@@ -185,20 +192,20 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 					.start(player);
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.SetExp){
-			new HandleChatInput(this, msg-> {
+		if (value.getButtonType() == ButtonType.SetExp) {
+			new HandleChatInput(this, msg -> {
 				int parsed;
-				if (msg.equals("cancel")||msg.equals("quit") ||msg.equals("exit")) {
+				if (msg.equals("cancel") || msg.equals("quit") || msg.equals("exit")) {
 					this.menuOpen(player);
 					return false;
 				}
-				try{
+				try {
 					parsed = Integer.parseInt(msg);
-				}catch(final NumberFormatException e){
+				} catch (final NumberFormatException e) {
 					Messenger.Message("Error, you didn't input a number. your input " + msg, getViewer());
 					return true;
 				}
-				if(parsed < 0) parsed = 0;
+				if (parsed < 0) parsed = 0;
 				Messenger.Message("Successfully set exp to " + parsed, getViewer());
 				exp = parsed;
 				this.menuOpen(player);
@@ -208,13 +215,13 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 					.start(getViewer());
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.SwitchShaped){
+		if (value.getButtonType() == ButtonType.SwitchShaped) {
 			this.shapeless = !this.shapeless;
 
 			//this.menuOpen(player);
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.DeleteRecipe){
+		if (value.getButtonType() == ButtonType.DeleteRecipe) {
 			self().getFm().removeRecipe(recipe);
 			RecipeLoader.getInstance().unloadRecipe(recipe);
 			if (this.categoryData != null)
@@ -223,45 +230,27 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 				new EditorTypeSelector(null, permission).menuOpen(player);
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.SwitchHidden){
+		if (value.getButtonType() == ButtonType.SwitchHidden) {
 			this.hidden = !this.hidden;
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.SwitchMatchMeta){
+		if (value.getButtonType() == ButtonType.SwitchMatchMeta) {
 			switchMatchMeta();
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.ResetRecipe){
-			updateRecipeDisplay(menu);
-			return true;
-
-		}
-		if (value.getButtonType() == ButtonType.SetPermission){
-			new HandleChatInput(this, msg-> {
+		if (value.getButtonType() == ButtonType.SetPermission) {
+			new HandleChatInput(this, msg -> {
 				if (!handlePermissionSetCB(msg)) {
 					this.menuOpen(player);
 					return false;
 				}
 				return true;
-			}).setMessages("Set your own permission on a recipe. Only players some has this permission can craft the item."," Type q,exit,cancel to turn it off")
+			}).setMessages("Set your own permission on a recipe. Only players some has this permission can craft the item.", " Type q,exit,cancel to turn it off")
 					.start(getViewer());
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.SaveRecipe){
-			final CheckItemsInsideInventory checkItemsInsideInventory = new CheckItemsInsideInventory();
-			checkItemsInsideInventory.setSlotsToCheck(menuTemplate.getFillSlots());
-			final Map<Integer, ItemStack> map = checkItemsInsideInventory.getItemsOnSpecifiedSlots( menu, player,false);
-			save( map, player,true);
-			new RecipeEditor<>(this.recipe, this.categoryData,this.permission,this.editorType).menuOpen(player);
-		}
-		if (value.getButtonType() == ButtonType.Back){
-			if (this.categoryData != null)
-				new RecipesViewer(this.categoryData, "", player).menuOpen(player);
-			else
-				new EditorTypeSelector(null, permission).menuOpen(player);
-		}
 		if (value.getButtonType() == ButtonType.ChangeCategoryList) {
-			new CategoryList<>( this.recipe, this.categoryData, this.permission,  this.editorType, "").menuOpen(player);
+			new CategoryList<>(this.recipe, this.categoryData, this.permission, this.editorType, "").menuOpen(player);
 		}
 		if (value.getButtonType() == ButtonType.ChangeCategory) {
 			new HandleChatInput(this, msg -> {
@@ -272,18 +261,41 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 				return true;
 			}).setMessages("Change category name and you can also change item (if not set it will use the old one). Like this 'category new_category_name crafting_table' without '. If you want create new category recomend use this format 'category crafting_table' without '", "Type q,exit,cancel to turn it off.")
 					.start(getViewer());
+		}*/
+		if (value.getButtonType() == ButtonType.RecipeSettings)
+			new RecipeSettings<>(this.recipe, this.categoryData, this.permission, this.editorType)
+					.menuOpen(player);
+		if (value.getButtonType() == ButtonType.ResetRecipe) {
+			updateRecipeDisplay(menu);
+			return true;
+
+		}
+		if (value.getButtonType() == ButtonType.SaveRecipe) {
+			final CheckItemsInsideInventory checkItemsInsideInventory = new CheckItemsInsideInventory();
+			checkItemsInsideInventory.setSlotsToCheck(menuTemplate.getFillSlots());
+			final Map<Integer, ItemStack> map = checkItemsInsideInventory.getItemsOnSpecifiedSlots(menu, player, false);
+			save(map, player, true);
+			new RecipeEditor<>(this.recipe, this.categoryData, this.permission, this.editorType).menuOpen(player);
+		}
+		if (value.getButtonType() == ButtonType.Back) {
+			if (this.categoryData != null)
+				new RecipesViewer(this.categoryData, "", player).menuOpen(player);
+			else
+				new EditorTypeSelector(null, permission).menuOpen(player);
 		}
 		return false;
 	}
 
 	@Override
 	public void menuClose(final InventoryCloseEvent event, final MenuUtility menu) {
-		if (self().getConfig().getBoolean("save_on_close")){
-			final CheckItemsInsideInventory checkItemsInsideInventory = new CheckItemsInsideInventory();
-			checkItemsInsideInventory.setSlotsToCheck(menuTemplate.getFillSlots());
-			final Map<Integer, ItemStack> map = checkItemsInsideInventory.getItemsOnSpecifiedSlots( event.getInventory(),getViewer(),false);
-			save( map, getViewer(),true);
+		final CheckItemsInsideInventory checkItemsInsideInventory = new CheckItemsInsideInventory();
+		checkItemsInsideInventory.setSlotsToCheck(menuTemplate.getFillSlots());
+		final Map<Integer, ItemStack> map = checkItemsInsideInventory.getItemsOnSpecifiedSlots(event.getInventory(), getViewer(), false);
+		if (self().getConfig().getBoolean("save_on_close")) {
+			save(map, getViewer(), true);
 		}
+		ingredientsCache.setItemStacks(getIngredients(map, player));
+		ingredientsCache.setItemStackResult(result);
 	}
 
 	private void updateRecipeDisplay(final Inventory menu) {
@@ -304,7 +316,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	}
 
 	private void save(final Map<Integer, ItemStack> map, final Player player, final boolean loadRecipe) {
-		final ItemStack[] newContents = getIngredients(map,player);
+		final ItemStack[] newContents = getIngredients(map, player);
 		if (newContents == null) {
 			Messenger.Message("The recipe is empty.", player);
 			return;
@@ -330,14 +342,15 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	}
 
 	private void beforeSave() {
-		if (recipe instanceof WBRecipe){
-			((WBRecipe)recipe).setShapeless(shapeless);
+		if (recipe instanceof WBRecipe) {
+			((WBRecipe) recipe).setShapeless(shapeless);
 		}
 		if (recipe instanceof FurnaceRecipe) {
 			((FurnaceRecipe) recipe).setDuration(duration);
 			((FurnaceRecipe) recipe).setExp(exp);
 		}
 	}
+
 	@Nullable
 	private ItemStack[] getIngredients(final Map<Integer, ItemStack> map, final Player player) {
 
@@ -345,7 +358,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		final List<ItemStack> arrays = new ArrayList<>(recipe.getContent().length);
 		int index = 0;
 		for (final Integer slot : this.menuTemplate.getFillSlots()) {
-			final ItemStack itemStack =  map.get(slot );
+			final ItemStack itemStack = map.get(slot);
 			if (itemStack != null && itemStack.getAmount() > 1 && slot != resultSlot) {
 				Messenger.Message("Recipes only support amounts of 1 in the content.", player);
 				itemStack.setAmount(1);
@@ -386,7 +399,8 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 		message = message.trim();
 
-		if (message.equalsIgnoreCase("q")|| message.equalsIgnoreCase("cancel") || message.equalsIgnoreCase("quit") || message.equalsIgnoreCase("exit")) return false;
+		if (message.equalsIgnoreCase("q") || message.equalsIgnoreCase("cancel") || message.equalsIgnoreCase("quit") || message.equalsIgnoreCase("exit"))
+			return false;
 
 		if (message.equals("-")) {
 			permission = "";
@@ -416,10 +430,12 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		this.matchType = matchTypes[(i + 1) % matchTypes.length];
 		//updatePlaceHolders();
 	}
+
 	public boolean handlePositionChange(final String message) {
 		if (message == null || message.trim() == "") return false;
 
-		if (message.equals("") || message.equalsIgnoreCase("q")|| message.equalsIgnoreCase("cancel") || message.equalsIgnoreCase("quit") || message.equalsIgnoreCase("exit")) return false;
+		if (message.equals("") || message.equalsIgnoreCase("q") || message.equalsIgnoreCase("cancel") || message.equalsIgnoreCase("quit") || message.equalsIgnoreCase("exit"))
+			return false;
 
 		final String[] args = message.split(" ");
 

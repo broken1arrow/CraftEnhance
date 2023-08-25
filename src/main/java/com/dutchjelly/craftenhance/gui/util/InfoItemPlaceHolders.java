@@ -13,14 +13,14 @@ public enum InfoItemPlaceHolders {
     Duration("[duration]"),
     Page("[page]"),
     Category("[category]"),
-    DisplayName("[display_name]");
-
+    DisplayName("[display_name]"),
+    Worlds("[worlds]");
     private final String placeHolder;
 
     public String getPlaceHolder(){
         return placeHolder;
     }
-    InfoItemPlaceHolders(String placeHolder){
+    InfoItemPlaceHolders(final String placeHolder){
         this.placeHolder = placeHolder;
     }
 }

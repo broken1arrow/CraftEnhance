@@ -2,8 +2,10 @@ package com.dutchjelly.craftenhance.gui.util;
 
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
+import com.dutchjelly.craftenhance.gui.guis.editors.IngredientsCache;
 import com.dutchjelly.craftenhance.util.PermissionTypes;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
 import java.util.ArrayList;
@@ -18,16 +20,25 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class FormatListContents {
 
-	public static <RecipeT extends EnhancedRecipe> List<?> formatRecipes(final RecipeT recipe) {
+	public static <RecipeT extends EnhancedRecipe> List<?> formatRecipes(final RecipeT recipe, final IngredientsCache ingredientsCache, final boolean loadCachedItems) {
 		if (recipe == null) return new ArrayList<>();
-		final List<Object> list = new ArrayList<>(Arrays.asList(recipe.getContent()));
-		//todo fix so it auto set right craftingslot System.out.println("recipe.getResultSlot() " + recipe.getResultSlot());
+		List<ItemStack> list = new ArrayList<>(Arrays.asList(recipe.getContent()));
+		ItemStack result = recipe.getResult();
+		if (ingredientsCache != null && loadCachedItems){
+			final ItemStack itemStackResult = ingredientsCache.getItemStackResult();
+			final ItemStack[] ingredients = ingredientsCache.getItemStacks();
+			if (itemStackResult != null || ingredients != null){
+				list = new ArrayList<>(Arrays.asList(ingredients != null ? ingredients: new ItemStack[0]));
+				result = itemStackResult;
+			}
+		}
+		//todo fix so it auto set right craftingslot
 		final int index;
 		if (list.size() < 6)
 			index = 1;
 		else
 			index = 6;
-		list.add(index, recipe.getResult());
+		list.add(index, result);
 		return list;
 	}
 

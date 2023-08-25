@@ -24,11 +24,14 @@ public enum ButtonType {
     ChangeCategory(""),
     ChangeCategoryItem(""),
     RemoveCategory(""),
-    FillItems("");
+    FillItems(""),
+    AllowedWorldsCraft(""),
+    RecipeSettings("")
+    ;
 
-    private String type;
+    private final String type;
 
-    ButtonType(String type) {
+    ButtonType(final String type) {
 
         this.type = type;
     }
@@ -37,9 +40,9 @@ public enum ButtonType {
         return type;
     }
 
-    public static ButtonType valueOfType(String buttontype) {
-        ButtonType[] buttonTypes = ButtonType.values();
-        for (ButtonType buttonType : buttonTypes) {
+    public static ButtonType valueOfType(final String buttontype) {
+        final ButtonType[] buttonTypes = ButtonType.values();
+        for (final ButtonType buttonType : buttonTypes) {
             if (buttonType.name().equalsIgnoreCase(buttontype))
                 return buttonType;
         }

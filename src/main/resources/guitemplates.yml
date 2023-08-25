@@ -225,53 +225,13 @@ WBRecipeEditor:
     fill-space: "0-2,9-11,18-20,13"
     sound: BLOCK_NOTE_BLOCK_BASEDRUM
   buttons:
-    3-4,14,21-22:
+    3-7,14-16,21-23:
       color: GRAY
       material: STAINED_GLASS_PANE
       name: ""
       lore:
         - ""
       glow: false
-    5:
-      buttonType: changeCategory
-      material: WRITTEN_BOOK
-      name: "&aChange category"
-      lore:
-        - "&fChange category, if it not exist"
-        - "&fcreate new one."
-        - ""
-        - "&fCurrently set category:&3 [category]"
-      glow: true
-    23:
-      buttonType: changeCategoryList
-      material: WRITABLE_BOOK
-      name: "&aChose categorys from list"
-      lore:
-        - "&fChose categorys you have"
-        - "&fcreated.All categorys"
-        - "&fis listed here."
-        - ""
-        - "&fCurrently set category:&3 [category]"
-      glow: true
-    24:
-      buttonType: SetPermission
-      material: PAPER
-      name: "&aClick to set permission"
-      lore:
-        - "&fcurrent:&3 [permission]"
-      glow: true
-    15:
-      material: DIAMOND
-      name: "&aClick to change: &3[hidden]"
-      buttonType: SwitchHidden
-      glow: true
-    26:
-      buttonType: Back
-      material: GLOWSTONE_DUST
-      name: "&aBack"
-      lore:
-        - "&fGo back to the previous GUI"
-      glow: true
     12:
       material: WORKBENCH
       name: "&3Enhanced crafting table recipe"
@@ -303,28 +263,20 @@ WBRecipeEditor:
       lore:
         - ""
       glow: true
-    16:
-      buttonType: SwitchMatchMeta
-      material: ENCHANTED_BOOK
-      name: "&aClick to change: &3[match meta]"
+    24:
+      buttonType: RecipeSettings
+      material: GOLD_INGOT
+      name: "&aSettings for recipe"
       lore:
         - ""
+        - "&fSet the settings for recipe."
       glow: true
-    7:
-      buttonType: SwitchShaped
-      material: WEB
-      name: "&aClick to change: &3[shaped]"
+    26:
+      buttonType: Back
+      material: GLOWSTONE_DUST
+      name: "&aBack"
       lore:
-        - ""
-      glow: true
-    6:
-      buttonType: SetPosition
-      material: PAPER
-      name: "&aClick to set the position"
-      lore:
-        - "&fCurrent position"
-        - "&fSlot &3[slot]"
-        - "&fPage &3[page]"
+        - "&fGo back to the previous GUI"
       glow: true
 RecipeDisabler:
   menu_settings:
@@ -408,65 +360,13 @@ FurnaceRecipeEditor:
     fill-space: "10,12"
     sound: BLOCK_NOTE_BLOCK_BASEDRUM
   buttons:
-    0-4,9,13,18-22:
+    0-7,9,13-16,18-23:
       color: GRAY
       material: STAINED_GLASS_PANE
       name: " "
       lore:
         - ""
       glow: false
-    5:
-      buttonType: changeCategory
-      material: WRITTEN_BOOK
-      name: "&aChange category"
-      lore:
-        - "&fChange category, if it not exist"
-        - "&fcreate new one."
-        - ""
-        - "&fCurrently set category:&3 [category]"
-      glow: true
-    23:
-      buttonType: changeCategoryList
-      material: WRITABLE_BOOK
-      name: "&aChose categorys from list"
-      lore:
-        - "&fChose categorys you have"
-        - "&fcreated.All categorys"
-        - "&fis listed here."
-      glow: true
-    24:
-      buttonType: SetPermission
-      material: PAPER
-      name: "&fClick to set permission"
-      lore:
-        - "&fcurrent:&3 [permission]"
-      glow: true
-    7:
-      buttonType: SetCookTime
-      material: CLOCK
-      name: "&fClick to set the cook time"
-      lore:
-        - "&fcurrent:&3 [duration]"
-      glow: true
-    14:
-      buttonType: SetExp
-      material: EXP_BOTTLE
-      name: "&aClick to set the rewarded exp amount"
-      lore:
-        - "&fcurrent:&3 [exp]"
-      glow: true
-    15:
-      buttonType: SwitchHidden
-      material: DIAMOND
-      name: "&fClick to change: &e[hidden]"
-      glow: true
-    26:
-      buttonType: Back
-      material: GLOWSTONE_DUST
-      name: "&aBack"
-      lore:
-        - "&fGo back to the previous GUI"
-      glow: true
     11:
       material: FURNACE
       name: "&aEnhanced furance recipe"
@@ -497,21 +397,20 @@ FurnaceRecipeEditor:
       lore:
         - ""
       glow: true
-    16:
-      buttonType: SwitchMatchMeta
-      material: ENCHANTED_BOOK
-      name: "&fClick to change: &e[match meta]"
+    24:
+      buttonType: RecipeSettings
+      material: GOLD_INGOT
+      name: "&aSettings for recipe"
       lore:
         - ""
+        - "&fSet the settings for recipe."
       glow: true
-    6:
-      buttonType: SetPosition
-      material: PAPER
-      name: "&fClick to set the position"
+    26:
+      buttonType: Back
+      material: GLOWSTONE_DUST
+      name: "&aBack"
       lore:
-        - "&fCurrent position"
-        - "&fSlot &3[slot]"
-        - "&fPage &3[page]"
+        - "&fGo back to the previous GUI"
       glow: true
 EditorTypeSelector:
   menu_settings:
@@ -539,5 +438,187 @@ EditorTypeSelector:
       lore:
         - ""
       glow: false
+RecipeSettingsCrafting:
+  menu_settings:
+    name: "Recipe settings"
+    sound: BLOCK_NOTE_BLOCK_BASEDRUM
+  buttons:
+    0-8,27-34:
+      color: GRAY
+      material: STAINED_GLASS_PANE
+      name: ""
+      lore:
+        - ""
+      glow: false
+    10:
+      buttonType: changeCategory
+      material: WRITTEN_BOOK
+      name: "&aChange category"
+      lore:
+        - "&fChange category, if it not exist"
+        - "&fcreate new one."
+        - ""
+        - "&fCurrently set category:&3 [category]"
+      glow: true
+    12:
+      buttonType: AllowedWorldsCraft
+      material: IRON_INGOT
+      name: "&aChange or set worlds"
+      lore:
+        - "&fChange or set world."
+        - ""
+        - "&fRight-click to remove world"
+        - "&fLeft-click to add world"
+        - ""
+        - "&fCurrently set worlds:"
+        - "&3 [worlds]"
+      glow: true
+    14:
+      buttonType: changeCategoryList
+      material: WRITABLE_BOOK
+      name: "&aChose categorys from list"
+      lore:
+        - "&fChose categorys you have"
+        - "&fcreated.All categorys"
+        - "&fis listed here."
+        - ""
+        - "&fCurrently set category:&3 [category]"
+      glow: true
+    16:
+      buttonType: SetPermission
+      material: PAPER
+      name: "&aClick to set permission"
+      lore:
+        - "&fcurrent:&3 [permission]"
+      glow: true
+    19:
+      buttonType: SwitchHidden
+      material: DIAMOND
+      name: "&aClick to change: &3[hidden]"
+      glow: true
+    21:
+      buttonType: SwitchMatchMeta
+      material: ENCHANTED_BOOK
+      name: "&aClick to change: &3[match meta]"
+      lore:
+        - ""
+      glow: true
+    23:
+      buttonType: SwitchShaped
+      material: WEB
+      name: "&aClick to change: &3[shaped]"
+      lore:
+        - ""
+      glow: true
+    25:
+      buttonType: SetPosition
+      material: PAPER
+      name: "&aClick to set the position"
+      lore:
+        - "&fCurrent position"
+        - "&fSlot &3[slot]"
+        - "&fPage &3[page]"
+      glow: true
+    35:
+      buttonType: Back
+      material: GLOWSTONE_DUST
+      name: "&aBack"
+      lore:
+        - "&fGo back to the previous GUI"
+      glow: true
+RecipeSettingsFurnace:
+  menu_settings:
+    name: "Furnace settings"
+    fill-space: "10,12"
+    sound: BLOCK_NOTE_BLOCK_BASEDRUM
+  buttons:
+    0-8,27-34:
+      color: GRAY
+      material: STAINED_GLASS_PANE
+      name: " "
+      lore:
+        - ""
+      glow: false
+    10:
+      buttonType: changeCategory
+      material: WRITTEN_BOOK
+      name: "&aChange category"
+      lore:
+        - "&fChange category, if it not exist"
+        - "&fcreate new one."
+        - ""
+        - "&fCurrently set category:&3 [category]"
+      glow: true
+    12:
+      buttonType: changeCategoryList
+      material: WRITABLE_BOOK
+      name: "&aChose categorys from list"
+      lore:
+        - "&fChose categorys you have"
+        - "&fcreated.All categorys"
+        - "&fis listed here."
+      glow: true
+    14:
+      buttonType: SetPermission
+      material: PAPER
+      name: "&fClick to set permission"
+      lore:
+        - "&fcurrent:&3 [permission]"
+      glow: true
+    16:
+      buttonType: SetCookTime
+      material: CLOCK
+      name: "&fClick to set the cook time"
+      lore:
+        - "&fcurrent:&3 [duration]"
+      glow: true
+    18:
+      buttonType: SetExp
+      material: EXP_BOTTLE
+      name: "&aClick to set the rewarded exp amount"
+      lore:
+        - "&fcurrent:&3 [exp]"
+      glow: true
+    20:
+      buttonType: SwitchHidden
+      material: DIAMOND
+      name: "&fClick to change: &e[hidden]"
+      glow: true
+    22:
+      buttonType: SwitchMatchMeta
+      material: ENCHANTED_BOOK
+      name: "&fClick to change: &e[match meta]"
+      lore:
+        - ""
+      glow: true
+    24:
+      buttonType: SetPosition
+      material: PAPER
+      name: "&fClick to set the position"
+      lore:
+        - "&fCurrent position"
+        - "&fSlot &3[slot]"
+        - "&fPage &3[page]"
+      glow: true
+    26:
+      buttonType: AllowedWorldsCraft
+      material: IRON_INGOT
+      name: "&aChange or set worlds"
+      lore:
+        - "&fChange or set world."
+        - ""
+        - "&fRight-click to remove world"
+        - "&fLeft-click to add world"
+        - ""
+        - "&fCurrently set worlds:"
+        - "&3 [worlds]"
+      glow: true
+    35:
+      buttonType: Back
+      material: GLOWSTONE_DUST
+      name: "&aBack"
+      lore:
+        - "&fGo back to the previous GUI"
+      glow: true
 #Do not change this.
 Version: 1

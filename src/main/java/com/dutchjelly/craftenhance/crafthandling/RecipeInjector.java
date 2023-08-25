@@ -20,7 +20,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.block.Furnace;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -114,13 +116,13 @@ public class RecipeInjector implements Listener {
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
-	public void handleCrafting(final PrepareItemCraftEvent e) {
-		if (e.getRecipe() == null || e.getRecipe().getResult() == null || !plugin.getConfig().getBoolean("enable-recipes"))
+	public void handleCrafting(final PrepareItemCraftEvent craftEvent) {
+		if (craftEvent.getRecipe() == null || craftEvent.getRecipe().getResult() == null || !plugin.getConfig().getBoolean("enable-recipes"))
 			return;
-		if (!(e.getInventory() instanceof CraftingInventory)) return;
+		if (!(craftEvent.getInventory() instanceof CraftingInventory)) return;
 
-		final CraftingInventory inv = e.getInventory();
-		final Recipe serverRecipe = e.getRecipe();
+		final CraftingInventory inv = craftEvent.getInventory();
+		final Recipe serverRecipe = craftEvent.getRecipe();
 		Debug.Send("The server wants to inject " + serverRecipe.getResult().toString() + " ceh will check or modify this.");
 
 		final List<RecipeGroup> possibleRecipeGroups = loader.findGroupsByResult(serverRecipe.getResult(), RecipeType.WORKBENCH);
@@ -130,7 +132,7 @@ public class RecipeInjector implements Listener {
 			if (disableDefaultModeldataCrafts && Adapter.canUseModeldata() && containsModeldata(inv)) {
 				inv.setResult(null);
 			}
-			if (checkForDisabledRecipe(disabledServerRecipes,serverRecipe,serverRecipe.getResult())) {
+			if (checkForDisabledRecipe(disabledServerRecipes, serverRecipe, serverRecipe.getResult())) {
 				inv.setResult(null);
 			}
 			Debug.Send("no matching groups");
@@ -141,15 +143,33 @@ public class RecipeInjector implements Listener {
 			for (final EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
 				if (!(eRecipe instanceof WBRecipe)) continue;
 				final WBRecipe wbRecipe = (WBRecipe) eRecipe;
-				if (checkForDisabledRecipe(disabledServerRecipes,wbRecipe,serverRecipe.getResult())) {
+
+				if (eRecipe.getAllowedWorlds() != null) {
+					boolean notAllowedToCraft = false;
+					for (final HumanEntity viwer : craftEvent.getViewers()) {
+						for (final World word : eRecipe.getAllowedWorlds()) {
+							if (!viwer.getWorld().getName().equals(word.getName())) {
+								notAllowedToCraft = true;
+								break;
+							}
+						}
+					}
+					if (notAllowedToCraft)
+						continue;
+				}
+
+				if (checkForDisabledRecipe(disabledServerRecipes, wbRecipe, serverRecipe.getResult())) {
 					inv.setResult(null);
 					continue;
 				}
+
+
 				Debug.Send("Checking if enhanced recipe for " + wbRecipe.getResult().toString() + " matches.");
+				final Player player = craftEvent.getViewers().size() > 0 ? (Player) craftEvent.getViewers().get(0) : null;
 
 				if (wbRecipe.matches(inv.getMatrix())
-						&& e.getViewers().stream().allMatch(x -> entityCanCraft(x, wbRecipe))
-						&& !CraftEnhanceAPI.fireEvent(wbRecipe, e.getViewers().size() > 0 ? (Player) e.getViewers().get(0) : null, inv, group)) {
+						&& craftEvent.getViewers().stream().allMatch(x -> entityCanCraft(x, wbRecipe))
+						&& !CraftEnhanceAPI.fireEvent(wbRecipe, player, inv, group)) {
 					Debug.Send("Recipe matches, injecting " + wbRecipe.getResult().toString());
 					if (makeItemsadderCompatible && containsModeldata(inv)) {
 						Bukkit.getScheduler().runTask(CraftEnhance.self(), () -> {
@@ -190,6 +210,7 @@ public class RecipeInjector implements Listener {
 		}
 		inv.setResult(null); //We found similar custom recipes, but none matched exactly. So set result to null.
 	}
+
 	public boolean checkForDisabledRecipe(final List<Recipe> disabledServerRecipes, final @NonNull Recipe recipe, final @NonNull ItemStack result) {
 		if (disabledServerRecipes != null && !disabledServerRecipes.isEmpty())
 			for (final Recipe disabledRecipe : disabledServerRecipes) {
@@ -199,6 +220,7 @@ public class RecipeInjector implements Listener {
 			}
 		return false;
 	}
+
 	public boolean checkForDisabledRecipe(final List<Recipe> disabledServerRecipes, final @NonNull WBRecipe wbRecipe, final @NonNull ItemStack result) {
 		if (disabledServerRecipes != null && !disabledServerRecipes.isEmpty())
 			for (final Recipe disabledRecipe : disabledServerRecipes) {

@@ -99,7 +99,6 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 		}
 		if (value.getButtonType() == ButtonType.ChangeCategoryItem){
 			new HandleChatInput(this, msg-> {
-				System.out.println("msg " + msg);
 				if (!GuiUtil.changeCategoryItem(this.category,msg, player)) {
 					new RecipesViewerCategorysSettings(this.category).menuOpen(player);
 					return false;
