@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
@@ -352,7 +353,8 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			put(InfoItemPlaceHolders.Permission.getPlaceHolder(), permission == null || permission.trim().equals("") ? "none" : permission);
 			put(InfoItemPlaceHolders.Slot.getPlaceHolder(), String.valueOf(recipe.getSlot()));
 			put(InfoItemPlaceHolders.Page.getPlaceHolder(), String.valueOf(recipe.getPage()));
-			put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), String.valueOf(recipe.getAllowedWorlds() != null ? recipe.getAllowedWorlds() : "non set"));
+			put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), String.valueOf(recipe.getAllowedWorlds() != null && !recipe.getAllowedWorlds().isEmpty()  ?
+					recipe.getAllowedWorlds().stream().map(world-> world.getName()).collect(Collectors.toList()) : "non set"));
 			if (categoryData != null)
 				put(InfoItemPlaceHolders.Category.getPlaceHolder(), categoryData.getRecipeCategory());
 			else

@@ -58,7 +58,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 
 
 		recipeKeys = (List<String>) args.get("recipe");
-		final List<String> worldsList = (List<String>) args.getOrDefault("Allowed_worlds", null);
+		final List<String> worldsList = (List<String>) args.getOrDefault("allowed_worlds", null);
 		final Set<World> worlds = new HashSet<>();
 		if (worldsList != null && !worldsList.isEmpty())
 			worldsList.forEach(world -> {
@@ -134,7 +134,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 			put("oncraftcommand", onCraftCommand);
 			put("result", fm.getItemKey(result));
 			put("recipe", Arrays.stream(content).map(x -> fm.getItemKey(x)).toArray(String[]::new));
-			put("Allowed_worlds", allowedWorlds != null ? allowedWorlds.stream().map(world -> world.getName()).collect(Collectors.toList()) : new ArrayList<>());
+			put("allowed_worlds", allowedWorlds != null ? allowedWorlds.stream().map(world -> world.getName()).collect(Collectors.toList()) : new ArrayList<>());
 			if (serialize != null && !serialize.isEmpty())
 				putAll(serialize);
 		}};
