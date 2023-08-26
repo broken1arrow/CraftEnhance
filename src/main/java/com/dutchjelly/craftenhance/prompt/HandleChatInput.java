@@ -1,19 +1,19 @@
 package com.dutchjelly.craftenhance.prompt;
 
 import com.dutchjelly.craftenhance.gui.interfaces.IChatInputHandler;
+import org.broken.arrow.menu.library.holder.MenuHolder;
 import org.broken.arrow.prompt.library.SimpleConversation;
 import org.broken.arrow.prompt.library.SimplePrompt;
 import org.broken.arrow.prompt.library.utility.SimpleCanceller;
-import org.brokenarrow.menu.library.MenuHolder;
 import org.bukkit.command.CommandSender;
 import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.conversations.ConversationCanceller;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -87,7 +87,7 @@ public class HandleChatInput extends SimpleConversation {
 
 		@Nullable
 		@Override
-		protected Prompt acceptValidatedInput(@NotNull final ConversationContext context, @NotNull final String input) {
+		protected Prompt acceptValidatedInput(@Nonnull final ConversationContext context, @Nonnull final String input) {
 
 			final IChatInputHandler callback = this.chatInputHandler;
 			if (callback.handle(input)) {

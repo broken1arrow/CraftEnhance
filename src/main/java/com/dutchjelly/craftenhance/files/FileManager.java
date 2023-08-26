@@ -7,7 +7,7 @@ import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import lombok.SneakyThrows;
-import org.brokenarrow.menu.library.utility.ServerVersion;
+import org.broken.arrow.nbt.library.utility.ServerVersion;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;

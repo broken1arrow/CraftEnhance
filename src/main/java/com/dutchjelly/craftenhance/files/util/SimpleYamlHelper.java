@@ -7,9 +7,9 @@ import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -232,7 +232,7 @@ public abstract class SimpleYamlHelper {
 		return invokeStatic(clazz, deserializeMethod, fileData);
 	}
 
-	public void setData(@NotNull final File file , @NotNull final String path, @NotNull final ConfigurationSerializeUtility configuration) {
+	public void setData(@Nonnull final File file , @Nonnull final String path, @Nonnull final ConfigurationSerializeUtility configuration) {
 		Valid.checkBoolean(path != null, "path can't be null");
 		Valid.checkBoolean(configuration != null, "Serialize utility can't be null, need provide a class instance some implements ConfigurationSerializeUtility");
 		Valid.checkBoolean(configuration.serialize() != null, "Missing serialize method or it is null, can't serialize the class data.");

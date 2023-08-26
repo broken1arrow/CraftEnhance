@@ -220,6 +220,8 @@ WBRecipeViewer:
         - "&f"
         - "&fThe recipe is &3[shaped]&f"
         - "&fThe ingredients need &3[match meta]"
+        - "&fYou can craft this recipe in this worlds:"
+        - "&3[worlds]"
       glow: true
 WBRecipeEditor:
   menu_settings:
@@ -359,6 +361,8 @@ FurnaceRecipeViewer:
         - "&fThe recipe rewards &3[exp] &fexp"
         - "&fThe cooking time is &3[duration] &fticks"
         - "&fThe ingredients need &3[match meta]"
+        - "&fYou can use this recipe in this worlds:"
+        - "&3[worlds]"
       glow: true
 FurnaceRecipeEditor:
   menu_settings:
@@ -479,7 +483,7 @@ RecipeSettingsCrafting:
         - "&fwithout check if the world is valid."
         - ""
         - "&fCurrently set worlds:"
-        - "&3 [worlds]"
+        - "&3[worlds]"
       glow: true
     14:
       buttonType: changeCategoryList

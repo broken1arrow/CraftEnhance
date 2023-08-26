@@ -37,7 +37,7 @@ import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import com.dutchjelly.craftenhance.util.Metrics;
 import lombok.Getter;
-import org.brokenarrow.menu.library.RegisterMenuAPI;
+import org.broken.arrow.menu.library.RegisterMenuAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;

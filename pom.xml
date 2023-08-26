@@ -31,17 +31,28 @@
                             <artifactSet>
                                 <includes>
                                     <include>com.github.broken1arrow.Utility-Library:Conversation-Prompt*</include>
-                                    <include>com.github.broken1arrow:MenuLibrary*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:NBT*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:Menu-api*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:Title-Update*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:NBT*</include>
                                 </includes>
                             </artifactSet>
                             <relocations>
                                 <relocation>
-                                    <pattern>org.brokenarrow.menu.library</pattern>
-                                    <shadedPattern>craftenhance.libs.menulib</shadedPattern>
+                                    <pattern>org.broken.arrow.nbt.library</pattern>
+                                    <shadedPattern>craftenhance.libs.nbt</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>org.broken.arrow</pattern>
+                                    <pattern>org.broken.arrow.prompt.library</pattern>
                                     <shadedPattern>craftenhance.libs.prompt</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.broken.arrow.menu.library</pattern>
+                                    <shadedPattern>craftenhance.libs.menu</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.broken.arrow.title.update.library</pattern>
+                                    <shadedPattern>craftenhance.libs.menu</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
@@ -95,13 +106,25 @@
         <dependency>
             <groupId>com.github.broken1arrow.Utility-Library</groupId>
             <artifactId>Conversation-Prompt</artifactId>
-            <version>0.34</version>
+            <version>0.58</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.broken1arrow</groupId>
-            <artifactId>MenuLibrary</artifactId>
-            <version>0.96</version>
+            <groupId>com.github.broken1arrow.Utility-Library</groupId>
+            <artifactId>NBT</artifactId>
+            <version>0.58</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.broken1arrow.Utility-Library</groupId>
+            <artifactId>Menu_Library</artifactId>
+            <version>0.58</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.broken1arrow.Utility-Library</groupId>
+            <artifactId>Title-Update</artifactId>
+            <version>0.58</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

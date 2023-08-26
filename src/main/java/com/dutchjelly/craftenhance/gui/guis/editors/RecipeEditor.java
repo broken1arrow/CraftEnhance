@@ -16,16 +16,16 @@ import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import lombok.Getter;
-import org.brokenarrow.menu.library.CheckItemsInsideInventory;
-import org.brokenarrow.menu.library.MenuButton;
-import org.brokenarrow.menu.library.MenuHolder;
-import org.brokenarrow.menu.library.MenuUtility;
+import lombok.NonNull;
+import org.broken.arrow.menu.library.CheckItemsInsideMenu;
+import org.broken.arrow.menu.library.MenuUtility;
+import org.broken.arrow.menu.library.button.MenuButton;
+import org.broken.arrow.menu.library.holder.MenuHolder;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -90,15 +90,15 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	}
 
 	@Override
-	public MenuButton getFillButtonAt(final @NotNull Object object) {
+	public MenuButton getFillButtonAt(final @NonNull Object object) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(final @NotNull Player player, final @NotNull Inventory inventory, final @NotNull ClickType clickType, final @NotNull ItemStack itemStack, final Object o) {
+			public void onClickInsideMenu(final @NonNull Player player, final @NonNull Inventory inventory, final @NonNull ClickType clickType, final @NonNull ItemStack itemStack, final Object o) {
 
 			}
 
 			@Override
-			public ItemStack getItem(final @NotNull Object object) {
+			public ItemStack getItem(final @NonNull Object object) {
 				if (object instanceof ItemStack)
 					return (ItemStack) object;
 				return null;
@@ -126,7 +126,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(final @NotNull Player player, final @NotNull Inventory menu, final @NotNull ClickType click, final @NotNull ItemStack clickedItem, final Object object) {
+			public void onClickInsideMenu(final @NonNull Player player, final @NonNull Inventory menu, final @NonNull ClickType click, final @NonNull ItemStack clickedItem, final Object object) {
 				if (run(value, menu, player, click)) {
 					updateButton(this);
 					//updateButtons();
@@ -271,9 +271,9 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 		}
 		if (value.getButtonType() == ButtonType.SaveRecipe) {
-			final CheckItemsInsideInventory checkItemsInsideInventory = new CheckItemsInsideInventory();
+			final CheckItemsInsideMenu checkItemsInsideInventory = getCheckItemsInsideMenu();
 			checkItemsInsideInventory.setSlotsToCheck(menuTemplate.getFillSlots());
-			final Map<Integer, ItemStack> map = checkItemsInsideInventory.getItemsOnSpecifiedSlots(menu, player, false);
+			final Map<Integer, ItemStack> map = checkItemsInsideInventory.getItemsFromSetSlots(menu, player, false);
 			save(map, player, true);
 			new RecipeEditor<>(this.recipe, this.categoryData, this.permission, this.editorType).menuOpen(player);
 		}
@@ -288,9 +288,9 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 	@Override
 	public void menuClose(final InventoryCloseEvent event, final MenuUtility menu) {
-		final CheckItemsInsideInventory checkItemsInsideInventory = new CheckItemsInsideInventory();
+		final CheckItemsInsideMenu checkItemsInsideInventory =  getCheckItemsInsideMenu();
 		checkItemsInsideInventory.setSlotsToCheck(menuTemplate.getFillSlots());
-		final Map<Integer, ItemStack> map = checkItemsInsideInventory.getItemsOnSpecifiedSlots(event.getInventory(), getViewer(), false);
+		final Map<Integer, ItemStack> map = checkItemsInsideInventory.getItemsFromSetSlots(event.getInventory(), getViewer(), false);
 		if (self().getConfig().getBoolean("save_on_close")) {
 			save(map, getViewer(), true);
 		}

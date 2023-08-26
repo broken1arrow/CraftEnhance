@@ -14,9 +14,10 @@ import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
-import org.brokenarrow.menu.library.MenuButton;
-import org.brokenarrow.menu.library.MenuHolder;
-import org.brokenarrow.menu.library.MenuUtility;
+import lombok.NonNull;
+import org.broken.arrow.menu.library.MenuUtility;
+import org.broken.arrow.menu.library.button.MenuButton;
+import org.broken.arrow.menu.library.holder.MenuHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -27,7 +28,6 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,15 +72,15 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	}
 
 	@Override
-	public MenuButton getFillButtonAt(final @NotNull Object object) {
+	public MenuButton getFillButtonAt(final @NonNull Object object) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(final @NotNull Player player, final @NotNull Inventory inventory, final @NotNull ClickType clickType, final @NotNull ItemStack itemStack, final Object o) {
+			public void onClickInsideMenu(final @NonNull Player player, final @NonNull Inventory inventory, final @NonNull ClickType clickType, final @NonNull ItemStack itemStack, final Object o) {
 
 			}
 
 			@Override
-			public ItemStack getItem(final @NotNull Object object) {
+			public ItemStack getItem(final @NonNull Object object) {
 				if (object instanceof ItemStack) return (ItemStack) object;
 				return null;
 			}
@@ -107,7 +107,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(final @NotNull Player player, final @NotNull Inventory menu, final @NotNull ClickType click, final @NotNull ItemStack clickedItem, final Object object) {
+			public void onClickInsideMenu(final @NonNull Player player, final @NonNull Inventory menu, final @NonNull ClickType click, final @NonNull ItemStack clickedItem, final Object object) {
 				if (run(value, menu, player, click)) {
 					updateButton(this);
 					//updateButtons();
@@ -327,7 +327,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		}
 		Set<String> worlds = recipe.getAllowedWorlds();
 		if (worlds == null) worlds = new HashSet<>();
-		if (worlds.stream().anyMatch(world -> world.equals(message))) {
+		if (!click.isRightClick() && worlds.stream().anyMatch(world -> world.equals(message))) {
 			Messenger.Message("This world is alredy set." + message, getViewer());
 			return true;
 		}

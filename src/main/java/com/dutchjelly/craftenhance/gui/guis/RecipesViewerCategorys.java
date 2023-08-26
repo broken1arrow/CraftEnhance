@@ -11,13 +11,14 @@ import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import com.dutchjelly.craftenhance.util.PermissionTypes;
-import org.brokenarrow.menu.library.MenuButton;
-import org.brokenarrow.menu.library.MenuHolder;
+import org.broken.arrow.menu.library.button.MenuButton;
+import org.broken.arrow.menu.library.holder.MenuHolder;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,10 +42,10 @@ public class RecipesViewerCategorys extends MenuHolder {
 	}
 
 	@Override
-	public MenuButton getFillButtonAt(final Object object) {
+	public MenuButton getFillButtonAt(@Nonnull final Object object) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(final Player player, final Inventory inventory, final ClickType clickType, final ItemStack itemStack, final Object o) {
+			public void onClickInsideMenu(@Nonnull final Player player, @Nonnull final Inventory inventory, @Nonnull final ClickType clickType, @Nonnull final ItemStack itemStack, final Object o) {
 				if (o instanceof CategoryData) {
 					if (clickType == ClickType.LEFT)
 						new RecipesViewer((CategoryData) o, "", player).menuOpen(player);
@@ -55,7 +56,7 @@ public class RecipesViewerCategorys extends MenuHolder {
 			}
 
 			@Override
-			public ItemStack getItem(final Object object) {
+			public ItemStack getItem(@Nonnull final Object object) {
 				if (object instanceof CategoryData) {
 					String displayName = " ";
 					List<String> lore = new ArrayList<>();
@@ -99,7 +100,7 @@ public class RecipesViewerCategorys extends MenuHolder {
 	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(final Player player, final Inventory menu, final ClickType click, final ItemStack clickedItem, final Object object) {
+			public void onClickInsideMenu(@Nonnull final Player player, @Nonnull final Inventory menu, @Nonnull final ClickType click, @Nonnull final ItemStack clickedItem, final Object object) {
 				if (run(value, menu, player, click))
 					updateButtons();
 			}

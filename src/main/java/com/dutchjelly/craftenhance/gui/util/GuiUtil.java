@@ -11,8 +11,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
-import static org.brokenarrow.menu.library.dependencies.rbglib.TextTranslator.toSpigotFormat;
+import static org.broken.arrow.color.library.TextTranslator.toSpigotFormat;
 
 
 public class GuiUtil {
@@ -52,8 +52,8 @@ public class GuiUtil {
         return inv;
     }
 
-    @NotNull
-    public static ItemStack setTextItem(@NotNull final ItemStack itemStack, final String displayName, final List<String> lore) {
+    @Nonnull
+    public static ItemStack setTextItem(@Nonnull final ItemStack itemStack, final String displayName, final List<String> lore) {
         final ItemMeta meta = itemStack.getItemMeta();
         if (meta != null) {
             meta.setDisplayName(setcolorName(displayName));
