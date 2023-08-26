@@ -3,7 +3,6 @@ package com.dutchjelly.craftenhance.gui.guis;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
-import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeSettings;
 import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
@@ -62,7 +61,7 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 					final String category = ((CategoryData) o).getRecipeCategory();
 					final CategoryData changedCategory = ((CategoryData) o);
 					recipe.setRecipeCategory(category);
-					recipe.save();
+					//recipe.save();
 					CategoryData moveCategoryData = null;
 
 					/*if (categoryData == null) {
@@ -75,8 +74,8 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 							return;
 						}
 					}
-					new RecipeEditor<>(recipe, moveCategoryData, null, editorType).menuOpen(player);
-				}
+					new RecipeSettings<>(recipe, categoryData, null,  editorType)
+							.menuOpen(player);				}
 			}
 
 			@Override

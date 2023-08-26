@@ -18,21 +18,24 @@ import org.brokenarrow.menu.library.MenuButton;
 import org.brokenarrow.menu.library.MenuHolder;
 import org.brokenarrow.menu.library.MenuUtility;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
@@ -114,6 +117,9 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			@Override
 			public ItemStack getItem() {
 				final Map<String, String> placeHolders = setPlaceholders();
+
+				final ItemStack itemStack = getConversingItem(value.getButtonType());
+				if (itemStack != null) return itemStack;
 				if (value.getItemStack() == null) return null;
 				return GuiUtil.ReplaceAllPlaceHolders(value.getItemStack().clone(), placeHolders);
 			}
@@ -127,18 +133,23 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			return true;
 		}
 		if (value.getButtonType() == ButtonType.AllowedWorldsCraft) {
+			if (player.isConversing()) return true;
 			new HandleChatInput(this, message -> {
-				if (!this.handleSetWorld(message, click)) this.menuOpen(player);
+				if (!this.handleSetWorld(message, click)) {
+					this.runTask(()-> this.menuOpen(player));
+					return false;
+				}
 				return true;
 			}).setMessages("Type a valid world:")
 					.start(player);
-			return true;
+			return false;
 		}
 		if (value.getButtonType() == ButtonType.SetCookTime) {
+			if (player.isConversing()) return true;
 			new HandleChatInput(this, (msg) -> {
 				short parsed;
 				if (msg.equals("cancel") || msg.equals("quit") || msg.equals("exit") || msg.equals("q")) {
-					this.menuOpen(player);
+					this.runTask(()-> this.menuOpen(player));
 					return false;
 				}
 				try {
@@ -152,17 +163,17 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 				if (recipe instanceof FurnaceRecipe) {
 					((FurnaceRecipe) recipe).setDuration(parsed);
 				}
-				this.menuOpen(player);
-				//new RecipeEditor<>(this.recipe, this.categoryData,this.permission,this.editorType).menuOpen(player);
+				this.runTask(()-> this.menuOpen(player));
 				return false;
 			}).setMessages("Please input a cook duration.Type q, exit, cancel to turn it off.").start(player);
 			return true;
 		}
 		if (value.getButtonType() == ButtonType.SetExp) {
+			if (player.isConversing()) return true;
 			new HandleChatInput(this, msg -> {
 				int parsed;
 				if (msg.equals("cancel") || msg.equals("quit") || msg.equals("exit")) {
-					this.menuOpen(player);
+					this.runTask(()-> this.menuOpen(player));
 					return false;
 				}
 				try {
@@ -176,8 +187,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 				if (recipe instanceof FurnaceRecipe) {
 					((FurnaceRecipe) recipe).setExp(parsed);
 				}
-				this.menuOpen(player);
-				//new RecipeEditor<>(this.recipe, this.categoryData,this.permission,this.editorType).menuOpen(player);
+				this.runTask(()-> this.menuOpen(player));
 				return false;
 			}).setMessages("Please input an exp amount.Type q, exit, cancel to turn it off.").start(getViewer());
 			return true;
@@ -188,7 +198,6 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 				final boolean shapeless = !wbRecipe.isShapeless();
 				wbRecipe.setShapeless(shapeless);
 			}
-			//this.menuOpen(player);
 			return true;
 		}
 		if (value.getButtonType() == ButtonType.SwitchHidden) {
@@ -201,9 +210,10 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			return true;
 		}
 		if (value.getButtonType() == ButtonType.SetPermission) {
+			if (player.isConversing()) return true;
 			new HandleChatInput(this, msg -> {
 				if (!handlePermissionSetCB(msg)) {
-					this.menuOpen(player);
+					this.runTask(()-> this.menuOpen(player));
 					return false;
 				}
 				return true;
@@ -214,9 +224,10 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			new CategoryList<>(this.recipe, this.categoryData, this.permission, this.editorType, "").menuOpen(player);
 		}
 		if (value.getButtonType() == ButtonType.ChangeCategory) {
+			if (player.isConversing()) return true;
 			new HandleChatInput(this, msg -> {
-				if (!GuiUtil.changeOrCreateCategory(msg, player)) {
-					new RecipeSettings<>(this.recipe, this.categoryData, this.permission, this.editorType).menuOpen(player);
+				if (!GuiUtil.changeOrCreateCategory(msg, player,this.recipe)) {
+					this.runTask(()-> this.menuOpen(player));
 					return false;
 				}
 				return true;
@@ -243,7 +254,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 		if (message.equals("-")) {
 			permission = "";
-			//updatePlaceHolders();
+
 			return false;
 		}
 
@@ -253,7 +264,6 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		}
 		final String permission = message;
 		this.recipe.setPermissions(permission);
-		//updatePlaceHolders();
 		return false;
 	}
 
@@ -269,7 +279,6 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		}
 		final ItemMatchers.MatchType matchType = matchTypes[(i + 1) % matchTypes.length];
 		this.recipe.setMatchType(matchType);
-		//updatePlaceHolders();
 	}
 
 	public boolean handlePositionChange(final String message) {
@@ -302,9 +311,6 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		recipe.setSlot(slot);
 
 		Messenger.Message("Set the page to " + page + ", and the slot to " + slot + ". This will get auto-filled if it's not available.", getViewer());
-		self().getFm().saveRecipe(recipe);
-
-		//updatePlaceHolders();
 		return false;
 	}
 
@@ -315,26 +321,55 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			return false;
 		final World allowedWorlds = Bukkit.getWorld(message);
 
-		if (allowedWorlds == null) {
+		if (!(click.isLeftClick() && click.isShiftClick()) && allowedWorlds == null) {
 			Messenger.Message("Please specify a world that exist. This world either don't exist or not loaded " + message, getViewer());
 			return true;
 		}
-		Set<World> worlds = recipe.getAllowedWorlds();
+		Set<String> worlds = recipe.getAllowedWorlds();
 		if (worlds == null) worlds = new HashSet<>();
-		if (worlds.stream().anyMatch(world -> world.getName().equals(allowedWorlds.getName()))) {
+		if (worlds.stream().anyMatch(world -> world.equals(message))) {
 			Messenger.Message("This world is alredy set." + message, getViewer());
 			return true;
 		}
-		if (click.isLeftClick()) worlds.add(allowedWorlds);
-		else worlds.remove(allowedWorlds);
+		if (click.isLeftClick()) worlds.add(message);
+		else worlds.remove(message);
 
 		recipe.setAllowedWorlds(worlds);
 
 		Messenger.Message("You have now set this world " + message + ", and players can only make this recipe in this world.", getViewer());
-		self().getFm().saveRecipe(recipe);
-
-		//updatePlaceHolders();
 		return false;
+	}
+
+	public ItemStack getConversingItem(final ButtonType buttonType) {
+		if (!player.isConversing()) return null;
+		final ItemStack itemStack = new ItemStack(Material.BARRIER);
+		final ItemMeta itemMeta = itemStack.getItemMeta();
+		if (itemMeta != null) {
+			itemMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&4You can't set this right now."));
+			final List<String> lore = new ArrayList<>();
+			lore.add(ChatColor.translateAlternateColorCodes('&', "&4"));
+			lore.add(ChatColor.translateAlternateColorCodes('&', "&4You can't set this so long"));
+			lore.add(ChatColor.translateAlternateColorCodes('&', "&4you are conversing."));
+			lore.add(ChatColor.translateAlternateColorCodes('&', "&4"));
+			lore.add(ChatColor.translateAlternateColorCodes('&', "&fYou have to type quit,exit,q"));
+			lore.add(ChatColor.translateAlternateColorCodes('&', "&fin the chat and enter."));
+			itemMeta.setLore(lore);
+		}
+		itemStack.setItemMeta(itemMeta);
+		if (buttonType != null)
+			switch (buttonType) {
+				case SetPosition:
+				case AllowedWorldsCraft:
+				case SetCookTime:
+				case SetExp:
+				case SwitchMatchMeta:
+				case SetPermission:
+				case ChangeCategory:
+					return itemStack;
+				default:
+					return null;
+			}
+		return null;
 	}
 
 	public Map<String, String> setPlaceholders() {
@@ -353,12 +388,15 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			put(InfoItemPlaceHolders.Permission.getPlaceHolder(), permission == null || permission.trim().equals("") ? "none" : permission);
 			put(InfoItemPlaceHolders.Slot.getPlaceHolder(), String.valueOf(recipe.getSlot()));
 			put(InfoItemPlaceHolders.Page.getPlaceHolder(), String.valueOf(recipe.getPage()));
-			put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), String.valueOf(recipe.getAllowedWorlds() != null && !recipe.getAllowedWorlds().isEmpty()  ?
-					recipe.getAllowedWorlds().stream().map(world-> world.getName()).collect(Collectors.toList()) : "non set"));
+			put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), String.valueOf(recipe.getAllowedWorlds() != null && !recipe.getAllowedWorlds().isEmpty() ?
+					new ArrayList<>(recipe.getAllowedWorlds()) : "non set"));
 			if (categoryData != null)
 				put(InfoItemPlaceHolders.Category.getPlaceHolder(), categoryData.getRecipeCategory());
 			else
 				put(InfoItemPlaceHolders.Category.getPlaceHolder(), recipe.getRecipeCategory() != null ? recipe.getRecipeCategory() : "default");
 		}};
+	}
+	private void runTask(final Runnable runnable){
+		Bukkit.getScheduler().runTaskLater(self(),runnable,1);
 	}
 }

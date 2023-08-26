@@ -17,9 +17,9 @@ RecipesViewer:
       material: PAPER
       name: "&aSearch for a recipe"
       lore:
-        - "&fSearch for same or similar"
-        - "&frecipes,it can be enough"
-        - "&ftype three/four leters."
+        - "&fSearch for same or similar recipes,"
+        - "&fit can be enough to type the first"
+        - "&three/four letters."
       glow: true
     49:
       buttonType: Back
@@ -63,8 +63,9 @@ RecipesCategorys:
       name: "&aSearch for a category"
       lore:
         - "&fSearch for same or similar"
-        - "&fcategorys, so it can be enough"
-        - "&ftype three/four leters."
+        - "&fcategorys, it can be enough"
+        - "&fto type the first three/four"
+        - "&fletters."
       glow: true
     46:
       buttonType: PrvPage
@@ -184,8 +185,9 @@ CategoryList:
       name: "&aSearch for a category"
       lore:
         - "&fSearch for same or similar"
-        - "&fcategorys, so it can be enough"
-        - "&ftype three/four leters."
+        - "&fcategorys, it can be enough"
+        - "&fto type the first three/four"
+        - "&fletters."
       glow: true
 WBRecipeViewer:
   menu_settings:
@@ -305,6 +307,10 @@ RecipeDisabler:
       lore:
         - "&fLeftclick to reset"
         - "&fRightclick to seach"
+        - "&6"
+        - "&fIt can be enough to type"
+        - "&fthe first three/four"
+        - "&fletters."
       glow: true
     51:
       buttonType: NxtPage
@@ -467,8 +473,10 @@ RecipeSettingsCrafting:
       lore:
         - "&fChange or set world."
         - ""
-        - "&fRight-click to remove world"
-        - "&fLeft-click to add world"
+        - "&fRight-click to remove world."
+        - "&fLeft-click to add world."
+        - "&fShift and left-click to add world"
+        - "&fwithout check if the world is valid."
         - ""
         - "&fCurrently set worlds:"
         - "&3 [worlds]"

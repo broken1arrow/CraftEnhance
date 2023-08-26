@@ -279,16 +279,16 @@ public class GuiUtil {
 
     }
 
-    public static boolean changeOrCreateCategory(final String msg, final Player player) {
+    public static boolean changeOrCreateCategory(final String msg, final Player player, final EnhancedRecipe recipe) {
         if (msg.equals("") || msg.equalsIgnoreCase("q") || msg.equalsIgnoreCase("cancel") || msg.equalsIgnoreCase("quit") || msg.equalsIgnoreCase("exit"))
             return false;
         if (!msg.isEmpty()) {
             final String[] split = msg.split(" ");
             if (split.length > 1) {
                 Material material = null;
-                final CategoryData categoryData = self().getCategoryDataCache().get(split[0]);
                 if (split.length >= 3)
                     material = Material.getMaterial(split[2].toUpperCase());
+                final CategoryData categoryData = self().getCategoryDataCache().get(split[0]);
                 if (categoryData == null) {
                     if (material == null)
                         material = Material.getMaterial(split[1].toUpperCase());
@@ -297,11 +297,13 @@ public class GuiUtil {
                         return true;
                     }
                     self().getCategoryDataCache().addCategory(split[0], new ItemStack(material), null);
+                    recipe.setRecipeCategory(split[0]);
                 } else {
                     final CategoryData newCategoryData = self().getCategoryDataCache().of(split[1], material != null ? new ItemStack(material) : categoryData.getRecipeCategoryItem(), null);
                     self().getCategoryDataCache().remove(split[0]);
                     newCategoryData.setEnhancedRecipes(categoryData.getEnhancedRecipes());
                     self().getCategoryDataCache().put(split[1], newCategoryData);
+                    recipe.setRecipeCategory(split[0]);
                 }
                 return false;
             } else {

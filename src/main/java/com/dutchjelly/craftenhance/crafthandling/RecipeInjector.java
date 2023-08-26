@@ -20,7 +20,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.World;
 import org.bukkit.block.Furnace;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -147,8 +146,8 @@ public class RecipeInjector implements Listener {
 				if (eRecipe.getAllowedWorlds() != null) {
 					boolean notAllowedToCraft = false;
 					for (final HumanEntity viwer : craftEvent.getViewers()) {
-						for (final World word : eRecipe.getAllowedWorlds()) {
-							if (!viwer.getWorld().getName().equals(word.getName())) {
+						for (final String word : eRecipe.getAllowedWorlds()) {
+							if (!viwer.getWorld().getName().equals(word)) {
 								notAllowedToCraft = true;
 								break;
 							}

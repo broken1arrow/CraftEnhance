@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public abstract class EnhancedRecipe extends GuiPlacable implements ConfigurationSerializable, ServerLoadable {
 
@@ -59,16 +58,14 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 
 		recipeKeys = (List<String>) args.get("recipe");
 		final List<String> worldsList = (List<String>) args.getOrDefault("allowed_worlds", null);
-		final Set<World> worlds = new HashSet<>();
+		final Set<String> worlds = new HashSet<>();
 		if (worldsList != null && !worldsList.isEmpty())
 			worldsList.forEach(world -> {
 				if (world != null) {
 					final World bukkitWorld = Bukkit.getWorld(world);
-					if (bukkitWorld != null)
-						worlds.add(bukkitWorld);
-					else {
-						Messenger.Error("This world could not be added: " + world);
-					}
+					if (bukkitWorld == null)
+						Messenger.Error("This world seams to not exist: '" + world + "'. Will still be added.");
+					worlds.add(world);
 				}
 			});
 		this.allowedWorlds = worlds;
@@ -117,7 +114,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 
 	@Getter
 	@Setter
-	private Set<World> allowedWorlds;
+	private Set<String> allowedWorlds;
 	@Getter
 	private Map<String, Object> deserialize;
 	@Getter
@@ -134,7 +131,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 			put("oncraftcommand", onCraftCommand);
 			put("result", fm.getItemKey(result));
 			put("recipe", Arrays.stream(content).map(x -> fm.getItemKey(x)).toArray(String[]::new));
-			put("allowed_worlds", allowedWorlds != null ? allowedWorlds.stream().map(world -> world.getName()).collect(Collectors.toList()) : new ArrayList<>());
+			put("allowed_worlds", allowedWorlds != null ? new ArrayList<>(allowedWorlds) : new ArrayList<>());
 			if (serialize != null && !serialize.isEmpty())
 				putAll(serialize);
 		}};
