@@ -32,7 +32,7 @@
                                 <includes>
                                     <include>com.github.broken1arrow.Utility-Library:Conversation-Prompt*</include>
                                     <include>com.github.broken1arrow.Utility-Library:NBT*</include>
-                                    <include>com.github.broken1arrow.Utility-Library:Menu-api*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:Menu_Library*</include>
                                     <include>com.github.broken1arrow.Utility-Library:Title-Update*</include>
                                     <include>com.github.broken1arrow.Utility-Library:NBT*</include>
                                 </includes>
@@ -40,19 +40,31 @@
                             <relocations>
                                 <relocation>
                                     <pattern>org.broken.arrow.nbt.library</pattern>
-                                    <shadedPattern>craftenhance.libs.nbt</shadedPattern>
+                                    <shadedPattern>com.dutchjelly.craftenhance.libs.nbt</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.broken.arrow.prompt.library</pattern>
-                                    <shadedPattern>craftenhance.libs.prompt</shadedPattern>
+                                    <shadedPattern>com.dutchjelly.craftenhance.libs.prompt</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.broken.arrow.menu.library</pattern>
-                                    <shadedPattern>craftenhance.libs.menu</shadedPattern>
+                                    <shadedPattern>com.dutchjelly.craftenhance.libs.menu</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.broken.arrow.title.update.library</pattern>
-                                    <shadedPattern>craftenhance.libs.menu</shadedPattern>
+                                    <shadedPattern>com.dutchjelly.craftenhance.libs.menu</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.broken.arrow.library.dependencies</pattern>
+                                    <shadedPattern>com.dutchjelly.craftenhance.libs.dependencies</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.broken.arrow.itemcreator.library</pattern>
+                                    <shadedPattern>com.dutchjelly.craftenhance.libs.dependencies</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.broken.arrow.color.library</pattern>
+                                    <shadedPattern>com.dutchjelly.craftenhance.libs.dependencies</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
