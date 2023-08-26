@@ -9,6 +9,7 @@ import com.dutchjelly.craftenhance.gui.interfaces.GuiPlacable;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -163,6 +164,14 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
         s += "result = " + (this.result == null ? "null" : result) + "\n";
         return s;
     }*/
+
+	public String getAllowedWorldsFormatted() {
+		final StringBuilder stringBuilder = new StringBuilder();
+		for (final String worlds : allowedWorlds)
+			stringBuilder.append(WordUtils.capitalizeFully(worlds.toLowerCase())).append(", ");
+		stringBuilder.setLength(stringBuilder.length() - 2);
+		return stringBuilder.toString();
+	}
 
 	@Override
 	public ItemStack getDisplayItem() {

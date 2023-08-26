@@ -138,24 +138,16 @@ public class RecipeInjector implements Listener {
 			return;
 		}
 		for (final RecipeGroup group : possibleRecipeGroups) {
+			boolean notAllowedToCraft = false;
+
 			//Check if any grouped enhanced recipe is a match.
 			for (final EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
 				if (!(eRecipe instanceof WBRecipe)) continue;
 				final WBRecipe wbRecipe = (WBRecipe) eRecipe;
 
-				if (eRecipe.getAllowedWorlds() != null) {
-					boolean notAllowedToCraft = false;
-					for (final HumanEntity viwer : craftEvent.getViewers()) {
-						for (final String word : eRecipe.getAllowedWorlds()) {
-							if (!viwer.getWorld().getName().equals(word)) {
-								notAllowedToCraft = true;
-								break;
-							}
-						}
-					}
-					if (notAllowedToCraft)
-						continue;
-				}
+				notAllowedToCraft = isCrafingAllowedInWorld(craftEvent, eRecipe);
+				if (notAllowedToCraft)
+					continue;
 
 				if (checkForDisabledRecipe(disabledServerRecipes, wbRecipe, serverRecipe.getResult())) {
 					inv.setResult(null);
@@ -189,6 +181,8 @@ public class RecipeInjector implements Listener {
 				}
 				Debug.Send("Recipe doesn't match.");
 			}
+			if (notAllowedToCraft)
+				continue;
 
 			//Check for similar server recipes if no enhanced ones match.
 			for (final Recipe sRecipe : group.getServerRecipes()) {
@@ -374,6 +368,20 @@ public class RecipeInjector implements Listener {
 			containerOwners.remove(e.getBlock().getLocation());
 			pausedFurnaces.remove((Furnace) e.getBlock().getState());
 		}
+	}
+
+	private boolean isCrafingAllowedInWorld(final PrepareItemCraftEvent craftEvent, final EnhancedRecipe eRecipe) {
+		final Set<String> allowedWorlds = eRecipe.getAllowedWorlds();
+		if (allowedWorlds == null || allowedWorlds.isEmpty()) return false;
+
+		for (final HumanEntity viwer : craftEvent.getViewers()) {
+			for (final String world : allowedWorlds) {
+				if (viwer.getWorld().getName().equals(world)) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	private boolean entityCanCraft(final Permissible entity, final EnhancedRecipe group) {
