@@ -12,6 +12,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<maven.compiler.source>1.8</maven.compiler.source>
+        <utility-library>0.59</utility-library>
 	</properties>
 	<build>
 		<plugins>
@@ -118,25 +119,25 @@
         <dependency>
             <groupId>com.github.broken1arrow.Utility-Library</groupId>
             <artifactId>Conversation-Prompt</artifactId>
-            <version>0.58</version>
+            <version>${utility-library}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.github.broken1arrow.Utility-Library</groupId>
             <artifactId>NBT</artifactId>
-            <version>0.58</version>
+            <version>${utility-library}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.github.broken1arrow.Utility-Library</groupId>
             <artifactId>Menu_Library</artifactId>
-            <version>0.58</version>
+            <version>${utility-library}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.github.broken1arrow.Utility-Library</groupId>
             <artifactId>Title-Update</artifactId>
-            <version>0.58</version>
+            <version>${utility-library}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
