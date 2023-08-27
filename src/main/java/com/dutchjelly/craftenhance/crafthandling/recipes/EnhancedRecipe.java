@@ -167,6 +167,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 
 	public String getAllowedWorldsFormatted() {
 		final StringBuilder stringBuilder = new StringBuilder();
+		if (allowedWorlds != null)
 		for (final String worlds : allowedWorlds)
 			stringBuilder.append(WordUtils.capitalizeFully(worlds.toLowerCase())).append(", ");
 		stringBuilder.setLength(stringBuilder.length() - 2);
