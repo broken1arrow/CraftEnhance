@@ -35,6 +35,7 @@ public class EditorTypeSelector extends MenuHolder {
 		setMenuSize(GuiUtil.invSize("EditorTypeSelector",menuTemplate.getAmountOfButtons()));
 		setTitle(menuTemplate.getMenuTitel());
 		setMenuOpenSound(this.menuTemplate.getSound());
+		this.setUseColorConversion(true);
 	}
 
 	private String getFreshKey(String keySeed) {

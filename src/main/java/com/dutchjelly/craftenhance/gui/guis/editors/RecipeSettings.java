@@ -60,7 +60,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		if (recipe instanceof FurnaceRecipe) {
 			menu = "RecipeSettingsFurnace";
 		}
-
+		this.setUseColorConversion(true);
 		menuTemplate = menuSettingsCache.getTemplates().get(menu);
 		setSlotsYouCanAddItems(true);
 		if (menuTemplate != null) {
@@ -388,8 +388,8 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			put(InfoItemPlaceHolders.Permission.getPlaceHolder(), permission == null || permission.trim().equals("") ? "none" : permission);
 			put(InfoItemPlaceHolders.Slot.getPlaceHolder(), String.valueOf(recipe.getSlot()));
 			put(InfoItemPlaceHolders.Page.getPlaceHolder(), String.valueOf(recipe.getPage()));
-			put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), String.valueOf(recipe.getAllowedWorlds() != null && !recipe.getAllowedWorlds().isEmpty() ?
-					recipe.getAllowedWorldsFormatted() : "non set"));
+			put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), recipe.getAllowedWorlds() != null && !recipe.getAllowedWorlds().isEmpty() ?
+					recipe.getAllowedWorldsFormatted() : "non set");
 			if (categoryData != null)
 				put(InfoItemPlaceHolders.Category.getPlaceHolder(), categoryData.getRecipeCategory());
 			else

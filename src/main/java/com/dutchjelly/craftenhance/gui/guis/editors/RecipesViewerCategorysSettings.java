@@ -38,6 +38,7 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 			setMenuOpenSound(this.menuTemplate.getSound());
 		}
 		this.category = category;
+		this.setUseColorConversion(true);
 	}
 
 	@Override

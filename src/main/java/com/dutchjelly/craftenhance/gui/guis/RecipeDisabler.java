@@ -45,7 +45,7 @@ public class RecipeDisabler extends MenuHolder {
 		setTitle(this.menuTemplate.getMenuTitel());
 		setMenuSize(GuiUtil.invSize("RecipeDisabler",this.menuTemplate.getAmountOfButtons()));
 		setMenuOpenSound(this.menuTemplate.getSound());
-
+		this.setUseColorConversion(true);
 		fillSlots = new MenuButton() {
 			@Override
 			public void onClickInsideMenu(@Nonnull final Player player, @Nonnull final Inventory inventory, @Nonnull final ClickType clickType, @Nonnull final ItemStack itemStack, final Object o) {

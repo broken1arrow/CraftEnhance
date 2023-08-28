@@ -50,6 +50,7 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			setMenuSize(GuiUtil.invSize("CategoryList",menuTemplate.getAmountOfButtons()));
 			setMenuOpenSound(this.menuTemplate.getSound());
 		}
+		this.setUseColorConversion(true);
 	}
 
 	@Override
