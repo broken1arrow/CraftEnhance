@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.gui.guis.editors;
 
+import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
@@ -165,6 +166,15 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 	public boolean run(final com.dutchjelly.craftenhance.gui.templates.MenuButton value, final Inventory menu, final Player player, final ClickType click) {
 
+		if (value.getButtonType() == ButtonType.DeleteRecipe) {
+			self().getFm().removeRecipe(recipe);
+			RecipeLoader.getInstance().unloadRecipe(recipe);
+			if (this.categoryData != null)
+				new RecipesViewer(this.categoryData, "", player).menuOpen(player);
+			else
+				new EditorTypeSelector(null, permission).menuOpen(player);
+			return true;
+		}
 		if (value.getButtonType() == ButtonType.RecipeSettings)
 			new RecipeSettings<>(this.recipe, this.categoryData, this.permission, this.editorType)
 					.menuOpen(player);

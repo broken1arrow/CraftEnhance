@@ -136,7 +136,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			if (player.isConversing()) return true;
 			new HandleChatInput(this, message -> {
 				if (!this.handleSetWorld(message, click)) {
-					this.runTask(()-> this.menuOpen(player));
+					this.runTask(() -> this.menuOpen(player));
 					return false;
 				}
 				return true;
@@ -149,7 +149,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			new HandleChatInput(this, (msg) -> {
 				short parsed;
 				if (msg.equals("cancel") || msg.equals("quit") || msg.equals("exit") || msg.equals("q")) {
-					this.runTask(()-> this.menuOpen(player));
+					this.runTask(() -> this.menuOpen(player));
 					return false;
 				}
 				try {
@@ -163,7 +163,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 				if (recipe instanceof FurnaceRecipe) {
 					((FurnaceRecipe) recipe).setDuration(parsed);
 				}
-				this.runTask(()-> this.menuOpen(player));
+				this.runTask(() -> this.menuOpen(player));
 				return false;
 			}).setMessages("Please input a cook duration.Type q, exit, cancel to turn it off.").start(player);
 			return true;
@@ -173,7 +173,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			new HandleChatInput(this, msg -> {
 				int parsed;
 				if (msg.equals("cancel") || msg.equals("quit") || msg.equals("exit")) {
-					this.runTask(()-> this.menuOpen(player));
+					this.runTask(() -> this.menuOpen(player));
 					return false;
 				}
 				try {
@@ -187,7 +187,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 				if (recipe instanceof FurnaceRecipe) {
 					((FurnaceRecipe) recipe).setExp(parsed);
 				}
-				this.runTask(()-> this.menuOpen(player));
+				this.runTask(() -> this.menuOpen(player));
 				return false;
 			}).setMessages("Please input an exp amount.Type q, exit, cancel to turn it off.").start(getViewer());
 			return true;
@@ -213,7 +213,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			if (player.isConversing()) return true;
 			new HandleChatInput(this, msg -> {
 				if (!handlePermissionSetCB(msg)) {
-					this.runTask(()-> this.menuOpen(player));
+					this.runTask(() -> this.menuOpen(player));
 					return false;
 				}
 				return true;
@@ -226,8 +226,8 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		if (value.getButtonType() == ButtonType.ChangeCategory) {
 			if (player.isConversing()) return true;
 			new HandleChatInput(this, msg -> {
-				if (!GuiUtil.changeOrCreateCategory(msg, player,this.recipe)) {
-					this.runTask(()-> this.menuOpen(player));
+				if (!GuiUtil.changeOrCreateCategory(msg, player, this.recipe)) {
+					this.runTask(() -> this.menuOpen(player));
 					return false;
 				}
 				return true;
@@ -335,8 +335,11 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		else worlds.remove(message);
 
 		recipe.setAllowedWorlds(worlds);
+		if (click.isLeftClick())
+			Messenger.Message("You have now set this world " + message + ", and players can only make this recipe in this world.", getViewer());
+		else
+			Messenger.Message("You have now remove this world " + message + ", and players can't make this recipe in this world. Unless no world is set after you remove this world.", getViewer());
 
-		Messenger.Message("You have now set this world " + message + ", and players can only make this recipe in this world.", getViewer());
 		return false;
 	}
 
@@ -396,7 +399,8 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 				put(InfoItemPlaceHolders.Category.getPlaceHolder(), recipe.getRecipeCategory() != null ? recipe.getRecipeCategory() : "default");
 		}};
 	}
-	private void runTask(final Runnable runnable){
-		Bukkit.getScheduler().runTaskLater(self(),runnable,1);
+
+	private void runTask(final Runnable runnable) {
+		Bukkit.getScheduler().runTaskLater(self(), runnable, 1);
 	}
 }
