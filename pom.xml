@@ -10,8 +10,8 @@
 	<description>This is a minecraft plugin to enhance crafting.</description>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
+		<maven.compiler.source>11</maven.compiler.source>
         <utility-library>0.62</utility-library>
 	</properties>
 	<build>
@@ -32,10 +32,9 @@
                             <artifactSet>
                                 <includes>
                                     <include>com.github.broken1arrow.Utility-Library:Conversation-Prompt*</include>
-                                    <include>com.github.broken1arrow.Utility-Library:NBT*</include>
                                     <include>com.github.broken1arrow.Utility-Library:Menu_Library*</include>
                                     <include>com.github.broken1arrow.Utility-Library:Title-Update*</include>
-                                    <include>com.github.broken1arrow.Utility-Library:NBT*</include>
+                                    <include>com.saicone.rtag:rtag*</include>
                                 </includes>
                             </artifactSet>
                             <relocations>
@@ -66,6 +65,10 @@
                                 <relocation>
                                     <pattern>org.broken.arrow.color.library</pattern>
                                     <shadedPattern>com.dutchjelly.craftenhance.libs.dependencies</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.saicone.rtag</pattern>
+                                    <shadedPattern>com.dutchjelly.craftenhance.libs.rtag</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
@@ -124,12 +127,6 @@
         </dependency>
         <dependency>
             <groupId>com.github.broken1arrow.Utility-Library</groupId>
-            <artifactId>NBT</artifactId>
-            <version>${utility-library}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.broken1arrow.Utility-Library</groupId>
             <artifactId>Menu_Library</artifactId>
             <version>${utility-library}</version>
             <scope>compile</scope>
@@ -138,6 +135,18 @@
             <groupId>com.github.broken1arrow.Utility-Library</groupId>
             <artifactId>Title-Update</artifactId>
             <version>${utility-library}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.saicone.rtag</groupId>
+            <artifactId>rtag</artifactId>
+            <version>1.4.2</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.saicone.rtag</groupId>
+            <artifactId>rtag-item</artifactId>
+            <version>1.4.2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
