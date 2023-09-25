@@ -8,6 +8,7 @@ import com.dutchjelly.craftenhance.files.FileManager;
 import com.dutchjelly.craftenhance.gui.interfaces.GuiPlacable;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
@@ -26,9 +27,15 @@ import java.util.Set;
 public abstract class EnhancedRecipe extends GuiPlacable implements ConfigurationSerializable, ServerLoadable {
 
 	public EnhancedRecipe() {
+        this.result = new EnhancedItem();
+        this.content = new EnhancedItem[0];
 	}
 
-	public EnhancedRecipe(final String perm, final ItemStack result, final ItemStack[] content) {
+    public EnhancedRecipe(final String perm, final ItemStack result, final ItemStack[] content) {
+        this(perm, new EnhancedItem(result), EnhancedItem.of(content));
+    }
+
+	public EnhancedRecipe(final String perm, final EnhancedItem result, final EnhancedItem[] content) {
 		this.permissions = perm;
 		this.result = result;
 		this.content = content;
@@ -39,7 +46,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 		final FileManager fm = CraftEnhance.self().getFm();
 
 		final List<String> recipeKeys;
-		result = fm.getItem((String) args.get("result"));
+		result = new EnhancedItem(fm.getItem((String) args.get("result")));
 		permissions = (String) args.get("permission");
 		if (args.containsKey("matchtype")) {
 			matchType = ItemMatchers.MatchType.valueOf((String) args.get("matchtype"));
@@ -71,9 +78,9 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 			});
 		this.allowedWorlds = worlds;
 
-		setContent(new ItemStack[recipeKeys.size()]);
+		setContent(new EnhancedItem[recipeKeys.size()]);
 		for (int i = 0; i < content.length; i++) {
-			content[i] = fm.getItem(recipeKeys.get(i));
+			content[i] = new EnhancedItem(fm.getItem(recipeKeys.get(i)));
 		}
 		this.deserialize = args;
 	}
@@ -88,11 +95,11 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 
 	@Getter
 	@Setter
-	private ItemStack result;
+	private @NonNull EnhancedItem result;
 
 	@Getter
 	@Setter
-	private ItemStack[] content;
+	private @NonNull EnhancedItem[] content;
 
 	@Getter
 	@Setter
@@ -130,8 +137,8 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 			put("matchtype", matchType.name());
 			put("hidden", hidden);
 			put("oncraftcommand", onCraftCommand);
-			put("result", fm.getItemKey(result));
-			put("recipe", Arrays.stream(content).map(x -> fm.getItemKey(x)).toArray(String[]::new));
+			put("result", fm.getItemKey(result.getItem()));
+			put("recipe", Arrays.stream(content).map(x -> fm.getItemKey(x.getItem())).toArray(String[]::new));
 			put("allowed_worlds", allowedWorlds != null ? new ArrayList<>(allowedWorlds) : new ArrayList<>());
 			if (serialize != null && !serialize.isEmpty())
 				putAll(serialize);
@@ -140,11 +147,11 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 
 	public String validate() {
 
-		if (result == null)
+		if (result.getItem() == null)
 			return "recipe cannot have null result";
 		if (!Adapter.canUseModeldata() && matchType == ItemMatchers.MatchType.MATCH_MODELDATA_AND_TYPE)
 			return "recipe is using modeldata match while the server doesn't support it";
-		if (content.length == 0 || !Arrays.stream(content).anyMatch(x -> x != null))
+		if (content.length == 0 || !Arrays.stream(content).anyMatch(x -> x.getItem() != null))
 			return "recipe content cannot be empty";
 		return null;
 	}
@@ -153,7 +160,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 	public String toString() {
 		return "EnhancedRecipe{" +
 				"key='" + key + '\'' +
-				", result=" + (this.result == null ? "null" : result) +
+				", result=" + (this.result.getItem() == null ? "null" : result.getItem()) +
 				'}';
 	}
 /*
@@ -176,7 +183,15 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 
 	@Override
 	public ItemStack getDisplayItem() {
-		return getResult();
+		return getResult().getItem();
+	}
+
+	public ItemStack[] getContentItems() {
+		final ItemStack[] items = new ItemStack[content.length];
+		for (int i = 0; i < content.length; i++) {
+			items[i] = content[i].getItem();
+		}
+		return items;
 	}
 
 	public void save() {

@@ -53,7 +53,7 @@ public class OrderEditor extends GUIElement {
 		int requiredPages = Math.max((int)Math.ceil((double)recipes.size()/itemsPerPage), 1);
 
 
-		List<ItemStack> recipeItems = recipes.stream().map(x -> x.getResult()).collect(Collectors.toList());
+		List<ItemStack> recipeItems = recipes.stream().map(x -> x.getResult().getItem()).collect(Collectors.toList());
 		inventories = new Inventory[requiredPages];
 		for(int i = 0; i < requiredPages; i++){
 			inventories[i] = GuiUtil.FillInventory(

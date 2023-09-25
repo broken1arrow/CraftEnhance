@@ -22,8 +22,8 @@ public class FormatListContents {
 
 	public static <RecipeT extends EnhancedRecipe> List<?> formatRecipes(final RecipeT recipe, final IngredientsCache ingredientsCache, final boolean loadCachedItems) {
 		if (recipe == null) return new ArrayList<>();
-		List<ItemStack> list = new ArrayList<>(Arrays.asList(recipe.getContent()));
-		ItemStack result = recipe.getResult();
+		List<ItemStack> list = new ArrayList<>(Arrays.asList(recipe.getContentItems()));
+		ItemStack result = recipe.getResult().getItem();
 		if (ingredientsCache != null && loadCachedItems){
 			final ItemStack itemStackResult = ingredientsCache.getItemStackResult();
 			final ItemStack[] ingredients = ingredientsCache.getItemStacks();

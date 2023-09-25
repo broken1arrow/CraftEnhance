@@ -104,7 +104,7 @@ public class RecipeLoader {
 	public List<RecipeGroup> findGroupsByResult(final ItemStack result, final RecipeType type) {
 		final List<RecipeGroup> originGroups = new ArrayList<>();
 		for (final RecipeGroup group : mappedGroupedRecipes.get(type)) {
-			if (group.getEnhancedRecipes().stream().anyMatch(x -> result.equals(x.getResult())))
+			if (group.getEnhancedRecipes().stream().anyMatch(x -> x.getResult().equals(result)))
 				originGroups.add(group);
 			else if (group.getServerRecipes().stream().anyMatch(x -> result.equals(x.getResult())))
 				originGroups.add(group);
@@ -310,7 +310,7 @@ public class RecipeLoader {
 			final ItemStack itemStack = serverRecipe.getInput();
 			Debug.Send("Added Furnace recipe for " + serverRecipe.getResult());
 
-			if (recipe.getContent()[0].getType() == itemStack.getType()) {
+			if (recipe.getContent()[0].getItem().getType() == itemStack.getType()) {
 				this.similarVanillaRecipe.put( serverRecipe.getInput() ,serverRecipe.getResult());
 				//Adapter.GetFurnaceRecipe(CraftEnhance.self(), ServerRecipeTranslator.GetFreeKey(itemStack.getType().name().toLowerCase()), itemStack, serverRecipe.getResult().getType(), serverRecipe.getCookingTime(), getExp(itemStack.getType()));
 			}

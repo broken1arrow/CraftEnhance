@@ -71,6 +71,7 @@
                                     <shadedPattern>com.dutchjelly.craftenhance.libs.rtag</shadedPattern>
                                 </relocation>
                             </relocations>
+                            <minimizeJar>true</minimizeJar>
                         </configuration>
                     </execution>
                 </executions>
@@ -95,10 +96,6 @@
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
-        </repository>
-        <repository>
-            <id>itemsadder-repo</id>
-            <url>https://maven.pkg.github.com/LoneDev6/API-ItemsAdder</url>
         </repository>
 	</repositories>
 	<dependencies>

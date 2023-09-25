@@ -114,6 +114,16 @@ public class RecipeInjector implements Listener {
 		}
 	}
 
+	private boolean isEnhancedRecipe(Recipe recipe) {
+		if (recipe instanceof ShapedRecipe) {
+			return ((ShapedRecipe) recipe).getKey().getNamespace().equalsIgnoreCase("craftenhance");
+		} else if (recipe instanceof ShapelessRecipe) {
+			return ((ShapelessRecipe) recipe).getKey().getNamespace().equalsIgnoreCase("craftenhance");
+		} else {
+			return false;
+		}
+	}
+
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void handleCrafting(final PrepareItemCraftEvent craftEvent) {
 		if (craftEvent.getRecipe() == null || craftEvent.getRecipe().getResult() == null || !plugin.getConfig().getBoolean("enable-recipes"))
@@ -135,6 +145,10 @@ public class RecipeInjector implements Listener {
 				inv.setResult(null);
 			}
 			Debug.Send("no matching groups");
+			if (isEnhancedRecipe(serverRecipe)) {
+				Debug.Send("But the recipe is from CraftEnhance, so the crafting result will be blocked");
+				inv.setResult(null);
+			}
 			return;
 		}
 		for (final RecipeGroup group : possibleRecipeGroups) {
@@ -165,14 +179,14 @@ public class RecipeInjector implements Listener {
 					if (makeItemsadderCompatible && containsModeldata(inv)) {
 						Bukkit.getScheduler().runTask(CraftEnhance.self(), () -> {
 							if (wbRecipe.matches(inv.getMatrix())) {
-								final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(eRecipe, wbRecipe, wbRecipe.getResult().clone());
+								final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(eRecipe, wbRecipe, wbRecipe.getResult().getItem().clone());
 								if (beforeCraftOutputEvent.isCancelled())
 									return;
 								inv.setResult(beforeCraftOutputEvent.getResultItem());
 							}
 						});
 					} else {
-						final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(eRecipe, wbRecipe, wbRecipe.getResult().clone());
+						final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(eRecipe, wbRecipe, wbRecipe.getResult().getItem().clone());
 						if (beforeCraftOutputEvent.isCancelled())
 							continue;
 						inv.setResult(beforeCraftOutputEvent.getResultItem());
@@ -255,7 +269,7 @@ public class RecipeInjector implements Listener {
 					//TODO test if result can be changed here
 					Debug.Send("Found enhanced recipe " + fRecipe.getResult().toString() + " for furnace");
 					Debug.Send("Matching ingridens are " + source + " .");
-					return Optional.of(fRecipe.getResult());
+					return Optional.of(fRecipe.getResult().getItem());
 				} else {
 					Debug.Send("found this recipe " + fRecipe.getResult().toString() + " match but, player has not this permission " + fRecipe.getPermissions());
 					break;

@@ -19,6 +19,21 @@ global-prefix: "&7[&bCraft&dEnhance&7] &r"
 
 #If it shall save the recipe when close menu
 save_on_close: false
+
+# Item providers is a different type of item comparison, it uses NBT paths to check if two items are equals
+# to allow compatibility with custom item plugins.
+# Instead of item matchers, the item provider override any comparison if it's applicable, otherwise will
+# use the current recipe matcher.
+item-provider:
+  # Provider key with the comparable path(s)
+  oraxen: 'PublicBukkitValues.oraxen:id'
+  itemsadder:
+    - 'itemsadder.namespace'
+    - 'itemsadder.id'
+  mmoitems:
+    - 'MMOITEMS_ITEM_ID'
+    - 'MMOITEMS_ITEM_TYPE'
+
 # These permissions are used globally by all features of the plugin.
 perms:
   recipe-editor: "craftenhance.edit"

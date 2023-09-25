@@ -60,7 +60,7 @@ public class FurnaceRecipe extends EnhancedRecipe {
 
 	@Override
 	public Recipe getServerRecipe() {
-		return Adapter.GetFurnaceRecipe(CraftEnhance.self(), ServerRecipeTranslator.GetFreeKey(getKey()), getResult(), getContent()[0], getDuration(), getExp());
+		return Adapter.GetFurnaceRecipe(CraftEnhance.self(), ServerRecipeTranslator.GetFreeKey(getKey()), getResult().getItem(), getContent()[0].getItem(), getDuration(), getExp());
 	}
 
 	@Override
@@ -79,7 +79,7 @@ public class FurnaceRecipe extends EnhancedRecipe {
 
 	@Override
 	public boolean isAlwaysSimilar(final Recipe r) {
-		if (!ItemMatchers.matchItems(r.getResult(), getResult()))
+		if (!getResult().equals(r.getResult()))
 			return false;
 		if (!(r instanceof org.bukkit.inventory.FurnaceRecipe))
 			return false;

@@ -23,6 +23,7 @@ import com.dutchjelly.craftenhance.crafthandling.customcraftevents.ExecuteComman
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
+import com.dutchjelly.craftenhance.crafthandling.util.ItemProviders;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.files.CategoryDataCache;
 import com.dutchjelly.craftenhance.files.ConfigFormatter;
@@ -228,6 +229,7 @@ public class CraftEnhance extends JavaPlugin {
 		ConfigFormatter.init(this).formatConfigMessages();
 		Messenger.Init(this);
 		ItemMatchers.init(getConfig().getBoolean("enable-backwards-compatible-item-matching"));
+		ItemProviders.init(getConfig().getConfigurationSection("item-provider"));
 		Debug.Send("Loading gui templates");
 		if (menuSettingsCache == null)
 			menuSettingsCache = new MenuSettingsCache(this);

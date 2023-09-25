@@ -58,7 +58,7 @@ public class ServerRecipeTranslator {
     }
 
     public static ShapedRecipe translateShapedEnhancedRecipe(final WBRecipe recipe) {
-        return translateShapedEnhancedRecipe(recipe.getContent(), recipe.getResult(), recipe.getKey());
+        return translateShapedEnhancedRecipe(recipe.getContentItems(), recipe.getResult().getItem(), recipe.getKey());
     }
 
 
@@ -75,7 +75,7 @@ public class ServerRecipeTranslator {
     }
 
     public static ShapelessRecipe translateShapelessEnhancedRecipe(final WBRecipe recipe) {
-        return translateShapelessEnhancedRecipe(recipe.getContent(), recipe.getResult(), recipe.getKey());
+        return translateShapelessEnhancedRecipe(recipe.getContentItems(), recipe.getResult().getItem(), recipe.getKey());
     }
 
 

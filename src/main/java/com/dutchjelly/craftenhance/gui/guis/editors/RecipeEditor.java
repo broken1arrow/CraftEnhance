@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.gui.guis.editors;
 
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedItem;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
@@ -218,11 +219,11 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		for (int i = 0; i < recipe.getContent().length; i++) {
 			if (fillSpace.get(i) >= menu.getSize())
 				throw new ConfigError("fill space spot " + fillSpace.get(i) + " is outside of inventory");
-			menu.setItem(fillSpace.get(i), recipe.getContent()[i]);
+			menu.setItem(fillSpace.get(i), recipe.getContent()[i].getItem());
 		}
 		if (fillSpace.get(recipe.getContent().length) >= menu.getSize())
 			throw new ConfigError("fill space spot " + fillSpace.get(recipe.getContent().length) + " is outside of inventory");
-		menu.setItem(fillSpace.get(recipe.getContent().length), recipe.getResult());
+		menu.setItem(fillSpace.get(recipe.getContent().length), recipe.getResult().getItem());
 		matchType = recipe.getMatchType();
 		hidden = recipe.isHidden();
 		//onRecipeDisplayUpdate();
@@ -239,8 +240,8 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			Messenger.Message("The result slot is empty.", player);
 			return;
 		}
-		recipe.setContent(newContents);
-		recipe.setResult(newResult);
+		recipe.setContent(EnhancedItem.of(newContents));
+		recipe.setResult(new EnhancedItem(newResult));
 
 		recipe.setMatchType(matchType);
 		recipe.setHidden(hidden);

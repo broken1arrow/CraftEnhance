@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.crafthandling.util;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedItem;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import com.dutchjelly.craftenhance.util.StripColors;
 import lombok.Getter;
@@ -20,8 +21,6 @@ public class ItemMatchers {
         MATCH_NAME(constructIMatcher(ItemMatchers::matchName), "match name"),
         MATCH_MODELDATA_AND_TYPE(constructIMatcher(ItemMatchers::matchType, ItemMatchers::matchModelData), "match modeldata and type"),
         MATCH_NAME_LORE(constructIMatcher(ItemMatchers::matchNameLore), "match name and lore");
-        //        MATCH_ITEMSADDER()
-//        MATCH_NAME_AND_TYPE(constructIMatcher(ItemMatchers::matchName, ItemMatchers::matchType), "match name and type");
 
         @Getter
         private final IMatcher<ItemStack> matcher;
@@ -40,6 +39,10 @@ public class ItemMatchers {
 
     public static void init(final boolean backwardsCompatibleMatching) {
         ItemMatchers.backwardsCompatibleMatching = backwardsCompatibleMatching;
+    }
+
+    public static boolean matchItems(final ItemStack a, final EnhancedItem b) {
+        return b.equals(a);
     }
 
     public static boolean matchItems(final ItemStack a, final ItemStack b) {
@@ -69,13 +72,20 @@ public class ItemMatchers {
         return a.isSimilar(b) && (!canUseModeldata || matchModelData(a, b));
     }
 
+    public static boolean matchType(final ItemStack a, final EnhancedItem b) {
+        if (b.getProvider() != null) {
+            return b.match(a);
+        }
+        return matchType(a, b.getItem());
+    }
+
     public static boolean matchType(final ItemStack a, final ItemStack b) {
         if (a == null || b == null) return a == null && b == null;
         return a.getType().equals(b.getType());
     }
 
     @SafeVarargs
-    public static <T> IMatcher<T> constructIMatcher(final IMatcher<T>... matchers) {
+    public static <T extends ItemStack> IMatcher<T> constructIMatcher(final IMatcher<T>... matchers) {
         return (a, b) -> Arrays.stream(matchers).allMatch(x -> x.match(a, b));
     }
 
@@ -89,6 +99,13 @@ public class ItemMatchers {
                 return itemMetaA.getCustomModelData() == itemMetaB.getCustomModelData();
         }
         return false;
+    }
+
+    public static boolean matchTypeData(final EnhancedItem a, final EnhancedItem b) {
+        if (b.getProvider() != null) {
+            return b.match(a.getItem());
+        }
+        return a.getProvider() == null && matchTypeData(a.getItem(), b.getItem());
     }
 
     public static boolean matchTypeData(final ItemStack a, final ItemStack b) {
@@ -131,8 +148,5 @@ public class ItemMatchers {
         //neither has item meta, and type has to match
         return a.hasItemMeta() == b.hasItemMeta() && a.getType() == b.getType();
     }
-//    public static boolean matchItemsadderItems(ItemStack a, ItemStack b) {
-//        CustomStack stack = CustomStack.byItemStack(myItemStack);
-//        CustomStack
-//    }
+
 }

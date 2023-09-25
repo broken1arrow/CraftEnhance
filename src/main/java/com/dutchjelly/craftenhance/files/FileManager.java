@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.files;
 
 import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedItem;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
@@ -374,8 +375,8 @@ public class FileManager {
 	private boolean isItemInUse(final ItemStack item) {
 		for (final EnhancedRecipe r : recipes) {
 			if (r.getResult().equals(item)) return true;
-			for (final ItemStack inRecipe : r.getContent()) {
-				if (inRecipe != null && inRecipe.equals(item)) return true;
+			for (final EnhancedItem inRecipe : r.getContent()) {
+				if (inRecipe.getItem() != null && inRecipe.equals(item)) return true;
 			}
 
 		}
