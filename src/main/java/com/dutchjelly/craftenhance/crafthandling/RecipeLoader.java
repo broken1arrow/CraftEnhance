@@ -252,8 +252,14 @@ public class RecipeLoader {
 				self().getLogger().log(Level.WARNING, "Recipe will not be cached becuse the result is null or invalid material type.");
 				return;
 			}
-			if (!containsRecipe)
-				server.addRecipe(serverRecipe);
+			if (!containsRecipe) {
+				ServerRecipeTranslator.removeIfExist(recipe.getKey());
+				try {
+					server.addRecipe(serverRecipe);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 			Debug.Send("Added server recipe for " + serverRecipe.getResult());
 
 			loaded.put(recipe.getKey(), serverRecipe);

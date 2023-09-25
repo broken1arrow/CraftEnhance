@@ -34,10 +34,16 @@ public class ServerRecipeTranslator {
         return recipeKey;
     }
 
+    public static void removeIfExist(final String key) {
+        Adapter.removeIfExist(CraftEnhance.getPlugin(CraftEnhance.class), KeyPrefix + key);
+    }
+
     public static ShapedRecipe translateShapedEnhancedRecipe(final ItemStack[] content, final ItemStack result, final String key) {
         if (!Arrays.asList(content).stream().anyMatch(x -> x != null))
             return null;
-        final String recipeKey = GetFreeKey(key);
+        // Fix unknown recipe spam on console
+        //final String recipeKey = GetFreeKey(key);
+        final String recipeKey = key;
         final ShapedRecipe shaped;
         try {
             shaped = Adapter.GetShapedRecipe(
