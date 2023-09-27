@@ -35,6 +35,22 @@ public class ItemMatchers {
         }
     }
 
+    public static IMatcher<ItemStack> MATCH_SIMILAR = new IMatcher<>() {
+        @Override
+        public boolean match(ItemStack a, ItemStack b) {
+            return matchType(a, b);
+        }
+
+        @Override
+        public boolean match(EnhancedItem a, ItemStack b) {
+            return matchType(a.getItem(), b) || (a.getProvider() != null && a.match(b));
+        }
+
+        @Override
+        public boolean match(ItemStack a, EnhancedItem b) {
+            return matchType(a, b.getItem()) || (b.getProvider() != null && b.match(a));
+        }
+    };
     private static boolean backwardsCompatibleMatching = false;
 
     public static void init(final boolean backwardsCompatibleMatching) {
@@ -72,13 +88,6 @@ public class ItemMatchers {
         return a.isSimilar(b) && (!canUseModeldata || matchModelData(a, b));
     }
 
-    public static boolean matchType(final ItemStack a, final EnhancedItem b) {
-        if (b.getProvider() != null) {
-            return b.match(a);
-        }
-        return matchType(a, b.getItem());
-    }
-
     public static boolean matchType(final ItemStack a, final ItemStack b) {
         if (a == null || b == null) return a == null && b == null;
         return a.getType().equals(b.getType());
@@ -99,13 +108,6 @@ public class ItemMatchers {
                 return itemMetaA.getCustomModelData() == itemMetaB.getCustomModelData();
         }
         return false;
-    }
-
-    public static boolean matchTypeData(final EnhancedItem a, final EnhancedItem b) {
-        if (b.getProvider() != null) {
-            return b.match(a.getItem());
-        }
-        return a.getProvider() == null && matchTypeData(a.getItem(), b.getItem());
     }
 
     public static boolean matchTypeData(final ItemStack a, final ItemStack b) {

@@ -75,16 +75,16 @@ public class WBRecipe extends EnhancedRecipe {
     public boolean isSimilar(final Recipe r) {
         if(r instanceof ShapelessRecipe){
             final ItemStack[] ingredients = ServerRecipeTranslator.translateShapelessRecipe((ShapelessRecipe) r);
-            final boolean result = WBRecipeComparer.ingredientsMatch(getContent(), ingredients, ItemMatchers::matchType);
+            final boolean result = WBRecipeComparer.ingredientsMatch(getContent(), ingredients, ItemMatchers.MATCH_SIMILAR);
             return result;
         }
 
         if(r instanceof ShapedRecipe){
             final ItemStack[] shapedContent = ServerRecipeTranslator.translateShapedRecipe((ShapedRecipe)r);
             if(shapeless){
-                return WBRecipeComparer.ingredientsMatch(shapedContent, getContent(), ItemMatchers::matchType);
+                return WBRecipeComparer.ingredientsMatch(shapedContent, getContent(), ItemMatchers.MATCH_SIMILAR);
             }
-            return WBRecipeComparer.shapeMatches(getContent(), shapedContent, ItemMatchers::matchType);
+            return WBRecipeComparer.shapeMatches(getContent(), shapedContent, ItemMatchers.MATCH_SIMILAR);
         }
         return false;
     }
@@ -133,9 +133,9 @@ public class WBRecipe extends EnhancedRecipe {
 
         final WBRecipe wbr = (WBRecipe)r;
         if(wbr.isShapeless() || shapeless){
-            return WBRecipeComparer.ingredientsMatch(getContent(), wbr.getContent(), ItemMatchers::matchType);
+            return WBRecipeComparer.ingredientsMatch(getContent(), wbr.getContent(), ItemMatchers.MATCH_SIMILAR);
         }
-        return WBRecipeComparer.shapeMatches(getContent(), wbr.getContent(), ItemMatchers::matchType);
+        return WBRecipeComparer.shapeMatches(getContent(), wbr.getContent(), ItemMatchers.MATCH_SIMILAR);
     }
 
     @Override
