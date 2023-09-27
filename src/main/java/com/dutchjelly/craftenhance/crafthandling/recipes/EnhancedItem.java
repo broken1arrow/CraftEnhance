@@ -1,10 +1,14 @@
 package com.dutchjelly.craftenhance.crafthandling.recipes;
 
 import com.dutchjelly.craftenhance.crafthandling.util.ItemProviders;
+import com.google.common.base.Suppliers;
+import com.saicone.rtag.item.ItemObject;
+import com.saicone.rtag.util.ChatComponent;
 import lombok.Getter;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public class EnhancedItem {
 
@@ -13,6 +17,7 @@ public class EnhancedItem {
     @Getter
     private final String provider;
     private final List<Object> comparison;
+    private final Supplier<String> asString = Suppliers.memoize(() -> getItem() == null ? "§cnull§f" : ChatComponent.toPrettyString(ItemObject.save(ItemObject.asNMSCopy(getItem())), null));
 
     public static EnhancedItem[] of(ItemStack[] array) {
         final EnhancedItem[] items = new EnhancedItem[array.length];
@@ -48,14 +53,14 @@ public class EnhancedItem {
             return false;
         }
         if (provider != null) {
-            return ItemProviders.match(item, this.item, provider);
+            return ItemProviders.match(item, provider, comparison);
         }
         return this.item.equals(item);
     }
 
     @Override
     public String toString() {
-        return item.toString();
+        return asString.get();
     }
 
     @Override
