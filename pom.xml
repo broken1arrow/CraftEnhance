@@ -5,15 +5,16 @@
     <modelVersion>4.0.0</modelVersion>
 	<groupId>CraftEnhance</groupId>
 	<artifactId>CraftEnhance</artifactId>
-	<version>2.5.9.1.4</version>
+	<version>2.5.9.2</version>
 	<name>CraftEnhance</name>
 	<description>This is a minecraft plugin to enhance crafting.</description>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<maven.compiler.source>1.8</maven.compiler.source>
-        <utility-library>0.62</utility-library>
-	</properties>
+        <utility-library>0.67</utility-library>
+        <dependencys_path>com.dutchjelly.craftenhance.libs</dependencys_path>
+    </properties>
 	<build>
 		<plugins>
             <plugin>
@@ -41,31 +42,31 @@
                             <relocations>
                                 <relocation>
                                     <pattern>org.broken.arrow.nbt.library</pattern>
-                                    <shadedPattern>com.dutchjelly.craftenhance.libs.nbt</shadedPattern>
+                                    <shadedPattern>${dependencys_path}.nbt</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.broken.arrow.prompt.library</pattern>
-                                    <shadedPattern>com.dutchjelly.craftenhance.libs.prompt</shadedPattern>
+                                    <shadedPattern>${dependencys_path}.prompt</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.broken.arrow.menu.library</pattern>
-                                    <shadedPattern>com.dutchjelly.craftenhance.libs.menu</shadedPattern>
+                                    <shadedPattern>${dependencys_path}.menu</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.broken.arrow.title.update.library</pattern>
-                                    <shadedPattern>com.dutchjelly.craftenhance.libs.menu</shadedPattern>
+                                    <shadedPattern>${dependencys_path}.menu</shadedPattern>
                                 </relocation>
-                                <relocation>
-                                    <pattern>org.broken.arrow.library.dependencies</pattern>
-                                    <shadedPattern>com.dutchjelly.craftenhance.libs.dependencies</shadedPattern>
+                               <relocation>
+                                    <pattern>org.broken.arrow.library.dependencies.nbt</pattern>
+                                    <shadedPattern>${dependencys_path}.nbt</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.broken.arrow.itemcreator.library</pattern>
-                                    <shadedPattern>com.dutchjelly.craftenhance.libs.dependencies</shadedPattern>
+                                    <shadedPattern>${dependencys_path}.itemcreator</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.broken.arrow.color.library</pattern>
-                                    <shadedPattern>com.dutchjelly.craftenhance.libs.dependencies</shadedPattern>
+                                    <shadedPattern>${dependencys_path}.color</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
