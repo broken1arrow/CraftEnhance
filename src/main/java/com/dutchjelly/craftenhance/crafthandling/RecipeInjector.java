@@ -14,6 +14,7 @@ import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.crafthandling.util.WBRecipeComparer;
 import com.dutchjelly.craftenhance.messaging.Debug;
+import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import lombok.Getter;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
@@ -122,7 +123,7 @@ public class RecipeInjector implements Listener {
 
 		final CraftingInventory inv = craftEvent.getInventory();
 		final Recipe serverRecipe = craftEvent.getRecipe();
-		Debug.Send("The server wants to inject " + serverRecipe.getResult().toString() + " ceh will check or modify this.");
+		Debug.Send(Type.Crafting,"The server wants to inject " + serverRecipe.getResult().toString() + " ceh will check or modify this.");
 
 		final List<RecipeGroup> possibleRecipeGroups = loader.findGroupsByResult(serverRecipe.getResult(), RecipeType.WORKBENCH);
 		final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
@@ -134,7 +135,7 @@ public class RecipeInjector implements Listener {
 			if (checkForDisabledRecipe(disabledServerRecipes, serverRecipe, serverRecipe.getResult())) {
 				inv.setResult(null);
 			}
-			Debug.Send("no matching groups");
+			Debug.Send(Type.Crafting,"no matching groups");
 			return;
 		}
 		for (final RecipeGroup group : possibleRecipeGroups) {
@@ -146,55 +147,73 @@ public class RecipeInjector implements Listener {
 				final WBRecipe wbRecipe = (WBRecipe) eRecipe;
 
 				notAllowedToCraft = isCrafingAllowedInWorld(craftEvent, eRecipe);
-				if (notAllowedToCraft)
+				if (notAllowedToCraft) {
+					Debug.Send(Type.Crafting,"You are not allowed to craft.");
 					continue;
+				}
 
 				if (checkForDisabledRecipe(disabledServerRecipes, wbRecipe, serverRecipe.getResult())) {
 					inv.setResult(null);
+					Debug.Send(Type.Crafting,"This recipe is disabled.");
 					continue;
 				}
 
 
-				Debug.Send("Checking if enhanced recipe for " + wbRecipe.getResult().toString() + " matches.");
+				Debug.Send(Type.Crafting,"Checking if enhanced recipe for " + wbRecipe.getResult().toString() + " matches.");
 				final Player player = craftEvent.getViewers().size() > 0 ? (Player) craftEvent.getViewers().get(0) : null;
 
 				if (wbRecipe.matches(inv.getMatrix())
 						&& craftEvent.getViewers().stream().allMatch(x -> entityCanCraft(x, wbRecipe))
 						&& !CraftEnhanceAPI.fireEvent(wbRecipe, player, inv, group)) {
-					Debug.Send("Recipe matches, injecting " + wbRecipe.getResult().toString());
+					Debug.Send(Type.Crafting,"Recipe matches, injecting " + wbRecipe.getResult().toString());
 					if (makeItemsadderCompatible && containsModeldata(inv)) {
+						Debug.Send(Type.Crafting,"This recipe contains Modeldata and will be crafted if the recipe is not cancelled.");
 						Bukkit.getScheduler().runTask(CraftEnhance.self(), () -> {
 							if (wbRecipe.matches(inv.getMatrix())) {
 								final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(eRecipe, wbRecipe, wbRecipe.getResult().clone());
-								if (beforeCraftOutputEvent.isCancelled())
+								if (beforeCraftOutputEvent.isCancelled()) {
+									Debug.Send(Type.Crafting,"This recipe is now cancelled and will not produce output item.");
 									return;
+								}
+								Debug.Send(Type.Crafting,"The recipe is now crafted and output item is " + beforeCraftOutputEvent.getResultItem());
+								Debug.Send(Type.Crafting,"The recipe matrix: " + Arrays.toString(inv.getMatrix()));
 								inv.setResult(beforeCraftOutputEvent.getResultItem());
 							}
 						});
 					} else {
+						Debug.Send(Type.Crafting,"This recipe deosen't contains Modeldata and will be crafted if the recipe is not cancelled.");
+
 						final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(eRecipe, wbRecipe, wbRecipe.getResult().clone());
-						if (beforeCraftOutputEvent.isCancelled())
+						if (beforeCraftOutputEvent.isCancelled()) {
+							Debug.Send(Type.Crafting,"This recipe is now cancelled and will not produce output item.");
 							continue;
+						}
+						Debug.Send(Type.Crafting,"The recipe is now crafted and output item is " + beforeCraftOutputEvent.getResultItem());
+						Debug.Send(Type.Crafting,"The recipe matrix: " + Arrays.toString(inv.getMatrix()));
 						inv.setResult(beforeCraftOutputEvent.getResultItem());
 					}
 					return;
 				}
-				Debug.Send("Recipe doesn't match.");
+				Debug.Send(Type.Crafting,"Recipe doesn't match.");
 			}
 			if (notAllowedToCraft)
 				continue;
-
+			Debug.Send(Type.Crafting,"Check for similar server recipes if no enhanced ones match.");
 			//Check for similar server recipes if no enhanced ones match.
 			for (final Recipe sRecipe : group.getServerRecipes()) {
 				if (sRecipe instanceof ShapedRecipe) {
 					final ItemStack[] content = ServerRecipeTranslator.translateShapedRecipe((ShapedRecipe) sRecipe);
 					if (WBRecipeComparer.shapeMatches(content, inv.getMatrix(), getTypeMatcher())) {
+						Debug.Send(Type.Crafting,"Match a ShapedRecipe.");
+						Debug.Send(Type.Crafting,"The recipe matrix for this type: " + Arrays.toString(inv.getMatrix()));
 						inv.setResult(sRecipe.getResult());
 						return;
 					}
 				} else if (sRecipe instanceof ShapelessRecipe) {
 					final ItemStack[] ingredients = ServerRecipeTranslator.translateShapelessRecipe((ShapelessRecipe) sRecipe);
 					if (WBRecipeComparer.ingredientsMatch(ingredients, inv.getMatrix(), getTypeMatcher())) {
+						Debug.Send(Type.Crafting,"Match a ShapelessRecipe.");
+						Debug.Send(Type.Crafting,"The recipe matrix for this type: " + Arrays.toString(inv.getMatrix()));
 						inv.setResult(sRecipe.getResult());
 						return;
 					}
