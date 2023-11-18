@@ -7,7 +7,7 @@ import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import lombok.SneakyThrows;
-import org.broken.arrow.nbt.library.utility.ServerVersion;
+import org.broken.arrow.menu.library.utility.ServerVersion;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -83,7 +83,7 @@ public class FileManager {
 		boolean unsavedChanges = false;
 
 		for (final String key : jarResourceConfig.getKeys(false)) {
-			if (ServerVersion.newerThan(ServerVersion.v1_8))
+			if (ServerVersion.newerThan(ServerVersion.V1_8))
 				if (!fileConfig.contains(key, false)) {
 					fileConfig.set(key, jarResourceConfig.get(key));
 					unsavedChanges = true;
