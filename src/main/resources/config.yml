@@ -3,6 +3,7 @@
 # ---------------------------------------- #
 
 enable-debug: false
+enable_crafting-debug: false
 enable-recipes: true
 
 # This update checker checks for new versions on the github page.
