@@ -11,7 +11,6 @@ import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
-import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import lombok.NonNull;
@@ -45,7 +44,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	private String permission;
 	private final MenuTemplate menuTemplate;
 	private final RecipeT recipe;
-	private final ItemMatchers.MatchType recipeMatchType;
+	private ItemMatchers.MatchType recipeMatchType;
 	private final ButtonType editorType;
 	private final CategoryData categoryData;
 
@@ -269,15 +268,22 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 	private void switchMatchMeta() {
 		final ItemMatchers.MatchType[] matchTypes = ItemMatchers.MatchType.values();
-		int i;
+		final int index = this.recipeMatchType.ordinal();
+		final ItemMatchers.MatchType matchType;
+		if (index + 1 == matchTypes.length) {
+			matchType = matchTypes[0];
+		} else
+			matchType = matchTypes[index + 1];
+	/*	int i;
 		for (i = 0; i < matchTypes.length; i++) {
 			if (matchTypes[i] == this.recipeMatchType) break;
 		}
 		if (i == matchTypes.length) {
 			Debug.Send("couldn't find match type that's currently selected in the editor");
 			return;
-		}
-		final ItemMatchers.MatchType matchType = matchTypes[(i + 1) % matchTypes.length];
+		}*/
+		this.recipeMatchType = matchType;
+		//final ItemMatchers.MatchType matchType = matchTypes[(i + 1) % matchTypes.length];
 		this.recipe.setMatchType(matchType);
 	}
 
