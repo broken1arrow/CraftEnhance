@@ -208,8 +208,10 @@ public class RecipeLoader {
 		Debug.Send("Unloaded a recipe");
 		printGroupsDebugInfo();
 	}
-
 	public void loadRecipe(@NonNull final EnhancedRecipe recipe) {
+		loadRecipe(recipe,false);
+	}
+	public void loadRecipe(@NonNull final EnhancedRecipe recipe, final boolean isReloading) {
 		if (recipe.validate() != null) {
 			Messenger.Error("There's an issue with recipe " + recipe.getKey() + ": " + recipe.validate());
 			return;
@@ -252,7 +254,7 @@ public class RecipeLoader {
 				self().getLogger().log(Level.WARNING, "Recipe will not be cached becuse the result is null or invalid material type.");
 				return;
 			}
-			if (!containsRecipe)
+		if (!containsRecipe && !isReloading)
 				server.addRecipe(serverRecipe);
 			Debug.Send("Added server recipe for " + serverRecipe.getResult());
 
