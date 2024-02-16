@@ -274,16 +274,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			matchType = matchTypes[0];
 		} else
 			matchType = matchTypes[index + 1];
-	/*	int i;
-		for (i = 0; i < matchTypes.length; i++) {
-			if (matchTypes[i] == this.recipeMatchType) break;
-		}
-		if (i == matchTypes.length) {
-			Debug.Send("couldn't find match type that's currently selected in the editor");
-			return;
-		}*/
 		this.recipeMatchType = matchType;
-		//final ItemMatchers.MatchType matchType = matchTypes[(i + 1) % matchTypes.length];
 		this.recipe.setMatchType(matchType);
 	}
 

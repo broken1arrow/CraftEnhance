@@ -79,6 +79,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		if (recipe instanceof WBRecipe)
 			shapeless = ((WBRecipe) this.recipe).isShapeless();
 		matchType = recipe.getMatchType();
+		hidden = recipe.isHidden();
 		menuTemplate = menuSettingsCache.getTemplates().get(editorType.getType());
 		setMenuSize(27);
 		setSlotsYouCanAddItems(true);
