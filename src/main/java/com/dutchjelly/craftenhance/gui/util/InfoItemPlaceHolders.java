@@ -14,7 +14,8 @@ public enum InfoItemPlaceHolders {
     Page("[page]"),
     Category("[category]"),
     DisplayName("[display_name]"),
-    Worlds("[worlds]");
+    Worlds("[worlds]"),
+    Partial_match("[partial_match]");
     private final String placeHolder;
 
     public String getPlaceHolder(){

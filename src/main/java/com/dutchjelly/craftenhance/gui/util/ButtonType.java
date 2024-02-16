@@ -26,8 +26,8 @@ public enum ButtonType {
     RemoveCategory(""),
     FillItems(""),
     AllowedWorldsCraft(""),
-    RecipeSettings("")
-    ;
+    RecipeSettings(""),
+	SetPartialMatch("");
 
     private final String type;
 

@@ -3,6 +3,7 @@ package com.dutchjelly.craftenhance.crafthandling.recipes;
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
+import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.files.FileManager;
 import com.dutchjelly.craftenhance.gui.interfaces.GuiPlacable;
@@ -15,10 +16,11 @@ import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,6 +58,13 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 		if (args.containsKey("hidden"))
 			hidden = (Boolean) args.get("hidden");
 
+		if (args.containsKey("check_partial_match")) {
+			Object partialMatch = args.get("check_partial_match");
+			if (partialMatch instanceof Boolean)
+				this.checkPartialMatch = (boolean) args.get("check_partial_match");
+			else
+				this.checkPartialMatch = Boolean.getBoolean(args.get("check_partial_match") + "");
+		}
 
 		recipeKeys = (List<String>) args.get("recipe");
 		final List<String> worldsList = (List<String>) args.getOrDefault("allowed_worlds", null);
@@ -120,15 +129,20 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 	private Map<String, Object> deserialize;
 	@Getter
 	private Map<String, Object> serialize;
+	@Getter
+	@Setter
+	private boolean checkPartialMatch;
 
+	@Nonnull
 	@Override
 	public Map<String, Object> serialize() {
 		final FileManager fm = CraftEnhance.getPlugin(CraftEnhance.class).getFm();
-		return new HashMap<String, Object>() {{
+		return new LinkedHashMap<String, Object>() {{
 			putAll(EnhancedRecipe.super.serialize());
 			put("permission", permissions);
 			put("matchtype", matchType.name());
 			put("hidden", hidden);
+			put("check_partial_match", checkPartialMatch);
 			put("oncraftcommand", onCraftCommand);
 			put("result", fm.getItemKey(result));
 			put("recipe", Arrays.stream(content).map(x -> fm.getItemKey(x)).toArray(String[]::new));
@@ -168,8 +182,8 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 	public String getAllowedWorldsFormatted() {
 		final StringBuilder stringBuilder = new StringBuilder();
 		if (allowedWorlds != null)
-		for (final String worlds : allowedWorlds)
-			stringBuilder.append(WordUtils.capitalizeFully(worlds.toLowerCase())).append(", ");
+			for (final String worlds : allowedWorlds)
+				stringBuilder.append(WordUtils.capitalizeFully(worlds.toLowerCase())).append(", ");
 		stringBuilder.setLength(stringBuilder.length() - 2);
 		return stringBuilder.toString();
 	}
@@ -189,4 +203,6 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 	}
 
 	public abstract boolean matches(ItemStack[] content);
+
+	public abstract boolean matches(ItemStack[] content, IMatcher<ItemStack> matcher);
 }

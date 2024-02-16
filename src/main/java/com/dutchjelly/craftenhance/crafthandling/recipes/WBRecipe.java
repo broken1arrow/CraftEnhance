@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.crafthandling.recipes;
 
+import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.crafthandling.util.WBRecipeComparer;
@@ -11,7 +12,7 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 
 import javax.annotation.Nonnull;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class WBRecipe extends EnhancedRecipe {
@@ -50,7 +51,7 @@ public class WBRecipe extends EnhancedRecipe {
     @Override
     @Nonnull
     public Map<String, Object> serialize() {
-        return new HashMap<String, Object>(){{
+        return new LinkedHashMap<String, Object>(){{
             putAll(WBRecipe.super.serialize());
             put("shapeless", shapeless);
         }};
@@ -138,19 +139,22 @@ public class WBRecipe extends EnhancedRecipe {
         return WBRecipeComparer.shapeMatches(getContent(), wbr.getContent(), ItemMatchers::matchType);
     }
 
+
     @Override
     public boolean matches(final ItemStack[] content) {
+        return matches(content, getMatchType().getMatcher());
+    }
 
-        if(isShapeless() && WBRecipeComparer.ingredientsMatch(content, getContent(),  getMatchType().getMatcher())){
+    @Override
+    public boolean matches(final ItemStack[] content, final IMatcher<ItemStack> matcher) {
+        if(isShapeless() && WBRecipeComparer.ingredientsMatch(content, getContent(),  matcher)){
             return true;
         }
 
-        if(!isShapeless() && WBRecipeComparer.shapeMatches(content, getContent(), getMatchType().getMatcher())){
+        if(!isShapeless() && WBRecipeComparer.shapeMatches(content, getContent(), matcher)){
             return true;
         }
 
         return false;
     }
-
-
 }

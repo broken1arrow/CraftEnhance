@@ -453,7 +453,7 @@ RecipeSettingsCrafting:
     name: "Recipe settings"
     sound: BLOCK_NOTE_BLOCK_BASEDRUM
   buttons:
-    0-8,27-34:
+    0-8,36-43:
       color: GRAY
       material: STAINED_GLASS_PANE
       name: ""
@@ -531,7 +531,17 @@ RecipeSettingsCrafting:
         - "&fSlot &3[slot]"
         - "&fPage &3[page]"
       glow: true
-    35:
+    28:
+      buttonType: SetPartialMatch
+      material: PAPER
+      name: "&aClick to set partial match"
+      lore:
+        - "&fTurn on this setting if you want"
+        - "&fto prevent crafting similar Minecraft"
+        - "&foriginal recipes."
+        - "&fCurrently set to:&3 [partial_match]"
+      glow: true
+    44:
       buttonType: Back
       material: GLOWSTONE_DUST
       name: "&aBack"
