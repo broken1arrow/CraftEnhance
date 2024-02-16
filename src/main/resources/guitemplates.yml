@@ -534,9 +534,9 @@ RecipeSettingsCrafting:
     28:
       buttonType: SetPartialMatch
       material: PAPER
-      name: "&aClick to set partial match"
+      name: "&aClick to set similar match"
       lore:
-        - "&fTurn on this setting if you want"
+        - "&fChange this setting if you want"
         - "&fto prevent crafting similar Minecraft"
         - "&foriginal recipes."
         - "&fCurrently set to:&3 [partial_match]"
