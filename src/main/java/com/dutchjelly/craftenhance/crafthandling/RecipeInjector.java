@@ -139,7 +139,7 @@ public class RecipeInjector implements Listener {
 			Debug.Send(Type.Crafting,"no matching groups");
 			return;
 		}
-		boolean partialMatchFound = false;
+
 		for (final RecipeGroup group : possibleRecipeGroups) {
 			boolean notAllowedToCraft = false;
 
@@ -199,12 +199,9 @@ public class RecipeInjector implements Listener {
 				Debug.Send(Type.Crafting,"Recipe matrix doesn't match.");
 				Debug.Send(Type.Crafting,"The recipe matrix: " + Arrays.toString(wbRecipe.getContent()));
 				Debug.Send(Type.Crafting,"The matrix on craftingtable: " + Arrays.toString(inv.getMatrix()));
-				System.out.println("wbRecipe.isCheckPartialMatch()  " + wbRecipe.isCheckPartialMatch() );
-				System.out.println("wbRecipe.matche " + wbRecipe.matches(inv.getMatrix(), MatchType.MATCH_TYPE.getMatcher()) );
 				if (wbRecipe.isCheckPartialMatch() && wbRecipe.matches(inv.getMatrix(), MatchType.MATCH_TYPE.getMatcher())){
 					Debug.Send(Type.Crafting,"Partial matched recipe fond and will prevent craft this recipe.");
 					inv.setResult(null);
-					partialMatchFound = true;
 					return;
 				}
 			}
