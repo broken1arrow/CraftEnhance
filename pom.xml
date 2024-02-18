@@ -56,12 +56,20 @@
                                     <shadedPattern>${dependencys_path}.menu</shadedPattern>
                                 </relocation>
                                 <relocation>
+                                    <pattern>org.broken.arrow.library.dependencies.nbt</pattern>
+                                    <shadedPattern>${dependencys_path}.nbt</shadedPattern>
+                                </relocation>
+                                <relocation>
                                     <pattern>org.broken.arrow.itemcreator.library</pattern>
                                     <shadedPattern>${dependencys_path}.itemcreator</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.broken.arrow.color.library</pattern>
                                     <shadedPattern>${dependencys_path}.color</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.broken.arrow.logging.library</pattern>
+                                    <shadedPattern>${dependencys_path}.logging</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>com.saicone.rtag</pattern>
@@ -134,13 +142,13 @@
         <dependency>
             <groupId>com.saicone.rtag</groupId>
             <artifactId>rtag</artifactId>
-            <version>1.4.3</version>
+            <version>1.4.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.saicone.rtag</groupId>
             <artifactId>rtag-item</artifactId>
-            <version>1.4.3</version>
+            <version>1.4.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

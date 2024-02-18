@@ -35,7 +35,7 @@ public class ItemMatchers {
         }
     }
 
-    public static IMatcher<ItemStack> MATCH_SIMILAR = new IMatcher<>() {
+    public static IMatcher<ItemStack> MATCH_SIMILAR = new IMatcher<ItemStack>() {
         @Override
         public boolean match(ItemStack a, ItemStack b) {
             return matchType(a, b);
