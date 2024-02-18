@@ -210,7 +210,7 @@ public class RecipeInjector implements Listener {
 					return;
 				}
 				Debug.Send(Type.Crafting,"Recipe matrix doesn't match.");
-				Debug.Send(Type.Crafting,"The recipe matrix: " + Arrays.toString(wbRecipe.getContent()));
+				Debug.Send(Type.Crafting,"The recipe matrix: " + Arrays.toString(wbRecipe.getContentItems()));
 				Debug.Send(Type.Crafting,"The matrix on craftingtable: " + Arrays.toString(inv.getMatrix()));
 				if (wbRecipe.isCheckPartialMatch() && wbRecipe.matches(inv.getMatrix(), MatchType.MATCH_TYPE.getMatcher())){
 					Debug.Send(Type.Crafting,"Partial matched recipe fond and will prevent craft this recipe.");
