@@ -95,7 +95,7 @@ public class CraftEnhance extends JavaPlugin {
 		Debug.init(this);
 
 		if (isReloding)
-			Bukkit.getScheduler().runTaskAsynchronously(this, ()-> loadPluginData(isReloding));
+			Bukkit.getScheduler().runTaskAsynchronously(this, () -> loadPluginData(isReloding));
 		else {
 			this.loadPluginData(false);
 			loadRecipes();
@@ -138,7 +138,7 @@ public class CraftEnhance extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		if (!this.isReloding)
-			 getServer().resetRecipes();
+			getServer().resetRecipes();
 		Debug.Send("Saving container owners...");
 		fm.saveContainerOwners(injector.getContainerOwners());
 		Debug.Send("Saving disabled recipes...");
@@ -246,8 +246,9 @@ public class CraftEnhance extends JavaPlugin {
 
 		Debug.Send("Loading recipes");
 		final RecipeLoader loader = RecipeLoader.getInstance();
-		fm.getRecipes().stream().filter(x -> x.validate() == null).forEach(loader::loadRecipe);
+		fm.getRecipes().stream().filter(x -> x.validate() == null).forEach((recipe) -> loader.loadRecipe(recipe, isReloding));
 		loader.printGroupsDebugInfo();
+
 		loader.disableServerRecipes(
 				fm.readDisabledServerRecipes().stream().map(x ->
 						Adapter.FilterRecipes(loader.getServerRecipes(), x)
@@ -264,6 +265,7 @@ public class CraftEnhance extends JavaPlugin {
 					Adapter.DiscoverRecipes(player, getCategoryDataCache().getServerRecipes());
 		isReloding = false;
 	}
+
 	public void openEnhancedCraftingTable(final Player p) {
 		final CustomCraftingTable table = new CustomCraftingTable(
 				getGuiManager(),

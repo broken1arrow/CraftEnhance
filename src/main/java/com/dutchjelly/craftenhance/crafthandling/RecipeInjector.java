@@ -11,6 +11,7 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
+import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers.MatchType;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.crafthandling.util.WBRecipeComparer;
 import com.dutchjelly.craftenhance.messaging.Debug;
@@ -152,6 +153,7 @@ public class RecipeInjector implements Listener {
 			}
 			return;
 		}
+
 		for (final RecipeGroup group : possibleRecipeGroups) {
 			boolean notAllowedToCraft = false;
 
@@ -207,10 +209,18 @@ public class RecipeInjector implements Listener {
 					}
 					return;
 				}
-				Debug.Send(Type.Crafting,"Recipe doesn't match.");
+				Debug.Send(Type.Crafting,"Recipe matrix doesn't match.");
+				Debug.Send(Type.Crafting,"The recipe matrix: " + Arrays.toString(wbRecipe.getContent()));
+				Debug.Send(Type.Crafting,"The matrix on craftingtable: " + Arrays.toString(inv.getMatrix()));
+				if (wbRecipe.isCheckPartialMatch() && wbRecipe.matches(inv.getMatrix(), MatchType.MATCH_TYPE.getMatcher())){
+					Debug.Send(Type.Crafting,"Partial matched recipe fond and will prevent craft this recipe.");
+					inv.setResult(null);
+					return;
+				}
 			}
 			if (notAllowedToCraft)
 				continue;
+
 			Debug.Send(Type.Crafting,"Check for similar server recipes if no enhanced ones match.");
 			//Check for similar server recipes if no enhanced ones match.
 			for (final Recipe sRecipe : group.getServerRecipes()) {

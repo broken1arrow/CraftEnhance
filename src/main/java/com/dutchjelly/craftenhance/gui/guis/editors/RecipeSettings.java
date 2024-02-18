@@ -11,7 +11,6 @@ import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
-import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import lombok.NonNull;
@@ -45,7 +44,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	private String permission;
 	private final MenuTemplate menuTemplate;
 	private final RecipeT recipe;
-	private final ItemMatchers.MatchType recipeMatchType;
+	private ItemMatchers.MatchType recipeMatchType;
 	private final ButtonType editorType;
 	private final CategoryData categoryData;
 
@@ -233,7 +232,11 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 				return true;
 			}).setMessages("Change category name and you can also change item (if not set it will use the old one). Like this 'category new_category_name crafting_table' without '. If you want create new category recomend use this format 'category crafting_table' without '", "Type q,exit,cancel to turn it off.").start(getViewer());
 		}
-
+		if (value.getButtonType() == ButtonType.SetPartialMatch) {
+			final boolean partialMatch = !this.recipe.isCheckPartialMatch();
+			this.recipe.setCheckPartialMatch(partialMatch);
+			return true;
+		}
 		if (value.getButtonType() == ButtonType.Back) {
 			new RecipeEditor<>(this.recipe, this.categoryData, this.permission, this.editorType, false).menuOpen(player);
 		}
@@ -269,15 +272,13 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 	private void switchMatchMeta() {
 		final ItemMatchers.MatchType[] matchTypes = ItemMatchers.MatchType.values();
-		int i;
-		for (i = 0; i < matchTypes.length; i++) {
-			if (matchTypes[i] == this.recipeMatchType) break;
-		}
-		if (i == matchTypes.length) {
-			Debug.Send("couldn't find match type that's currently selected in the editor");
-			return;
-		}
-		final ItemMatchers.MatchType matchType = matchTypes[(i + 1) % matchTypes.length];
+		final int index = this.recipeMatchType.ordinal();
+		final ItemMatchers.MatchType matchType;
+		if (index + 1 == matchTypes.length) {
+			matchType = matchTypes[0];
+		} else
+			matchType = matchTypes[index + 1];
+		this.recipeMatchType = matchType;
 		this.recipe.setMatchType(matchType);
 	}
 
@@ -391,6 +392,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			put(InfoItemPlaceHolders.Permission.getPlaceHolder(), permission == null || permission.trim().equals("") ? "none" : permission);
 			put(InfoItemPlaceHolders.Slot.getPlaceHolder(), String.valueOf(recipe.getSlot()));
 			put(InfoItemPlaceHolders.Page.getPlaceHolder(), String.valueOf(recipe.getPage()));
+			put(InfoItemPlaceHolders.Partial_match.getPlaceHolder(), recipe.isCheckPartialMatch() ? "checks for partial match" : "doesn't check for partial match");
 			put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), recipe.getAllowedWorlds() != null && !recipe.getAllowedWorlds().isEmpty() ?
 					recipe.getAllowedWorldsFormatted() : "non set");
 			if (categoryData != null)

@@ -20,7 +20,7 @@ public class ItemMatchers {
         MATCH_META(constructIMatcher(ItemMatchers::matchMeta), "match meta"),
         MATCH_NAME(constructIMatcher(ItemMatchers::matchName), "match name"),
         MATCH_MODELDATA_AND_TYPE(constructIMatcher(ItemMatchers::matchType, ItemMatchers::matchModelData), "match modeldata and type"),
-        MATCH_NAME_LORE(constructIMatcher(ItemMatchers::matchNameLore), "match name and lore");
+        MATCH_NAME_LORE(constructIMatcher(ItemMatchers::matchNameLore), "match name, lore and type");
 
         @Getter
         private final IMatcher<ItemStack> matcher;
@@ -135,6 +135,9 @@ public class ItemMatchers {
     }
 
     public static boolean matchNameLore(final ItemStack a, final ItemStack b) {
+        if (a.getType() != b.getType())
+            return false;
+
         if (a.hasItemMeta() && b.hasItemMeta()) {
             final ItemMeta itemMetaA = a.getItemMeta();
             final ItemMeta itemMetaB = b.getItemMeta();

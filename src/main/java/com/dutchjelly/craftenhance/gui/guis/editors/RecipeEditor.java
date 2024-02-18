@@ -43,6 +43,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
 	private final IngredientsCache ingredientsCache;
+	private final boolean checkPartialMatch;
 	private String permission;
 	@Getter
 	private final RecipeT recipe;
@@ -80,6 +81,8 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		if (recipe instanceof WBRecipe)
 			shapeless = ((WBRecipe) this.recipe).isShapeless();
 		matchType = recipe.getMatchType();
+		this.hidden = recipe.isHidden();
+		this.checkPartialMatch = recipe.isCheckPartialMatch();
 		menuTemplate = menuSettingsCache.getTemplates().get(editorType.getType());
 		setMenuSize(27);
 		setSlotsYouCanAddItems(true);
@@ -245,6 +248,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 		recipe.setMatchType(matchType);
 		recipe.setHidden(hidden);
+		recipe.setCheckPartialMatch(checkPartialMatch);
 		beforeSave();
 		recipe.setPermissions(permission);
 		recipe.save();

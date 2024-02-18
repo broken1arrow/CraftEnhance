@@ -2,6 +2,7 @@ package com.dutchjelly.craftenhance.crafthandling.recipes;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import lombok.Getter;
@@ -9,7 +10,8 @@ import lombok.Setter;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
-import java.util.HashMap;
+import javax.annotation.Nonnull;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class FurnaceRecipe extends EnhancedRecipe {
@@ -40,9 +42,10 @@ public class FurnaceRecipe extends EnhancedRecipe {
 		return recipe;
 	}
 
+	@Nonnull
 	@Override
 	public Map<String, Object> serialize() {
-		return new HashMap<String, Object>() {{
+		return new LinkedHashMap<String, Object>() {{
 			putAll(FurnaceRecipe.super.serialize());
 			put("exp", exp);
 			put("duration", duration);
@@ -51,6 +54,11 @@ public class FurnaceRecipe extends EnhancedRecipe {
 
 	@Override
 	public boolean matches(final ItemStack[] content) {
+		return content.length == 1 && getMatchType().getMatcher().match(content[0], getContent()[0]);
+	}
+
+	@Override
+	public boolean matches(final ItemStack[] content, final IMatcher<ItemStack> matcher) {
 		return content.length == 1 && getMatchType().getMatcher().match(content[0], getContent()[0]);
 	}
 

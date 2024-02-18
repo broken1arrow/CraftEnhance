@@ -7,7 +7,11 @@ import com.dutchjelly.craftenhance.gui.util.SkullCreator;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
-import org.bukkit.*;
+import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
+import org.bukkit.ChatColor;
+import org.bukkit.DyeColor;
+import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -238,11 +242,15 @@ public class Adapter {
 
 	public static void AddIngredient(final ShapelessRecipe recipe, final ItemStack ingredient) {
 		if (!self().getConfig().getBoolean("learn-recipes")) {
-			final MaterialData md = ingredient.getData();
-			if (md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)) {
+			if(self().getVersionChecker().olderThan(ServerVersion.v1_16)) {
+				final MaterialData md = ingredient.getData();
+				if (md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)) {
+					recipe.addIngredient(ingredient.getType());
+				} else {
+					recipe.addIngredient(md);
+				}
+			}else {
 				recipe.addIngredient(ingredient.getType());
-			} else {
-				recipe.addIngredient(md);
 			}
 			return;
 		}
