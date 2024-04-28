@@ -70,26 +70,6 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		}
 	}
 
-	@Override
-	public MenuButton getFillButtonAt(final @NonNull Object object) {
-		return new MenuButton() {
-			@Override
-			public void onClickInsideMenu(final @NonNull Player player, final @NonNull Inventory inventory, final @NonNull ClickType clickType, final @NonNull ItemStack itemStack, final Object o) {
-
-			}
-
-			@Override
-			public ItemStack getItem(final @NonNull Object object) {
-				if (object instanceof ItemStack) return (ItemStack) object;
-				return null;
-			}
-
-			@Override
-			public ItemStack getItem() {
-				return null;
-			}
-		};
-	}
 
 	@Override
 	public MenuButton getButtonAt(final int slot) {
@@ -106,7 +86,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(final @NonNull Player player, final @NonNull Inventory menu, final @NonNull ClickType click, final @NonNull ItemStack clickedItem, final Object object) {
+			public void onClickInsideMenu(final @NonNull Player player, final @NonNull Inventory menu, final @NonNull ClickType click, final @NonNull ItemStack clickedItem) {
 				if (run(value, menu, player, click)) {
 					updateButton(this);
 					//updateButtons();

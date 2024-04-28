@@ -12,7 +12,9 @@ import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import com.dutchjelly.craftenhance.util.PermissionTypes;
 import org.broken.arrow.menu.library.button.MenuButton;
-import org.broken.arrow.menu.library.holder.MenuHolder;
+import org.broken.arrow.menu.library.button.logic.ButtonUpdateAction;
+import org.broken.arrow.menu.library.button.logic.FillMenuButton;
+import org.broken.arrow.menu.library.holder.MenuHolderPage;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -28,7 +30,7 @@ import java.util.Map.Entry;
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 import static com.dutchjelly.craftenhance.gui.util.GuiUtil.setTextItem;
 
-public class RecipesViewerCategorys extends MenuHolder {
+public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
 	private final MenuTemplate menuTemplate;
 
@@ -37,60 +39,17 @@ public class RecipesViewerCategorys extends MenuHolder {
 		this.menuTemplate = menuSettingsCache.getTemplates().get("RecipesCategorys");
 		setFillSpace(this.menuTemplate.getFillSlots());
 		setTitle(this.menuTemplate.getMenuTitel());
-		setMenuSize(GuiUtil.invSize("RecipesCategorys",this.menuTemplate.getAmountOfButtons()));
+		//setIgnoreItemCheck(true);
+		setMenuSize(GuiUtil.invSize("RecipesCategorys", this.menuTemplate.getAmountOfButtons()));
 		setMenuOpenSound(this.menuTemplate.getSound());
 		this.setUseColorConversion(true);
 	}
 
 	@Override
-	public MenuButton getFillButtonAt(@Nonnull final Object object) {
-		return new MenuButton() {
-			@Override
-			public void onClickInsideMenu(@Nonnull final Player player, @Nonnull final Inventory inventory, @Nonnull final ClickType clickType, @Nonnull final ItemStack itemStack, final Object o) {
-				if (o instanceof CategoryData) {
-					if (clickType == ClickType.LEFT)
-						new RecipesViewer((CategoryData) o, "", player).menuOpen(player);
-					else if (player.hasPermission(PermissionTypes.Categorys_editor.getPerm())){
-						new RecipesViewerCategorysSettings(((CategoryData) o).getRecipeCategory()).menuOpen(player);
-					}
-				}
-			}
-
-			@Override
-			public ItemStack getItem(@Nonnull final Object object) {
-				if (object instanceof CategoryData) {
-					String displayName = " ";
-					List<String> lore = new ArrayList<>();
-					final Map<String, String> placeHolders = new HashMap<>();
-					if (menuTemplate != null) {
-						final com.dutchjelly.craftenhance.gui.templates.MenuButton menuButton = menuTemplate.getMenuButton(-1);
-						if (menuButton != null) {
-							displayName = menuButton.getDisplayName();
-							lore = menuButton.getLore();
-						}
-					}
-					final ItemStack itemStack = ((CategoryData) object).getRecipeCategoryItem();
-					setTextItem(itemStack, displayName, lore);
-					String categoryName = ((CategoryData) object).getDisplayName();
-					if (categoryName == null || categoryName.equals(""))
-						categoryName = ((CategoryData) object).getRecipeCategory();
-					placeHolders.put(InfoItemPlaceHolders.DisplayName.getPlaceHolder(), categoryName);
-					return GuiUtil.ReplaceAllPlaceHolders(itemStack.clone(), placeHolders);
-				}
-				return null;
-			}
-
-			@Override
-			public ItemStack getItem() {
-				return null;
-			}
-		};
-	}
-	@Override
 	public MenuButton getButtonAt(final int slot) {
 		if (this.menuTemplate == null) return null;
-		for (final Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()){
-			if (menuTemplate.getKey().contains(slot)){
+		for (final Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()) {
+			if (menuTemplate.getKey().contains(slot)) {
 				return registerButtons(menuTemplate.getValue());
 			}
 		}
@@ -101,7 +60,7 @@ public class RecipesViewerCategorys extends MenuHolder {
 	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(@Nonnull final Player player, @Nonnull final Inventory menu, @Nonnull final ClickType click, @Nonnull final ItemStack clickedItem, final Object object) {
+			public void onClickInsideMenu(@Nonnull final Player player, @Nonnull final Inventory menu, @Nonnull final ClickType click, @Nonnull final ItemStack clickedItem) {
 				if (run(value, menu, player, click))
 					updateButtons();
 			}
@@ -112,31 +71,32 @@ public class RecipesViewerCategorys extends MenuHolder {
 			}
 		};
 	}
+
 	public boolean run(final com.dutchjelly.craftenhance.gui.templates.MenuButton value, final Inventory menu, final Player player, final ClickType click) {
-		if (value.getButtonType() == ButtonType.PrvPage){
+		if (value.getButtonType() == ButtonType.PrvPage) {
 			previousPage();
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.NxtPage){
+		if (value.getButtonType() == ButtonType.NxtPage) {
 			nextPage();
 			return true;
 		}
 		if (value.getButtonType() == ButtonType.Search) {
 			if (click == ClickType.RIGHT) {
 				Messenger.Message("Search for categorys.", getViewer());
-				new HandleChatInput(this, msg-> {
-					if (GuiUtil.seachCategory(msg)){
-						new RecipesViewerCategorys( msg).menuOpen(getViewer());
+				new HandleChatInput(this, msg -> {
+					if (GuiUtil.seachCategory(msg)) {
+						new RecipesViewerCategorys(msg).menuOpen(getViewer());
 						return false;
 					}
 					return true;
 				}).setMessages("Search for categorys.")
-						.start(getViewer());;
-			}
-			else new RecipesViewerCategorys("").menuOpen(player);
+						.start(getViewer());
+				;
+			} else new RecipesViewerCategorys("").menuOpen(player);
 		}
-		if (value.getButtonType() == ButtonType.NewCategory && player.hasPermission(PermissionTypes.Categorys_editor.getPerm())){
-			new HandleChatInput(this, msg-> {
+		if (value.getButtonType() == ButtonType.NewCategory && player.hasPermission(PermissionTypes.Categorys_editor.getPerm())) {
+			new HandleChatInput(this, msg -> {
 				if (!GuiUtil.newCategory(msg, player)) {
 					new RecipesViewerCategorys("").menuOpen(player);
 					return false;
@@ -153,5 +113,41 @@ public class RecipesViewerCategorys extends MenuHolder {
 			});*/
 		}
 		return false;
+	}
+
+	@Override
+	public FillMenuButton<CategoryData> createFillMenuButton() {
+		return new FillMenuButton<>((player1, inventory, clickType, itemStack, categoryData) -> {
+			System.out.println("itemStack itemStack "+itemStack);
+			if (categoryData != null) {
+				if (clickType == ClickType.LEFT)
+					new RecipesViewer(categoryData, "", player).menuOpen(player);
+				else if (player.hasPermission(PermissionTypes.Categorys_editor.getPerm())) {
+					new RecipesViewerCategorysSettings(categoryData.getRecipeCategory()).menuOpen(player);
+				}
+			}
+			return ButtonUpdateAction.NONE;
+		}, (slot, categoryData) -> {
+			if (categoryData != null) {
+				String displayName = " ";
+				List<String> lore = new ArrayList<>();
+				final Map<String, String> placeHolders = new HashMap<>();
+				if (menuTemplate != null) {
+					final com.dutchjelly.craftenhance.gui.templates.MenuButton menuButton = menuTemplate.getMenuButton(-1);
+					if (menuButton != null) {
+						displayName = menuButton.getDisplayName();
+						lore = menuButton.getLore();
+					}
+				}
+				final ItemStack itemStack = categoryData.getRecipeCategoryItem();
+				setTextItem(itemStack, displayName, lore);
+				String categoryName = categoryData.getDisplayName();
+				if (categoryName == null || categoryName.equals(""))
+					categoryName = categoryData.getRecipeCategory();
+				placeHolders.put(InfoItemPlaceHolders.DisplayName.getPlaceHolder(), categoryName);
+				return GuiUtil.ReplaceAllPlaceHolders(itemStack.clone(), placeHolders);
+			}
+			return null;
+		});
 	}
 }

@@ -11,7 +11,9 @@ import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import org.broken.arrow.menu.library.button.MenuButton;
-import org.broken.arrow.menu.library.holder.MenuHolder;
+import org.broken.arrow.menu.library.button.logic.ButtonUpdateAction;
+import org.broken.arrow.menu.library.button.logic.FillMenuButton;
+import org.broken.arrow.menu.library.holder.MenuHolderPage;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -26,7 +28,7 @@ import java.util.Map.Entry;
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 import static com.dutchjelly.craftenhance.gui.util.FormatListContents.formatRecipes;
 
-public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder {
+public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolderPage<ItemStack> {
 	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
 	private final MenuTemplate menuTemplate;
 	private final CategoryData categoryData;
@@ -44,28 +46,6 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 	}
 
 	@Override
-	public MenuButton getFillButtonAt(@Nonnull final Object object) {
-		return new MenuButton() {
-			@Override
-			public void onClickInsideMenu(@Nonnull final Player player, @Nonnull final Inventory inventory, @Nonnull final ClickType clickType, @Nonnull final ItemStack itemStack, final Object o) {
-
-			}
-
-			@Override
-			public ItemStack getItem(@Nonnull final Object object) {
-				if (object instanceof ItemStack)
-					return (ItemStack) object;
-				return null;
-			}
-
-			@Override
-			public ItemStack getItem() {
-				return null;
-			}
-		};
-	}
-
-	@Override
 	public MenuButton getButtonAt(final int slot) {
 		if (this.menuTemplate == null) return null;
 		for (final Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()) {
@@ -80,7 +60,7 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(@Nonnull final Player player, @Nonnull final Inventory menu, @Nonnull final ClickType click, @Nonnull final ItemStack clickedItem, final Object object) {
+			public void onClickInsideMenu(@Nonnull final Player player, @Nonnull final Inventory menu, @Nonnull final ClickType click, @Nonnull final ItemStack clickedItem) {
 				if (run(value, menu, player, click))
 					updateButtons();
 			}
@@ -110,5 +90,11 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 			new RecipesViewer(categoryData, "", player).menuOpen(player);
 		}
 		return false;
+	}
+
+	@Override
+	public FillMenuButton<ItemStack> createFillMenuButton() {
+		return new FillMenuButton<>((player1, itemStacks, clickType, itemStack, recipeT) -> ButtonUpdateAction.NONE,
+				(integer, itemStack) -> itemStack);
 	}
 }

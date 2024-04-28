@@ -124,7 +124,7 @@ public class RecipeInjector implements Listener {
 
 		final CraftingInventory inv = craftEvent.getInventory();
 		final Recipe serverRecipe = craftEvent.getRecipe();
-		Debug.Send(Type.Crafting,"The server wants to inject " + serverRecipe.getResult().toString() + " ceh will check or modify this.");
+		Debug.Send(Type.Crafting,"The server wants to inject " + serverRecipe.getResult() + " ceh will check or modify this.");
 
 		final List<RecipeGroup> possibleRecipeGroups = loader.findGroupsByResult(serverRecipe.getResult(), RecipeType.WORKBENCH);
 		final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();

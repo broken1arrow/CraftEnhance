@@ -1,7 +1,7 @@
 package com.dutchjelly.craftenhance.prompt;
 
 import com.dutchjelly.craftenhance.gui.interfaces.IChatInputHandler;
-import org.broken.arrow.menu.library.holder.MenuHolder;
+import org.broken.arrow.menu.library.holder.HolderUtility;
 import org.broken.arrow.prompt.library.SimpleConversation;
 import org.broken.arrow.prompt.library.SimplePrompt;
 import org.broken.arrow.prompt.library.utility.SimpleCanceller;
@@ -25,11 +25,11 @@ import static com.dutchjelly.craftenhance.messaging.Messenger.getMessage;
 public class HandleChatInput extends SimpleConversation {
 
 
-	private final MenuHolder menuHolder;
+	private final HolderUtility<?> menuHolder;
 	private final List<String> messages;
 	private final IChatInputHandler chatInputHandler;
 
-	public HandleChatInput(final MenuHolder menuHolder, final IChatInputHandler callback) {
+	public HandleChatInput(final HolderUtility<?> menuHolder, final IChatInputHandler callback) {
 		super(self());
 		this.menuHolder = menuHolder;
 		this.messages = new ArrayList<>();
@@ -62,11 +62,11 @@ public class HandleChatInput extends SimpleConversation {
 	}
 
 	public static class Action extends SimplePrompt {
-		private final MenuHolder menuHolder;
+		private final HolderUtility<?> menuHolder;
 		private final List<String> messages;
 		private final IChatInputHandler chatInputHandler;
 
-		public Action(final MenuHolder menuHolder, final List<String> message, final IChatInputHandler callback) {
+		public Action(final HolderUtility<?> menuHolder, final List<String> message, final IChatInputHandler callback) {
 			this.menuHolder = menuHolder;
 			this.messages = message;
 			this.chatInputHandler = callback;
@@ -93,7 +93,7 @@ public class HandleChatInput extends SimpleConversation {
 			if (callback.handle(input)) {
 				return new Action(this.menuHolder, this.messages, callback);
 			}
-			final MenuHolder gui = menuHolder;
+			final HolderUtility<?> gui = menuHolder;
 		/*	if (gui != null)
 				gui.menuOpen(e.getPlayer());*/
 

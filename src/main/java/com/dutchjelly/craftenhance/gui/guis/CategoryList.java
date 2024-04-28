@@ -13,7 +13,9 @@ import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import lombok.NonNull;
 import org.broken.arrow.menu.library.button.MenuButton;
-import org.broken.arrow.menu.library.holder.MenuHolder;
+import org.broken.arrow.menu.library.button.logic.ButtonUpdateAction;
+import org.broken.arrow.menu.library.button.logic.FillMenuButton;
+import org.broken.arrow.menu.library.holder.MenuHolderPage;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -28,7 +30,7 @@ import java.util.Map.Entry;
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 import static com.dutchjelly.craftenhance.gui.util.GuiUtil.setTextItem;
 
-public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
+public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage<CategoryData> {
 
 	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
 	private final MenuTemplate menuTemplate;
@@ -47,68 +49,10 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		if (this.menuTemplate != null) {
 			setFillSpace(this.menuTemplate.getFillSlots());
 			setTitle(this.menuTemplate.getMenuTitel());
-			setMenuSize(GuiUtil.invSize("CategoryList",menuTemplate.getAmountOfButtons()));
+			setMenuSize(GuiUtil.invSize("CategoryList", menuTemplate.getAmountOfButtons()));
 			setMenuOpenSound(this.menuTemplate.getSound());
 		}
 		this.setUseColorConversion(true);
-	}
-
-	@Override
-	public MenuButton getFillButtonAt(final @NonNull  Object object) {
-		return new MenuButton() {
-			@Override
-			public void onClickInsideMenu(final @NonNull  Player player, final @NonNull  Inventory inventory, final @NonNull  ClickType clickType, final @NonNull  ItemStack itemStack, final Object o) {
-				if (o instanceof CategoryData) {
-					final String category = ((CategoryData) o).getRecipeCategory();
-					final CategoryData changedCategory = ((CategoryData) o);
-					recipe.setRecipeCategory(category);
-					//recipe.save();
-					CategoryData moveCategoryData = null;
-
-					/*if (categoryData == null) {
-						 self().getCategoryDataCache().of(category, changedCategory.getRecipeCategoryItem(), changedCategory.getDisplayName());
-					} */
-					if (categoryData != null) {
-						moveCategoryData = self().getCategoryDataCache().move(categoryData.getRecipeCategory(), category, recipe);
-						if (moveCategoryData == null) {
-							Messenger.Message("Could not add recipe to this " + o + " category.");
-							return;
-						}
-					}
-					new RecipeSettings<>(recipe, categoryData, null,  editorType)
-							.menuOpen(player);				}
-			}
-
-			@Override
-			public ItemStack getItem(final @NonNull  Object object) {
-				if (object instanceof CategoryData) {
-					String displayName = " ";
-					List<String> lore = new ArrayList<>();
-					final Map<String, String> placeHolders = new HashMap<>();
-					if (menuTemplate != null) {
-						final com.dutchjelly.craftenhance.gui.templates.MenuButton menuButton = menuTemplate.getMenuButton(-1);
-						if (menuButton != null) {
-							displayName = menuButton.getDisplayName();
-							lore = menuButton.getLore();
-						}
-					}
-					final ItemStack itemStack = ((CategoryData) object).getRecipeCategoryItem();
-					setTextItem(itemStack, displayName, lore);
-					String categoryName = ((CategoryData) object).getDisplayName();
-					if (categoryName == null || categoryName.equals(""))
-						categoryName = ((CategoryData) object).getRecipeCategory();
-					placeHolders.put(InfoItemPlaceHolders.DisplayName.getPlaceHolder(), categoryName);
-
-					return GuiUtil.ReplaceAllPlaceHolders(itemStack.clone(), placeHolders);
-				}
-				return null;
-			}
-
-			@Override
-			public ItemStack getItem() {
-				return null;
-			}
-		};
 	}
 
 	@Override
@@ -126,7 +70,7 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(final @NonNull Player player, final @NonNull  Inventory menu, final @NonNull  ClickType click, final @NonNull  ItemStack clickedItem, final Object object) {
+			public void onClickInsideMenu(final @NonNull Player player, final @NonNull Inventory menu, final @NonNull ClickType click, final @NonNull ItemStack clickedItem) {
 				if (run(value, menu, player, click))
 					updateButtons();
 			}
@@ -147,17 +91,17 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			nextPage();
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.Back){
-			new RecipeSettings<>(this.recipe, this.categoryData, null,  editorType)
+		if (value.getButtonType() == ButtonType.Back) {
+			new RecipeSettings<>(this.recipe, this.categoryData, null, editorType)
 					.menuOpen(player);
-				//new RecipeEditor<>(this.recipe, this.categoryData, null,  editorType).menuOpen(player);
+			//new RecipeEditor<>(this.recipe, this.categoryData, null,  editorType).menuOpen(player);
 		}
 
 		if (value.getButtonType() == ButtonType.Search) {
 			if (click == ClickType.RIGHT) {
-				new HandleChatInput(this, msg-> {
+				new HandleChatInput(this, msg -> {
 					if (GuiUtil.seachCategory(msg)) {
-						new CategoryList<>( recipe, categoryData, permission,  editorType,msg).menuOpen(getViewer());
+						new CategoryList<>(recipe, categoryData, permission, editorType, msg).menuOpen(getViewer());
 						return false;
 					}
 					return true;
@@ -171,8 +115,55 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolder {
 					}
 					return true;
 				});*/
-			} else new CategoryList<>(recipe, categoryData, permission,  editorType,"").menuOpen(player);
+			} else new CategoryList<>(recipe, categoryData, permission, editorType, "").menuOpen(player);
 		}
 		return false;
+	}
+
+	@Override
+	public FillMenuButton<CategoryData> createFillMenuButton() {
+		return new FillMenuButton<>((player1, itemStacks, clickType, itemStack, containerData) -> {
+			if (containerData != null) {
+				final String category = containerData.getRecipeCategory();
+				final CategoryData changedCategory = containerData;
+				recipe.setRecipeCategory(category);
+				//recipe.save();
+				CategoryData moveCategoryData = null;
+
+					/*if (categoryData == null) {
+						 self().getCategoryDataCache().of(category, changedCategory.getRecipeCategoryItem(), changedCategory.getDisplayName());
+					} */
+				if (categoryData != null) {
+					moveCategoryData = self().getCategoryDataCache().move(categoryData.getRecipeCategory(), category, recipe);
+					if (moveCategoryData == null) {
+						Messenger.Message("Could not add recipe to this " + containerData + " category.");
+						return ButtonUpdateAction.NONE;
+					}
+				}
+				new RecipeSettings<>(recipe, categoryData, null, editorType).menuOpen(player);
+			}
+			return ButtonUpdateAction.NONE;
+		}, (slot, containerData) -> {
+			if (containerData != null) {
+				String displayName = " ";
+				List<String> lore = new ArrayList<>();
+				final Map<String, String> placeHolders = new HashMap<>();
+				if (menuTemplate != null) {
+					final com.dutchjelly.craftenhance.gui.templates.MenuButton menuButton = menuTemplate.getMenuButton(-1);
+					if (menuButton != null) {
+						displayName = menuButton.getDisplayName();
+						lore = menuButton.getLore();
+					}
+				}
+				final ItemStack itemStack = containerData.getRecipeCategoryItem();
+				setTextItem(itemStack, displayName, lore);
+				String categoryName = containerData.getDisplayName();
+				if (categoryName == null || categoryName.equals(""))
+					categoryName = containerData.getRecipeCategory();
+				placeHolders.put(InfoItemPlaceHolders.DisplayName.getPlaceHolder(), categoryName);
+				return GuiUtil.ReplaceAllPlaceHolders(itemStack.clone(), placeHolders);
+			}
+			return null;
+		});
 	}
 }

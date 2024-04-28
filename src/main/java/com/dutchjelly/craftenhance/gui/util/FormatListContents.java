@@ -19,7 +19,7 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class FormatListContents {
 
-	public static <RecipeT extends EnhancedRecipe> List<?> formatRecipes(final RecipeT recipe, final IngredientsCache ingredientsCache, final boolean loadCachedItems) {
+	public static <RecipeT extends EnhancedRecipe> List<ItemStack> formatRecipes(final RecipeT recipe, final IngredientsCache ingredientsCache, final boolean loadCachedItems) {
 		if (recipe == null) return new ArrayList<>();
 		List<ItemStack> list = new ArrayList<>(Arrays.asList(recipe.getContent()));
 		ItemStack result = recipe.getResult();

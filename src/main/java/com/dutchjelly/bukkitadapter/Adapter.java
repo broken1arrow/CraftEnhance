@@ -86,7 +86,7 @@ public class Adapter {
 
 			meta.setDisplayName(displayName);
 			meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-			meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+			//meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 			meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
 			if (glow)
 				meta.addEnchant(Enchantment.DURABILITY, 10, true);

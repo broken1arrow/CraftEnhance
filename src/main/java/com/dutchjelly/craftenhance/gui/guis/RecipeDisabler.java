@@ -9,7 +9,9 @@ import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import org.broken.arrow.menu.library.button.MenuButton;
-import org.broken.arrow.menu.library.holder.MenuHolder;
+import org.broken.arrow.menu.library.button.logic.ButtonUpdateAction;
+import org.broken.arrow.menu.library.button.logic.FillMenuButton;
+import org.broken.arrow.menu.library.holder.MenuHolderPage;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -30,10 +32,10 @@ import java.util.stream.Collectors;
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 import static com.dutchjelly.craftenhance.gui.util.FormatListContents.getRecipes;
 
-public class RecipeDisabler extends MenuHolder {
+public class RecipeDisabler extends MenuHolderPage<Recipe> {
 	private final MenuSettingsCache menuSettingsCache  = self().getMenuSettingsCache();
 	private final MenuTemplate menuTemplate;
-	private final MenuButton fillSlots;
+
 	//If true, you can enable *disabled* recipes.
 	boolean enableMode;
 
@@ -46,57 +48,9 @@ public class RecipeDisabler extends MenuHolder {
 		setMenuSize(GuiUtil.invSize("RecipeDisabler",this.menuTemplate.getAmountOfButtons()));
 		setMenuOpenSound(this.menuTemplate.getSound());
 		this.setUseColorConversion(true);
-		fillSlots = new MenuButton() {
-			@Override
-			public void onClickInsideMenu(@Nonnull final Player player, @Nonnull final Inventory inventory, @Nonnull final ClickType clickType, @Nonnull final ItemStack itemStack, final Object o) {
-				if (o instanceof Recipe) {
-					if (enableMode) {
-						if (RecipeLoader.getInstance().enableServerRecipe((Recipe) o)) {
-							//enabledRecipes.remove( o);
-//               getRecipes().remove(recipe);
-							updateButtons();
-						}
-					} else {
-						if (RecipeLoader.getInstance().disableServerRecipe((Recipe) o)) {
-							//disabledRecipes.remove( o);
-//               getRecipes().remove(recipe);
-							updateButtons();
-						}
-					}
-				}
-			}
 
-			@Override
-			public ItemStack getItem(@Nonnull final Object object) {
-				if (object instanceof Recipe) {
-					ItemStack result = ((Recipe)object).getResult();
-					if(GuiUtil.isNull(result)) {
-						result = new ItemStack(Material.BARRIER);
-						final ItemMeta meta = result.getItemMeta();
-						meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&4Complex Recipe: " + Adapter.GetRecipeIdentifier(((Recipe)object))));
-						meta.setLore(Arrays.asList("&eWARN: &fThis recipe is complex, which", "&f means that the result is only known", " &f&oafter&r&f the content of the crafting table is sent", " &fto the server. Think of repairing or coloring recipes.", " &f&nSo disabling is not recommended!"));
-						meta.setLore(meta.getLore().stream().map(x -> ChatColor.translateAlternateColorCodes('&', x)).collect(Collectors.toList()));
-						result.setItemMeta(meta);
-					} else{
-						final ItemMeta meta = result.getItemMeta();
-						meta.setLore(Arrays.asList(ChatColor.translateAlternateColorCodes('&', "&3key: &f" + Adapter.GetRecipeIdentifier(((Recipe)object)))));
-						result.setItemMeta(meta);
-					}
-					return result;
-				}
-				return null;
-			}
+	}
 
-			@Override
-			public ItemStack getItem() {
-				return null;
-			}
-		};
-	}
-	@Override
-	public MenuButton getFillButtonAt(@Nonnull final Object object) {
-		return fillSlots;
-	}
 	@Override
 	public MenuButton getButtonAt(final int slot) {
 		if (this.menuTemplate == null) return null;
@@ -112,7 +66,7 @@ public class RecipeDisabler extends MenuHolder {
 	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
 		return new MenuButton() {
 			@Override
-			public void onClickInsideMenu(@Nonnull final Player player, @Nonnull final Inventory menu, @Nonnull final ClickType click, @Nonnull final ItemStack clickedItem, final Object object) {
+			public void onClickInsideMenu(@Nonnull final Player player, @Nonnull final Inventory menu, @Nonnull final ClickType click, @Nonnull final ItemStack clickedItem) {
 				if (run(value, menu, player, click))
 					updateButtons();
 			}
@@ -167,4 +121,44 @@ public class RecipeDisabler extends MenuHolder {
 	}
 
 
+	@Override
+	public FillMenuButton<Recipe> createFillMenuButton() {
+		return new FillMenuButton<>((player1, itemStacks, clickType, itemStack, recipe) -> {
+			if (recipe != null) {
+				if (enableMode) {
+					if (RecipeLoader.getInstance().enableServerRecipe(recipe)) {
+						//enabledRecipes.remove( o);
+//               getRecipes().remove(recipe);
+						return ButtonUpdateAction.ALL;
+					}
+				} else {
+					if (RecipeLoader.getInstance().disableServerRecipe(recipe)) {
+						//disabledRecipes.remove( o);
+//               getRecipes().remove(recipe);
+						return ButtonUpdateAction.ALL;
+					}
+				}
+			}
+			return ButtonUpdateAction.NONE;
+		},
+				(slot, recipe) -> {
+					if (recipe != null) {
+						ItemStack result = recipe.getResult();
+						if(GuiUtil.isNull(result)) {
+							result = new ItemStack(Material.BARRIER);
+							final ItemMeta meta = result.getItemMeta();
+							meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&4Complex Recipe: " + Adapter.GetRecipeIdentifier(((Recipe)recipe))));
+							meta.setLore(Arrays.asList("&eWARN: &fThis recipe is complex, which", "&f means that the result is only known", " &f&oafter&r&f the content of the crafting table is sent", " &fto the server. Think of repairing or coloring recipes.", " &f&nSo disabling is not recommended!"));
+							meta.setLore(meta.getLore().stream().map(x -> ChatColor.translateAlternateColorCodes('&', x)).collect(Collectors.toList()));
+							result.setItemMeta(meta);
+						} else{
+							final ItemMeta meta = result.getItemMeta();
+							meta.setLore(Arrays.asList(ChatColor.translateAlternateColorCodes('&', "&3key: &f" + Adapter.GetRecipeIdentifier(((Recipe)recipe)))));
+							result.setItemMeta(meta);
+						}
+						return result;
+					}
+					return null;
+				});
+	}
 }
