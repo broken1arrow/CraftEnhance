@@ -9,6 +9,7 @@ import com.dutchjelly.craftenhance.commands.ceh.CreateRecipeCmd;
 import com.dutchjelly.craftenhance.commands.ceh.Disabler;
 import com.dutchjelly.craftenhance.commands.ceh.RecipesCmd;
 import com.dutchjelly.craftenhance.commands.ceh.ReloadCmd;
+import com.dutchjelly.craftenhance.commands.ceh.RemoveRecipeCmd;
 import com.dutchjelly.craftenhance.commands.ceh.SetPermissionCmd;
 import com.dutchjelly.craftenhance.commands.ceh.SpecsCommand;
 import com.dutchjelly.craftenhance.commands.edititem.DisplayNameCmd;
@@ -193,8 +194,9 @@ public class CraftEnhance extends JavaPlugin {
 				new CleanItemFileCmd(commandHandler),
 				new SetPermissionCmd(commandHandler),
 				new ReloadCmd(),
-				new Disabler(commandHandler))
-		);
+				new Disabler(commandHandler),
+				new RemoveRecipeCmd(commandHandler)
+		));
 	}
 
 	//Registers the listener class to the server.

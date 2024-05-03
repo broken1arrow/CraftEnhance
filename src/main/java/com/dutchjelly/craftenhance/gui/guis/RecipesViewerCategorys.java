@@ -118,7 +118,6 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 	@Override
 	public FillMenuButton<CategoryData> createFillMenuButton() {
 		return new FillMenuButton<>((player1, inventory, clickType, itemStack, categoryData) -> {
-			System.out.println("itemStack itemStack "+itemStack);
 			if (categoryData != null) {
 				if (clickType == ClickType.LEFT)
 					new RecipesViewer(categoryData, "", player).menuOpen(player);
