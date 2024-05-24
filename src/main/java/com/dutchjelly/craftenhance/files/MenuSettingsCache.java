@@ -1,11 +1,7 @@
 package com.dutchjelly.craftenhance.files;
 
-import com.dutchjelly.craftenhance.exceptions.ConfigError;
-import com.dutchjelly.craftenhance.files.util.SimpleYamlHelper;
-import com.dutchjelly.craftenhance.gui.templates.MenuButton;
 import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
-import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
-import org.bukkit.configuration.ConfigurationSection;
+import org.broken.arrow.menu.button.manager.library.MenusSettingsHandler;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -18,28 +14,25 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
-import static com.dutchjelly.craftenhance.CraftEnhance.self;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-public class MenuSettingsCache extends SimpleYamlHelper {
+public class MenuSettingsCache  {
 
 	private final Plugin plugin;
 	private static final int version = 11;
 	private final Map<String, MenuTemplate> templates = new HashMap<>();
+	private final MenusSettingsHandler menusSettingsHandler;
 
 
 	public MenuSettingsCache(final Plugin plugin) {
-		super("guitemplates.yml", true, true);
+		this.menusSettingsHandler = new MenusSettingsHandler(plugin,"guitemplates.yml",true);
 		this.plugin = plugin;
 		checkFileVersion();
+		this.menusSettingsHandler.reload();
+
 	}
 	public void checkFileVersion() {
 		final File file = new File(plugin.getDataFolder(), "guitemplates.yml");
@@ -86,82 +79,11 @@ public class MenuSettingsCache extends SimpleYamlHelper {
 			}
 		}
 	}
-
-	public Map<String, MenuTemplate> getTemplates() {
-		return templates;
+	public org.broken.arrow.menu.button.manager.library.utility.MenuTemplate getTemplate(String menu) {
+		return menusSettingsHandler.getTemplate(menu);
 	}
 
-	@Override
-	public void loadSettingsFromYaml(final File file) {
-		final FileConfiguration templateConfig = this.getCustomConfig();
-
-		for (final String key : templateConfig.getKeys(false)) {
-			if (key.equalsIgnoreCase("Version")) continue;
-			final ConfigurationSection menuData = templateConfig.getConfigurationSection(key + ".buttons");
-			final Map<List<Integer>, MenuButton> menuButtonMap = new HashMap<>();
-
-			final String menuSettings = templateConfig.getString(key + ".menu_settings.name");
-			final List<Integer> fillSpace = parseRange(templateConfig.getString(key + ".menu_settings.fill-space"));
-			String sound = templateConfig.getString(key + ".menu_settings.sound");
-
-			if (menuData != null) {
-				for (final String menuButtons : menuData.getKeys(false)) {
-					final MenuButton menuButton = this.getData(key + ".buttons." + menuButtons, MenuButton.class);
-					menuButtonMap.put(parseRange(menuButtons), menuButton);
-				}
-			}
-			if (self().getVersionChecker().olderThan(ServerVersion.v1_13) && sound != null && sound.equals("BLOCK_NOTE_BLOCK_BASEDRUM")){
-				sound = "BLOCK_NOTE_BASEDRUM";
-			}
-
-			final MenuTemplate menuTemplate = new MenuTemplate(menuSettings,fillSpace, menuButtonMap,sound);
-
-			templates.put(key,  menuTemplate);
-			final YamlConfiguration configuration = YamlConfiguration.loadConfiguration(file);
-			final int configVersion = configuration.getInt("Version",-1);
-			if (configVersion <= 1) {
-				configuration.set("Version", version);
-				try {
-					configuration.save(file);
-				} catch (final IOException e) {
-					e.printStackTrace();
-				}
-			}
-			//Messenger.Error("There is a problem with loading the gui template of " + key + ". You're probably missing some new templates, which will automatically generate when just removing the guitemplates.yml file.\n");
-			//Debug.Send("(Config Error)" + Arrays.toString(configError.getStackTrace()).replace(",","\n"));
-
-		}
+	public void reload() {
+		menusSettingsHandler.reload();
 	}
-
-	private List<Integer> parseRange(final String range) {
-		final List<Integer> slots = new ArrayList<>();
-
-		//Allow empty ranges.
-		if (range == null || range.equals("")) return slots;
-
-		try {
-			for (final String subRange : range.split(",")) {
-				if (Objects.equals(subRange, "")) continue;
-				if (subRange.contains("-")) {
-					final String[] numbers = subRange.split("-");
-					if (numbers[0].isEmpty() || numbers[1].isEmpty()) {
-						slots.add(Integer.parseInt(subRange));
-						continue;
-					}
-					final int first = Integer.parseInt(numbers [0]);
-					final int second = Integer.parseInt(numbers [1]);
-					slots.addAll(IntStream.range(first, second + 1).boxed().collect(Collectors.toList()));
-				} else slots.add(Integer.parseInt(subRange));
-			}
-		} catch (final NumberFormatException e) {
-			throw new ConfigError("Couldn't parse range " + range);
-		}
-		return slots;
-	}
-
-	@Override
-	protected void saveDataToFile(final File file) {
-
-	}
-
 }

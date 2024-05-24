@@ -55,6 +55,7 @@ public class CraftEnhance extends JavaPlugin {
 
 	private static CraftEnhance plugin;
 
+
 	public static CraftEnhance self() {
 		return plugin;
 	}
@@ -81,6 +82,7 @@ public class CraftEnhance extends JavaPlugin {
 	private CategoryDataCache categoryDataCache;
 	@Getter
 	private IngredientsCache ingredientsCache;
+
 
 	@Override
 	public void onEnable() {
@@ -131,6 +133,7 @@ public class CraftEnhance extends JavaPlugin {
 				RecipeLoader.clearInstance();
 				reloadConfig();
 				this.onEnable();
+				menuSettingsCache.reload();
 			});
 		});
 	}
@@ -220,6 +223,7 @@ public class CraftEnhance extends JavaPlugin {
 		if (categoryDataCache == null)
 			categoryDataCache = new CategoryDataCache();
 		categoryDataCache.reload();
+
 		Debug.Send("Checking for config updates.");
 		final File configFile = new File(getDataFolder(), "config.yml");
 		FileManager.EnsureResourceUpdate("config.yml", configFile, YamlConfiguration.loadConfiguration(configFile), this);
@@ -228,9 +232,10 @@ public class CraftEnhance extends JavaPlugin {
 		Messenger.Init(this);
 		ItemMatchers.init(getConfig().getBoolean("enable-backwards-compatible-item-matching"));
 		Debug.Send("Loading gui templates");
+
 		if (menuSettingsCache == null)
 			menuSettingsCache = new MenuSettingsCache(this);
-		menuSettingsCache.reload();
+
 		if (isReloding)
 			Bukkit.getScheduler().runTask(this, this::loadRecipes);
 	}

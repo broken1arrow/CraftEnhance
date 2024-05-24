@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.gui.guis.editors;
 
+import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
@@ -10,7 +11,6 @@ import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.EditorTypeSelector;
 import com.dutchjelly.craftenhance.gui.guis.RecipesViewer;
-import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
@@ -18,6 +18,8 @@ import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import lombok.Getter;
 import lombok.NonNull;
+import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
+import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
 import org.broken.arrow.menu.library.CheckItemsInsideMenu;
 import org.broken.arrow.menu.library.MenuUtility;
 import org.broken.arrow.menu.library.button.MenuButton;
@@ -84,13 +86,13 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 		matchType = recipe.getMatchType();
 		this.hidden = recipe.isHidden();
 		this.checkPartialMatch = recipe.isCheckPartialMatch();
-		menuTemplate = menuSettingsCache.getTemplates().get(editorType.getType());
+		menuTemplate = menuSettingsCache.getTemplate(editorType.getType());
 		setMenuSize(27);
 		setSlotsYouCanAddItems(true);
 		this.setUseColorConversion(true);
 		if (menuTemplate != null) {
 			setMenuSize(GuiUtil.invSize("RecipeEditor", this.menuTemplate.getAmountOfButtons()));
-			setTitle(menuTemplate.getMenuTitel());
+			setTitle(menuTemplate.getMenuTitle());
 			setFillSpace(menuTemplate.getFillSlots());
 			setMenuOpenSound(this.menuTemplate.getSound());
 		}
@@ -105,7 +107,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 	@Override
 	public MenuButton getButtonAt(final int slot) {
 		if (this.menuTemplate == null) return null;
-		for (final Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()) {
+		for (final Entry<List<Integer>, MenuButtonData> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()) {
 			if (menuTemplate.getKey().contains(slot)) {
 				return registerButtons(menuTemplate.getValue());
 			}
@@ -114,7 +116,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 	}
 
 
-	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
+	private MenuButton registerButtons(final MenuButtonData value) {
 		return new MenuButton() {
 			@Override
 			public void onClickInsideMenu(final @NonNull Player player, final @NonNull Inventory menu, final @NonNull ClickType click, final @NonNull ItemStack clickedItem) {
@@ -147,15 +149,20 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 					else
 						put(InfoItemPlaceHolders.Category.getPlaceHolder(), recipe.getRecipeCategory() != null ? recipe.getRecipeCategory() : "default");
 				}};
-				if (value.getItemStack() == null) return null;
-				return GuiUtil.ReplaceAllPlaceHolders(value.getItemStack().clone(), placeHolders);
+
+				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = value.getPassiveButton();
+				ItemStack itemStack = Adapter.getItemStack(button.getMaterial(),button.getDisplayName(),button.getLore(),button.getExtra(),button.isGlow());
+				if (itemStack == null)
+					return null;
+
+				return GuiUtil.ReplaceAllPlaceHolders(itemStack.clone(), placeHolders);
 			}
 		};
 	}
 
-	public boolean run(final com.dutchjelly.craftenhance.gui.templates.MenuButton value, final Inventory menu, final Player player, final ClickType click) {
+	public boolean run(final MenuButtonData value, final Inventory menu, final Player player, final ClickType click) {
 
-		if (value.getButtonType() == ButtonType.DeleteRecipe) {
+		if (value.isActionTypeEqual(  ButtonType.DeleteRecipe.name())) {
 			self().getFm().removeRecipe(recipe);
 			RecipeLoader.getInstance().unloadRecipe(recipe);
 			if (this.categoryData != null)
@@ -164,22 +171,22 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 				new EditorTypeSelector(null, permission).menuOpen(player);
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.RecipeSettings)
+		if (value.isActionTypeEqual(  ButtonType.RecipeSettings.name()))
 			new RecipeSettings<>(this.recipe, this.categoryData, this.permission, this.editorType)
 					.menuOpen(player);
-		if (value.getButtonType() == ButtonType.ResetRecipe) {
+		if (value.isActionTypeEqual(  ButtonType.ResetRecipe.name()))  {
 			updateRecipeDisplay(menu);
 			return true;
 
 		}
-		if (value.getButtonType() == ButtonType.SaveRecipe) {
+		if (value.isActionTypeEqual(  ButtonType.SaveRecipe.name()))  {
 			final CheckItemsInsideMenu checkItemsInsideInventory = getCheckItemsInsideMenu();
 			checkItemsInsideInventory.setSlotsToCheck(menuTemplate.getFillSlots());
 			final Map<Integer, ItemStack> map = checkItemsInsideInventory.getItemsFromSetSlots(menu, player, false);
 			save(map, player, true);
 			new RecipeEditor<>(this.recipe, this.categoryData, this.permission, this.editorType).menuOpen(player);
 		}
-		if (value.getButtonType() == ButtonType.Back) {
+		if (value.isActionTypeEqual( ButtonType.Back.name()))  {
 			if (this.categoryData != null)
 				new RecipesViewer(this.categoryData, "", player).menuOpen(player);
 			else

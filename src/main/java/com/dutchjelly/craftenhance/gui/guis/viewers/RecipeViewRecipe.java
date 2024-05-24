@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.gui.guis.viewers;
 
+import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
@@ -7,11 +8,12 @@ import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.RecipesViewer;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
-import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.util.PermissionTypes;
+import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
+import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
 import org.broken.arrow.menu.library.button.MenuButton;
 import org.broken.arrow.menu.library.button.logic.ButtonUpdateAction;
 import org.broken.arrow.menu.library.button.logic.FillMenuButton;
@@ -40,9 +42,9 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 		super(formatRecipes(recipe, null, false));
 		this.recipe = recipe;
 		this.categoryData = categoryData;
-		this.menuTemplate = menuSettingsCache.getTemplates().get(menuType);
+		this.menuTemplate = menuSettingsCache.getTemplate(menuType);
 		setFillSpace(this.menuTemplate.getFillSlots());
-		setTitle(this.menuTemplate.getMenuTitel());
+		setTitle(this.menuTemplate.getMenuTitle());
 		setMenuSize(27);
 		this.setUseColorConversion(true);
 	}
@@ -50,7 +52,7 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 	@Override
 	public MenuButton getButtonAt(final int slot) {
 		if (this.menuTemplate == null) return null;
-		for (final Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()) {
+		for (final Entry<List<Integer>, MenuButtonData> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()) {
 			if (menuTemplate.getKey().contains(slot)) {
 				return registerButtons(menuTemplate.getValue());
 			}
@@ -59,7 +61,7 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 	}
 
 
-	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
+	private MenuButton registerButtons(final MenuButtonData value) {
 		return new MenuButton() {
 			@Override
 			public void onClickInsideMenu(@Nonnull final Player player, @Nonnull final Inventory menu, @Nonnull final ClickType click, @Nonnull final ItemStack clickedItem) {
@@ -83,16 +85,26 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 					put(InfoItemPlaceHolders.Permission.getPlaceHolder(), recipe.getPermissions() == null ? "not set" : recipe.getPermissions());
 					put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), recipe.getAllowedWorlds() == null || recipe.getAllowedWorlds().isEmpty() ? "all worlds" : recipe.getAllowedWorldsFormatted());
 				}};
-				return GuiUtil.ReplaceAllPlaceHolders(value.getItemStack().clone(), placeHolders);
+
+				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = null;
+				if (getViewer().hasPermission(PermissionTypes.Edit.getPerm()))
+					button = value.getActiveButton();
+				if (button == null)
+					button = value.getPassiveButton();
+
+				ItemStack itemStack = Adapter.getItemStack(button.getMaterial(),button.getDisplayName(),button.getLore(),button.getExtra(),button.isGlow());
+				if (itemStack == null)
+					return null;
+				return GuiUtil.ReplaceAllPlaceHolders(itemStack.clone(), placeHolders);
 			}
 		};
 	}
 
-	public boolean run(final com.dutchjelly.craftenhance.gui.templates.MenuButton value, final Inventory menu, final Player player, final ClickType click) {
-		if (value.getButtonType() == ButtonType.Back) {
+	public boolean run(final MenuButtonData value, final Inventory menu, final Player player, final ClickType click) {
+		if (value.isActionTypeEqual(  ButtonType.Back.name())) {
 			new RecipesViewer(categoryData, "", player).menuOpen(player);
 		}
-		if (value.getButtonType() == ButtonType.edit_recipe) {
+		if (value.isActionTypeEqual(  ButtonType.edit_recipe.name())) {
 			if (player.hasPermission(PermissionTypes.Edit.getPerm())) {
 				if (recipe instanceof WBRecipe) {
 						new RecipeEditor<>((WBRecipe) recipe, categoryData, null, ButtonType.ChooseWorkbenchType).menuOpen(player);

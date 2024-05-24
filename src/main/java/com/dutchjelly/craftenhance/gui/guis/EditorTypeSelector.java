@@ -1,13 +1,15 @@
 package com.dutchjelly.craftenhance.gui.guis;
 
+import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
-import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
+import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
+import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
 import org.broken.arrow.menu.library.button.MenuButton;
 import org.broken.arrow.menu.library.holder.MenuHolder;
 import org.bukkit.entity.Player;
@@ -31,9 +33,9 @@ public class EditorTypeSelector extends MenuHolder {
 	public EditorTypeSelector(final String recipeKey, final String permission) {
 		this.permission = permission;
 		this.recipeKey = recipeKey;
-		menuTemplate = menuSettingsCache.getTemplates().get("EditorTypeSelector");
+		menuTemplate = menuSettingsCache.getTemplate("EditorTypeSelector");
 		setMenuSize(GuiUtil.invSize("EditorTypeSelector",menuTemplate.getAmountOfButtons()));
-		setTitle(menuTemplate.getMenuTitel());
+		setTitle(menuTemplate.getMenuTitle());
 		setMenuOpenSound(this.menuTemplate.getSound());
 		this.setUseColorConversion(true);
 	}
@@ -52,7 +54,7 @@ public class EditorTypeSelector extends MenuHolder {
 	@Override
 	public MenuButton getButtonAt(final int slot) {
 		if (this.menuTemplate == null) return null;
-		for (final Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()){
+		for (final Entry<List<Integer>, MenuButtonData> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()){
 			if (menuTemplate.getKey().contains(slot)){
 				return registerButtons(menuTemplate.getValue());
 			}
@@ -60,7 +62,7 @@ public class EditorTypeSelector extends MenuHolder {
 		return null;
 	}
 
-	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
+	private MenuButton registerButtons(final MenuButtonData value) {
 		return new MenuButton() {
 			@Override
 			public void onClickInsideMenu(@Nonnull final Player player, @Nonnull final Inventory menu, @Nonnull final ClickType click, @Nonnull final ItemStack clickedItem) {
@@ -69,22 +71,24 @@ public class EditorTypeSelector extends MenuHolder {
 
 			@Override
 			public ItemStack getItem() {
-				return value.getItemStack();
+				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = value.getPassiveButton();
+				return Adapter.getItemStack(button.getMaterial(),button.getDisplayName(),button.getLore(),button.getExtra(),button.isGlow());
 			}
 		};
 	}
 
-	public void run(final com.dutchjelly.craftenhance.gui.templates.MenuButton value, final Player player) {
+	public void run(final MenuButtonData value, final Player player) {
 		EnhancedRecipe newRecipe = null;
-		if (value.getButtonType() == ButtonType.ChooseWorkbenchType){
+		if (value.isActionTypeEqual( ButtonType.ChooseWorkbenchType.name())){
 			newRecipe = new WBRecipe(permission, null, new ItemStack[9]);
 		}
-		if (value.getButtonType() == ButtonType.ChooseFurnaceType){
+		if (value.isActionTypeEqual( ButtonType.ChooseFurnaceType.name())){
 			newRecipe = new FurnaceRecipe(permission, null, new ItemStack[1]);
 		}
 		if (newRecipe != null) {
 			newRecipe.setKey(getFreshKey(recipeKey));
-			final RecipeEditor<EnhancedRecipe> recipeEditor = new RecipeEditor<>(newRecipe, null,permission, value.getButtonType());
+			final RecipeEditor<EnhancedRecipe> recipeEditor = new RecipeEditor<>(newRecipe, null,permission,
+					value.isActionTypeEqual(ButtonType.ChooseFurnaceType.name()) ? ButtonType.ChooseFurnaceType: ButtonType.ChooseWorkbenchType);
 			recipeEditor.menuOpen(player);
 		}
 	}

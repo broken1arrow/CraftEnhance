@@ -1,12 +1,14 @@
 package com.dutchjelly.craftenhance.gui.guis;
 
+import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipesViewerCategorysSettings;
-import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.messaging.Messenger;
+import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
+import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
 import org.broken.arrow.menu.library.button.MenuButton;
 import org.broken.arrow.menu.library.button.logic.FillMenuButton;
 import org.broken.arrow.menu.library.holder.MenuHolderPage;
@@ -26,17 +28,16 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class ChangeCategoryItem extends MenuHolderPage<ItemStack> {
 
-
 	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
 	private final MenuTemplate menuTemplate;
 	private final String category;
 
 	public ChangeCategoryItem(String category) {
 		super(new ArrayList<>());
-		this.menuTemplate = menuSettingsCache.getTemplates().get("ChangeCategoryItem");
+		this.menuTemplate = menuSettingsCache.getTemplate("ChangeCategoryItem");
 		if (this.menuTemplate != null) {
 			setFillSpace(this.menuTemplate.getFillSlots());
-			setTitle(this.menuTemplate.getMenuTitel());
+			setTitle(this.menuTemplate.getMenuTitle());
 			setMenuSize(GuiUtil.invSize("ChangeCategoryItem", this.menuTemplate.getAmountOfButtons()));
 			setMenuOpenSound(this.menuTemplate.getSound());
 		}
@@ -54,7 +55,7 @@ public class ChangeCategoryItem extends MenuHolderPage<ItemStack> {
 	@Override
 	public MenuButton getButtonAt(final int slot) {
 		if (this.menuTemplate == null) return null;
-		for (final Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()) {
+		for (final Entry<List<Integer>, MenuButtonData> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()) {
 			if (menuTemplate.getKey().contains(slot)) {
 				return registerButtons(menuTemplate.getValue());
 			}
@@ -62,7 +63,7 @@ public class ChangeCategoryItem extends MenuHolderPage<ItemStack> {
 		return null;
 	}
 
-	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
+	private MenuButton registerButtons(final MenuButtonData value) {
 		return new MenuButton() {
 			@Override
 			public void onClickInsideMenu(@Nonnull final Player player, @Nonnull final Inventory menu, @Nonnull final ClickType click, @Nonnull final ItemStack clickedItem) {
@@ -72,14 +73,15 @@ public class ChangeCategoryItem extends MenuHolderPage<ItemStack> {
 
 			@Override
 			public ItemStack getItem() {
-				return value.getItemStack();
+				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = value.getPassiveButton();
+				return Adapter.getItemStack(button.getMaterial(),button.getDisplayName(),button.getLore(),button.getExtra(),button.isGlow());
 			}
 		};
 	}
 
-	public boolean run(final com.dutchjelly.craftenhance.gui.templates.MenuButton value, final Inventory menu, final Player player, final ClickType click) {
+	public boolean run(final MenuButtonData value, final Inventory menu, final Player player, final ClickType click) {
 
-		if (value.getButtonType() == ButtonType.Save) {
+		if (value.isActionTypeEqual(ButtonType.Save.name())) {
 			for (int fillSlot : this.getFillSpace()) {
 				ItemStack itemStack = menu.getItem(fillSlot);
 				if (itemStack != null) {
@@ -98,7 +100,7 @@ public class ChangeCategoryItem extends MenuHolderPage<ItemStack> {
 			}
 		}
 
-		if (value.getButtonType() == ButtonType.Back) {
+		if (value.isActionTypeEqual( ButtonType.Back.name())) {
 			new RecipesViewerCategorysSettings(this.category).menuOpen(player);
 		}
 		return false;

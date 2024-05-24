@@ -1,10 +1,10 @@
 package com.dutchjelly.craftenhance.gui.guis;
 
+import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeSettings;
-import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.FormatListContents;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
@@ -12,6 +12,8 @@ import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import lombok.NonNull;
+import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
+import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
 import org.broken.arrow.menu.library.button.MenuButton;
 import org.broken.arrow.menu.library.button.logic.ButtonUpdateAction;
 import org.broken.arrow.menu.library.button.logic.FillMenuButton;
@@ -41,14 +43,14 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 
 	public CategoryList(final RecipeT recipe, final CategoryData categoryData, final String permission, final ButtonType editorType, final String grupSeachFor) {
 		super(FormatListContents.getCategorys(self().getCategoryDataCache().values(), grupSeachFor));
-		this.menuTemplate = menuSettingsCache.getTemplates().get("CategoryList");
+		this.menuTemplate = menuSettingsCache.getTemplate("CategoryList");
 		this.recipe = recipe;
 		this.categoryData = categoryData;
 		this.permission = permission;
 		this.editorType = editorType;
 		if (this.menuTemplate != null) {
 			setFillSpace(this.menuTemplate.getFillSlots());
-			setTitle(this.menuTemplate.getMenuTitel());
+			setTitle(this.menuTemplate.getMenuTitle());
 			setMenuSize(GuiUtil.invSize("CategoryList", menuTemplate.getAmountOfButtons()));
 			setMenuOpenSound(this.menuTemplate.getSound());
 		}
@@ -58,7 +60,7 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 	@Override
 	public MenuButton getButtonAt(final int slot) {
 		if (this.menuTemplate == null) return null;
-		for (final Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()) {
+		for (final Entry<List<Integer>, MenuButtonData> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()) {
 			if (menuTemplate.getKey().contains(slot)) {
 				return registerButtons(menuTemplate.getValue());
 			}
@@ -67,7 +69,7 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 	}
 
 
-	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
+	private MenuButton registerButtons(final MenuButtonData value) {
 		return new MenuButton() {
 			@Override
 			public void onClickInsideMenu(final @NonNull Player player, final @NonNull Inventory menu, final @NonNull ClickType click, final @NonNull ItemStack clickedItem) {
@@ -77,27 +79,28 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 
 			@Override
 			public ItemStack getItem() {
-				return value.getItemStack();
+				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = value.getPassiveButton();
+				return Adapter.getItemStack(button.getMaterial(),button.getDisplayName(),button.getLore(),button.getExtra(),button.isGlow());
 			}
 		};
 	}
 
-	public boolean run(final com.dutchjelly.craftenhance.gui.templates.MenuButton value, final Inventory menu, final Player player, final ClickType click) {
-		if (value.getButtonType() == ButtonType.PrvPage) {
+	public boolean run(final MenuButtonData value, final Inventory menu, final Player player, final ClickType click) {
+		if (value.isActionTypeEqual(ButtonType.PrvPage.name())) {
 			previousPage();
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.NxtPage) {
+		if (value.isActionTypeEqual( ButtonType.NxtPage.name())) {
 			nextPage();
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.Back) {
+		if (value.isActionTypeEqual(ButtonType.Back.name())) {
 			new RecipeSettings<>(this.recipe, this.categoryData, null, editorType)
 					.menuOpen(player);
 			//new RecipeEditor<>(this.recipe, this.categoryData, null,  editorType).menuOpen(player);
 		}
 
-		if (value.getButtonType() == ButtonType.Search) {
+		if (value.isActionTypeEqual(ButtonType.Search.name())) {
 			if (click == ClickType.RIGHT) {
 				new HandleChatInput(this, msg -> {
 					if (GuiUtil.seachCategory(msg)) {
@@ -149,10 +152,11 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 				List<String> lore = new ArrayList<>();
 				final Map<String, String> placeHolders = new HashMap<>();
 				if (menuTemplate != null) {
-					final com.dutchjelly.craftenhance.gui.templates.MenuButton menuButton = menuTemplate.getMenuButton(-1);
+					final MenuButtonData menuButton = menuTemplate.getMenuButton(-1);
 					if (menuButton != null) {
-						displayName = menuButton.getDisplayName();
-						lore = menuButton.getLore();
+						final org.broken.arrow.menu.button.manager.library.utility.MenuButton passiveButton = menuButton.getPassiveButton();
+						displayName = passiveButton.getDisplayName();
+						lore = passiveButton.getLore();
 					}
 				}
 				final ItemStack itemStack = containerData.getRecipeCategoryItem();

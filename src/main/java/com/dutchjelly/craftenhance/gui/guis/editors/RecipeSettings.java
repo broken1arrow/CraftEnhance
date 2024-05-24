@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.gui.guis.editors;
 
+import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
@@ -7,13 +8,14 @@ import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.CategoryList;
-import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import lombok.NonNull;
+import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
+import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
 import org.broken.arrow.menu.library.MenuUtility;
 import org.broken.arrow.menu.library.button.MenuButton;
 import org.broken.arrow.menu.library.holder.MenuHolder;
@@ -60,11 +62,11 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			menu = "RecipeSettingsFurnace";
 		}
 		this.setUseColorConversion(true);
-		menuTemplate = menuSettingsCache.getTemplates().get(menu);
+		menuTemplate = menuSettingsCache.getTemplate(menu);
 		setSlotsYouCanAddItems(true);
 		if (menuTemplate != null) {
 			setMenuSize(GuiUtil.invSize("RecipeSettings", this.menuTemplate.getAmountOfButtons()));
-			setTitle(menuTemplate.getMenuTitel());
+			setTitle(menuTemplate.getMenuTitle());
 			//setFillSpace(menuTemplate.getFillSlots());
 			setMenuOpenSound(this.menuTemplate.getSound());
 		}
@@ -74,7 +76,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	@Override
 	public MenuButton getButtonAt(final int slot) {
 		if (this.menuTemplate == null) return null;
-		for (final Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()) {
+		for (final Entry<List<Integer>, MenuButtonData> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()) {
 			if (menuTemplate.getKey().contains(slot)) {
 				return registerButtons(menuTemplate.getValue());
 			}
@@ -83,7 +85,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	}
 
 
-	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
+	private MenuButton registerButtons(final MenuButtonData value) {
 		return new MenuButton() {
 			@Override
 			public void onClickInsideMenu(final @NonNull Player player, final @NonNull Inventory menu, final @NonNull ClickType click, final @NonNull ItemStack clickedItem) {
@@ -97,21 +99,26 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			public ItemStack getItem() {
 				final Map<String, String> placeHolders = setPlaceholders();
 
-				final ItemStack itemStack = getConversingItem(value.getButtonType());
+				ItemStack itemStack = getConversingItem(ButtonType.valueOfType(value.getActionType()));
 				if (itemStack != null) return itemStack;
-				if (value.getItemStack() == null) return null;
-				return GuiUtil.ReplaceAllPlaceHolders(value.getItemStack().clone(), placeHolders);
+
+				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = value.getPassiveButton();
+				itemStack = Adapter.getItemStack(button.getMaterial(),button.getDisplayName(),button.getLore(),button.getExtra(),button.isGlow());
+				if (itemStack == null)
+					return null;
+
+				return GuiUtil.ReplaceAllPlaceHolders(itemStack.clone(), placeHolders);
 			}
 		};
 	}
 
 
-	public boolean run(final com.dutchjelly.craftenhance.gui.templates.MenuButton value, final Inventory menu, final Player player, final ClickType click) {
-		if (value.getButtonType() == ButtonType.SetPosition) {
+	public boolean run(final MenuButtonData value, final Inventory menu, final Player player, final ClickType click) {
+		if (value.isActionTypeEqual( ButtonType.SetPosition.name())) {
 			new HandleChatInput(this, this::handlePositionChange);
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.AllowedWorldsCraft) {
+		if (value.isActionTypeEqual(  ButtonType.AllowedWorldsCraft.name())) {
 			if (player.isConversing()) return true;
 			new HandleChatInput(this, message -> {
 				if (!this.handleSetWorld(message, click)) {
@@ -123,7 +130,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 					.start(player);
 			return false;
 		}
-		if (value.getButtonType() == ButtonType.SetCookTime) {
+		if (value.isActionTypeEqual(  ButtonType.SetCookTime.name())) {
 			if (player.isConversing()) return true;
 			new HandleChatInput(this, (msg) -> {
 				short parsed;
@@ -147,7 +154,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			}).setMessages("Please input a cook duration.Type q, exit, cancel to turn it off.").start(player);
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.SetExp) {
+		if (value.isActionTypeEqual(  ButtonType.SetExp.name())) {
 			if (player.isConversing()) return true;
 			new HandleChatInput(this, msg -> {
 				int parsed;
@@ -171,7 +178,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			}).setMessages("Please input an exp amount.Type q, exit, cancel to turn it off.").start(getViewer());
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.SwitchShaped) {
+		if (value.isActionTypeEqual(  ButtonType.SwitchShaped.name())) {
 			if (recipe instanceof WBRecipe) {
 				final WBRecipe wbRecipe = ((WBRecipe) this.recipe);
 				final boolean shapeless = !wbRecipe.isShapeless();
@@ -179,16 +186,16 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			}
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.SwitchHidden) {
+		if (value.isActionTypeEqual(  ButtonType.SwitchHidden.name())) {
 			final boolean hidden = !this.recipe.isHidden();
 			this.recipe.setHidden(hidden);
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.SwitchMatchMeta) {
+		if (value.isActionTypeEqual(  ButtonType.SwitchMatchMeta.name())) {
 			switchMatchMeta();
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.SetPermission) {
+		if (value.isActionTypeEqual(  ButtonType.SetPermission.name())) {
 			if (player.isConversing()) return true;
 			new HandleChatInput(this, msg -> {
 				if (!handlePermissionSetCB(msg)) {
@@ -199,10 +206,10 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			}).setMessages("Set your own permission on a recipe. Only players some has this permission can craft the item.", " Type q,exit,cancel to turn it off").start(getViewer());
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.ChangeCategoryList) {
+		if (value.isActionTypeEqual(  ButtonType.ChangeCategoryList.name())) {
 			new CategoryList<>(this.recipe, this.categoryData, this.permission, this.editorType, "").menuOpen(player);
 		}
-		if (value.getButtonType() == ButtonType.ChangeCategory) {
+		if (value.isActionTypeEqual(  ButtonType.ChangeCategory.name())) {
 			if (player.isConversing()) return true;
 			new HandleChatInput(this, msg -> {
 				if (!GuiUtil.changeOrCreateCategory(msg, player, this.recipe)) {
@@ -212,12 +219,12 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 				return true;
 			}).setMessages("Change category name and you can also change item (if not set it will use the old one). Like this 'category new_category_name crafting_table' without '. If you want create new category recomend use this format 'category crafting_table' without '", "Type q,exit,cancel to turn it off.").start(getViewer());
 		}
-		if (value.getButtonType() == ButtonType.SetPartialMatch) {
+		if (value.isActionTypeEqual(  ButtonType.SetPartialMatch.name())) {
 			final boolean partialMatch = !this.recipe.isCheckPartialMatch();
 			this.recipe.setCheckPartialMatch(partialMatch);
 			return true;
 		}
-		if (value.getButtonType() == ButtonType.Back) {
+		if (value.isActionTypeEqual(  ButtonType.Back.name())) {
 			new RecipeEditor<>(this.recipe, this.categoryData, this.permission, this.editorType, false).menuOpen(player);
 		}
 		return false;

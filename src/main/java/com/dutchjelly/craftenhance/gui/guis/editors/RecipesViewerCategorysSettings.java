@@ -6,10 +6,11 @@ import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.ChangeCategoryItem;
 import com.dutchjelly.craftenhance.gui.guis.RecipesViewerCategorys;
-import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
+import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
+import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
 import org.broken.arrow.menu.library.button.MenuButton;
 import org.broken.arrow.menu.library.holder.MenuHolder;
 import org.bukkit.Bukkit;
@@ -31,10 +32,10 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 	private final String category;
 
 	public RecipesViewerCategorysSettings(final String category) {
-		this.menuTemplate = menuSettingsCache.getTemplates().get("CategorysSettings");
+		this.menuTemplate = menuSettingsCache.getTemplate("CategorysSettings");
 		if (this.menuTemplate != null) {
 			setFillSpace(this.menuTemplate.getFillSlots());
-			setTitle(this.menuTemplate.getMenuTitel());
+			setTitle(this.menuTemplate.getMenuTitle());
 			setMenuSize(GuiUtil.invSize("CategorysSettings",this.menuTemplate.getAmountOfButtons()));
 			setMenuOpenSound(this.menuTemplate.getSound());
 		}
@@ -45,7 +46,7 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 	@Override
 	public MenuButton getButtonAt(final int slot) {
 		if (this.menuTemplate == null) return null;
-		for (final Entry<List<Integer>, com.dutchjelly.craftenhance.gui.templates.MenuButton> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()){
+		for (final Entry<List<Integer>, MenuButtonData> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()){
 			if (menuTemplate.getKey().contains(slot)){
 				return registerButtons(menuTemplate.getValue());
 			}
@@ -53,7 +54,7 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 		return null;
 	}
 
-	private MenuButton registerButtons(final com.dutchjelly.craftenhance.gui.templates.MenuButton value) {
+	private MenuButton registerButtons(final MenuButtonData value) {
 		return new MenuButton() {
 			@Override
 			public void onClickInsideMenu(@Nonnull final Player player, @Nonnull final Inventory menu, @Nonnull final ClickType click, @Nonnull final ItemStack clickedItem) {
@@ -63,14 +64,15 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 
 			@Override
 			public ItemStack getItem() {
-				return value.getItemStack();
+				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = value.getPassiveButton();
+				return Adapter.getItemStack(button.getMaterial(),button.getDisplayName(),button.getLore(),button.getExtra(),button.isGlow());
 			}
 		};
 	}
 
-	public boolean run(final com.dutchjelly.craftenhance.gui.templates.MenuButton value, final Inventory menu, final Player player, final ClickType click) {
+	public boolean run(final MenuButtonData value, final Inventory menu, final Player player, final ClickType click) {
 
-		if (value.getButtonType() == ButtonType.RemoveCategory){
+		if (value.isActionTypeEqual(  ButtonType.RemoveCategory.name())){
 			final CategoryData categoryData = self().getCategoryDataCache().get(this.category);
 			if (categoryData != null) {
 				final List<EnhancedRecipe> enhancedRecipes = categoryData.getEnhancedRecipes();
@@ -90,7 +92,7 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 				new RecipesViewerCategorys("").menuOpen(player);
 			}
 		}
-		if (value.getButtonType() == ButtonType.ChangeCategoryName){
+		if (value.isActionTypeEqual( ButtonType.ChangeCategoryName.name())){
 			new HandleChatInput(this, msg-> {
 				if(!GuiUtil.changeCategoryName(this.category,msg,player)){
 					new RecipesViewerCategorysSettings(this.category).menuOpen(player);
@@ -100,7 +102,7 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 			}).setMessages("Please input new display name. Like this 'name' without '.Type cancel, quit, exit to close this without change.")
 					.start(player);
 		}
-		if (value.getButtonType() == ButtonType.ChangeCategoryItem) {
+		if (value.isActionTypeEqual( ButtonType.ChangeCategoryItem.name())){
 			if (click.isLeftClick()) {
 				new ChangeCategoryItem(this.category).menuOpen(player);
 			} else
@@ -113,7 +115,7 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 				}).setMessages("Change category item. Like this 'stone' without '.Type cancel, quit, exit or q to close this without change.")
 						.start(player);
 		}
-		if (value.getButtonType() == ButtonType.ChangeCategory) {
+		if (value.isActionTypeEqual( ButtonType.ChangeCategory.name())){
 			new HandleChatInput(this, msg -> {
 				if (!GuiUtil.changeCategory(this.category, msg, player)) {
 					new RecipesViewerCategorysSettings(this.category).menuOpen(player);
@@ -123,7 +125,7 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 			}).setMessages("Change category name. Like this 'new_category_name' without '.Type cancel, quit, exit or q to close this without change.")
 					.start(player);
 		}
-		if (value.getButtonType() == ButtonType.Back) {
+		if (value.isActionTypeEqual( ButtonType.Back.name())){
 			new RecipesViewerCategorys("").menuOpen(player);
 		}
 		return false;
