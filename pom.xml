@@ -14,7 +14,7 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
         <utility-library>0.97</utility-library>
         <dependencys_path>com.dutchjelly.craftenhance.libs</dependencys_path>
-    </properties>
+	</properties>
 	<build>
 		<plugins>
             <plugin>
@@ -33,10 +33,9 @@
                             <artifactSet>
                                 <includes>
                                     <include>com.github.broken1arrow.Utility-Library:Conversation-Prompt*</include>
-                                    <include>com.github.broken1arrow.Utility-Library:NBT*</include>
                                     <include>com.github.broken1arrow.Utility-Library:Menu_Library*</include>
                                     <include>com.github.broken1arrow.Utility-Library:Title-Update*</include>
-                                    <include>com.github.broken1arrow.Utility-Library:NBT*</include>
+                                    <include>com.saicone.rtag:rtag*</include>
                                 </includes>
                             </artifactSet>
                             <relocations>
@@ -56,7 +55,7 @@
                                     <pattern>org.broken.arrow.title.update.library</pattern>
                                     <shadedPattern>${dependencys_path}.menu</shadedPattern>
                                 </relocation>
-                               <relocation>
+                                <relocation>
                                     <pattern>org.broken.arrow.library.dependencies.nbt</pattern>
                                     <shadedPattern>${dependencys_path}.nbt</shadedPattern>
                                 </relocation>
@@ -68,7 +67,16 @@
                                     <pattern>org.broken.arrow.color.library</pattern>
                                     <shadedPattern>${dependencys_path}.color</shadedPattern>
                                 </relocation>
+                                <relocation>
+                                    <pattern>org.broken.arrow.logging.library</pattern>
+                                    <shadedPattern>${dependencys_path}.logging</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.saicone.rtag</pattern>
+                                    <shadedPattern>${dependencys_path}.rtag</shadedPattern>
+                                </relocation>
                             </relocations>
+                            <minimizeJar>true</minimizeJar>
                         </configuration>
                     </execution>
                 </executions>
@@ -93,10 +101,6 @@
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
-        </repository>
-        <repository>
-            <id>itemsadder-repo</id>
-            <url>https://maven.pkg.github.com/LoneDev6/API-ItemsAdder</url>
         </repository>
 	</repositories>
 	<dependencies>
@@ -125,12 +129,6 @@
         </dependency>
         <dependency>
             <groupId>com.github.broken1arrow.Utility-Library</groupId>
-            <artifactId>NBT</artifactId>
-            <version>${utility-library}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.broken1arrow.Utility-Library</groupId>
             <artifactId>Menu_Library</artifactId>
             <version>${utility-library}</version>
             <scope>compile</scope>
@@ -139,6 +137,18 @@
             <groupId>com.github.broken1arrow.Utility-Library</groupId>
             <artifactId>Title-Update</artifactId>
             <version>${utility-library}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.saicone.rtag</groupId>
+            <artifactId>rtag</artifactId>
+            <version>1.4.4</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.saicone.rtag</groupId>
+            <artifactId>rtag-item</artifactId>
+            <version>1.4.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

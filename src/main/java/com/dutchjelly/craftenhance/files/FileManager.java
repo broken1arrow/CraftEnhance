@@ -1,13 +1,15 @@
 package com.dutchjelly.craftenhance.files;
 
 import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedItem;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.saicone.rtag.RtagItem;
+import com.saicone.rtag.util.ServerInstance;
 import lombok.SneakyThrows;
-import org.broken.arrow.menu.library.utility.ServerVersion;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -83,7 +85,7 @@ public class FileManager {
 		boolean unsavedChanges = false;
 
 		for (final String key : jarResourceConfig.getKeys(false)) {
-			if (ServerVersion.newerThan(ServerVersion.V1_8))
+			if (ServerInstance.verNumber > 8)
 				if (!fileConfig.contains(key, false)) {
 					fileConfig.set(key, jarResourceConfig.get(key));
 					unsavedChanges = true;
@@ -158,7 +160,7 @@ public class FileManager {
 			final Gson gson = new Gson();
 			final Map<String, Map<String, Object>> serialized = gson.fromJson(json.toString(), typeToken);
 			if (serialized != null)
-				serialized.keySet().forEach(x -> items.put(x, ItemStack.deserialize(serialized.get(x))));
+				serialized.keySet().forEach(x -> items.put(x, RtagItem.edit(ItemStack.deserialize(serialized.get(x)), RtagItem::fixSerialization)));
 			return;
 		}
 		if (itemsConfig == null)
@@ -168,7 +170,7 @@ public class FileManager {
 		items.clear();
 		if (itemsConfig != null)
 		for (final String key : itemsConfig.getKeys(false)) {
-			items.put(key, itemsConfig.getItemStack(key));
+			items.put(key, RtagItem.edit(itemsConfig.getItemStack(key), RtagItem::fixSerialization));
 		}
 	}
 
@@ -373,8 +375,8 @@ public class FileManager {
 	private boolean isItemInUse(final ItemStack item) {
 		for (final EnhancedRecipe r : recipes) {
 			if (r.getResult().equals(item)) return true;
-			for (final ItemStack inRecipe : r.getContent()) {
-				if (inRecipe != null && inRecipe.equals(item)) return true;
+			for (final EnhancedItem inRecipe : r.getContent()) {
+				if (inRecipe.getItem() != null && inRecipe.equals(item)) return true;
 			}
 
 		}

@@ -21,10 +21,11 @@ import com.dutchjelly.craftenhance.commands.edititem.LoreCmd;
 import com.dutchjelly.craftenhance.crafthandling.RecipeInjector;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.crafthandling.customcraftevents.ExecuteCommand;
-import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
+import com.dutchjelly.craftenhance.crafthandling.util.ItemProviders;
+import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.files.CategoryDataCache;
 import com.dutchjelly.craftenhance.files.ConfigFormatter;
 import com.dutchjelly.craftenhance.files.FileManager;
@@ -143,7 +144,10 @@ public class CraftEnhance extends JavaPlugin {
 		fm.saveContainerOwners(injector.getContainerOwners());
 		Debug.Send("Saving disabled recipes...");
 		fm.saveDisabledServerRecipes(RecipeLoader.getInstance().getDisabledServerRecipes().stream().map(x -> Adapter.GetRecipeIdentifier(x)).collect(Collectors.toList()));
-		fm.getRecipes().forEach(EnhancedRecipe::save);
+		fm.getRecipes().forEach(recipe -> {
+			recipe.save();
+			ServerRecipeTranslator.removeIfExist(recipe.getKey());
+		});
 		categoryDataCache.save();
 
 	}
@@ -227,6 +231,7 @@ public class CraftEnhance extends JavaPlugin {
 		ConfigFormatter.init(this).formatConfigMessages();
 		Messenger.Init(this);
 		ItemMatchers.init(getConfig().getBoolean("enable-backwards-compatible-item-matching"));
+		ItemProviders.init(getConfig().getConfigurationSection("item-provider"));
 		Debug.Send("Loading gui templates");
 		if (menuSettingsCache == null)
 			menuSettingsCache = new MenuSettingsCache(this);

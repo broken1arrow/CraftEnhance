@@ -4,6 +4,7 @@ import com.dutchjelly.craftenhance.commandhandling.CommandRoute;
 import com.dutchjelly.craftenhance.commandhandling.ICommand;
 import com.dutchjelly.craftenhance.crafthandling.RecipeGroup;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedItem;
 import com.dutchjelly.craftenhance.crafthandling.recipes.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
@@ -232,8 +233,8 @@ public class Test implements ICommand{
         WBRecipe recipe = new WBRecipe();
         recipe.setKey("testing123");
         recipe.setPermissions("");
-        recipe.setContent(customContent);
-        recipe.setResult(supahDiamondChestplate);
+        recipe.setContent(EnhancedItem.of(customContent));
+        recipe.setResult(new EnhancedItem(supahDiamondChestplate));
 
         RecipeLoader.getInstance().loadRecipe(recipe);
         Assert(!RecipeLoader.getInstance().isLoadedAsServerRecipe(recipe));
@@ -252,7 +253,7 @@ public class Test implements ICommand{
 
         //boots
         customContent = new ItemStack[]{null, null,null,supahDiamond,null,supahDiamond,supahDiamond,null,supahDiamond};
-        recipe.setContent(customContent);
+        recipe.setContent(EnhancedItem.of(customContent));
         RecipeLoader.getInstance().loadRecipe(recipe);
         Assert(!RecipeLoader.getInstance().isLoadedAsServerRecipe(recipe));
         Assert(RecipeLoader.getInstance().findGroup(recipe) != null);
@@ -266,8 +267,8 @@ public class Test implements ICommand{
         WBRecipe recipe2 = new WBRecipe();
         recipe2.setKey("testing1234");
         recipe2.setPermissions("");
-        recipe2.setContent(customContent);
-        recipe2.setResult(new ItemStack(Material.EMERALD));
+        recipe2.setContent(EnhancedItem.of(customContent));
+        recipe2.setResult(new EnhancedItem(new ItemStack(Material.EMERALD)));
 
         RecipeLoader.getInstance().loadRecipe(recipe2);
         Assert(RecipeLoader.getInstance().findGroup(recipe2).getEnhancedRecipes().size() == 2);
@@ -283,7 +284,7 @@ public class Test implements ICommand{
 
 
         customContent = new ItemStack[]{null, supahDiamond, null, null,null,null,null,null,null};
-        recipe.setContent(customContent);
+        recipe.setContent(EnhancedItem.of(customContent));
         RecipeLoader.getInstance().loadRecipe(recipe);
         Assert(RecipeLoader.getInstance().isLoadedAsServerRecipe(recipe));
         Assert(RecipeLoader.getInstance().findGroup(recipe) != null);

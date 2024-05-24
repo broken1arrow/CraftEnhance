@@ -63,12 +63,12 @@ public class FurnaceRecipe extends EnhancedRecipe {
 	}
 
 	public boolean matcheType(final ItemStack[] content) {
-		return content.length == 1 && ItemMatchers.matchType(content[0], getContent()[0]);
+		return content.length == 1 && ItemMatchers.matchType(content[0], getContent()[0].getItem());
 	}
 
 	@Override
 	public Recipe getServerRecipe() {
-		return Adapter.GetFurnaceRecipe(CraftEnhance.self(), ServerRecipeTranslator.GetFreeKey(getKey()), getResult(), getContent()[0], getDuration(), getExp());
+		return Adapter.GetFurnaceRecipe(CraftEnhance.self(), ServerRecipeTranslator.GetFreeKey(getKey()), getResult().getItem(), getContent()[0].getItem(), getDuration(), getExp());
 	}
 
 	@Override
@@ -76,18 +76,18 @@ public class FurnaceRecipe extends EnhancedRecipe {
 		if (!(r instanceof org.bukkit.inventory.FurnaceRecipe)) return false;
 		final org.bukkit.inventory.FurnaceRecipe serverRecipe = (org.bukkit.inventory.FurnaceRecipe) r;
 
-		return ItemMatchers.matchType(serverRecipe.getInput(), getContent()[0])
-				&& ItemMatchers.matchType(serverRecipe.getResult(), getResult());
+		return ItemMatchers.matchType(serverRecipe.getInput(), getContent()[0].getItem())
+				&& ItemMatchers.matchType(serverRecipe.getResult(), getResult().getItem());
 	}
 
 	@Override
 	public boolean isSimilar(final EnhancedRecipe r) {
-		return r instanceof FurnaceRecipe && ItemMatchers.matchTypeData(r.getContent()[0], getContent()[0]);
+		return r instanceof FurnaceRecipe && ItemMatchers.matchTypeData(r.getContent()[0].getItem(), getContent()[0].getItem());
 	}
 
 	@Override
 	public boolean isAlwaysSimilar(final Recipe r) {
-		if (!ItemMatchers.matchItems(r.getResult(), getResult()))
+		if (!getResult().equals(r.getResult()))
 			return false;
 		if (!(r instanceof org.bukkit.inventory.FurnaceRecipe))
 			return false;

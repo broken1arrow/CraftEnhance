@@ -8,10 +8,7 @@ import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
-import org.bukkit.ChatColor;
-import org.bukkit.DyeColor;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -22,6 +19,7 @@ import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.material.MaterialData;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nullable;
@@ -345,6 +343,15 @@ public class Adapter {
 		}
 
 		return r.getResult().getType().name();
+	}
+
+	public static void removeIfExist(final Plugin plugin, final String key) {
+		try {
+			final NamespacedKey namespacedKey = new NamespacedKey(plugin, key);
+			if (Bukkit.getServer().getRecipe(namespacedKey) != null) {
+				Bukkit.getServer().removeRecipe(namespacedKey);
+			}
+		} catch (Throwable ignored) { }
 	}
 
 }

@@ -116,6 +116,16 @@ public class RecipeInjector implements Listener {
 		}
 	}
 
+	private boolean isEnhancedRecipe(Recipe recipe) {
+		if (recipe instanceof ShapedRecipe) {
+			return ((ShapedRecipe) recipe).getKey().getNamespace().equalsIgnoreCase("craftenhance");
+		} else if (recipe instanceof ShapelessRecipe) {
+			return ((ShapelessRecipe) recipe).getKey().getNamespace().equalsIgnoreCase("craftenhance");
+		} else {
+			return false;
+		}
+	}
+
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void handleCrafting(final PrepareItemCraftEvent craftEvent) {
 		if (craftEvent.getRecipe() == null || craftEvent.getRecipe().getResult() == null || !plugin.getConfig().getBoolean("enable-recipes"))
@@ -137,6 +147,10 @@ public class RecipeInjector implements Listener {
 				inv.setResult(null);
 			}
 			Debug.Send(Type.Crafting,"no matching groups");
+			if (isEnhancedRecipe(serverRecipe)) {
+				Debug.Send(Type.Crafting,"But the recipe is from CraftEnhance, so the crafting result will be blocked");
+				inv.setResult(null);
+			}
 			return;
 		}
 
@@ -172,7 +186,7 @@ public class RecipeInjector implements Listener {
 						Debug.Send(Type.Crafting,"This recipe contains Modeldata and will be crafted if the recipe is not cancelled.");
 						Bukkit.getScheduler().runTask(CraftEnhance.self(), () -> {
 							if (wbRecipe.matches(inv.getMatrix())) {
-								final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(eRecipe, wbRecipe, wbRecipe.getResult().clone());
+								final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(eRecipe, wbRecipe, wbRecipe.getResult().getItem().clone());
 								if (beforeCraftOutputEvent.isCancelled()) {
 									Debug.Send(Type.Crafting,"This recipe is now cancelled and will not produce output item.");
 									return;
@@ -184,8 +198,7 @@ public class RecipeInjector implements Listener {
 						});
 					} else {
 						Debug.Send(Type.Crafting,"This recipe deosen't contains Modeldata and will be crafted if the recipe is not cancelled.");
-
-						final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(eRecipe, wbRecipe, wbRecipe.getResult().clone());
+						final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(eRecipe, wbRecipe, wbRecipe.getResult().getItem().clone());
 						if (beforeCraftOutputEvent.isCancelled()) {
 							Debug.Send(Type.Crafting,"This recipe is now cancelled and will not produce output item.");
 							continue;
@@ -197,7 +210,7 @@ public class RecipeInjector implements Listener {
 					return;
 				}
 				Debug.Send(Type.Crafting,"Recipe matrix doesn't match.");
-				Debug.Send(Type.Crafting,"The recipe matrix: " + Arrays.toString(wbRecipe.getContent()));
+				Debug.Send(Type.Crafting,"The recipe matrix: " + Arrays.toString(wbRecipe.getContentItems()));
 				Debug.Send(Type.Crafting,"The matrix on craftingtable: " + Arrays.toString(inv.getMatrix()));
 				if (wbRecipe.isCheckPartialMatch() && wbRecipe.matches(inv.getMatrix(), MatchType.MATCH_TYPE.getMatcher())){
 					Debug.Send(Type.Crafting,"Partial matched recipe fond and will prevent craft this recipe.");
@@ -284,7 +297,7 @@ public class RecipeInjector implements Listener {
 					//TODO test if result can be changed here
 					Debug.Send("Found enhanced recipe " + fRecipe.getResult().toString() + " for furnace");
 					Debug.Send("Matching ingridens are " + source + " .");
-					return Optional.of(fRecipe.getResult());
+					return Optional.of(fRecipe.getResult().getItem());
 				} else {
 					Debug.Send("found this recipe " + fRecipe.getResult().toString() + " match but, player has not this permission " + fRecipe.getPermissions());
 					break;
