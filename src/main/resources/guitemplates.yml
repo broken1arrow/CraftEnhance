@@ -133,6 +133,10 @@ CategorysSettings:
         - "&fChange category item"
         - "&fsome you use for this"
         - "&fcategory."
+        - "&7"
+        - "&fLeftclick to add your own item"
+        - "&fand rightclick to type in chat"
+        - "&fthe itemtype you want."
       glow: true
     18:
       buttonType: Back
