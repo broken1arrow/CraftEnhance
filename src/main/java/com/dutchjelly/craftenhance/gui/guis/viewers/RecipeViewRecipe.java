@@ -6,10 +6,12 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.RecipesViewer;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
 import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
+import com.dutchjelly.craftenhance.util.PermissionTypes;
 import org.broken.arrow.menu.library.button.MenuButton;
 import org.broken.arrow.menu.library.button.logic.ButtonUpdateAction;
 import org.broken.arrow.menu.library.button.logic.FillMenuButton;
@@ -74,10 +76,11 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 						put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(((FurnaceRecipe) recipe).getExp()));
 						put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(((FurnaceRecipe) recipe).getDuration()));
 					}
+					put(InfoItemPlaceHolders.Config_permission.getPlaceHolder(), PermissionTypes.Edit.getPerm());
 					put(InfoItemPlaceHolders.Key.getPlaceHolder(), recipe.getKey() == null ? "null" : recipe.getKey());
 					put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), recipe.getMatchType().getDescription());
 					put(InfoItemPlaceHolders.MatchType.getPlaceHolder(), recipe.getMatchType().getDescription());
-					put(InfoItemPlaceHolders.Permission.getPlaceHolder(), recipe.getPermissions() == null ? "null" : recipe.getPermissions());
+					put(InfoItemPlaceHolders.Permission.getPlaceHolder(), recipe.getPermissions() == null ? "not set" : recipe.getPermissions());
 					put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), recipe.getAllowedWorlds() == null || recipe.getAllowedWorlds().isEmpty() ? "all worlds" : recipe.getAllowedWorldsFormatted());
 				}};
 				return GuiUtil.ReplaceAllPlaceHolders(value.getItemStack().clone(), placeHolders);
@@ -88,6 +91,18 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 	public boolean run(final com.dutchjelly.craftenhance.gui.templates.MenuButton value, final Inventory menu, final Player player, final ClickType click) {
 		if (value.getButtonType() == ButtonType.Back) {
 			new RecipesViewer(categoryData, "", player).menuOpen(player);
+		}
+		if (value.getButtonType() == ButtonType.edit_recipe) {
+			if (player.hasPermission(PermissionTypes.Edit.getPerm())) {
+				if (recipe instanceof WBRecipe) {
+						new RecipeEditor<>((WBRecipe) recipe, categoryData, null, ButtonType.ChooseWorkbenchType).menuOpen(player);
+
+				}
+				if (recipe instanceof FurnaceRecipe) {
+						new RecipeEditor<>((FurnaceRecipe) recipe, categoryData, null, ButtonType.ChooseFurnaceType).menuOpen(player);
+				}
+			}
+			return false;
 		}
 		return false;
 	}
