@@ -141,6 +141,34 @@ CategorysSettings:
       lore:
         - "&fGo back to the previous GUI"
       glow: true
+ChangeCategoryItem:
+  menu_settings:
+    name: "Category item"
+    fill-space: "13"
+    sound: BLOCK_NOTE_BLOCK_BASEDRUM
+  buttons:
+    0-8,9-11,12,14-17,19-21,23-26:
+      color: GRAY
+      material: STAINED_GLASS_PANE
+      name: ""
+      lore:
+        - ""
+      glow: false
+    22:
+      buttonType: Save
+      material: GOLD_INGOT
+      name: "&aSet item"
+      lore:
+        - "&fSet the the item"
+        - "&ffor the category."
+      glow: true
+    18:
+      buttonType: Back
+      material: GLOWSTONE_DUST
+      name: "&aBack"
+      lore:
+        - "&fGo back to the previous GUI"
+      glow: true
 CategoryList:
   menu_settings:
     name: "Category list"
@@ -208,6 +236,15 @@ WBRecipeViewer:
       name: "&aBack"
       lore:
         - "&fGo back to the previous GUI"
+      glow: true
+    25:
+      buttonType: edit_recipe
+      material: DIAMOND_AXE
+      name: "&aEdit recipe"
+      lore:
+        - "&fYou can edit the recipe, if"
+        - "&fyou have this permission:"
+        - "&a [config_permission]"
       glow: true
     12:
       material: WORKBENCH

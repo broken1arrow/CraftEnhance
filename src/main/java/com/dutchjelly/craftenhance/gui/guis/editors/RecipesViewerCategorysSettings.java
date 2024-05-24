@@ -4,6 +4,7 @@ import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
+import com.dutchjelly.craftenhance.gui.guis.ChangeCategoryItem;
 import com.dutchjelly.craftenhance.gui.guis.RecipesViewerCategorys;
 import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
@@ -99,19 +100,22 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 			}).setMessages("Please input new display name. Like this 'name' without '.Type cancel, quit, exit to close this without change.")
 					.start(player);
 		}
-		if (value.getButtonType() == ButtonType.ChangeCategoryItem){
-			new HandleChatInput(this, msg-> {
-				if (!GuiUtil.changeCategoryItem(this.category,msg, player)) {
-					new RecipesViewerCategorysSettings(this.category).menuOpen(player);
-					return false;
-				}
-				return true;
-			}).setMessages("Change category item. Like this 'stone' without '.Type cancel, quit, exit or q to close this without change.")
-					.start(player);
+		if (value.getButtonType() == ButtonType.ChangeCategoryItem) {
+			if (click.isLeftClick()) {
+				new ChangeCategoryItem(this.category).menuOpen(player);
+			} else
+				new HandleChatInput(this, msg -> {
+					if (!GuiUtil.changeCategoryItem(this.category, msg, player)) {
+						new RecipesViewerCategorysSettings(this.category).menuOpen(player);
+						return false;
+					}
+					return true;
+				}).setMessages("Change category item. Like this 'stone' without '.Type cancel, quit, exit or q to close this without change.")
+						.start(player);
 		}
-		if (value.getButtonType() == ButtonType.ChangeCategory){
-			new HandleChatInput(this, msg-> {
-				if (!GuiUtil.changeCategory(this.category,msg, player)) {
+		if (value.getButtonType() == ButtonType.ChangeCategory) {
+			new HandleChatInput(this, msg -> {
+				if (!GuiUtil.changeCategory(this.category, msg, player)) {
 					new RecipesViewerCategorysSettings(this.category).menuOpen(player);
 					return false;
 				}

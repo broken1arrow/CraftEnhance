@@ -27,7 +27,10 @@ public enum ButtonType {
     FillItems(""),
     AllowedWorldsCraft(""),
     RecipeSettings(""),
-	SetPartialMatch("");
+	SetPartialMatch(""),
+    edit_recipe(""),
+    Save(""),
+    ;
 
     private final String type;
 
