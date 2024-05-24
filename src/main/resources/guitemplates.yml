@@ -53,8 +53,8 @@ Menus:
           - "&fGo to the previous page"
         glow: true
       "47":
+        action_type: NewCategory
         passive:
-          action_type: NewCategory
           material: BOOK
           name: "&aNew category"
           lore:
@@ -62,7 +62,6 @@ Menus:
             - "&flack of permission."
           glow: false
         active:
-          action_type: NewCategory
           material: BOOK
           name: "&aNew category"
           lore:

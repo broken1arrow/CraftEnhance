@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 import static com.dutchjelly.craftenhance.gui.util.GuiUtil.setTextItem;
+import static com.dutchjelly.craftenhance.messaging.Messenger.Message;
 
 public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
@@ -75,21 +76,21 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 				if (button == null)
 					button = value.getPassiveButton();
 
-				return Adapter.getItemStack(button.getMaterial(),button.getDisplayName(),button.getLore(),button.getExtra(),button.isGlow());
+				return Adapter.getItemStack(button.getMaterial(), button.getDisplayName(), button.getLore(), button.getExtra(), button.isGlow());
 			}
 		};
 	}
 
 	public boolean run(final MenuButtonData value, final Inventory menu, final Player player, final ClickType click) {
-		if (value.isActionTypeEqual( ButtonType.PrvPage.name())) {
+		if (value.isActionTypeEqual(ButtonType.PrvPage.name())) {
 			previousPage();
 			return true;
 		}
-		if (value.isActionTypeEqual(  ButtonType.NxtPage.name())) {
+		if (value.isActionTypeEqual(ButtonType.NxtPage.name())) {
 			nextPage();
 			return true;
 		}
-		if (value.isActionTypeEqual( ButtonType.Search.name())) {
+		if (value.isActionTypeEqual(ButtonType.Search.name())) {
 			if (click == ClickType.RIGHT) {
 				Messenger.Message("Search for categorys.", getViewer());
 				new HandleChatInput(this, msg -> {
@@ -103,15 +104,20 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 				;
 			} else new RecipesViewerCategorys("").menuOpen(player);
 		}
-		if (value.isActionTypeEqual(  ButtonType.NewCategory.name()) && player.hasPermission(PermissionTypes.Categorys_editor.getPerm())) {
-			new HandleChatInput(this, msg -> {
-				if (!GuiUtil.newCategory(msg, player)) {
-					new RecipesViewerCategorys("").menuOpen(player);
-					return false;
-				}
-				return true;
-			}).setMessages("Please input your category name and item type you want. Like this 'category' without '.Type cancel, quit, exit or q to close this without change.")
-					.start(getViewer());
+
+		if (value.isActionTypeEqual(ButtonType.NewCategory.name()) && player.hasPermission(PermissionTypes.Categorys_editor.getPerm())) {
+			if (!player.isConversing()) {
+				new HandleChatInput(this, msg -> {
+					if (!GuiUtil.newCategory(msg, player)) {
+						new RecipesViewerCategorys("").menuOpen(player);
+						return false;
+					}
+					return true;
+				}).setMessages("Please input your category name and item type you want. Like this 'category' without '.Type cancel, quit, exit or q to close this without change.")
+						.start(getViewer());
+			} else {
+				Message("You still conversing, type cancel, quit, exit or q to close in chat and enter", player);
+			}
 	/*		self().getGuiManager().waitForChatInput(new RecipesViewerCategorys(""), getViewer(), msg-> {
 				if (!GuiUtil.newCategory(msg, player)) {
 					new RecipesViewerCategorys("").menuOpen(player);
