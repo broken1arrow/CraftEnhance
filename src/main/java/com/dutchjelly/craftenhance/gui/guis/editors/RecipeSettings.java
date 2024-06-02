@@ -62,6 +62,8 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			menu = "RecipeSettingsFurnace";
 		}
 		this.setUseColorConversion(true);
+		this.setIgnoreItemCheck(true);
+
 		menuTemplate = menuSettingsCache.getTemplate(menu);
 		setSlotsYouCanAddItems(true);
 		if (menuTemplate != null) {

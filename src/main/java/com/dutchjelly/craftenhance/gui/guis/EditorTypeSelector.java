@@ -38,6 +38,7 @@ public class EditorTypeSelector extends MenuHolder {
 		setTitle(menuTemplate.getMenuTitle());
 		setMenuOpenSound(this.menuTemplate.getSound());
 		this.setUseColorConversion(true);
+		this.setIgnoreItemCheck(true);
 	}
 
 	private String getFreshKey(String keySeed) {

@@ -44,6 +44,7 @@ public class ChangeCategoryItem extends MenuHolderPage<ItemStack> {
 		this.category = category;
 		this.setUseColorConversion(true);
 		this.setSlotsYouCanAddItems(true);
+		this.setIgnoreItemCheck(true);
 	}
 
 	@Override

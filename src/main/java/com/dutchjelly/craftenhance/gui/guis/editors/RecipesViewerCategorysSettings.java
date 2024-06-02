@@ -41,6 +41,7 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 		}
 		this.category = category;
 		this.setUseColorConversion(true);
+		this.setIgnoreItemCheck(true);
 	}
 
 	@Override

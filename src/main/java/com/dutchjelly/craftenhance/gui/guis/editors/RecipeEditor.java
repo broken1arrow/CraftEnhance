@@ -90,6 +90,8 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 		setMenuSize(27);
 		setSlotsYouCanAddItems(true);
 		this.setUseColorConversion(true);
+		this.setIgnoreItemCheck(true);
+
 		if (menuTemplate != null) {
 			setMenuSize(GuiUtil.invSize("RecipeEditor", this.menuTemplate.getAmountOfButtons()));
 			setTitle(menuTemplate.getMenuTitle());

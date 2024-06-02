@@ -49,7 +49,7 @@ public class RecipeDisabler extends MenuHolderPage<Recipe> {
 		setMenuSize(GuiUtil.invSize("RecipeDisabler",this.menuTemplate.getAmountOfButtons()));
 		setMenuOpenSound(this.menuTemplate.getSound());
 		this.setUseColorConversion(true);
-
+		this.setIgnoreItemCheck(true);
 	}
 
 	@Override

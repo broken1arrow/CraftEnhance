@@ -55,6 +55,7 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 			setMenuOpenSound(this.menuTemplate.getSound());
 		}
 		this.setUseColorConversion(true);
+		this.setIgnoreItemCheck(true);
 	}
 
 	@Override

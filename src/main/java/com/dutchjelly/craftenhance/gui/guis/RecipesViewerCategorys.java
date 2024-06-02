@@ -45,7 +45,9 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 		//setIgnoreItemCheck(true);
 		setMenuSize(GuiUtil.invSize("RecipesCategorys", this.menuTemplate.getAmountOfButtons()));
 		setMenuOpenSound(this.menuTemplate.getSound());
+
 		this.setUseColorConversion(true);
+		this.setIgnoreItemCheck(true);
 	}
 
 	@Override
@@ -118,13 +120,6 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 			} else {
 				Message("You still conversing, type cancel, quit, exit or q to close in chat and enter", player);
 			}
-	/*		self().getGuiManager().waitForChatInput(new RecipesViewerCategorys(""), getViewer(), msg-> {
-				if (!GuiUtil.newCategory(msg, player)) {
-					new RecipesViewerCategorys("").menuOpen(player);
-					return false;
-				}
-				return true;
-			});*/
 		}
 		return false;
 	}

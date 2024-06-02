@@ -46,6 +46,7 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 		setMenuSize(GuiUtil.invSize("RecipesViewer", this.menuTemplate.getAmountOfButtons()));
 		setMenuOpenSound(this.menuTemplate.getSound());
 		this.setUseColorConversion(true);
+		this.setIgnoreItemCheck(true);
 	}
 
 	@Override

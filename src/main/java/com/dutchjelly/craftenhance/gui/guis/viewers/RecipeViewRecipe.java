@@ -47,6 +47,7 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 		setTitle(this.menuTemplate.getMenuTitle());
 		setMenuSize(27);
 		this.setUseColorConversion(true);
+		this.setIgnoreItemCheck(true);
 	}
 
 	@Override
