@@ -65,7 +65,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		this.setIgnoreItemCheck(true);
 
 		menuTemplate = menuSettingsCache.getTemplate(menu);
-		setSlotsYouCanAddItems(true);
+
 		if (menuTemplate != null) {
 			setMenuSize(GuiUtil.invSize("RecipeSettings", this.menuTemplate.getAmountOfButtons()));
 			setTitle(menuTemplate.getMenuTitle());

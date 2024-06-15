@@ -3,20 +3,20 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-	<groupId>CraftEnhance</groupId>
-	<artifactId>CraftEnhance</artifactId>
-	<version>2.5.9.9</version>
-	<name>CraftEnhance</name>
-	<description>This is a minecraft plugin to enhance crafting.</description>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<maven.compiler.source>1.8</maven.compiler.source>
-        <utility-library>0.99</utility-library>
+    <groupId>CraftEnhance</groupId>
+    <artifactId>CraftEnhance</artifactId>
+    <version>2.5.9.9.1</version>
+    <name>CraftEnhance</name>
+    <description>This is a minecraft plugin to enhance crafting.</description>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <utility-library>0.107</utility-library>
         <dependencys_path>com.dutchjelly.craftenhance.libs</dependencys_path>
     </properties>
-	<build>
-		<plugins>
+    <build>
+        <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -32,42 +32,23 @@
                             <finalName>${project.name}-${project.version}</finalName>
                             <artifactSet>
                                 <includes>
-                                    <include>com.github.broken1arrow.Utility-Library:Conversation-Prompt*</include>
-                                    <include>com.github.broken1arrow.Utility-Library:NBT*</include>
-                                    <include>com.github.broken1arrow.Utility-Library:Menu_Library*</include>
-                                    <include>com.github.broken1arrow.Utility-Library:Title-Update*</include>
-                                    <include>com.github.broken1arrow.Utility-Library:NBT*</include>
-                                    <include>com.github.broken1arrow.Utility-Library:MenuConfiguration-Manager*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:conversation-prompt*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:nbt*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:menu-library*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:title-update*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:nbt*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:menu-configuration-manager*
+                                    </include>
+                                    <include>com.github.broken1arrow.Utility-Library:yaml-utility*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:serialize-utility*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:color-conversion*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:log-and-validate*</include>
                                 </includes>
                             </artifactSet>
                             <relocations>
                                 <relocation>
-                                    <pattern>org.broken.arrow.nbt.library</pattern>
-                                    <shadedPattern>${dependencys_path}.nbt</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.broken.arrow.prompt.library</pattern>
-                                    <shadedPattern>${dependencys_path}.prompt</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.broken.arrow.menu.library</pattern>
-                                    <shadedPattern>${dependencys_path}.menu</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.broken.arrow.title.update.library</pattern>
-                                    <shadedPattern>${dependencys_path}.menu</shadedPattern>
-                                </relocation>
-                               <relocation>
-                                    <pattern>org.broken.arrow.library.dependencies.nbt</pattern>
-                                    <shadedPattern>${dependencys_path}.nbt</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.broken.arrow.itemcreator.library</pattern>
-                                    <shadedPattern>${dependencys_path}.itemcreator</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.broken.arrow.color.library</pattern>
-                                    <shadedPattern>${dependencys_path}.color</shadedPattern>
+                                    <pattern>org.broken.arrow</pattern>
+                                    <shadedPattern>${dependencys_path}</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
@@ -99,8 +80,13 @@
             <id>itemsadder-repo</id>
             <url>https://maven.pkg.github.com/LoneDev6/API-ItemsAdder</url>
         </repository>
-	</repositories>
-	<dependencies>
+        <repository>
+            <id>codemc-repo</id>
+            <url>https://repo.codemc.io/repository/maven-public/</url>
+            <layout>default</layout>
+        </repository>
+    </repositories>
+    <dependencies>
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
@@ -112,39 +98,39 @@
             <version>1.18.26</version>
             <scope>provided</scope>
         </dependency>
-		<dependency>
-			<groupId>com.mojang</groupId>
-			<artifactId>authlib</artifactId>
-			<version>1.5.21</version>
-			<scope>provided</scope>
-		</dependency>
+        <dependency>
+            <groupId>com.mojang</groupId>
+            <artifactId>authlib</artifactId>
+            <version>1.5.21</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>com.github.broken1arrow.Utility-Library</groupId>
-            <artifactId>Conversation-Prompt</artifactId>
+            <artifactId>conversation-prompt</artifactId>
             <version>${utility-library}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.github.broken1arrow.Utility-Library</groupId>
-            <artifactId>NBT</artifactId>
+            <artifactId>nbt</artifactId>
             <version>${utility-library}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.github.broken1arrow.Utility-Library</groupId>
-            <artifactId>Menu_Library</artifactId>
+            <artifactId>menu-library</artifactId>
             <version>${utility-library}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.github.broken1arrow.Utility-Library</groupId>
-            <artifactId>Title-Update</artifactId>
+            <artifactId>title-update</artifactId>
             <version>${utility-library}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.github.broken1arrow.Utility-Library</groupId>
-            <artifactId>MenuConfiguration-Manager</artifactId>
+            <artifactId>menu-configuration-manager</artifactId>
             <version>${utility-library}</version>
             <scope>compile</scope>
         </dependency>
@@ -160,13 +146,13 @@
         <!--<version>2.4.21</version>-->
         <!--</dependency>-->
         <!--<dependency>-->
-            <!--<groupId>org.bukkit</groupId>-->
-            <!--<artifactId>bukkit</artifactId>-->
-            <!--<version>1.16.1-R0.1-SNAPSHOT</version>-->
-            <!--<scope>system</scope>-->
-            <!--<systemPath>${project.basedir}/craftbukkit-1.16.1.jar</systemPath>-->
+        <!--<groupId>org.bukkit</groupId>-->
+        <!--<artifactId>bukkit</artifactId>-->
+        <!--<version>1.16.1-R0.1-SNAPSHOT</version>-->
+        <!--<scope>system</scope>-->
+        <!--<systemPath>${project.basedir}/craftbukkit-1.16.1.jar</systemPath>-->
         <!--</dependency>-->
-	</dependencies>
+    </dependencies>
 </project>
 
 
