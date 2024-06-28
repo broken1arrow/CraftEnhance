@@ -4,9 +4,14 @@ import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorBlast;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorFurnace;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorSmoker;
 import com.dutchjelly.craftenhance.gui.guis.viewers.RecipeViewRecipe;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
@@ -118,16 +123,30 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 	@Override
 	public FillMenuButton<EnhancedRecipe> createFillMenuButton() {
 		return new FillMenuButton<>((player, itemStacks, clickType, itemStack, enhancedRecipe) -> {
+			boolean allowClick = (clickType == ClickType.MIDDLE || clickType == ClickType.RIGHT) && getViewer().hasPermission(PermissionTypes.Edit.getPerm());
+
 			if (enhancedRecipe instanceof WBRecipe) {
-				if ((clickType == ClickType.MIDDLE || clickType == ClickType.RIGHT) && getViewer().hasPermission(PermissionTypes.Edit.getPerm()))
+				if (allowClick)
 					new RecipeEditor<>((WBRecipe) enhancedRecipe, categoryData, null, ButtonType.ChooseWorkbenchType).menuOpen(player);
 				else new RecipeViewRecipe<>(categoryData, (WBRecipe) enhancedRecipe, "WBRecipeViewer").menuOpen(player);
 			}
 			if (enhancedRecipe instanceof FurnaceRecipe) {
-				if ((clickType == ClickType.MIDDLE || clickType == ClickType.RIGHT) && getViewer().hasPermission(PermissionTypes.Edit.getPerm()))
-					new RecipeEditor<>((FurnaceRecipe) enhancedRecipe, categoryData, null, ButtonType.ChooseFurnaceType).menuOpen(player);
+				if (allowClick)
+					new RecipeEditorFurnace((FurnaceRecipe) enhancedRecipe, categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
 				else
 					new RecipeViewRecipe<>(categoryData, (FurnaceRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
+			}
+			if (enhancedRecipe instanceof BlastRecipe) {
+				if (allowClick)
+					new RecipeEditorBlast((BlastRecipe) enhancedRecipe, categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
+				else
+					new RecipeViewRecipe<>(categoryData, (BlastRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
+			}
+			if (enhancedRecipe instanceof SmokerRecipe) {
+				if (allowClick)
+					new RecipeEditorSmoker((SmokerRecipe) enhancedRecipe, categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
+				else
+					new RecipeViewRecipe<>(categoryData, (SmokerRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
 			}
 			return ButtonUpdateAction.NONE;
 		}, (slot, enhancedRecipe) -> {

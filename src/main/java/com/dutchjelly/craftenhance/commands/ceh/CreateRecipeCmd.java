@@ -4,7 +4,7 @@ import com.dutchjelly.craftenhance.commandhandling.CommandRoute;
 import com.dutchjelly.craftenhance.commandhandling.CustomCmdHandler;
 import com.dutchjelly.craftenhance.commandhandling.ICommand;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.RecipeType;
+import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.gui.guis.EditorTypeSelector;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
@@ -13,6 +13,10 @@ import com.dutchjelly.craftenhance.messaging.Messenger;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @CommandRoute(cmdPath="ceh.createrecipe", perms="perms.recipe-editor")
 public class CreateRecipeCmd implements ICommand {
@@ -43,7 +47,7 @@ public class CreateRecipeCmd implements ICommand {
 		    guis.menuOpen(p);
 	        return;
         }
-
+		System.out.println("args " + Arrays.toString(args));
         //Use the input that the user gave.
 		if(args.length == 1){
 			args = addEmptyString(args);
@@ -61,11 +65,11 @@ public class CreateRecipeCmd implements ICommand {
         WBRecipe newRecipe = new WBRecipe(args[1], null, new ItemStack[9]);
 		ButtonType buttonType = ButtonType.ChooseWorkbenchType;
 		if (newRecipe.getType() == RecipeType.FURNACE) {
-			buttonType = com.dutchjelly.craftenhance.gui.util.ButtonType.ChooseFurnaceType;
+			buttonType = ButtonType.ChooseFurnaceType;
 			newRecipe = new WBRecipe(args[1], null, new ItemStack[1]);
 		}
 		newRecipe.setKey(args[0]);
-		RecipeEditor<EnhancedRecipe> menu= new RecipeEditor<EnhancedRecipe>(newRecipe, null,null, buttonType);
+		RecipeEditor<EnhancedRecipe> menu = new RecipeEditor<EnhancedRecipe>(newRecipe, null,null, buttonType);
 		menu.menuOpen(p);
 /*		WBRecipeEditor gui = new WBRecipeEditor(handler.getMain().getGuiManager(), handler.getMain().getGuiTemplatesFile().getTemplate(WBRecipeEditor.class), null, p, newRecipe);
 		handler.getMain().getGuiManager().openGUI(p, gui);*/
@@ -75,7 +79,22 @@ public class CreateRecipeCmd implements ICommand {
 	public void handleConsoleCommand(CommandSender sender, String[] args) {
         Messenger.MessageFromConfig("messages.commands.only-for-players", sender);
 	}
-	
+
+	@Override
+	public List<String> handleTabCompletion(final CommandSender sender, final String[] args) {
+		List<String> tab = new ArrayList<>();
+		if (args.length == 2){
+			tab.add(ButtonType.ChooseWorkbenchType.name());
+			tab.add(ButtonType.ChooseFurnaceType.name());
+			tab.add(ButtonType.ChooseBlastType.name());
+			tab.add(ButtonType.ChooseSmokerType.name());
+		}
+		if (args.length == 3){
+			tab.add("key");
+		}
+		return tab;
+	}
+
 	//Create a new array object so return that.
 	private String[] addEmptyString(String[] args){
 		String[] newArray = new String[args.length + 1];

@@ -4,10 +4,15 @@ import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.RecipesViewer;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorBlast;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorFurnace;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorSmoker;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
@@ -44,7 +49,7 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 		this.categoryData = categoryData;
 		this.menuTemplate = menuSettingsCache.getTemplate(menuType);
 		setFillSpace(this.menuTemplate.getFillSlots());
-		setTitle(this.menuTemplate.getMenuTitle());
+		setTitle(this.menuTemplate.getMenuTitle() == null ? "viewer" : this.menuTemplate.getMenuTitle().replace("[Recipe_type]", recipe.getType().name().toLowerCase()));
 		setMenuSize(27);
 		this.setUseColorConversion(true);
 		this.setIgnoreItemCheck(true);
@@ -79,11 +84,12 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 						put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(((FurnaceRecipe) recipe).getExp()));
 						put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(((FurnaceRecipe) recipe).getDuration()));
 					}
+					put(InfoItemPlaceHolders.Recipe_type.getPlaceHolder(), recipe.getType().name().toLowerCase());
 					put(InfoItemPlaceHolders.Config_permission.getPlaceHolder(), PermissionTypes.Edit.getPerm());
 					put(InfoItemPlaceHolders.Key.getPlaceHolder(), recipe.getKey() == null ? "null" : recipe.getKey());
 					put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), recipe.getMatchType().getDescription());
 					put(InfoItemPlaceHolders.MatchType.getPlaceHolder(), recipe.getMatchType().getDescription());
-					put(InfoItemPlaceHolders.Permission.getPlaceHolder(), recipe.getPermissions() == null ? "not set" : recipe.getPermissions());
+					put(InfoItemPlaceHolders.Permission.getPlaceHolder(), recipe.getPermission() == null ? "not set" : recipe.getPermission());
 					put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), recipe.getAllowedWorlds() == null || recipe.getAllowedWorlds().isEmpty() ? "all worlds" : recipe.getAllowedWorldsFormatted());
 				}};
 
@@ -93,7 +99,7 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 				if (button == null)
 					button = value.getPassiveButton();
 
-				ItemStack itemStack = Adapter.getItemStack(button.getMaterial(),button.getDisplayName(),button.getLore(),button.getExtra(),button.isGlow());
+				ItemStack itemStack = Adapter.getItemStack(button.getMaterial(), button.getDisplayName(), button.getLore(), button.getExtra(), button.isGlow());
 				if (itemStack == null)
 					return null;
 				return GuiUtil.ReplaceAllPlaceHolders(itemStack.clone(), placeHolders);
@@ -102,17 +108,22 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 	}
 
 	public boolean run(final MenuButtonData value, final Inventory menu, final Player player, final ClickType click) {
-		if (value.isActionTypeEqual(  ButtonType.Back.name())) {
+		if (value.isActionTypeEqual(ButtonType.Back.name())) {
 			new RecipesViewer(categoryData, "", player).menuOpen(player);
 		}
-		if (value.isActionTypeEqual(  ButtonType.edit_recipe.name())) {
+		if (value.isActionTypeEqual(ButtonType.edit_recipe.name())) {
 			if (player.hasPermission(PermissionTypes.Edit.getPerm())) {
 				if (recipe instanceof WBRecipe) {
-						new RecipeEditor<>((WBRecipe) recipe, categoryData, null, ButtonType.ChooseWorkbenchType).menuOpen(player);
-
+					new RecipeEditor<>((WBRecipe) recipe, categoryData, null, ButtonType.ChooseWorkbenchType).menuOpen(player);
 				}
 				if (recipe instanceof FurnaceRecipe) {
-						new RecipeEditor<>((FurnaceRecipe) recipe, categoryData, null, ButtonType.ChooseFurnaceType).menuOpen(player);
+					new RecipeEditorFurnace((FurnaceRecipe) recipe, categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
+				}
+				if (recipe instanceof BlastRecipe) {
+					new RecipeEditorBlast((BlastRecipe) recipe, categoryData, null, ButtonType.ChooseBlastType, true).menuOpen(player);
+				}
+				if (recipe instanceof SmokerRecipe) {
+					new RecipeEditorSmoker((SmokerRecipe) recipe, categoryData, null, ButtonType.ChooseSmokerType, true).menuOpen(player);
 				}
 			}
 			return false;

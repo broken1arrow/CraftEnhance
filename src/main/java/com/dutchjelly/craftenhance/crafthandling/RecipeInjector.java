@@ -7,8 +7,8 @@ import com.dutchjelly.craftenhance.api.CraftEnhanceAPI;
 import com.dutchjelly.craftenhance.api.event.crafting.BeforeCraftOutputEvent;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers.MatchType;
@@ -16,6 +16,7 @@ import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.crafthandling.util.WBRecipeComparer;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
+import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import lombok.Getter;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
@@ -33,6 +34,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.FurnaceBurnEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
+import org.bukkit.event.inventory.FurnaceStartSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -55,7 +57,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
-import static com.dutchjelly.craftenhance.util.FurnaceDefultValues.getExp;
 
 public class RecipeInjector implements Listener {
 
@@ -76,6 +77,11 @@ public class RecipeInjector implements Listener {
 		this.plugin = plugin;
 		disableDefaultModeldataCrafts = plugin.getConfig().getBoolean("disable-default-custom-model-data-crafts");
 		makeItemsadderCompatible = plugin.getConfig().getBoolean("make-itemsadder-compatible");
+		try {
+			Bukkit.getPluginManager().registerEvents(new Smelt(), plugin);
+		} catch (Throwable throwable) {
+			Debug.Send("Some functions did not work on your serverversion. will be turned off.");
+		}
 	}
 
 	public void setLoader(final RecipeLoader loader) {
@@ -124,7 +130,7 @@ public class RecipeInjector implements Listener {
 
 		final CraftingInventory inv = craftEvent.getInventory();
 		final Recipe serverRecipe = craftEvent.getRecipe();
-		Debug.Send(Type.Crafting,"The server wants to inject " + serverRecipe.getResult() + " ceh will check or modify this.");
+		Debug.Send(Type.Crafting, "The server wants to inject " + serverRecipe.getResult() + " ceh will check or modify this.");
 
 		final List<RecipeGroup> possibleRecipeGroups = loader.findGroupsByResult(serverRecipe.getResult(), RecipeType.WORKBENCH);
 		final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
@@ -136,7 +142,7 @@ public class RecipeInjector implements Listener {
 			if (checkForDisabledRecipe(disabledServerRecipes, serverRecipe, serverRecipe.getResult())) {
 				inv.setResult(null);
 			}
-			Debug.Send(Type.Crafting,"no matching groups");
+			Debug.Send(Type.Crafting, "no matching groups");
 			return;
 		}
 
@@ -150,57 +156,57 @@ public class RecipeInjector implements Listener {
 
 				notAllowedToCraft = isCrafingAllowedInWorld(craftEvent, eRecipe);
 				if (notAllowedToCraft) {
-					Debug.Send(Type.Crafting,"You are not allowed to craft.");
+					Debug.Send(Type.Crafting, "You are not allowed to craft.");
 					continue;
 				}
 
 				if (checkForDisabledRecipe(disabledServerRecipes, wbRecipe, serverRecipe.getResult())) {
 					inv.setResult(null);
-					Debug.Send(Type.Crafting,"This recipe is disabled.");
+					Debug.Send(Type.Crafting, "This recipe is disabled.");
 					continue;
 				}
 
 
-				Debug.Send(Type.Crafting,"Checking if enhanced recipe for " + wbRecipe.getResult().toString() + " matches.");
+				Debug.Send(Type.Crafting, "Checking if enhanced recipe for " + wbRecipe.getResult().toString() + " matches.");
 				final Player player = craftEvent.getViewers().size() > 0 ? (Player) craftEvent.getViewers().get(0) : null;
 
 				if (wbRecipe.matches(inv.getMatrix())
 						&& craftEvent.getViewers().stream().allMatch(x -> entityCanCraft(x, wbRecipe))
 						&& !CraftEnhanceAPI.fireEvent(wbRecipe, player, inv, group)) {
-					Debug.Send(Type.Crafting,"Recipe matches, injecting " + wbRecipe.getResult().toString());
+					Debug.Send(Type.Crafting, "Recipe matches, injecting " + wbRecipe.getResult().toString());
 					if (makeItemsadderCompatible && containsModeldata(inv)) {
-						Debug.Send(Type.Crafting,"This recipe contains Modeldata and will be crafted if the recipe is not cancelled.");
+						Debug.Send(Type.Crafting, "This recipe contains Modeldata and will be crafted if the recipe is not cancelled.");
 						Bukkit.getScheduler().runTask(CraftEnhance.self(), () -> {
 							if (wbRecipe.matches(inv.getMatrix())) {
 								final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(eRecipe, wbRecipe, wbRecipe.getResult().clone());
 								if (beforeCraftOutputEvent.isCancelled()) {
-									Debug.Send(Type.Crafting,"This recipe is now cancelled and will not produce output item.");
+									Debug.Send(Type.Crafting, "This recipe is now cancelled and will not produce output item.");
 									return;
 								}
-								Debug.Send(Type.Crafting,"The recipe is now crafted and output item is " + beforeCraftOutputEvent.getResultItem());
-								Debug.Send(Type.Crafting,"The recipe matrix: " + Arrays.toString(inv.getMatrix()));
+								Debug.Send(Type.Crafting, "The recipe is now crafted and output item is " + beforeCraftOutputEvent.getResultItem());
+								Debug.Send(Type.Crafting, "The recipe matrix: " + Arrays.toString(inv.getMatrix()));
 								inv.setResult(beforeCraftOutputEvent.getResultItem());
 							}
 						});
 					} else {
-						Debug.Send(Type.Crafting,"This recipe deosen't contains Modeldata and will be crafted if the recipe is not cancelled.");
+						Debug.Send(Type.Crafting, "This recipe deosen't contains Modeldata and will be crafted if the recipe is not cancelled.");
 
 						final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(eRecipe, wbRecipe, wbRecipe.getResult().clone());
 						if (beforeCraftOutputEvent.isCancelled()) {
-							Debug.Send(Type.Crafting,"This recipe is now cancelled and will not produce output item.");
+							Debug.Send(Type.Crafting, "This recipe is now cancelled and will not produce output item.");
 							continue;
 						}
-						Debug.Send(Type.Crafting,"The recipe is now crafted and output item is " + beforeCraftOutputEvent.getResultItem());
-						Debug.Send(Type.Crafting,"The recipe matrix: " + Arrays.toString(inv.getMatrix()));
+						Debug.Send(Type.Crafting, "The recipe is now crafted and output item is " + beforeCraftOutputEvent.getResultItem());
+						Debug.Send(Type.Crafting, "The recipe matrix: " + Arrays.toString(inv.getMatrix()));
 						inv.setResult(beforeCraftOutputEvent.getResultItem());
 					}
 					return;
 				}
-				Debug.Send(Type.Crafting,"Recipe matrix doesn't match.");
-				Debug.Send(Type.Crafting,"The recipe matrix: " + Arrays.toString(wbRecipe.getContent()));
-				Debug.Send(Type.Crafting,"The matrix on craftingtable: " + Arrays.toString(inv.getMatrix()));
-				if (wbRecipe.isCheckPartialMatch() && wbRecipe.matches(inv.getMatrix(), MatchType.MATCH_TYPE.getMatcher())){
-					Debug.Send(Type.Crafting,"Partial matched recipe fond and will prevent craft this recipe.");
+				Debug.Send(Type.Crafting, "Recipe matrix doesn't match.");
+				Debug.Send(Type.Crafting, "The recipe matrix: " + Arrays.toString(wbRecipe.getContent()));
+				Debug.Send(Type.Crafting, "The matrix on craftingtable: " + Arrays.toString(inv.getMatrix()));
+				if (wbRecipe.isCheckPartialMatch() && wbRecipe.matches(inv.getMatrix(), MatchType.MATCH_TYPE.getMatcher())) {
+					Debug.Send(Type.Crafting, "Partial matched recipe fond and will prevent craft this recipe.");
 					inv.setResult(null);
 					return;
 				}
@@ -208,22 +214,22 @@ public class RecipeInjector implements Listener {
 			if (notAllowedToCraft)
 				continue;
 
-			Debug.Send(Type.Crafting,"Check for similar server recipes if no enhanced ones match.");
+			Debug.Send(Type.Crafting, "Check for similar server recipes if no enhanced ones match.");
 			//Check for similar server recipes if no enhanced ones match.
 			for (final Recipe sRecipe : group.getServerRecipes()) {
 				if (sRecipe instanceof ShapedRecipe) {
 					final ItemStack[] content = ServerRecipeTranslator.translateShapedRecipe((ShapedRecipe) sRecipe);
 					if (WBRecipeComparer.shapeMatches(content, inv.getMatrix(), getTypeMatcher())) {
-						Debug.Send(Type.Crafting,"Match a ShapedRecipe.");
-						Debug.Send(Type.Crafting,"The recipe matrix for this type: " + Arrays.toString(inv.getMatrix()));
+						Debug.Send(Type.Crafting, "Match a ShapedRecipe.");
+						Debug.Send(Type.Crafting, "The recipe matrix for this type: " + Arrays.toString(inv.getMatrix()));
 						inv.setResult(sRecipe.getResult());
 						return;
 					}
 				} else if (sRecipe instanceof ShapelessRecipe) {
 					final ItemStack[] ingredients = ServerRecipeTranslator.translateShapelessRecipe((ShapelessRecipe) sRecipe);
 					if (WBRecipeComparer.ingredientsMatch(ingredients, inv.getMatrix(), getTypeMatcher())) {
-						Debug.Send(Type.Crafting,"Match a ShapelessRecipe.");
-						Debug.Send(Type.Crafting,"The recipe matrix for this type: " + Arrays.toString(inv.getMatrix()));
+						Debug.Send(Type.Crafting, "Match a ShapelessRecipe.");
+						Debug.Send(Type.Crafting, "The recipe matrix for this type: " + Arrays.toString(inv.getMatrix()));
 						inv.setResult(sRecipe.getResult());
 						return;
 					}
@@ -260,7 +266,6 @@ public class RecipeInjector implements Listener {
 	}
 
 	public Optional<ItemStack> getFurnaceResult(final RecipeGroup group, final ItemStack source, final Furnace furnace) {
-		final ItemStack[] srcMatrix = new ItemStack[]{source};
 		//FurnaceRecipe recipe = new FurnaceRecipe(null, null, srcMatrix);
 		//RecipeGroup group = RecipeLoader.getInstance().findSimilarGroup(recipe);
 
@@ -274,32 +279,8 @@ public class RecipeInjector implements Listener {
 		Debug.Send("Furnace source item: " + source);
 
 		//Check if any grouped enhanced recipe is a match.
-		for (final EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
-			final FurnaceRecipe fRecipe = (FurnaceRecipe) eRecipe;
-
-			Debug.Send("Checking if enhanced recipe for " + fRecipe.getResult().toString() + " matches.");
-
-			if (fRecipe.matches(srcMatrix)) {
-				if (entityCanCraft(p, fRecipe)) {
-					//TODO test if result can be changed here
-					Debug.Send("Found enhanced recipe " + fRecipe.getResult().toString() + " for furnace");
-					Debug.Send("Matching ingridens are " + source + " .");
-					return Optional.of(fRecipe.getResult());
-				} else {
-					Debug.Send("found this recipe " + fRecipe.getResult().toString() + " match but, player has not this permission " + fRecipe.getPermissions());
-					break;
-				}
-			} else {
-			/*	if (fRecipe.matcheType(srcMatrix)) {
-					Debug.Send("Found similar match itemtype for furnace");
-					Debug.Send("Is item similar= "  + fRecipe.getContent()[0].isSimilar(srcMatrix[0]));
-					Debug.Send("For recipe: " + fRecipe.getResult());
-					return Optional.empty();
-				}
-				Debug.Send("found recipe doesn't match " + (entityCanCraft(p, fRecipe) ? "." : "and no perms."));
-				return null;*/
-			}
-		}
+		FurnaceRecipe furnaceRecipe = getFurnaceRecipe(furnace.getType(), group, source, p);
+		if (furnaceRecipe != null) return Optional.of(furnaceRecipe.getResult());
 		//Check for similar server recipes if no enhanced ones match.
 		for (final Recipe sRecipe : group.getServerRecipes()) {
 			final org.bukkit.inventory.FurnaceRecipe fRecipe = (org.bukkit.inventory.FurnaceRecipe) sRecipe;
@@ -313,33 +294,77 @@ public class RecipeInjector implements Listener {
 		return Optional.empty();
 	}
 
-	@EventHandler
-	public void exstract(final FurnaceExtractEvent e) {
+	private FurnaceRecipe getFurnaceRecipe(final Material blockSmelting, final RecipeGroup group, final ItemStack source, final Player player) {
+		if (group == null) return null;
 
-		if (!notCustomItem.isEmpty() && notCustomItem.contains(e.getBlock().getLocation())) {
-			e.setExpToDrop(getExp(e.getItemType()));
-			notCustomItem.remove(e.getBlock().getLocation());
+		final ItemStack[] srcMatrix = new ItemStack[]{source};
+		for (final EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
+			if (!eRecipe.matchesBlockType(blockSmelting)) {
+				continue;
+			}
+
+			final FurnaceRecipe fRecipe = (FurnaceRecipe) eRecipe;
+
+			Debug.Send("Checking if enhanced recipe for " + fRecipe.getResult().toString() + " matches.");
+
+			if (fRecipe.matches(srcMatrix)) {
+				if (entityCanCraft(player, fRecipe)) {
+					Debug.Send("Found enhanced recipe " + fRecipe.getResult().toString() + " for furnace");
+					Debug.Send("Matching ingridens are " + source + " .");
+					return fRecipe;
+				} else {
+					Debug.Send("found this recipe " + fRecipe.getResult().toString() + " match but, player has not this permission " + fRecipe.getPermission());
+					break;
+				}
+			} else {
+				//TODO should this code be removed?
+			/*	if (fRecipe.matcheType(srcMatrix)) {
+					Debug.Send("Found similar match itemtype for furnace");
+					Debug.Send("Is item similar= "  + fRecipe.getContent()[0].isSimilar(srcMatrix[0]));
+					Debug.Send("For recipe: " + fRecipe.getResult());
+					return Optional.empty();
+				}
+				Debug.Send("found recipe doesn't match " + (entityCanCraft(p, fRecipe) ? "." : "and no perms."));
+				return null;*/
+			}
 		}
+		return null;
 	}
 
 	@EventHandler
+	public void exstract(final FurnaceExtractEvent e) {
+
+	/*	if (!notCustomItem.isEmpty() && notCustomItem.contains(e.getBlock().getLocation())) {
+			e.setExpToDrop(getExp(e.getItemType()));
+			notCustomItem.remove(e.getBlock().getLocation());
+		}*/
+	}
+
+
+	@EventHandler
 	public void smelt(final FurnaceSmeltEvent e) {
+
 		Debug.Send("furnace smelt");
 		final RecipeGroup group = getMatchingRecipeGroup(e.getSource());
 		final Optional<ItemStack> result = getFurnaceResult(group, e.getSource(), (Furnace) e.getBlock().getState());
-		if (result == null) return;
-
-		if (result.isPresent()) {
+		if (result != null && result.isPresent()) {
 			e.setResult(result.get());
 		} else {
 			final ItemStack itemStack = RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(e.getSource().getType()));
 			if (itemStack != null) {
-				//Adapter.GetFurnaceRecipe(CraftEnhance.self(), ServerRecipeTranslator.GetFreeKey(itemStack.getType().name().toLowerCase()), itemStack, e.getSource().getType(), 160, getExp(itemStack.getType()));
-				//pausedFurnaces.put((Furnace) e.getBlock().getState(), LocalDateTime.now().plusSeconds(10L));
-				e.setResult(itemStack);
+				if (group.getEnhancedRecipes().isEmpty()) {
+					e.setResult(itemStack);
+					return;
+				}
 				for (final EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
 					final FurnaceRecipe fRecipe = (FurnaceRecipe) eRecipe;
-					if (fRecipe.matcheType(new ItemStack[]{e.getSource()})) {
+					final boolean isVanillaRecipe = fRecipe.matcheType(new ItemStack[]{e.getSource()}) && !fRecipe.getResult().isSimilar(itemStack);
+					if(eRecipe.isCheckPartialMatch() && isVanillaRecipe) {
+						e.setCancelled(true);
+						break;
+					}
+					if (isVanillaRecipe) {
+						e.setResult(itemStack);
 						notCustomItem.add(e.getBlock().getLocation());
 						break;
 					}
@@ -347,8 +372,6 @@ public class RecipeInjector implements Listener {
 			} else
 				e.setCancelled(true);
 		}
-
-
 	}
 
 	@EventHandler(ignoreCancelled = false)
@@ -385,7 +408,8 @@ public class RecipeInjector implements Listener {
 	@EventHandler
 	public void furnacePlace(final BlockPlaceEvent e) {
 		if (e.isCancelled()) return;
-		if (e.getBlock().getType().equals(Material.FURNACE)) {
+		Material material = e.getBlock().getType();
+		if (material == Material.FURNACE || self().getVersionChecker().newerThan(VersionChecker.ServerVersion.v1_13) && (material == Material.BLAST_FURNACE || material == Material.SMOKER)) {
 			containerOwners.put(e.getBlock().getLocation(), e.getPlayer().getUniqueId());
 		}
 	}
@@ -414,7 +438,27 @@ public class RecipeInjector implements Listener {
 	}
 
 	private boolean entityCanCraft(final Permissible entity, final EnhancedRecipe group) {
-		return group.getPermissions() == null || group.getPermissions().equals("")
-				|| (entity != null && entity.hasPermission(group.getPermissions()));
+		return group.getPermission() == null || group.getPermission().equals("")
+				|| (entity != null && entity.hasPermission(group.getPermission()));
+	}
+
+	private class Smelt implements Listener {
+
+		@EventHandler
+		public void startSmelt(FurnaceStartSmeltEvent event) {
+			final RecipeGroup group = getMatchingRecipeGroup(event.getSource());
+			FurnaceRecipe furnaceRecipe = getFurnaceRecipe(event.getBlock().getType(), group, event.getSource(), null);
+			if (furnaceRecipe == null) {
+				/*todo need to fix so you can stop it from progress if not allow to burn the item  */
+				return;
+			}
+			event.setTotalCookTime(furnaceRecipe.getDuration());
+		}
+	}
+
+	private enum Matchning {
+		NON_MATCH,
+		SIMILAR,
+		MATCH,
 	}
 }

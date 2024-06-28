@@ -3,7 +3,7 @@ package com.dutchjelly.craftenhance.crafthandling;
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.RecipeType;
+import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.CategoryDataCache;
@@ -123,7 +123,7 @@ public class RecipeLoader {
 	public RecipeGroup findSimilarGroup(final EnhancedRecipe recipe) {
 		return mappedGroupedRecipes.get(recipe.getType()).stream().filter(x ->
 				x.getEnhancedRecipes().stream().anyMatch(y -> y.isSimilar(recipe)) ||
-						x.getServerRecipes().stream().anyMatch(y -> recipe.isSimilar(y))
+						x.getServerRecipes().stream().anyMatch(recipe::isSimilar)
 		).findFirst().orElse(null);
 	}
 
@@ -244,14 +244,13 @@ public class RecipeLoader {
 			}
 		}
 		//cache orginal recipe if user make furnace recipe and give right item as output.
-		//time and exp not work as it should yet.
 		cacheSimilarVanilliaRecipe( recipe);
 		//Only load the recipe if there is not a server recipe that's always similar.
 		if (alwaysSimilar == null) {
 			final Recipe serverRecipe = recipe.getServerRecipe();
 			if (serverRecipe == null) {
 				Debug.Send("Added server recipe is null for " + recipe.getKey());
-				self().getLogger().log(Level.WARNING, "Recipe will not be cached becuse the result is null or invalid material type.");
+				self().getLogger().log(Level.WARNING, "Recipe " + recipe.getKey() + " will not be cached becuse the result is null or invalid material type.");
 				return;
 			}
 		if (!containsRecipe && !isReloading)
@@ -271,9 +270,9 @@ public class RecipeLoader {
 	private void loadToCache(@NonNull final EnhancedRecipe recipe) {
 		String category = recipe.getRecipeCategory();
 		if (recipe instanceof FurnaceRecipe)
-			category = category == null || category.equals("") ? "furnace" : category;
+			category = category == null || category.isEmpty() ? "furnace" : category;
 		else
-			category = category == null || category.equals("") ? "default" : category;
+			category = category == null || category.isEmpty() ? "default" : category;
 		if (recipe.getRecipeCategory() == null)
 			recipe.setRecipeCategory(category);
 		CategoryData recipeCategory = this.categoryDataCache.get(category);

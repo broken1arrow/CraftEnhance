@@ -3,6 +3,7 @@ package com.dutchjelly.craftenhance.crafthandling.recipes;
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
+import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.files.FileManager;
@@ -12,6 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
@@ -31,7 +33,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 	}
 
 	public EnhancedRecipe(final String perm, final ItemStack result, final ItemStack[] content) {
-		this.permissions = perm;
+		this.permission = perm;
 		this.result = result;
 		this.content = content;
 	}
@@ -42,7 +44,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 
 		final List<String> recipeKeys;
 		result = fm.getItem((String) args.get("result"));
-		permissions = (String) args.get("permission");
+		permission = (String) args.get("permission");
 		if (args.containsKey("matchtype")) {
 			matchType = ItemMatchers.MatchType.valueOf((String) args.get("matchtype"));
 		} else if (args.containsKey("matchmeta")) {
@@ -109,7 +111,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 
 	@Getter
 	@Setter
-	private String permissions;
+	private String permission;
 
 	@Getter
 	@Setter
@@ -139,7 +141,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 		final FileManager fm = CraftEnhance.getPlugin(CraftEnhance.class).getFm();
 		return new LinkedHashMap<String, Object>() {{
 			putAll(EnhancedRecipe.super.serialize());
-			put("permission", permissions);
+			put("permission", permission);
 			put("matchtype", matchType.name());
 			put("hidden", hidden);
 			put("check_partial_match", checkPartialMatch);
@@ -205,4 +207,5 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 	public abstract boolean matches(ItemStack[] content);
 
 	public abstract boolean matches(ItemStack[] content, IMatcher<ItemStack> matcher);
+	public abstract boolean matchesBlockType(final Material blockSmelting);
 }

@@ -4,7 +4,7 @@ import com.dutchjelly.craftenhance.commandhandling.CommandRoute;
 import com.dutchjelly.craftenhance.commandhandling.ICommand;
 import com.dutchjelly.craftenhance.crafthandling.RecipeGroup;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
-import com.dutchjelly.craftenhance.crafthandling.recipes.RecipeType;
+import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
@@ -231,7 +231,7 @@ public class Test implements ICommand{
 
         WBRecipe recipe = new WBRecipe();
         recipe.setKey("testing123");
-        recipe.setPermissions("");
+        recipe.setPermission("");
         recipe.setContent(customContent);
         recipe.setResult(supahDiamondChestplate);
 
@@ -265,7 +265,7 @@ public class Test implements ICommand{
 
         WBRecipe recipe2 = new WBRecipe();
         recipe2.setKey("testing1234");
-        recipe2.setPermissions("");
+        recipe2.setPermission("");
         recipe2.setContent(customContent);
         recipe2.setResult(new ItemStack(Material.EMERALD));
 

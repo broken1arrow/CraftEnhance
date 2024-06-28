@@ -4,8 +4,13 @@ import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorBlast;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorFurnace;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorSmoker;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
@@ -79,18 +84,30 @@ public class EditorTypeSelector extends MenuHolder {
 	}
 
 	public void run(final MenuButtonData value, final Player player) {
-		EnhancedRecipe newRecipe = null;
 		if (value.isActionTypeEqual( ButtonType.ChooseWorkbenchType.name())){
-			newRecipe = new WBRecipe(permission, null, new ItemStack[9]);
-		}
-		if (value.isActionTypeEqual( ButtonType.ChooseFurnaceType.name())){
-			newRecipe = new FurnaceRecipe(permission, null, new ItemStack[1]);
-		}
-		if (newRecipe != null) {
+			EnhancedRecipe	newRecipe = new WBRecipe(permission, null, new ItemStack[9]);
 			newRecipe.setKey(getFreshKey(recipeKey));
 			final RecipeEditor<EnhancedRecipe> recipeEditor = new RecipeEditor<>(newRecipe, null,permission,
 					value.isActionTypeEqual(ButtonType.ChooseFurnaceType.name()) ? ButtonType.ChooseFurnaceType: ButtonType.ChooseWorkbenchType);
 			recipeEditor.menuOpen(player);
+			return;
+		}
+		if (value.isActionTypeEqual( ButtonType.ChooseFurnaceType.name())){
+			FurnaceRecipe furnaceRecipe = new FurnaceRecipe(permission, null, new ItemStack[1]);
+			furnaceRecipe.setKey(getFreshKey(recipeKey));
+			new RecipeEditorFurnace(furnaceRecipe,null,permission,ButtonType.ChooseFurnaceType,true).menuOpen(player);
+			return;
+		}
+		if (value.isActionTypeEqual( ButtonType.ChooseBlastType.name())){
+			BlastRecipe blastRecipe = new BlastRecipe(permission, null, new ItemStack[1]);
+			blastRecipe.setKey(getFreshKey(recipeKey));
+			new RecipeEditorBlast(blastRecipe,null,permission,ButtonType.ChooseBlastType,true).menuOpen(player);
+			return;
+		}
+		if (value.isActionTypeEqual( ButtonType.ChooseSmokerType.name())){
+			SmokerRecipe blastRecipe = new SmokerRecipe(permission, null, new ItemStack[1]);
+			blastRecipe.setKey(getFreshKey(recipeKey));
+			new RecipeEditorSmoker(blastRecipe,null,permission,ButtonType.ChooseSmokerType,true).menuOpen(player);
 		}
 	}
 }

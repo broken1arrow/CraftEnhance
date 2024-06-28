@@ -24,6 +24,8 @@ import com.dutchjelly.craftenhance.crafthandling.customcraftevents.ExecuteComman
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.files.CategoryDataCache;
 import com.dutchjelly.craftenhance.files.ConfigFormatter;
@@ -174,6 +176,8 @@ public class CraftEnhance extends JavaPlugin {
 		ConfigurationSerialization.registerClass(WBRecipe.class, "EnhancedRecipe");
 		ConfigurationSerialization.registerClass(WBRecipe.class, "Recipe");
 		ConfigurationSerialization.registerClass(FurnaceRecipe.class, "FurnaceRecipe");
+		ConfigurationSerialization.registerClass(BlastRecipe.class, "BlastRecipe");
+		ConfigurationSerialization.registerClass(SmokerRecipe.class, "SmokerRecipe");
 	}
 
 	//Assigns executor classes for the commands.

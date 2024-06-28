@@ -2,11 +2,13 @@ package com.dutchjelly.craftenhance.crafthandling.recipes;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
@@ -27,7 +29,7 @@ public class FurnaceRecipe extends EnhancedRecipe {
 	@Getter
 	private final RecipeType type = RecipeType.FURNACE;
 
-	private FurnaceRecipe(final Map<String, Object> args) {
+	protected FurnaceRecipe(final Map<String, Object> args) {
 		super(args);
 	}
 
@@ -62,13 +64,18 @@ public class FurnaceRecipe extends EnhancedRecipe {
 		return content.length == 1 && getMatchType().getMatcher().match(content[0], getContent()[0]);
 	}
 
+	@Override
+	public boolean matchesBlockType(final Material blockSmelting) {
+		return blockSmelting == Material.FURNACE;
+	}
+
 	public boolean matcheType(final ItemStack[] content) {
 		return content.length == 1 && ItemMatchers.matchType(content[0], getContent()[0]);
 	}
 
 	@Override
 	public Recipe getServerRecipe() {
-		return Adapter.GetFurnaceRecipe(CraftEnhance.self(), ServerRecipeTranslator.GetFreeKey(getKey()), getResult(), getContent()[0], getDuration(), getExp());
+		return Adapter.GetFurnaceRecipe(CraftEnhance.self(), ServerRecipeTranslator.GetFreeKey(getKey()), getResult(), getContent()[0], 200, getExp());
 	}
 
 	@Override

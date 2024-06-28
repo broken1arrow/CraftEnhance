@@ -1,11 +1,13 @@
 package com.dutchjelly.craftenhance.crafthandling.recipes;
 
+import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.crafthandling.util.WBRecipeComparer;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
@@ -156,5 +158,10 @@ public class WBRecipe extends EnhancedRecipe {
         }
 
         return false;
+    }
+
+    @Override
+    public boolean matchesBlockType(final Material blockSmelting) {
+        return true;
     }
 }

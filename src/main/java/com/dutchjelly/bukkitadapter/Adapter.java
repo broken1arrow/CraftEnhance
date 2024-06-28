@@ -148,6 +148,9 @@ public class Adapter {
 				case "WRITTEN_BOOK":
 				case "BOOK":
 					return Material.valueOf("COAL");
+				case "BLAST_FURNACE":
+				case "SMOKER":
+					return Material.FURNACE;
 			}
 		}
 		return null;
@@ -287,8 +290,31 @@ public class Adapter {
 			final org.bukkit.inventory.FurnaceRecipe recipe = new org.bukkit.inventory.FurnaceRecipe(result, source.getType());
 			if (!callSingleParamMethod("setCookingTime", duration, Integer.class, recipe, FurnaceRecipe.class))
 				Debug.Send("Custom cooking time is not supported.");
-			recipe.setExperience(exp);
+			try {
+				recipe.setExperience(exp);
+			} catch (NoSuchMethodError ex) {
+				Debug.Send("Set experience is not supported.");
+			}
 			return recipe;
+		}
+	}
+	public static org.bukkit.inventory.BlastingRecipe getBlastRecipe(final JavaPlugin plugin, final String key, final ItemStack result, final ItemStack source, final int duration, final float exp) {
+		try {
+			return org.bukkit.inventory.BlastingRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, Material.class, float.class, int.class)
+					.newInstance(getNameSpacedKey(plugin, key), result, source.getType(), exp, duration);
+		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
+			Debug.Send("Couldn't set blastfuranace recipe. Wrong serverversion?");
+			return null;
+		}
+	}
+
+	public static org.bukkit.inventory.SmokingRecipe getSmokingRecipe(final JavaPlugin plugin, final String key, final ItemStack result, final ItemStack source, final int duration, final float exp) {
+		try {
+			return org.bukkit.inventory.SmokingRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, Material.class, float.class, int.class)
+					.newInstance(getNameSpacedKey(plugin, key), result, source.getType(), exp, duration);
+		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
+			Debug.Send("Couldn't set smoker recipe. Wrong serverversion?");
+			return null;
 		}
 	}
 

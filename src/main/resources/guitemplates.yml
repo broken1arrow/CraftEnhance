@@ -266,7 +266,7 @@ Menus:
           lore:
             - "&fYou can edit the recipe, if"
             - "&fyou have this permission:"
-            - "&a [config_permission]"
+            - "&a[config_permission]"
           glow: true
       "26":
         action_type: Back
@@ -398,13 +398,13 @@ Menus:
         glow: false
   FurnaceRecipeViewer:
     menu_settings:
-      name: Furnace recipe
+      name: "[Recipe_type] recipe"
       fill-space: "10,12"
       sound: BLOCK_NOTE_BLOCK_BASEDRUM
     buttons:
       "11":
         material: FURNACE
-        name: "&fEnhanced furnace recipe"
+        name: "&fEnhanced [Recipe_type] recipe"
         lore:
           - "&fThe recipe rewards &3[exp] &fexp"
           - "&fThe cooking time is &3[duration] &fticks"
@@ -412,6 +412,23 @@ Menus:
           - "&fYou can use this recipe in this worlds:"
           - "&3[worlds]"
         glow: true
+      "25":
+        action_type: edit_recipe
+        passive:
+          extra: GRAY
+          material: STAINED_GLASS_PANE
+          name: "&6"
+          lore:
+            - "&a"
+          glow: false
+        active:
+          material: DIAMOND_AXE
+          name: "&aEdit recipe"
+          lore:
+            - "&fYou can edit the recipe, if"
+            - "&fyou have this permission:"
+            - "&a[config_permission]"
+          glow: true
       "26":
         action_type: Back
         material: GLOWSTONE_DUST
@@ -428,7 +445,7 @@ Menus:
         glow: false
   FurnaceRecipeEditor:
     menu_settings:
-      name: Furnace editor
+      name: "[Recipe_type] editor"
       fill-space: "10,12"
       sound: BLOCK_NOTE_BLOCK_BASEDRUM
     buttons:
@@ -442,7 +459,7 @@ Menus:
         glow: true
       "11":
         material: FURNACE
-        name: "&aEnhanced furance recipe"
+        name: "&aEnhanced [Recipe_type] recipe"
         lore:
           - "&fThe ingredients need &3[match meta]"
           - "&fThe key of the recipe is &3[key]"
@@ -489,21 +506,35 @@ Menus:
       name: Select recipe type
       sound: BLOCK_NOTE_BLOCK_BASEDRUM
     buttons:
-      "3":
+      "2":
         action_type: ChooseFurnaceType
         material: FURNACE
         name: "&fClick to create a furnace recipe"
         lore:
           - ""
         glow: true
-      "5":
+      "6":
         action_type: ChooseWorkbenchType
         material: WORKBENCH
         name: "&fClick to create a workbench recipe"
         lore:
           - ""
         glow: true
-      "0-2,4,6-8":
+      "10":
+        action_type: ChooseBlastType
+        material: BLAST_FURNACE
+        name: "&fClick to create a blast recipe"
+        lore:
+          - ""
+        glow: true
+      "12":
+        action_type: ChooseSmokerType
+        material: SMOKER
+        name: "&fClick to create a smoker recipe"
+        lore:
+          - ""
+        glow: true
+      "0-1,3-5,7-9,11,13-26":
         extra: GRAY
         material: STAINED_GLASS_PANE
         name: ""
@@ -591,10 +622,11 @@ Menus:
         material: PAPER
         name: "&aClick to set similar match"
         lore:
-          - "&fChange this setting if you want"
-          - "&fto prevent crafting similar Minecraft"
+          - "&fChange this setting if you want to"
+          - "&fprevent crafting similar Minecraft"
           - "&foriginal recipes."
-          - "&fCurrently set to:&3 [partial_match]"
+          - "&fCurrently set to:"
+          - "&3[partial_match]"
         glow: true
       "44":
         action_type: Back
@@ -690,6 +722,17 @@ Menus:
           - "&fCurrently set worlds:"
           - "&3 [worlds]"
         glow: true
+      "28":
+        action_type: SetPartialMatch
+        material: PAPER
+        name: "&aClick to prevent similar match"
+        lore:
+          - "&fChange this setting if you want to"
+          - "&fprevent burn similar Minecraft"
+          - "&foriginal recipes."
+          - "&fCurrently set to:"
+          - "&3[partial_match]"
+        glow: true
       "35":
         action_type: Back
         material: GLOWSTONE_DUST
@@ -697,7 +740,7 @@ Menus:
         lore:
           - "&fGo back to the previous GUI"
         glow: true
-      "0-8,27-34":
+      "0-8,27,29-34":
         extra: GRAY
         material: STAINED_GLASS_PANE
         name: " "

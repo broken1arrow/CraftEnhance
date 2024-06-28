@@ -49,12 +49,12 @@ public class FormatListContents {
 
 	private static boolean canViewRecipe(final EnhancedRecipe recipe, final Player p) {
 		final boolean showAvailable = !self().getConfig().getBoolean("only-show-available");
-		final boolean hasPermission = recipe.getPermissions() == null ||
-				"".equals(recipe.getPermissions()) ||
-				p.hasPermission(recipe.getPermissions());
+		final boolean hasPermission = recipe.getPermission() == null ||
+				"".equals(recipe.getPermission()) ||
+				p.hasPermission(recipe.getPermission());
 		final boolean isHidden = recipe.isHidden();
 		final boolean canEdit = p.hasPermission(PermissionTypes.Edit.getPerm());
-		final boolean canSeeHidden = p.hasPermission(recipe.getPermissions() + ".hidden");
+		final boolean canSeeHidden = p.hasPermission(recipe.getPermission() + ".hidden");
 
 		if (canEdit)
 			return true;

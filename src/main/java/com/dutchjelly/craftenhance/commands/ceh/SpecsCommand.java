@@ -33,7 +33,7 @@ public class SpecsCommand implements ICommand {
 			Messenger.Message("That recipe key doesn't exist", p);
 			return;
 		}
-		Messenger.Message("&fKey: &e" + recipe.getKey() + " &fPerms: &e" + recipe.getPermissions(), p);
+		Messenger.Message("&fKey: &e" + recipe.getKey() + " &fPerms: &e" + recipe.getPermission(), p);
 	}
 
 	@Override

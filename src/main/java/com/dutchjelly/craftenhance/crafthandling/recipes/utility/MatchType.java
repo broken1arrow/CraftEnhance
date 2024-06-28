@@ -1,4 +1,4 @@
-package com.dutchjelly.craftenhance.crafthandling.recipes;
+package com.dutchjelly.craftenhance.crafthandling.recipes.utility;
 
 import lombok.Getter;
 
