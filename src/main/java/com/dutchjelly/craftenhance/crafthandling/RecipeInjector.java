@@ -276,8 +276,8 @@ public class RecipeInjector implements Listener {
 		final UUID playerId = containerOwners.get(furnace.getLocation());
 		final Player p = playerId == null ? null : plugin.getServer().getPlayer(playerId);
 		Debug.Send("Furnace belongs to player: " + p + " the id " + playerId);
+		Debug.Send("Furnace group: " + group);
 		Debug.Send("Furnace source item: " + source);
-
 		//Check if any grouped enhanced recipe is a match.
 		FurnaceRecipe furnaceRecipe = getFurnaceRecipe(furnace.getType(), group, source, p);
 		if (furnaceRecipe != null) return Optional.of(furnaceRecipe.getResult());
@@ -306,7 +306,7 @@ public class RecipeInjector implements Listener {
 			final FurnaceRecipe fRecipe = (FurnaceRecipe) eRecipe;
 
 			Debug.Send("Checking if enhanced recipe for " + fRecipe.getResult().toString() + " matches.");
-
+			Debug.Send("The srcMatrix " + Arrays.toString(srcMatrix) + ".");
 			if (fRecipe.matches(srcMatrix)) {
 				if (entityCanCraft(player, fRecipe)) {
 					Debug.Send("Found enhanced recipe " + fRecipe.getResult().toString() + " for furnace");
@@ -317,6 +317,7 @@ public class RecipeInjector implements Listener {
 					break;
 				}
 			} else {
+				Debug.Send("found recipe doesn't match " + (entityCanCraft(player, fRecipe) ? "." : "and no perms."));
 				//TODO should this code be removed?
 			/*	if (fRecipe.matcheType(srcMatrix)) {
 					Debug.Send("Found similar match itemtype for furnace");
@@ -344,14 +345,16 @@ public class RecipeInjector implements Listener {
 	@EventHandler
 	public void smelt(final FurnaceSmeltEvent e) {
 
-		Debug.Send("furnace smelt");
+		Debug.Send("furnace has smelt item");
 		final RecipeGroup group = getMatchingRecipeGroup(e.getSource());
 		final Optional<ItemStack> result = getFurnaceResult(group, e.getSource(), (Furnace) e.getBlock().getState());
+		Debug.Send("[furnace smelt] result " + result);
 		if (result != null && result.isPresent()) {
 			e.setResult(result.get());
 		} else {
 			final ItemStack itemStack = RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(e.getSource().getType()));
 			if (itemStack != null) {
+				Debug.Send("[furnace smelt] found sinmilar vanilla recipe " + itemStack);
 				if (group.getEnhancedRecipes().isEmpty()) {
 					e.setResult(itemStack);
 					return;

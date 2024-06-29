@@ -57,4 +57,11 @@ public class RecipeGroup {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return "RecipeGroup{" +
+                "serverRecipes=" + serverRecipes +
+                ", enhancedRecipes=" + enhancedRecipes +
+                '}';
+    }
 }

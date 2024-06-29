@@ -6,6 +6,7 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
+import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Material;
@@ -15,6 +16,8 @@ import org.bukkit.inventory.Recipe;
 import javax.annotation.Nonnull;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class FurnaceRecipe extends EnhancedRecipe {
 
@@ -66,6 +69,9 @@ public class FurnaceRecipe extends EnhancedRecipe {
 
 	@Override
 	public boolean matchesBlockType(final Material blockSmelting) {
+		if (self().getVersionChecker().olderThan(ServerVersion.v1_13)){
+			return blockSmelting == Material.getMaterial("BURNING_FURNACE");
+		}
 		return blockSmelting == Material.FURNACE;
 	}
 
