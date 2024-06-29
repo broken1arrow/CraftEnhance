@@ -7,8 +7,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
 
 public class Messenger {
 
@@ -49,17 +51,19 @@ public class Messenger {
 		SendMessage(message, sender);
 	}
 
-	public static void MessageFromConfig(final String path, final CommandSender sender, final Map<String, String> placeHolders) {
-		if (path == null || sender == null || placeHolders == null) return;
+	public static void MessageFromConfig(final String path, final CommandSender sender, final Consumer<Map<String, String>> mapOfPlaceholders) {
+		if (path == null || sender == null || mapOfPlaceholders == null) return;
 		final String message = plugin.getConfig().getString(path);
 		if (message == null || message.isEmpty()) {
 			SendMessage("This message" + path + "don't exist in the config. Remove the old config.yml and then run /ceh realod", sender);
 			return;
 		}
+		Map<String, String> placeholders = new HashMap<>();
+		mapOfPlaceholders.accept(placeholders);
 
 		String sendMessage =  prefix + message;
-		if (!placeHolders.isEmpty())
-			for (Entry<String, String> value : placeHolders.entrySet()) {
+		if (!placeholders.isEmpty())
+			for (Entry<String, String> value : placeholders.entrySet()) {
 				sendMessage = sendMessage.replace(value.getKey(), value.getValue());
 			}
 		SendMessage(sendMessage, sender);
