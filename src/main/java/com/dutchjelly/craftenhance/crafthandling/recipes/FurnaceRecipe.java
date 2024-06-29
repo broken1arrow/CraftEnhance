@@ -81,7 +81,8 @@ public class FurnaceRecipe extends EnhancedRecipe {
 
 	@Override
 	public Recipe getServerRecipe() {
-		return Adapter.GetFurnaceRecipe(CraftEnhance.self(), ServerRecipeTranslator.GetFreeKey(getKey()), getResult(), getContent()[0], 200, getExp());
+		int duration =  self().getVersionChecker().olderThan(ServerVersion.v1_17) ?  this.duration : 200;
+		return Adapter.GetFurnaceRecipe(CraftEnhance.self(), ServerRecipeTranslator.GetFreeKey(getKey()), getResult(), getContent()[0], duration, getExp());
 	}
 
 	@Override
