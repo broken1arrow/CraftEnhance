@@ -292,7 +292,7 @@ public class RecipeInjector implements Listener {
 		//RecipeGroup group = RecipeLoader.getInstance().findSimilarGroup(recipe);
 
 		if (group == null) {
-			Debug.Send(Type.Smelting,"furnace recipe does not match any group, so not changing the outcome");
+			Debug.Send(Type.Smelting,"furnace recipe does not match any recipe group.");
 			return null;
 		}
 		final UUID playerId = containerOwners.get(furnace.getLocation());
@@ -365,16 +365,16 @@ public class RecipeInjector implements Listener {
 	@EventHandler
 	public void smelt(final FurnaceSmeltEvent e) {
 
-		Debug.Send(Type.Smelting,"furnace has smelt item");
+		Debug.Send(Type.Smelting,"Furnace has smelt item");
 		final RecipeGroup group = getMatchingRecipeGroup(e.getBlock(),e.getSource());
 		final Optional<ItemStack> result = getFurnaceResult(group, e.getSource(), (Furnace) e.getBlock().getState());
-		Debug.Send(Type.Smelting," custom result " + result);
+		Debug.Send(Type.Smelting,"Custom result " + result);
 		if (result != null && result.isPresent()) {
 			e.setResult(result.get());
 		} else {
 			final ItemStack itemStack = RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(e.getSource().getType()));
 			if (itemStack != null) {
-				Debug.Send(Type.Smelting,"found sinmilar vanilla recipe " + itemStack);
+				Debug.Send(Type.Smelting,"found similar vanilla recipe " + itemStack);
 				if (group.getEnhancedRecipes().isEmpty()) {
 					e.setResult(itemStack);
 					return;
@@ -392,8 +392,11 @@ public class RecipeInjector implements Listener {
 						break;
 					}
 				}
-			} else
-				e.setCancelled(true);
+			} else {
+				Debug.Send(Type.Smelting, "No similar matching to the vanilla recipe, will not changing the outcome.");
+			}
+			// else
+				//e.setCancelled(true);
 		}
 	}
 
