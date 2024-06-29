@@ -331,7 +331,7 @@ public class RecipeInjector implements Listener {
 			Debug.Send(Type.Smelting,"The srcMatrix " + Arrays.toString(srcMatrix) + ".");
 			if (fRecipe.matches(srcMatrix)) {
 				if (entityCanCraft(player, fRecipe)) {
-					Debug.Send(Type.Smelting,"Found enhanced recipe " + fRecipe.getResult().toString() + " for furnace");
+					Debug.Send(Type.Smelting,"Found enhanced recipe " + fRecipe.getResult() + " for furnace");
 					Debug.Send(Type.Smelting,"Matching ingridens are " + source + " .");
 					return fRecipe;
 				} else {
@@ -339,7 +339,7 @@ public class RecipeInjector implements Listener {
 					break;
 				}
 			} else {
-				Debug.Send(Type.Smelting,"found recipe doesn't match " + (entityCanCraft(player, fRecipe) ? "." : "and no perms."));
+				Debug.Send(Type.Smelting,"found recipe doesn't match '"+ source.getType() + (entityCanCraft(player, fRecipe) ? "'." : "and no perms.") + " Check next recipe if it exist.");
 				//TODO should this code be removed?
 			/*	if (fRecipe.matcheType(srcMatrix)) {
 					Debug.Send("Found similar match itemtype for furnace");
