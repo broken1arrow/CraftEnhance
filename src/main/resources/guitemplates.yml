@@ -644,7 +644,7 @@ Menus:
         glow: false
   RecipeSettingsFurnace:
     menu_settings:
-      name: Furnace settings
+      name: "[Recipe_type] settings"
       fill-space: "10,12"
       sound: BLOCK_NOTE_BLOCK_BASEDRUM
     buttons:

@@ -71,7 +71,8 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 		if (menuTemplate != null) {
 			setMenuSize(GuiUtil.invSize("RecipeSettings", this.menuTemplate.getAmountOfButtons()));
-			setTitle(menuTemplate.getMenuTitle());
+			final String title = menuTemplate.getMenuTitle() == null ? "editor" : menuTemplate.getMenuTitle().replace(InfoItemPlaceHolders.Recipe_type.getPlaceHolder(), recipe.getType().name().toLowerCase());
+			setTitle(()-> title);
 			//setFillSpace(menuTemplate.getFillSlots());
 			setMenuOpenSound(this.menuTemplate.getSound());
 		}
