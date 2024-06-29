@@ -20,8 +20,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -53,17 +51,10 @@ public class CreateRecipeCmd implements ICommand {
 			editorTypeSelector.menuOpen(p);
 			return;
 		}
-		System.out.println("args " + Arrays.toString(args));
-		//Use the input that the user gave.
-	/*	if (args.length == 1) {
-			args = addEmptyString(args);
-
-		}*/
 		if (args.length < 2) {
 			Messenger.MessageFromConfig("messages.commands.few-arguments", p, "2");
 			return;
 		}
-
 		if (!handler.getMain().getFm().isUniqueRecipeKey(args[1])) {
 			Messenger.Message("The specified recipe key isn't unique.", p);
 			return;
@@ -105,10 +96,11 @@ public class CreateRecipeCmd implements ICommand {
 				editorSmoker.menuOpen(p);
 				break;
 			default:
-				Messenger.MessageFromConfig("messages.commands.not-valid-recipe-option", p, new HashMap<String,String>(){{
-					put("[recipe-edit]", recipeType);
-					put("[recipe-options]", "<workbench, furnace, blast, smoker>");
-				}});
+				Messenger.MessageFromConfig("messages.commands.not-valid-recipe-option", p, (map) -> {
+					map.put("[recipe-edit]", recipeType);
+					map.put("[recipe-options]", "<workbench, furnace, blast, smoker>");
+				});
+
 		}
 	}
 
