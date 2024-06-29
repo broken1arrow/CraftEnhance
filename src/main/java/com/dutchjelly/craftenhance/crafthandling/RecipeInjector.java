@@ -8,6 +8,8 @@ import com.dutchjelly.craftenhance.api.event.crafting.BeforeCraftOutputEvent;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
@@ -16,13 +18,14 @@ import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.crafthandling.util.WBRecipeComparer;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
-import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
+import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import lombok.Getter;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.block.Block;
 import org.bukkit.block.Furnace;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -176,7 +179,7 @@ public class RecipeInjector implements Listener {
 					Debug.Send(Type.Crafting, "Recipe matches, injecting " + wbRecipe.getResult().toString());
 					if (makeItemsadderCompatible && containsModeldata(inv)) {
 						Debug.Send(Type.Crafting, "This recipe contains Modeldata and will be crafted if the recipe is not cancelled.");
-						Bukkit.getScheduler().runTask(CraftEnhance.self(), () -> {
+						Bukkit.getScheduler().runTask(self(), () -> {
 							if (wbRecipe.matches(inv.getMatrix())) {
 								final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(eRecipe, wbRecipe, wbRecipe.getResult().clone());
 								if (beforeCraftOutputEvent.isCancelled()) {
@@ -259,9 +262,28 @@ public class RecipeInjector implements Listener {
 		return false;
 	}
 
-	public RecipeGroup getMatchingRecipeGroup(final ItemStack source) {
+	public RecipeGroup getMatchingRecipeGroup(final Block typeOfFurnace, final ItemStack source) {
 		final ItemStack[] srcMatrix = new ItemStack[]{source};
-		final FurnaceRecipe recipe = new FurnaceRecipe(null, null, srcMatrix);
+		RecipeType recipeType = RecipeType.getType(typeOfFurnace);
+		if (recipeType == null) return null;
+
+		FurnaceRecipe recipe = null;
+		switch (recipeType) {
+			case WORKBENCH:
+				//recipe = new WBRecipe(null, null, srcMatrix);
+				break;
+			case FURNACE:
+				recipe = new FurnaceRecipe(null, null, srcMatrix);
+				break;
+			case BLAST:
+				recipe = new BlastRecipe(null, null, srcMatrix);
+				break;
+			case SMOKER:
+				recipe = new SmokerRecipe(null, null, srcMatrix);
+				break;
+		}
+		if (recipe == null) return null;
+
 		return RecipeLoader.getInstance().findSimilarGroup(recipe);
 	}
 
@@ -340,13 +362,11 @@ public class RecipeInjector implements Listener {
 			notCustomItem.remove(e.getBlock().getLocation());
 		}*/
 	}
-
-
 	@EventHandler
 	public void smelt(final FurnaceSmeltEvent e) {
 
 		Debug.Send("furnace has smelt item");
-		final RecipeGroup group = getMatchingRecipeGroup(e.getSource());
+		final RecipeGroup group = getMatchingRecipeGroup(e.getBlock(),e.getSource());
 		final Optional<ItemStack> result = getFurnaceResult(group, e.getSource(), (Furnace) e.getBlock().getState());
 		Debug.Send("[furnace smelt] result " + result);
 		if (result != null && result.isPresent()) {
@@ -388,7 +408,7 @@ public class RecipeInjector implements Listener {
 			e.setCancelled(true);
 			return;
 		}
-		final RecipeGroup recipe = getMatchingRecipeGroup(f.getInventory().getSmelting());
+		final RecipeGroup recipe = getMatchingRecipeGroup( e.getBlock(),f.getInventory().getSmelting());
 		final Optional<ItemStack> result = getFurnaceResult(recipe, f.getInventory().getSmelting(), (Furnace) e.getBlock().getState());
 		if (result != null && !result.isPresent()) {
 			if (f.getInventory().getSmelting() != null && RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(f.getInventory().getSmelting().getType())) != null)
@@ -412,7 +432,7 @@ public class RecipeInjector implements Listener {
 	public void furnacePlace(final BlockPlaceEvent e) {
 		if (e.isCancelled()) return;
 		Material material = e.getBlock().getType();
-		if (material == Material.FURNACE || self().getVersionChecker().newerThan(VersionChecker.ServerVersion.v1_13) && (material == Material.BLAST_FURNACE || material == Material.SMOKER)) {
+		if (material == Material.FURNACE || self().getVersionChecker().newerThan(ServerVersion.v1_13) && (material == Material.BLAST_FURNACE || material == Material.SMOKER)) {
 			containerOwners.put(e.getBlock().getLocation(), e.getPlayer().getUniqueId());
 		}
 	}
@@ -449,7 +469,7 @@ public class RecipeInjector implements Listener {
 
 		@EventHandler
 		public void startSmelt(FurnaceStartSmeltEvent event) {
-			final RecipeGroup group = getMatchingRecipeGroup(event.getSource());
+			final RecipeGroup group = getMatchingRecipeGroup(event.getBlock(),event.getSource());
 			FurnaceRecipe furnaceRecipe = getFurnaceRecipe(event.getBlock().getType(), group, event.getSource(), null);
 			if (furnaceRecipe == null) {
 				/*todo need to fix so you can stop it from progress if not allow to burn the item  */

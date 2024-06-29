@@ -169,9 +169,19 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 	public String toString() {
 		return "EnhancedRecipe{" +
 				"key='" + key + '\'' +
-				", result=" + (this.result == null ? "null" : result) +
-				'}';
+				", result=" + result +
+				", content=" + Arrays.toString(content) +
+				", recipe-type=" + type +
+				"}";
 	}
+/*	@Override
+	public String toString() {
+		return "EnhancedRecipe{" +
+				"key='" + key + '\'' +
+				", result=" + (this.result == null ? "null" : result) +
+				"contents"+ Arrays.toString(this.getContent()) +
+				'}';
+	}*/
 /*
     @Override
     public String toString(){
