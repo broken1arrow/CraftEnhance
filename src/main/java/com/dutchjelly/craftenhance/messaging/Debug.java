@@ -5,12 +5,14 @@ import com.dutchjelly.craftenhance.CraftEnhance;
 import java.util.logging.Logger;
 
 import static com.dutchjelly.craftenhance.messaging.Debug.Type.Crafting;
+import static com.dutchjelly.craftenhance.messaging.Debug.Type.Smelting;
 
 public class Debug {
 
 	public static void init(final CraftEnhance main) {
 		enable = main.getConfig().getBoolean("enable-debug");
 		enable_crafting = main.getConfig().getBoolean("enable_crafting-debug");
+		enable_smelting= main.getConfig().getBoolean("enable_smelting-debug");
 		prefix = main.getConfig().getString("debug-prefix");
 		logger = main.getLogger();
 	}
@@ -18,6 +20,7 @@ public class Debug {
 	private static Logger logger;
 	private static boolean enable; //could be a config thing
 	private static boolean enable_crafting;
+	private static boolean enable_smelting;
 	private static String prefix;
 
 	public static void Send(final Object obj) {
@@ -28,6 +31,9 @@ public class Debug {
 		if (enable_crafting && type == Crafting) {
 			System.out.println(prefix + (obj != null ? obj.toString() : "null"));
 		}
+		if (enable_smelting && type == Smelting) {
+			System.out.println(prefix +" [furnace] " + (obj != null ? obj.toString() : "null"));
+		}
 		if (!enable) return;
 
 		System.out.println(prefix + (obj != null ? obj.toString() : "null"));
@@ -36,7 +42,7 @@ public class Debug {
 	public static void Send(final Object sender, final Object obj) {
 		if (!enable) return;
 
-		logger.info(prefix + "<" + sender.getClass().getName() + "> " + obj != null ? obj.toString() : "null");
+		logger.info(prefix + "<" + sender.getClass().getName() + "> " + (obj != null ? obj.toString() : "null"));
 	}
 
 	public static void Send(final Object[] arr) {
@@ -51,6 +57,7 @@ public class Debug {
 
 	public enum Type {
 		Crafting,
+		Smelting,
 		Other;
 	}
 }

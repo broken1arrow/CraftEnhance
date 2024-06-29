@@ -292,14 +292,14 @@ public class RecipeInjector implements Listener {
 		//RecipeGroup group = RecipeLoader.getInstance().findSimilarGroup(recipe);
 
 		if (group == null) {
-			Debug.Send("furnace recipe does not match any group, so not changing the outcome");
+			Debug.Send(Type.Smelting,"furnace recipe does not match any group, so not changing the outcome");
 			return null;
 		}
 		final UUID playerId = containerOwners.get(furnace.getLocation());
 		final Player p = playerId == null ? null : plugin.getServer().getPlayer(playerId);
-		Debug.Send("Furnace belongs to player: " + p + " the id " + playerId);
-		Debug.Send("Furnace group: " + group);
-		Debug.Send("Furnace source item: " + source);
+		Debug.Send(Type.Smelting,"Furnace belongs to player: " + p + " the id " + playerId);
+		Debug.Send(Type.Smelting,"Furnace group: " + group);
+		Debug.Send(Type.Smelting,"Furnace source item: " + source);
 		//Check if any grouped enhanced recipe is a match.
 		FurnaceRecipe furnaceRecipe = getFurnaceRecipe(furnace.getType(), group, source, p);
 		if (furnaceRecipe != null) return Optional.of(furnaceRecipe.getResult());
@@ -307,9 +307,9 @@ public class RecipeInjector implements Listener {
 		for (final Recipe sRecipe : group.getServerRecipes()) {
 			final org.bukkit.inventory.FurnaceRecipe fRecipe = (org.bukkit.inventory.FurnaceRecipe) sRecipe;
 			if (getTypeMatcher().match(fRecipe.getInput(), source)) {
-				Debug.Send("found similar server recipe for furnace");
-				Debug.Send("Source " + source);
-				Debug.Send("Input: " + fRecipe.getInput());
+				Debug.Send(Type.Smelting,"found similar server recipe for furnace");
+				Debug.Send(Type.Smelting,"Source " + source);
+				Debug.Send(Type.Smelting,"Input: " + fRecipe.getInput());
 				return null;
 			}
 		}
@@ -327,19 +327,19 @@ public class RecipeInjector implements Listener {
 
 			final FurnaceRecipe fRecipe = (FurnaceRecipe) eRecipe;
 
-			Debug.Send("Checking if enhanced recipe for " + fRecipe.getResult().toString() + " matches.");
-			Debug.Send("The srcMatrix " + Arrays.toString(srcMatrix) + ".");
+			Debug.Send(Type.Smelting,"Checking if enhanced recipe for " + fRecipe.getResult().toString() + " matches.");
+			Debug.Send(Type.Smelting,"The srcMatrix " + Arrays.toString(srcMatrix) + ".");
 			if (fRecipe.matches(srcMatrix)) {
 				if (entityCanCraft(player, fRecipe)) {
-					Debug.Send("Found enhanced recipe " + fRecipe.getResult().toString() + " for furnace");
-					Debug.Send("Matching ingridens are " + source + " .");
+					Debug.Send(Type.Smelting,"Found enhanced recipe " + fRecipe.getResult().toString() + " for furnace");
+					Debug.Send(Type.Smelting,"Matching ingridens are " + source + " .");
 					return fRecipe;
 				} else {
-					Debug.Send("found this recipe " + fRecipe.getResult().toString() + " match but, player has not this permission " + fRecipe.getPermission());
+					Debug.Send(Type.Smelting,"found this recipe " + fRecipe.getResult().toString() + " match but, player has not this permission " + fRecipe.getPermission());
 					break;
 				}
 			} else {
-				Debug.Send("found recipe doesn't match " + (entityCanCraft(player, fRecipe) ? "." : "and no perms."));
+				Debug.Send(Type.Smelting,"found recipe doesn't match " + (entityCanCraft(player, fRecipe) ? "." : "and no perms."));
 				//TODO should this code be removed?
 			/*	if (fRecipe.matcheType(srcMatrix)) {
 					Debug.Send("Found similar match itemtype for furnace");
@@ -365,16 +365,16 @@ public class RecipeInjector implements Listener {
 	@EventHandler
 	public void smelt(final FurnaceSmeltEvent e) {
 
-		Debug.Send("furnace has smelt item");
+		Debug.Send(Type.Smelting,"furnace has smelt item");
 		final RecipeGroup group = getMatchingRecipeGroup(e.getBlock(),e.getSource());
 		final Optional<ItemStack> result = getFurnaceResult(group, e.getSource(), (Furnace) e.getBlock().getState());
-		Debug.Send("[furnace smelt] result " + result);
+		Debug.Send(Type.Smelting," custom result " + result);
 		if (result != null && result.isPresent()) {
 			e.setResult(result.get());
 		} else {
 			final ItemStack itemStack = RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(e.getSource().getType()));
 			if (itemStack != null) {
-				Debug.Send("[furnace smelt] found sinmilar vanilla recipe " + itemStack);
+				Debug.Send(Type.Smelting,"found sinmilar vanilla recipe " + itemStack);
 				if (group.getEnhancedRecipes().isEmpty()) {
 					e.setResult(itemStack);
 					return;
@@ -399,7 +399,7 @@ public class RecipeInjector implements Listener {
 
 	@EventHandler(ignoreCancelled = false)
 	public void burn(final FurnaceBurnEvent e) {
-		Debug.Send("furnace burn");
+		Debug.Send(Type.Smelting,"furnace start to burn item");
 		if (e.isCancelled()) return;
 		final Furnace f = (Furnace) e.getBlock().getState();
 		//Reduce computing time by pausing furnaces. This can be removed if we also check for hoppers
