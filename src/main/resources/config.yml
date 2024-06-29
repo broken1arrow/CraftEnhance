@@ -32,5 +32,6 @@ messages:
     no-perms: "You don't have permission to do that."
   commands:
     show-options: "You entered an unfinished command. It can be completed by adding one of the following arguments: &e[PLACEHOLDER]&r."
-    few-arguments: "Expected [PLACEHOLDER] arguments for the command." 
+    few-arguments: "Expected at least [PLACEHOLDER] arguments for the command."
     only-for-players: "This command is only for players."
+    not-valid-recipe-option: "Your selected recipe option '[recipe-edit]' does not exist. Please choose an option to create a recipe [recipe-options]."

@@ -12,6 +12,11 @@ import java.util.Map;
 
 public class RecipeEditorFurnace extends RecipeEditor<FurnaceRecipe> {
 
+
+	public RecipeEditorFurnace(final FurnaceRecipe recipe, final CategoryData categoryData, final String permission, final ButtonType editorType) {
+		super(recipe, categoryData, permission, editorType, true);
+	}
+
 	public RecipeEditorFurnace(final FurnaceRecipe recipe, final CategoryData categoryData, final String permission, final ButtonType editorType,boolean clearItems) {
 		super(recipe, categoryData, permission, editorType, clearItems);
 	}

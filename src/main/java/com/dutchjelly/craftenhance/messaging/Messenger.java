@@ -7,6 +7,9 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
 public class Messenger {
 
 	private static CraftEnhance plugin;
@@ -44,6 +47,22 @@ public class Messenger {
 		if(path == null || sender == null || placeHolder == null) return;
 		final String message = plugin.getConfig().getString(path).replace("[PLACEHOLDER]", placeHolder);
 		SendMessage(message, sender);
+	}
+
+	public static void MessageFromConfig(final String path, final CommandSender sender, final Map<String, String> placeHolders) {
+		if (path == null || sender == null || placeHolders == null) return;
+		final String message = plugin.getConfig().getString(path);
+		if (message == null || message.isEmpty()) {
+			SendMessage("This message" + path + "don't exist in the config. Remove the old config.yml and then run /ceh realod", sender);
+			return;
+		}
+
+		String sendMessage =  prefix + message;
+		if (!placeHolders.isEmpty())
+			for (Entry<String, String> value : placeHolders.entrySet()) {
+				sendMessage = sendMessage.replace(value.getKey(), value.getValue());
+			}
+		SendMessage(sendMessage, sender);
 	}
 
 	public static void MessageFromConfig(final String path, final CommandSender sender){
