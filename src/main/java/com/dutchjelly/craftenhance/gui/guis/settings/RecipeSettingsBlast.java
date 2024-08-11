@@ -25,7 +25,7 @@ public class RecipeSettingsBlast extends RecipeSettings<BlastRecipe>{
 			new HandleChatInput(this, msg -> {
 				int parsed;
 				if (msg.equals("cancel") || msg.equals("quit") || msg.equals("exit")) {
-					this.runTask(() -> this.menuOpen(player));
+					this.runTask(() -> this.menuOpen(player), player);
 					return false;
 				}
 				try {
@@ -39,7 +39,7 @@ public class RecipeSettingsBlast extends RecipeSettings<BlastRecipe>{
 				if (blastRecipe != null) {
 					blastRecipe.setExp(parsed);
 				}
-				this.runTask(() -> this.menuOpen(player));
+				this.runTask(() -> this.menuOpen(player), player);
 				return false;
 			}).setMessages("Please input an exp amount.Type q, exit, cancel to turn it off.").start(getViewer());
 			return true;
@@ -49,7 +49,7 @@ public class RecipeSettingsBlast extends RecipeSettings<BlastRecipe>{
 			new HandleChatInput(this, (msg) -> {
 				short parsed;
 				if (msg.equals("cancel") || msg.equals("quit") || msg.equals("exit") || msg.equals("q")) {
-					this.runTask(() -> this.menuOpen(player));
+					this.runTask(() -> this.menuOpen(player), player);
 					return false;
 				}
 				try {
@@ -63,7 +63,7 @@ public class RecipeSettingsBlast extends RecipeSettings<BlastRecipe>{
 				if (blastRecipe != null) {
 					blastRecipe.setDuration(parsed);
 				}
-				this.runTask(() -> this.menuOpen(player));
+				this.runTask(() -> this.menuOpen(player), player);
 				return false;
 			}).setMessages("Please input a cook duration.Type q, exit, cancel to turn it off.").start(player);
 			return true;

@@ -24,7 +24,7 @@ public class RecipeSettingsSmoker extends RecipeSettings<SmokerRecipe>{
 			new HandleChatInput(this, msg -> {
 				int parsed;
 				if (msg.equals("cancel") || msg.equals("quit") || msg.equals("exit")) {
-					this.runTask(() -> this.menuOpen(player));
+					this.runTask(() -> this.menuOpen(player), player);
 					return false;
 				}
 				try {
@@ -38,7 +38,7 @@ public class RecipeSettingsSmoker extends RecipeSettings<SmokerRecipe>{
 				if (furnaceRecipe != null) {
 					furnaceRecipe.setExp(parsed);
 				}
-				this.runTask(() -> this.menuOpen(player));
+				this.runTask(() -> this.menuOpen(player), player);
 				return false;
 			}).setMessages("Please input an exp amount.Type q, exit, cancel to turn it off.").start(getViewer());
 			return true;
@@ -48,7 +48,7 @@ public class RecipeSettingsSmoker extends RecipeSettings<SmokerRecipe>{
 			new HandleChatInput(this, (msg) -> {
 				short parsed;
 				if (msg.equals("cancel") || msg.equals("quit") || msg.equals("exit") || msg.equals("q")) {
-					this.runTask(() -> this.menuOpen(player));
+					this.runTask(() -> this.menuOpen(player), player);
 					return false;
 				}
 				try {
@@ -62,7 +62,7 @@ public class RecipeSettingsSmoker extends RecipeSettings<SmokerRecipe>{
 				if (furnaceRecipe != null) {
 					furnaceRecipe.setDuration(parsed);
 				}
-				this.runTask(() -> this.menuOpen(player));
+				this.runTask(() -> this.menuOpen(player), player);
 				return false;
 			}).setMessages("Please input a cook duration.Type q, exit, cancel to turn it off.").start(player);
 			return true;

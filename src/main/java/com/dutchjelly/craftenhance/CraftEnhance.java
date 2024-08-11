@@ -48,6 +48,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import space.arim.morepaperlib.MorePaperLib;
 
 import java.io.File;
 import java.util.Arrays;
@@ -62,7 +63,9 @@ public class CraftEnhance extends JavaPlugin {
 		return plugin;
 	}
 
-	private Metrics metrics;
+    private Metrics metrics;
+	@Getter
+	private static MorePaperLib morePaperLib;
 	@Getter
 	private FileManager fm;
 	@Getter
@@ -89,6 +92,7 @@ public class CraftEnhance extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		plugin = this;
+		morePaperLib = new MorePaperLib(this);
 		//The file manager needs serialization, so firstly register the classes.
 		registerSerialization();
 		versionChecker = VersionChecker.init(this);
@@ -99,7 +103,7 @@ public class CraftEnhance extends JavaPlugin {
 		Debug.init(this);
 
 		if (isReloding)
-			Bukkit.getScheduler().runTaskAsynchronously(this, () -> loadPluginData(isReloding));
+			CraftEnhance.getMorePaperLib().scheduling().asyncScheduler().run(() -> loadPluginData(isReloding));
 		else {
 			this.loadPluginData(false);
 			loadRecipes();
@@ -117,7 +121,7 @@ public class CraftEnhance extends JavaPlugin {
 			for (int i = 0; i < 4; i++)
 				Messenger.Message("WARN: The installed version isn't tested to work with this version of the server.");
 		}
-		Bukkit.getScheduler().runTaskAsynchronously(this, versionChecker::runUpdateCheck);
+		CraftEnhance.getMorePaperLib().scheduling().asyncScheduler().run(versionChecker::runUpdateCheck);
 
 		if (metrics == null) {
 			final int metricsId = 9023;
@@ -129,9 +133,9 @@ public class CraftEnhance extends JavaPlugin {
 
 	public void reload() {
 		isReloding = true;
-		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+		CraftEnhance.getMorePaperLib().scheduling().asyncScheduler().run(() -> {
 			this.onDisable();
-			Bukkit.getScheduler().runTask(this, () -> {
+			CraftEnhance.getMorePaperLib().scheduling().globalRegionalScheduler().run(() -> {
 				RecipeLoader.clearInstance();
 				reloadConfig();
 				this.onEnable();
@@ -241,7 +245,7 @@ public class CraftEnhance extends JavaPlugin {
 			menuSettingsCache = new MenuSettingsCache(this);
 
 		if (isReloding)
-			Bukkit.getScheduler().runTask(this, this::loadRecipes);
+			CraftEnhance.getMorePaperLib().scheduling().globalRegionalScheduler().run(this::loadRecipes);
 	}
 
 	private void loadRecipes() {

@@ -4,6 +4,7 @@ name: CraftEnhance
 version: ${project.version}
 softdepend: [ItemsAdder]
 api-version: 1.13
+folia-supported: true
 commands:
   recipes:
     description: Opens a GUI to view the custom recipes. This is an alias of /ceh viewer. Use /recipes help to see the description.

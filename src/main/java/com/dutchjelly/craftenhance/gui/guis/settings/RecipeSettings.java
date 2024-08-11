@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.gui.guis.settings;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
@@ -128,7 +129,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			if (player.isConversing()) return true;
 			new HandleChatInput(this, message -> {
 				if (!this.handleSetWorld(message, click)) {
-					this.runTask(() -> this.menuOpen(player));
+					this.runTask(() -> this.menuOpen(player), player);
 					return false;
 				}
 				return true;
@@ -159,7 +160,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			if (player.isConversing()) return true;
 			new HandleChatInput(this, msg -> {
 				if (!handlePermissionSetCB(msg)) {
-					this.runTask(() -> this.menuOpen(player));
+					this.runTask(() -> this.menuOpen(player), player);
 					return false;
 				}
 				return true;
@@ -173,7 +174,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			if (player.isConversing()) return true;
 			new HandleChatInput(this, msg -> {
 				if (!GuiUtil.changeOrCreateCategory(msg, player, this.recipe)) {
-					this.runTask(() -> this.menuOpen(player));
+					this.runTask(() -> this.menuOpen(player), player);
 					return false;
 				}
 				return true;
@@ -358,8 +359,8 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		return placeholders;
 	}
 
-	protected void runTask(final Runnable runnable) {
-		Bukkit.getScheduler().runTaskLater(self(), runnable, 1);
+	protected void runTask(final Runnable runnable, Player player) {
+		CraftEnhance.getMorePaperLib().scheduling().entitySpecificScheduler(player).runDelayed(runnable, null, 1);
 	}
 
 	protected boolean onPlayerClick(final RecipeT recipe, final String buttonAction, final Player player) {

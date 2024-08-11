@@ -43,11 +43,16 @@
                                     <include>com.github.broken1arrow.Utility-Library:serialize-utility*</include>
                                     <include>com.github.broken1arrow.Utility-Library:color-conversion*</include>
                                     <include>com.github.broken1arrow.Utility-Library:log-and-validate*</include>
+                                    <include>space.arim.morepaperlib:morepaperlib*</include>
                                 </includes>
                             </artifactSet>
                             <relocations>
                                 <relocation>
                                     <pattern>org.broken.arrow</pattern>
+                                    <shadedPattern>${dependencys_path}</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>space.arim.morepaperlib</pattern>
                                     <shadedPattern>${dependencys_path}</shadedPattern>
                                 </relocation>
                             </relocations>
@@ -84,6 +89,11 @@
             <id>codemc-repo</id>
             <url>https://repo.codemc.io/repository/maven-public/</url>
             <layout>default</layout>
+        </repository>
+        <!-- MorePaperLib-->
+        <repository>
+            <id>arim-mvn-lgpl3</id>
+            <url>https://mvn-repo.arim.space/lesser-gpl3/</url>
         </repository>
     </repositories>
     <dependencies>
@@ -138,6 +148,13 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- MorePaperLib -->
+        <dependency>
+            <groupId>space.arim.morepaperlib</groupId>
+            <artifactId>morepaperlib</artifactId>
+            <version>0.4.3</version>
             <scope>compile</scope>
         </dependency>
         <!--<dependency>-->
