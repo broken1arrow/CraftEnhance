@@ -62,7 +62,7 @@ public class CustomCraftingTable extends com.dutchjelly.craftenhance.gui.guis.GU
             }
 
             Debug.Send("player clicked inside recipe content");
-            Bukkit.getScheduler().runTask(CraftEnhance.self(), () -> {
+            CraftEnhance.getMorePaperLib().scheduling().globalRegionalScheduler().run(() -> {
                 //Call event in next tick (after the click has finished)
                 Bukkit.getServer().getPluginManager().callEvent(new CustomPrepareCraftEvent(this));
             });
@@ -208,9 +208,8 @@ public class CustomCraftingTable extends com.dutchjelly.craftenhance.gui.guis.GU
 
         if(e.getRawSlots().size() == validDrags.size()){
             if(updatedMatrix)
-                Bukkit.getScheduler().runTask(CraftEnhance.self(), () ->
-                    Bukkit.getServer().getPluginManager().callEvent(new CustomPrepareCraftEvent(this))
-                );
+                CraftEnhance.getMorePaperLib().scheduling().globalRegionalScheduler().run(() ->
+                        Bukkit.getServer().getPluginManager().callEvent(new CustomPrepareCraftEvent(this)));
             return;
         }
 
@@ -242,10 +241,10 @@ public class CustomCraftingTable extends com.dutchjelly.craftenhance.gui.guis.GU
         Debug.Send("player dropped " + dropped + " item");
         ItemStack newCursor = e.getOldCursor().clone();
         if(dropped == newCursor.getAmount())
-            Bukkit.getScheduler().runTask(CraftEnhance.self(), () -> e.getView().setCursor(null));
+            CraftEnhance.getMorePaperLib().scheduling().entitySpecificScheduler(e.getWhoClicked()).run(() -> e.getView().setCursor(null), null);
         else {
             newCursor.setAmount(newCursor.getAmount() - dropped);
-            Bukkit.getScheduler().runTask(CraftEnhance.self(), () -> e.getView().setCursor(newCursor));
+            CraftEnhance.getMorePaperLib().scheduling().entitySpecificScheduler(e.getWhoClicked()).run(() -> e.getView().setCursor(newCursor), null);
         }
 
         if(updatedMatrix){

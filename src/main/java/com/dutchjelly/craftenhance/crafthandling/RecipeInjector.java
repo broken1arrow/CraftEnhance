@@ -179,7 +179,7 @@ public class RecipeInjector implements Listener {
 					Debug.Send(Type.Crafting, "Recipe matches, injecting " + wbRecipe.getResult().toString());
 					if (makeItemsadderCompatible && containsModeldata(inv)) {
 						Debug.Send(Type.Crafting, "This recipe contains Modeldata and will be crafted if the recipe is not cancelled.");
-						Bukkit.getScheduler().runTask(self(), () -> {
+						CraftEnhance.getMorePaperLib().scheduling().globalRegionalScheduler().run(() -> {
 							if (wbRecipe.matches(inv.getMatrix())) {
 								final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(eRecipe, wbRecipe, wbRecipe.getResult().clone());
 								if (beforeCraftOutputEvent.isCancelled()) {

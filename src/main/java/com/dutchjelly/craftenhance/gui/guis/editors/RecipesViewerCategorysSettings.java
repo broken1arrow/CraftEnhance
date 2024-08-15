@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.gui.guis.editors;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
@@ -20,6 +21,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -89,7 +91,7 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 					self().getCategoryDataCache().put(defaultCategory, oldCategory);
 				}
 				self().getCategoryDataCache().remove((this.category));
-				Bukkit.getScheduler().runTaskLaterAsynchronously(self(), () -> self().getCategoryDataCache().save(), 1);
+				CraftEnhance.getMorePaperLib().scheduling().asyncScheduler().runDelayed(() -> self().getCategoryDataCache().save(), Duration.ofMillis(50));
 				new RecipesViewerCategorys("").menuOpen(player);
 			}
 		}

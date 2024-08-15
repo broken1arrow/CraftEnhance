@@ -1,6 +1,7 @@
 package com.dutchjelly.bukkitadapter;
 
 
+import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.exceptions.ConfigError;
 import com.dutchjelly.craftenhance.gui.util.SkullCreator;
@@ -324,12 +325,12 @@ public class Adapter {
 				if (recipe instanceof ShapedRecipe) {
 					final ShapedRecipe shaped = (ShapedRecipe) recipe;;
 					if (shaped.getKey().getNamespace().contains("craftenhance")) {
-						player.discoverRecipe(shaped.getKey());
+						CraftEnhance.getMorePaperLib().scheduling().entitySpecificScheduler(player).run(() -> player.discoverRecipe(shaped.getKey()), null);
 					}
 				} else if (recipe instanceof ShapelessRecipe) {
 					final ShapelessRecipe shapeless = (ShapelessRecipe) recipe;
 					if (shapeless.getKey().getNamespace().contains("craftenhance")) {
-						player.discoverRecipe(shapeless.getKey());
+						CraftEnhance.getMorePaperLib().scheduling().entitySpecificScheduler(player).run(() -> player.discoverRecipe(shapeless.getKey()), null);
 					}
 				}
 			}

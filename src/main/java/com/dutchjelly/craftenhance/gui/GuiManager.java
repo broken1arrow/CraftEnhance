@@ -95,7 +95,7 @@ public class GuiManager implements Listener {
 		final UUID id = e.getPlayer().getUniqueId();
 		if (!chatWaitingCopy.containsKey(id)) return false;
 
-		Bukkit.getScheduler().runTask(getMain(), () -> {
+		CraftEnhance.getMorePaperLib().scheduling().globalRegionalScheduler().run(() -> {
 			final IChatInputHandler callback = chatWaitingCopy.get(id).getSecond();
 			if (callback.handle(e.getMessage())) return;
 			final MenuHolder gui = chatWaitingCopy.get(id).getFirst();
@@ -109,14 +109,14 @@ public class GuiManager implements Listener {
 		final UUID id = e.getPlayer().getUniqueId();
 		if (!chatWaiting.containsKey(id)) return false;
 
-		Bukkit.getScheduler().runTask(getMain(), () -> {
+		CraftEnhance.getMorePaperLib().scheduling().entitySpecificScheduler(e.getPlayer()).run(() -> {
 			final IChatInputHandler callback = chatWaiting.get(id).getSecond();
 			if (callback.handle(e.getMessage())) return;
 			final GUIElement gui = chatWaiting.get(id).getFirst();
 			if (gui != null)
 				openGUI(e.getPlayer(), gui);
 			chatWaiting.remove(id);
-		});
+		}, null);
 		return true;
 	}
 	public void openGUI(final Player p, final GUIElement gui) {
