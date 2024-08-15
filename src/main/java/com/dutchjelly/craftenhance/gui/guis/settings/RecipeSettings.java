@@ -157,13 +157,17 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		}
 		if (value.isActionTypeEqual(ButtonType.SetPermission.name())) {
 			if (player.isConversing()) return true;
+			if (click.isRightClick()) {
+				recipe.setPermission(null);
+				return true;
+			}
 			new HandleChatInput(this, msg -> {
 				if (!handlePermissionSetCB(msg)) {
 					this.runTask(() -> this.menuOpen(player));
 					return false;
 				}
 				return true;
-			}).setMessages("Set your own permission on a recipe. Only players some has this permission can craft the item.", " Type q,exit,cancel to turn it off").start(getViewer());
+			}).setMessages("Set your own permission on a recipe or type 'non' or 'null' to unset permission. Only players some has this permission can craft the item.", " Type q,exit,cancel to turn it off").start(getViewer());
 			return true;
 		}
 		if (value.isActionTypeEqual(ButtonType.ChangeCategoryList.name())) {
@@ -202,12 +206,12 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 		message = message.trim();
 
-		if (message.equalsIgnoreCase("q") || message.equalsIgnoreCase("cancel") || message.equalsIgnoreCase("quit") || message.equalsIgnoreCase("exit"))
+		final String messageLowerCase = message.toLowerCase();
+		if (messageLowerCase.equals("q") || messageLowerCase.equals("cancel") || messageLowerCase.equals("quit") || messageLowerCase.equals("exit"))
 			return false;
 
 		if (message.equals("-")) {
 			permission = "";
-
 			return false;
 		}
 

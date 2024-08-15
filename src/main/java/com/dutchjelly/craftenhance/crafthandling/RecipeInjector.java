@@ -125,7 +125,7 @@ public class RecipeInjector implements Listener {
 		}
 	}
 
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.MONITOR,ignoreCancelled = false)
 	public void handleCrafting(final PrepareItemCraftEvent craftEvent) {
 		if (craftEvent.getRecipe() == null || craftEvent.getRecipe().getResult() == null || !plugin.getConfig().getBoolean("enable-recipes"))
 			return;
@@ -138,14 +138,14 @@ public class RecipeInjector implements Listener {
 		final List<RecipeGroup> possibleRecipeGroups = loader.findGroupsByResult(serverRecipe.getResult(), RecipeType.WORKBENCH);
 		final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
 
-		if (possibleRecipeGroups == null || possibleRecipeGroups.size() == 0) {
+		if (possibleRecipeGroups == null || possibleRecipeGroups.isEmpty()) {
 			if (disableDefaultModeldataCrafts && Adapter.canUseModeldata() && containsModeldata(inv)) {
 				inv.setResult(null);
 			}
 			if (checkForDisabledRecipe(disabledServerRecipes, serverRecipe, serverRecipe.getResult())) {
 				inv.setResult(null);
 			}
-			Debug.Send(Type.Crafting, "no matching groups");
+			Debug.Send(Type.Crafting, "No matching groups");
 			return;
 		}
 
@@ -374,7 +374,7 @@ public class RecipeInjector implements Listener {
 		} else {
 			final ItemStack itemStack = RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(e.getSource().getType()));
 			if (itemStack != null) {
-				Debug.Send(Type.Smelting,"found similar vanilla recipe " + itemStack);
+				Debug.Send(Type.Smelting,"Found similar vanilla recipe " + itemStack);
 				if (group.getEnhancedRecipes().isEmpty()) {
 					e.setResult(itemStack);
 					return;
@@ -402,7 +402,7 @@ public class RecipeInjector implements Listener {
 
 	@EventHandler(ignoreCancelled = false)
 	public void burn(final FurnaceBurnEvent e) {
-		Debug.Send(Type.Smelting,"furnace start to burn item");
+		Debug.Send(Type.Smelting,"Furnace start to burn the item");
 		if (e.isCancelled()) return;
 		final Furnace f = (Furnace) e.getBlock().getState();
 		//Reduce computing time by pausing furnaces. This can be removed if we also check for hoppers

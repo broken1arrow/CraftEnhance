@@ -53,7 +53,7 @@ public class HandleChatInput extends SimpleConversation {
 
 	@Override
 	protected ConversationCanceller getCanceller()  {
-		return new SimpleCanceller("non");
+		return new SimpleCanceller(" ");
 	}
 
 	@Override

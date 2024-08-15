@@ -33,6 +33,7 @@ public class SetPermissionCmd implements ICommand {
 			Messenger.Message("That recipe key doesn't exist", p);
 			return;
 		}
+
 		recipe.setPermission(args[1]);
 		handler.getMain().getFm().saveRecipe(recipe);
 		Messenger.Message("Successfully set the permissions of the recipe to " + args[1] + ".", p);

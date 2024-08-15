@@ -12,7 +12,7 @@ public class Debug {
 	public static void init(final CraftEnhance main) {
 		enable = main.getConfig().getBoolean("enable-debug");
 		enable_crafting = main.getConfig().getBoolean("enable_crafting-debug");
-		enable_smelting= main.getConfig().getBoolean("enable_smelting-debug");
+		enable_smelting = main.getConfig().getBoolean("enable_smelting-debug");
 		prefix = main.getConfig().getString("debug-prefix");
 		logger = main.getLogger();
 	}
@@ -24,15 +24,15 @@ public class Debug {
 	private static String prefix;
 
 	public static void Send(final Object obj) {
-		Send(Type.Other,  obj);
+		Send(Type.Other, obj);
 	}
 
 	public static void Send(final Type type, final Object obj) {
 		if (enable_crafting && type == Crafting) {
-			System.out.println(prefix + (obj != null ? obj.toString() : "null"));
+			System.out.println(prefix + " [crafting] " + (obj != null ? obj.toString() : "null"));
 		}
 		if (enable_smelting && type == Smelting) {
-			System.out.println(prefix +" [furnace] " + (obj != null ? obj.toString() : "null"));
+			System.out.println(prefix + " [furnace] " + (obj != null ? obj.toString() : "null"));
 		}
 		if (!enable) return;
 

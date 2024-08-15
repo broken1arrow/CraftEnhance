@@ -29,6 +29,15 @@ public class RemoveRecipeCmd implements ICommand  {
 	}
 	@Override
 	public void handlePlayerCommand(Player p, String[] args) {
+		removeRecipe(p,args);
+	}
+
+	@Override
+	public void handleConsoleCommand(final CommandSender sender, final String[] args) {
+		removeRecipe(sender,args);
+	}
+
+	private void removeRecipe(final CommandSender sender, String[] args) {
 		if (args.length == 0){return;}
 		//Use the input that the user gave.
 		if (args.length == 1) {
@@ -39,15 +48,10 @@ public class RemoveRecipeCmd implements ICommand  {
 			if (recipe.getKey().equals(args[0])) {
 				self().getFm().removeRecipe(recipe);
 				RecipeLoader.getInstance().unloadRecipe(recipe);
-				Messenger.Message("The specified recipe is removed " + recipe.getKey(), p);
+				Messenger.Message("The specified recipe is removed " + recipe.getKey(), sender);
 				return;
 			}
 		}
-	}
-
-	@Override
-	public void handleConsoleCommand(final CommandSender sender, final String[] args) {
-
 	}
 
 	@Override

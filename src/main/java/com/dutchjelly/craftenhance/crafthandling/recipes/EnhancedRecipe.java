@@ -174,7 +174,12 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 				", recipe-type=" + type +
 				"}";
 	}
-/*	@Override
+
+	public void setPermission(final String permission) {
+		this.permission = (permission == null || permission.isEmpty() || permission.equals("null") || permission.equals("non") ? null : permission);
+	}
+
+	/*	@Override
 	public String toString() {
 		return "EnhancedRecipe{" +
 				"key='" + key + '\'' +
