@@ -2,6 +2,7 @@ package com.dutchjelly.craftenhance.messaging;
 
 import com.dutchjelly.craftenhance.CraftEnhance;
 
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import static com.dutchjelly.craftenhance.messaging.Debug.Type.Crafting;
@@ -25,6 +26,16 @@ public class Debug {
 
 	public static void Send(final Object obj) {
 		Send(Type.Other, obj);
+	}
+
+	public static void Send(final Type type, final Supplier<Object> obj) {
+		if(obj == null) {
+			Send(type, "null");
+			return;
+		}
+		boolean debugEnable = (enable_crafting && type == Crafting) || (enable_smelting && type == Smelting) || enable;
+		if (!debugEnable) return;
+		Send(type, obj.get());
 	}
 
 	public static void Send(final Type type, final Object obj) {

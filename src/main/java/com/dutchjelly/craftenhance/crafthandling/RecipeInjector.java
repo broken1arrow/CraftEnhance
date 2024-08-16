@@ -125,7 +125,7 @@ public class RecipeInjector implements Listener {
 		}
 	}
 
-	@EventHandler(priority = EventPriority.MONITOR,ignoreCancelled = false)
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
 	public void handleCrafting(final PrepareItemCraftEvent craftEvent) {
 		if (craftEvent.getRecipe() == null || craftEvent.getRecipe().getResult() == null || !plugin.getConfig().getBoolean("enable-recipes"))
 			return;
@@ -133,7 +133,7 @@ public class RecipeInjector implements Listener {
 
 		final CraftingInventory inv = craftEvent.getInventory();
 		final Recipe serverRecipe = craftEvent.getRecipe();
-		Debug.Send(Type.Crafting, "The server wants to inject " + serverRecipe.getResult() + " ceh will check or modify this.");
+		Debug.Send(Type.Crafting, () ->  "The server wants to inject " + serverRecipe.getResult() + " ceh will check or modify this.");
 
 		final List<RecipeGroup> possibleRecipeGroups = loader.findGroupsByResult(serverRecipe.getResult(), RecipeType.WORKBENCH);
 		final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
@@ -145,7 +145,7 @@ public class RecipeInjector implements Listener {
 			if (checkForDisabledRecipe(disabledServerRecipes, serverRecipe, serverRecipe.getResult())) {
 				inv.setResult(null);
 			}
-			Debug.Send(Type.Crafting, "No matching groups");
+			Debug.Send(Type.Crafting, () ->  "No matching groups");
 			return;
 		}
 
@@ -159,57 +159,57 @@ public class RecipeInjector implements Listener {
 
 				notAllowedToCraft = isCrafingAllowedInWorld(craftEvent, eRecipe);
 				if (notAllowedToCraft) {
-					Debug.Send(Type.Crafting, "You are not allowed to craft.");
+					Debug.Send(Type.Crafting, () ->  "You are not allowed to craft.");
 					continue;
 				}
 
 				if (checkForDisabledRecipe(disabledServerRecipes, wbRecipe, serverRecipe.getResult())) {
 					inv.setResult(null);
-					Debug.Send(Type.Crafting, "This recipe is disabled.");
+					Debug.Send(Type.Crafting, () ->  "This recipe is disabled.");
 					continue;
 				}
 
 
-				Debug.Send(Type.Crafting, "Checking if enhanced recipe for " + wbRecipe.getResult().toString() + " matches.");
+				Debug.Send(Type.Crafting, () ->  "Checking if enhanced recipe for " + wbRecipe.getResult().toString() + " matches.");
 				final Player player = craftEvent.getViewers().size() > 0 ? (Player) craftEvent.getViewers().get(0) : null;
 
 				if (wbRecipe.matches(inv.getMatrix())
 						&& craftEvent.getViewers().stream().allMatch(x -> entityCanCraft(x, wbRecipe))
 						&& !CraftEnhanceAPI.fireEvent(wbRecipe, player, inv, group)) {
-					Debug.Send(Type.Crafting, "Recipe matches, injecting " + wbRecipe.getResult().toString());
+					Debug.Send(Type.Crafting, () ->  "Recipe matches, injecting " + wbRecipe.getResult().toString());
 					if (makeItemsadderCompatible && containsModeldata(inv)) {
-						Debug.Send(Type.Crafting, "This recipe contains Modeldata and will be crafted if the recipe is not cancelled.");
+						Debug.Send(Type.Crafting, () ->  "This recipe contains Modeldata and will be crafted if the recipe is not cancelled.");
 						Bukkit.getScheduler().runTask(self(), () -> {
 							if (wbRecipe.matches(inv.getMatrix())) {
 								final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(eRecipe, wbRecipe, wbRecipe.getResult().clone());
 								if (beforeCraftOutputEvent.isCancelled()) {
-									Debug.Send(Type.Crafting, "This recipe is now cancelled and will not produce output item.");
+									Debug.Send(Type.Crafting, () ->  "This recipe is now cancelled and will not produce output item.");
 									return;
 								}
-								Debug.Send(Type.Crafting, "The recipe is now crafted and output item is " + beforeCraftOutputEvent.getResultItem());
-								Debug.Send(Type.Crafting, "The recipe matrix: " + Arrays.toString(inv.getMatrix()));
+								Debug.Send(Type.Crafting, () ->  "The recipe is now crafted and output item is " + beforeCraftOutputEvent.getResultItem());
+								Debug.Send(Type.Crafting, () -> "The recipe matrix: " + Arrays.toString(inv.getMatrix()));
 								inv.setResult(beforeCraftOutputEvent.getResultItem());
 							}
 						});
 					} else {
-						Debug.Send(Type.Crafting, "This recipe deosen't contains Modeldata and will be crafted if the recipe is not cancelled.");
+						Debug.Send(Type.Crafting, () ->  "This recipe deosen't contains Modeldata and will be crafted if the recipe is not cancelled.");
 
 						final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(eRecipe, wbRecipe, wbRecipe.getResult().clone());
 						if (beforeCraftOutputEvent.isCancelled()) {
-							Debug.Send(Type.Crafting, "This recipe is now cancelled and will not produce output item.");
+							Debug.Send(Type.Crafting, () ->  "This recipe is now cancelled and will not produce output item.");
 							continue;
 						}
-						Debug.Send(Type.Crafting, "The recipe is now crafted and output item is " + beforeCraftOutputEvent.getResultItem());
-						Debug.Send(Type.Crafting, "The recipe matrix: " + Arrays.toString(inv.getMatrix()));
+						Debug.Send(Type.Crafting, () ->  "The recipe is now crafted and output item is " + beforeCraftOutputEvent.getResultItem());
+						Debug.Send(Type.Crafting, () ->  "The recipe matrix: " + Arrays.toString(inv.getMatrix()));
 						inv.setResult(beforeCraftOutputEvent.getResultItem());
 					}
 					return;
 				}
-				Debug.Send(Type.Crafting, "Recipe matrix doesn't match.");
-				Debug.Send(Type.Crafting, "The recipe matrix: " + Arrays.toString(wbRecipe.getContent()));
-				Debug.Send(Type.Crafting, "The matrix on craftingtable: " + Arrays.toString(inv.getMatrix()));
+				Debug.Send(Type.Crafting, () ->  "Recipe matrix doesn't match.");
+				Debug.Send(Type.Crafting, () ->  "The recipe matrix: " + Arrays.toString(wbRecipe.getContent()));
+				Debug.Send(Type.Crafting, () ->  "The matrix on craftingtable: " + Arrays.toString(inv.getMatrix()));
 				if (wbRecipe.isCheckPartialMatch() && wbRecipe.matches(inv.getMatrix(), MatchType.MATCH_TYPE.getMatcher())) {
-					Debug.Send(Type.Crafting, "Partial matched recipe fond and will prevent craft this recipe.");
+					Debug.Send(Type.Crafting, () ->  "Partial matched recipe fond and will prevent craft this recipe.");
 					inv.setResult(null);
 					return;
 				}
@@ -217,22 +217,22 @@ public class RecipeInjector implements Listener {
 			if (notAllowedToCraft)
 				continue;
 
-			Debug.Send(Type.Crafting, "Check for similar server recipes if no enhanced ones match.");
+			Debug.Send(Type.Crafting, () ->  "Check for similar server recipes if no enhanced ones match.");
 			//Check for similar server recipes if no enhanced ones match.
 			for (final Recipe sRecipe : group.getServerRecipes()) {
 				if (sRecipe instanceof ShapedRecipe) {
 					final ItemStack[] content = ServerRecipeTranslator.translateShapedRecipe((ShapedRecipe) sRecipe);
 					if (WBRecipeComparer.shapeMatches(content, inv.getMatrix(), getTypeMatcher())) {
-						Debug.Send(Type.Crafting, "Match a ShapedRecipe.");
-						Debug.Send(Type.Crafting, "The recipe matrix for this type: " + Arrays.toString(inv.getMatrix()));
+						Debug.Send(Type.Crafting, () ->  "Match a ShapedRecipe.");
+						Debug.Send(Type.Crafting, () ->  "The recipe matrix for this type: " + Arrays.toString(inv.getMatrix()));
 						inv.setResult(sRecipe.getResult());
 						return;
 					}
 				} else if (sRecipe instanceof ShapelessRecipe) {
 					final ItemStack[] ingredients = ServerRecipeTranslator.translateShapelessRecipe((ShapelessRecipe) sRecipe);
 					if (WBRecipeComparer.ingredientsMatch(ingredients, inv.getMatrix(), getTypeMatcher())) {
-						Debug.Send(Type.Crafting, "Match a ShapelessRecipe.");
-						Debug.Send(Type.Crafting, "The recipe matrix for this type: " + Arrays.toString(inv.getMatrix()));
+						Debug.Send(Type.Crafting, () ->  "Match a ShapelessRecipe.");
+						Debug.Send(Type.Crafting, () ->  "The recipe matrix for this type: " + Arrays.toString(inv.getMatrix()));
 						inv.setResult(sRecipe.getResult());
 						return;
 					}
@@ -292,14 +292,14 @@ public class RecipeInjector implements Listener {
 		//RecipeGroup group = RecipeLoader.getInstance().findSimilarGroup(recipe);
 
 		if (group == null) {
-			Debug.Send(Type.Smelting,"furnace recipe does not match any recipe group.");
+			Debug.Send(Type.Smelting, () -> "furnace recipe does not match any recipe group.");
 			return null;
 		}
 		final UUID playerId = containerOwners.get(furnace.getLocation());
 		final Player p = playerId == null ? null : plugin.getServer().getPlayer(playerId);
-		Debug.Send(Type.Smelting,"Furnace belongs to player: " + p + " the id " + playerId);
-		Debug.Send(Type.Smelting,"Furnace group: " + group);
-		Debug.Send(Type.Smelting,"Furnace source item: " + source);
+		Debug.Send(Type.Smelting, () -> "Furnace belongs to player: " + p + " the id " + playerId);
+		Debug.Send(Type.Smelting, () -> "Furnace group: " + group);
+		Debug.Send(Type.Smelting, () -> "Furnace source item: " + source);
 		//Check if any grouped enhanced recipe is a match.
 		FurnaceRecipe furnaceRecipe = getFurnaceRecipe(furnace.getType(), group, source, p);
 		if (furnaceRecipe != null) return Optional.of(furnaceRecipe.getResult());
@@ -307,9 +307,9 @@ public class RecipeInjector implements Listener {
 		for (final Recipe sRecipe : group.getServerRecipes()) {
 			final org.bukkit.inventory.FurnaceRecipe fRecipe = (org.bukkit.inventory.FurnaceRecipe) sRecipe;
 			if (getTypeMatcher().match(fRecipe.getInput(), source)) {
-				Debug.Send(Type.Smelting,"found similar server recipe for furnace");
-				Debug.Send(Type.Smelting,"Source " + source);
-				Debug.Send(Type.Smelting,"Input: " + fRecipe.getInput());
+				Debug.Send(Type.Smelting, () -> "found similar server recipe for furnace");
+				Debug.Send(Type.Smelting, () -> "Source " + source);
+				Debug.Send(Type.Smelting, () -> "Input: " + fRecipe.getInput());
 				return null;
 			}
 		}
@@ -327,19 +327,19 @@ public class RecipeInjector implements Listener {
 
 			final FurnaceRecipe fRecipe = (FurnaceRecipe) eRecipe;
 
-			Debug.Send(Type.Smelting,"Checking if enhanced recipe for " + fRecipe.getResult().toString() + " matches.");
-			Debug.Send(Type.Smelting,"The srcMatrix " + Arrays.toString(srcMatrix) + ".");
+			Debug.Send(Type.Smelting, () -> "Checking if enhanced recipe for " + fRecipe.getResult().toString() + " matches.");
+			Debug.Send(Type.Smelting, () -> "The srcMatrix " + Arrays.toString(srcMatrix) + ".");
 			if (fRecipe.matches(srcMatrix)) {
 				if (entityCanCraft(player, fRecipe)) {
-					Debug.Send(Type.Smelting,"Found enhanced recipe " + fRecipe.getResult() + " for furnace");
-					Debug.Send(Type.Smelting,"Matching ingridens are " + source + " .");
+					Debug.Send(Type.Smelting, () -> "Found enhanced recipe " + fRecipe.getResult() + " for furnace");
+					Debug.Send(Type.Smelting, () -> "Matching ingridens are " + source + " .");
 					return fRecipe;
 				} else {
-					Debug.Send(Type.Smelting,"found this recipe " + fRecipe.getResult().toString() + " match but, player has not this permission " + fRecipe.getPermission());
+					Debug.Send(Type.Smelting, () -> "found this recipe " + fRecipe.getResult().toString() + " match but, player has not this permission " + fRecipe.getPermission());
 					break;
 				}
 			} else {
-				Debug.Send(Type.Smelting,"found recipe doesn't match '"+ source.getType() + (entityCanCraft(player, fRecipe) ? "'." : "and no perms.") + " Check next recipe if it exist.");
+				Debug.Send(Type.Smelting, () -> "found recipe doesn't match '" + source.getType() + (entityCanCraft(player, fRecipe) ? "'." : "and no perms.") + " Check next recipe if it exist.");
 				//TODO should this code be removed?
 			/*	if (fRecipe.matcheType(srcMatrix)) {
 					Debug.Send("Found similar match itemtype for furnace");
@@ -362,19 +362,20 @@ public class RecipeInjector implements Listener {
 			notCustomItem.remove(e.getBlock().getLocation());
 		}*/
 	}
+
 	@EventHandler
 	public void smelt(final FurnaceSmeltEvent e) {
 
-		Debug.Send(Type.Smelting,"Furnace has smelt item");
-		final RecipeGroup group = getMatchingRecipeGroup(e.getBlock(),e.getSource());
+		Debug.Send(Type.Smelting, () -> "Furnace has smelt item");
+		final RecipeGroup group = getMatchingRecipeGroup(e.getBlock(), e.getSource());
 		final Optional<ItemStack> result = getFurnaceResult(group, e.getSource(), (Furnace) e.getBlock().getState());
-		Debug.Send(Type.Smelting,"Custom result " + result);
+		Debug.Send(Type.Smelting, () -> "Custom result " + result);
 		if (result != null && result.isPresent()) {
 			e.setResult(result.get());
 		} else {
 			final ItemStack itemStack = RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(e.getSource().getType()));
 			if (itemStack != null) {
-				Debug.Send(Type.Smelting,"Found similar vanilla recipe " + itemStack);
+				Debug.Send(Type.Smelting, () -> "Found similar vanilla recipe " + itemStack);
 				if (group.getEnhancedRecipes().isEmpty()) {
 					e.setResult(itemStack);
 					return;
@@ -382,7 +383,7 @@ public class RecipeInjector implements Listener {
 				for (final EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
 					final FurnaceRecipe fRecipe = (FurnaceRecipe) eRecipe;
 					final boolean isVanillaRecipe = fRecipe.matcheType(new ItemStack[]{e.getSource()}) && !fRecipe.getResult().isSimilar(itemStack);
-					if(eRecipe.isCheckPartialMatch() && isVanillaRecipe) {
+					if (eRecipe.isCheckPartialMatch() && isVanillaRecipe) {
 						e.setCancelled(true);
 						break;
 					}
@@ -393,16 +394,16 @@ public class RecipeInjector implements Listener {
 					}
 				}
 			} else {
-				Debug.Send(Type.Smelting, "No similar matching to the vanilla recipe, will not changing the outcome.");
+				Debug.Send(Type.Smelting, () -> "No similar matching to the vanilla recipe, will not changing the outcome.");
 			}
 			// else
-				//e.setCancelled(true);
+			//e.setCancelled(true);
 		}
 	}
 
 	@EventHandler(ignoreCancelled = false)
 	public void burn(final FurnaceBurnEvent e) {
-		Debug.Send(Type.Smelting,"Furnace start to burn the item");
+		Debug.Send(Type.Smelting, () -> "Furnace start to burn the item");
 		if (e.isCancelled()) return;
 		final Furnace f = (Furnace) e.getBlock().getState();
 		//Reduce computing time by pausing furnaces. This can be removed if we also check for hoppers
@@ -411,7 +412,7 @@ public class RecipeInjector implements Listener {
 			e.setCancelled(true);
 			return;
 		}
-		final RecipeGroup recipe = getMatchingRecipeGroup( e.getBlock(),f.getInventory().getSmelting());
+		final RecipeGroup recipe = getMatchingRecipeGroup(e.getBlock(), f.getInventory().getSmelting());
 		final Optional<ItemStack> result = getFurnaceResult(recipe, f.getInventory().getSmelting(), (Furnace) e.getBlock().getState());
 		if (result != null && !result.isPresent()) {
 			if (f.getInventory().getSmelting() != null && RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(f.getInventory().getSmelting().getType())) != null)
@@ -472,7 +473,7 @@ public class RecipeInjector implements Listener {
 
 		@EventHandler
 		public void startSmelt(FurnaceStartSmeltEvent event) {
-			final RecipeGroup group = getMatchingRecipeGroup(event.getBlock(),event.getSource());
+			final RecipeGroup group = getMatchingRecipeGroup(event.getBlock(), event.getSource());
 			FurnaceRecipe furnaceRecipe = getFurnaceRecipe(event.getBlock().getType(), group, event.getSource(), null);
 			if (furnaceRecipe == null) {
 				/*todo need to fix so you can stop it from progress if not allow to burn the item  */
