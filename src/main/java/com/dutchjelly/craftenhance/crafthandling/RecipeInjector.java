@@ -49,6 +49,7 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.permissions.Permissible;
 
+import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -261,7 +262,7 @@ public class RecipeInjector implements Listener {
 			}
 		return false;
 	}
-
+@Nullable
 	public RecipeGroup getMatchingRecipeGroup(final Block typeOfFurnace, final ItemStack source) {
 		final ItemStack[] srcMatrix = new ItemStack[]{source};
 		RecipeType recipeType = RecipeType.getType(typeOfFurnace);
@@ -376,7 +377,7 @@ public class RecipeInjector implements Listener {
 			final ItemStack itemStack = RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(e.getSource().getType()));
 			if (itemStack != null) {
 				Debug.Send(Type.Smelting, () -> "Found similar vanilla recipe " + itemStack);
-				if (group.getEnhancedRecipes().isEmpty()) {
+				if (group == null || group.getEnhancedRecipes() == null || group.getEnhancedRecipes().isEmpty()) {
 					e.setResult(itemStack);
 					return;
 				}
