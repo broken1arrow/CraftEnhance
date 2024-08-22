@@ -64,7 +64,12 @@ public class RecipeLoader {
 
 	private RecipeLoader(final Server server, final CategoryDataCache categoryDataCache) {
 		this.server = server;
-		server.recipeIterator().forEachRemaining(serverRecipes::add);
+		try {
+			server.recipeIterator().forEachRemaining(serverRecipes::add);
+		} catch (IllegalArgumentException e) {
+			self().getLogger().log(Level.SEVERE, "This server recipe contains air, will not be loaded.",e);
+		}
+
 /*		for (final Iterator<Recipe> it = server.recipeIterator(); it.hasNext(); ) {
 			final Recipe data = it.next();
 
