@@ -21,6 +21,11 @@ global-prefix: "&7[&bCraft&dEnhance&7] &r"
 
 #If it shall save the recipe when close menu
 save_on_close: false
+
+#This control if the crafter should craft the custom recipes.
+#It will not change the outcome of the Minecraft recipes.
+turn_of_crafter: true
+
 # These permissions are used globally by all features of the plugin.
 perms:
   recipe-editor: "craftenhance.edit"

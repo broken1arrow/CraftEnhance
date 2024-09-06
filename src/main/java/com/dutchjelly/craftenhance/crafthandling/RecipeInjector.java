@@ -215,6 +215,10 @@ public class RecipeInjector implements Listener {
 						Debug.Send(Type.Crafting, () -> "The crafted recipe matrix: " + this.convertItemStackArrayToString(matrix));
 						result.accept(beforeCraftOutputEvent.getResultItem());
 					}
+					if (inventory.getType() != InventoryType.WORKBENCH && inventory.getType() != InventoryType.CRAFTING && plugin.getConfig().getBoolean("turn_of_crafter", true)) {
+						Debug.Send(Type.Crafting, () -> "The crafting of this custom recipe is stopped.");
+						result.accept(null);
+					}
 					return;
 				}
 				Debug.Send(Type.Crafting, () -> "Recipe matrix doesn't match.");
