@@ -88,7 +88,8 @@ public class RecipeInjector implements Listener {
 		disableDefaultModeldataCrafts = plugin.getConfig().getBoolean("disable-default-custom-model-data-crafts");
 		makeItemsadderCompatible = plugin.getConfig().getBoolean("make-itemsadder-compatible");
 		try {
-			Bukkit.getPluginManager().registerEvents(new ModernListenerEvents(), plugin);
+			Bukkit.getPluginManager().registerEvents(new SmeltListener(), plugin);
+			Bukkit.getPluginManager().registerEvents(new CrafterListener(), plugin);
 		} catch (Throwable throwable) {
 			Debug.Send("Some functions did not work on your serverversion. will be turned off.");
 		}
@@ -536,7 +537,7 @@ public class RecipeInjector implements Listener {
 	public void furnaceClick(final InventoryClickEvent e) {
 		if (e.isCancelled() || e.getClickedInventory() == null) return;
 		if (e.getClickedInventory().getType() == InventoryType.FURNACE) {
-			final Furnace f = (Furnace) e.getView().getTopInventory().getHolder();
+			final Furnace f = (Furnace) e.getClickedInventory().getHolder();
 
 			pausedFurnaces.remove(f);
 		}
@@ -579,7 +580,7 @@ public class RecipeInjector implements Listener {
 				|| (entity != null && entity.hasPermission(group.getPermission()));
 	}
 
-	private class ModernListenerEvents implements Listener {
+	private class SmeltListener implements Listener {
 
 		@EventHandler
 		public void startSmelt(FurnaceStartSmeltEvent event) {
@@ -591,9 +592,11 @@ public class RecipeInjector implements Listener {
 			}
 			event.setTotalCookTime(furnaceRecipe.getDuration());
 		}
+	}
+	private class CrafterListener implements Listener {
 
-		@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
-		public void handleCraftingCrafter(final CrafterCraftEvent craftEvent) {
+		@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = false)
+		public void CrafterCraft(final CrafterCraftEvent craftEvent) {
 			Crafter crafterInventory = ((Crafter) craftEvent.getBlock().getState());
 			craftItem(craftEvent.getRecipe(), crafterInventory.getInventory().getContents(), crafterInventory.getInventory(), new ArrayList<>(), (itemstack) -> {
 				if (itemstack != null)
@@ -602,9 +605,7 @@ public class RecipeInjector implements Listener {
 					craftEvent.setResult(new ItemStack(Material.AIR));
 			});
 		}
-
 	}
-
 	public int findMismatchIndex(String str1, String str2) {
 		int minLength = Math.min(str1.length(), str2.length());
 
