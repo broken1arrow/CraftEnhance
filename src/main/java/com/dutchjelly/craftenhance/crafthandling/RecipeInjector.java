@@ -169,7 +169,7 @@ public class RecipeInjector implements Listener {
 				if (!(eRecipe instanceof WBRecipe)) continue;
 				final WBRecipe wbRecipe = (WBRecipe) eRecipe;
 
-				notAllowedToCraft = isCraftingAllowedInWorld(viewers, eRecipe);
+				notAllowedToCraft = isCraftingAllowedInWorld(inventory.getLocation(), eRecipe);
 				if (notAllowedToCraft) {
 					Debug.Send(Type.Crafting, () -> "You are not allowed to craft.");
 					continue;
@@ -565,13 +565,13 @@ public class RecipeInjector implements Listener {
 		}
 	}
 
-	private boolean isCraftingAllowedInWorld(final List<HumanEntity> viwers, final EnhancedRecipe eRecipe) {
+	private boolean isCraftingAllowedInWorld(final Location location, final EnhancedRecipe eRecipe) {
 		final Set<String> allowedWorlds = eRecipe.getAllowedWorlds();
 		if (allowedWorlds == null || allowedWorlds.isEmpty()) return false;
-
-		for (final HumanEntity viewer : viwers) {
+		if (location != null) {
+			if (location.getWorld() == null) return true;
 			for (final String world : allowedWorlds) {
-				if (viewer.getWorld().getName().equals(world)) {
+				if (location.getWorld().getName().equals(world)) {
 					return false;
 				}
 			}
