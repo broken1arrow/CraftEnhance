@@ -86,7 +86,7 @@ public class GuiItemTemplate {
         if (self().getVersionChecker().olderThan(ServerVersion.v1_21))
             meta.addItemFlags(ItemFlag.valueOf("HIDE_POTION_EFFECTS"));
         if (glow) {
-            if (self().getVersionChecker().newerThan(ServerVersion.v1_19)) {
+            if (self().getVersionChecker().newerThan(ServerVersion.v1_20)) {
                 meta.addEnchant(Enchantment.AQUA_AFFINITY, 10, true);
             } else {
                 meta.addEnchant(EnchantmentUtil.getByName("DURABILITY"), 10, true);

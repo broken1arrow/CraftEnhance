@@ -4,7 +4,7 @@ package com.dutchjelly.craftenhance.crafthandling.util;
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
-import org.apache.commons.lang3.StringUtils;
+import com.dutchjelly.craftenhance.util.StringUtil;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
@@ -129,7 +129,7 @@ public class ServerRecipeTranslator {
             int firstChar = 0;
             while (firstChar < line.length() && line.charAt(firstChar) == ' ') firstChar++;
             firstIndex = Math.min(firstChar, firstIndex);
-            lastIndex = Math.max(lastIndex, StringUtils.stripEnd(line, " ").length());
+            lastIndex = Math.max(lastIndex, StringUtil.stripEnd(line, " ").length());
         }
 
         //Trim the shape with the first and last indexes.

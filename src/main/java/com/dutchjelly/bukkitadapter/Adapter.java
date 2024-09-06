@@ -41,7 +41,7 @@ public class Adapter {
 
 
 	public static List<String> CompatibleVersions() {
-		return Arrays.asList("1.9", "1.10", "1.11", "1.12", "1.13", "1.14", "1.15", "1.16", "1.17", "1.18", "1.19","1.20");
+		return Arrays.asList("1.9", "1.10", "1.11", "1.12", "1.13", "1.14", "1.15", "1.16", "1.17", "1.18", "1.19", "1.20");
 	}
 
 	public final static String GUI_SKULL_MATERIAL_NAME = "GUI_SKULL_ITEM";
@@ -87,12 +87,14 @@ public class Adapter {
 
 			meta.setDisplayName(displayName);
 			meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-			//meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-			meta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
+			if (self().getVersionChecker().newerThan(ServerVersion.v1_20))
+				meta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
+			else
+				meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 			if (glow) {
-				if (self().getVersionChecker().newerThan(ServerVersion.v1_19)) {
-				meta.addEnchant(Enchantment.AQUA_AFFINITY, 10, true);
-				}else{
+				if (self().getVersionChecker().newerThan(ServerVersion.v1_20)) {
+					meta.addEnchant(Enchantment.AQUA_AFFINITY, 10, true);
+				} else {
 					meta.addEnchant(EnchantmentUtil.getByName("DURABILITY"), 10, true);
 				}
 			}
@@ -198,7 +200,8 @@ public class Adapter {
 	public static ShapedRecipe GetShapedRecipe(final JavaPlugin plugin, final String key, final ItemStack result) {
 		try {
 			return ShapedRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class).newInstance(getNameSpacedKey(plugin, key), result);
-		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
+		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
+		               NoSuchMethodException | ClassNotFoundException e) {
 			Debug.Send("Couldn't use namespaced key: " + e.getMessage() + "\n" + e.getStackTrace());
 		}
 		return new ShapedRecipe(result);
@@ -207,7 +210,8 @@ public class Adapter {
 	public static ShapelessRecipe GetShapelessRecipe(final JavaPlugin plugin, final String key, final ItemStack result) {
 		try {
 			return ShapelessRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class).newInstance(getNameSpacedKey(plugin, key), result);
-		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
+		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
+		               NoSuchMethodException | ClassNotFoundException e) {
 			Debug.Send("Couldn't use namespaced key: " + e.getMessage() + "\n" + e.getStackTrace());
 		}
 		return new ShapelessRecipe(result);
@@ -250,14 +254,14 @@ public class Adapter {
 
 	public static void AddIngredient(final ShapelessRecipe recipe, final ItemStack ingredient) {
 		if (!self().getConfig().getBoolean("learn-recipes")) {
-			if(self().getVersionChecker().olderThan(ServerVersion.v1_16)) {
+			if (self().getVersionChecker().olderThan(ServerVersion.v1_16)) {
 				final MaterialData md = ingredient.getData();
 				if (md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)) {
 					recipe.addIngredient(ingredient.getType());
 				} else {
 					recipe.addIngredient(md);
 				}
-			}else {
+			} else {
 				recipe.addIngredient(ingredient.getType());
 			}
 			return;
@@ -290,7 +294,8 @@ public class Adapter {
 					.newInstance(getNameSpacedKey(plugin, key), result, new RecipeChoice.ExactChoice(Collections.singletonList(source)), exp, duration);*/
 			return org.bukkit.inventory.FurnaceRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, Material.class, float.class, int.class)
 					.newInstance(getNameSpacedKey(plugin, key), result, source.getType(), exp, duration);
-		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
+		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
+		               NoSuchMethodException | ClassNotFoundException e) {
 			Debug.Send("Couldn't use namespaced key: " + e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
 			//e.printStackTrace();
 			final org.bukkit.inventory.FurnaceRecipe recipe = new org.bukkit.inventory.FurnaceRecipe(result, source.getType());
@@ -304,11 +309,13 @@ public class Adapter {
 			return recipe;
 		}
 	}
+
 	public static org.bukkit.inventory.BlastingRecipe getBlastRecipe(final JavaPlugin plugin, final String key, final ItemStack result, final ItemStack source, final int duration, final float exp) {
 		try {
 			return org.bukkit.inventory.BlastingRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, Material.class, float.class, int.class)
 					.newInstance(getNameSpacedKey(plugin, key), result, source.getType(), exp, duration);
-		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
+		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
+		               NoSuchMethodException | ClassNotFoundException e) {
 			Debug.Send("Couldn't set blastfuranace recipe. Wrong serverversion?");
 			return null;
 		}
@@ -318,7 +325,8 @@ public class Adapter {
 		try {
 			return org.bukkit.inventory.SmokingRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, Material.class, float.class, int.class)
 					.newInstance(getNameSpacedKey(plugin, key), result, source.getType(), exp, duration);
-		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
+		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
+		               NoSuchMethodException | ClassNotFoundException e) {
 			Debug.Send("Couldn't set smoker recipe. Wrong serverversion?");
 			return null;
 		}
@@ -328,7 +336,8 @@ public class Adapter {
 		try {
 			for (final Recipe recipe : recipes) {
 				if (recipe instanceof ShapedRecipe) {
-					final ShapedRecipe shaped = (ShapedRecipe) recipe;;
+					final ShapedRecipe shaped = (ShapedRecipe) recipe;
+					;
 					if (shaped.getKey().getNamespace().contains("craftenhance")) {
 						player.discoverRecipe(shaped.getKey());
 					}

@@ -41,10 +41,10 @@ import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.FurnaceStartSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.CraftingInventory;
-import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -534,8 +534,8 @@ public class RecipeInjector implements Listener {
 
 	@EventHandler
 	public void furnaceClick(final InventoryClickEvent e) {
-		if (e.isCancelled()) return;
-		if (e.getView().getTopInventory() instanceof FurnaceInventory) {
+		if (e.isCancelled() || e.getClickedInventory() == null) return;
+		if (e.getClickedInventory().getType() == InventoryType.FURNACE) {
 			final Furnace f = (Furnace) e.getView().getTopInventory().getHolder();
 
 			pausedFurnaces.remove(f);
@@ -594,11 +594,7 @@ public class RecipeInjector implements Listener {
 
 		@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
 		public void handleCraftingCrafter(final CrafterCraftEvent craftEvent) {
-			System.out.println("craftEvent " + craftEvent.getRecipe());
-			System.out.println("craftEvent State " + craftEvent.getBlock().getState().getClass());
-			System.out.println("craftEvent BlockData " + craftEvent.getBlock().getBlockData().getClass());
 			Crafter crafterInventory = ((Crafter) craftEvent.getBlock().getState());
-			System.out.println("craftEvent viewers " + crafterInventory.getInventory().getViewers());
 			craftItem(craftEvent.getRecipe(), crafterInventory.getInventory().getContents(), crafterInventory.getInventory(), new ArrayList<>(), (itemstack) -> {
 				if (itemstack != null)
 					craftEvent.setResult(itemstack);

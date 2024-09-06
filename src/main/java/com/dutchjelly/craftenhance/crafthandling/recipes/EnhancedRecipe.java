@@ -9,9 +9,9 @@ import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.files.FileManager;
 import com.dutchjelly.craftenhance.gui.interfaces.GuiPlacable;
 import com.dutchjelly.craftenhance.messaging.Messenger;
+import com.dutchjelly.craftenhance.util.StringUtil;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.text.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -200,7 +200,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 		final StringBuilder stringBuilder = new StringBuilder();
 		if (allowedWorlds != null)
 			for (final String worlds : allowedWorlds)
-				stringBuilder.append(WordUtils.capitalizeFully(worlds.toLowerCase())).append(", ");
+				stringBuilder.append(StringUtil.capitalizeFully(worlds.toLowerCase())).append(", ");
 		stringBuilder.setLength(stringBuilder.length() - 2);
 		return stringBuilder.toString();
 	}

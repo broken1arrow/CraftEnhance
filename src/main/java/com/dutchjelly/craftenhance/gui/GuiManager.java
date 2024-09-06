@@ -39,7 +39,7 @@ public class GuiManager implements Listener {
 
 	@EventHandler
 	public void onDrag(final InventoryDragEvent e) {
-		if (!(e.getView().getTopInventory().getHolder() instanceof GUIElement)) return;
+/*		if (!(e.getView().getTopInventory().getHolder() instanceof GUIElement)) return;
 		final GUIElement openGUI = (GUIElement) e.getView().getTopInventory().getHolder();
 		if (openGUI == null || e.getInventory() == null) return;
 
@@ -51,13 +51,13 @@ public class GuiManager implements Listener {
 			exception.printStackTrace();
 			if (!e.isCancelled())
 				e.setCancelled(true);
-		}
+		}*/
 	}
 
 	@EventHandler
 	public void onClick(final InventoryClickEvent clickEvent) {
 
-		if (!(clickEvent.getView().getTopInventory().getHolder() instanceof GUIElement)) return;
+/*		if (!(clickEvent.getView().getTopInventory().getHolder() instanceof GUIElement)) return;
 		final GUIElement openGUI = (GUIElement) clickEvent.getView().getTopInventory().getHolder();
 
 		if (openGUI == null) return;
@@ -74,7 +74,7 @@ public class GuiManager implements Listener {
 			exception.printStackTrace();
 			if (!clickEvent.isCancelled())
 				clickEvent.setCancelled(true);
-		}
+		}*/
 	}
 
 	@EventHandler

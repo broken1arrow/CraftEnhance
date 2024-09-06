@@ -1,6 +1,6 @@
 package com.dutchjelly.craftenhance.files.util;
 
-import org.apache.commons.lang3.StringUtils;
+import com.dutchjelly.craftenhance.util.StringUtil;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.MemorySection;
@@ -458,7 +458,7 @@ public abstract class SimpleYamlHelper {
 			Valid.checkBoolean(Modifier.isStatic(method.getModifiers()), "deserialize method need to be static");
 			return clazz.cast(method.invoke(method, params));
 		} catch (final IllegalAccessException | InvocationTargetException ex) {
-			throw new Valid.CatchExceptions(ex, "Could not invoke static method " + method + " with params " + StringUtils.join(params));
+			throw new Valid.CatchExceptions(ex, "Could not invoke static method " + method + " with params " + StringUtil.join(params));
 		}
 	}
 
