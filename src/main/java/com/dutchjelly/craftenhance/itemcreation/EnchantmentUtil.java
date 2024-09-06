@@ -1,11 +1,17 @@
 package com.dutchjelly.craftenhance.itemcreation;
 
+import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
+import org.bukkit.Registry;
+import org.bukkit.enchantments.Enchantment;
+
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import org.bukkit.enchantments.Enchantment;
+
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class EnchantmentUtil
 {
@@ -14,7 +20,7 @@ public class EnchantmentUtil
 
     static
     {
-        ENCHANTMENTS.put("alldamage", Enchantment.DAMAGE_ALL);
+/*        ENCHANTMENTS.put("alldamage", Enchantment.DAMAGE_ALL);
         ALIASENCHANTMENTS.put("alldmg", Enchantment.DAMAGE_ALL);
         ENCHANTMENTS.put("sharpness", Enchantment.DAMAGE_ALL);
         ALIASENCHANTMENTS.put("sharp", Enchantment.DAMAGE_ALL);
@@ -146,13 +152,16 @@ public class EnchantmentUtil
         ALIASENCHANTMENTS.put("rodluck", Enchantment.LUCK);
 
         ENCHANTMENTS.put("lure", Enchantment.LURE);
-        ALIASENCHANTMENTS.put("rodlure", Enchantment.LURE);
+        ALIASENCHANTMENTS.put("rodlure", Enchantment.LURE);*/
     }
 
-    public static Enchantment getByName(String name)
-    {
-        Enchantment enchantment = Enchantment.getByName(name.toUpperCase(Locale.ENGLISH));
-        if (enchantment == null)
+    @Nullable
+    public static Enchantment getByName(String name) {
+        if (self().getVersionChecker().newerThan(ServerVersion.v1_20))
+            return Registry.ENCHANTMENT.match(name.toUpperCase(Locale.ENGLISH));
+        else
+            return Enchantment.getByName(name.toUpperCase(Locale.ENGLISH));
+      /*  if (enchantment == null)
         {
             enchantment = ENCHANTMENTS.get(name.toLowerCase(Locale.ENGLISH));
         }
@@ -160,7 +169,7 @@ public class EnchantmentUtil
         {
             enchantment = ALIASENCHANTMENTS.get(name.toLowerCase(Locale.ENGLISH));
         }
-        return enchantment;
+        return enchantment;*/
     }
 
     public static Set<Entry<String, Enchantment>> entrySet()

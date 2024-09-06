@@ -99,6 +99,9 @@ public class VersionChecker {
     }
 
     public enum ServerVersion {
+        v1_21(21),
+        v1_20(20),
+        v1_19(19),
         v1_18(18),
         v1_17(17),
         v1_16(16),

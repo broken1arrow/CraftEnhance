@@ -7,6 +7,8 @@ import com.dutchjelly.craftenhance.commandhandling.ICompletionProvider;
 import com.dutchjelly.craftenhance.itemcreation.ItemCreator;
 import com.dutchjelly.craftenhance.itemcreation.ParseResult;
 import com.dutchjelly.craftenhance.messaging.Messenger;
+import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
+import org.bukkit.Registry;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -15,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 @CommandRoute(cmdPath="edititem.enchant", perms="perms.item-editor")
 public class EnchantCmd implements ICommand, ICompletionProvider {
@@ -53,11 +57,15 @@ public class EnchantCmd implements ICommand, ICompletionProvider {
 		if (args.length >= 2 && args.length % 2 == 0) {
 			list.add("clear");
 			String toComplete = args[args.length - 1];
-			List<Enchantment> enchants = Arrays.asList(Enchantment.values());
-			enchants.stream().filter(x ->
-							!containsEnchant(x.getName().toLowerCase(), args))
-					.collect(Collectors.toList())
-					.forEach(x -> list.add(x.getName().toLowerCase()));
+			if (self().getVersionChecker().newerThan(ServerVersion.v1_19)) {
+				return Registry.ENCHANTMENT.stream().map(enchantment -> enchantment.getTranslationKey().toLowerCase()).collect(Collectors.toList());
+			} else {
+				List<Enchantment> enchants = Arrays.asList(Enchantment.values());
+				enchants.stream().filter(x ->
+								!containsEnchant(x.getName().toLowerCase(), args))
+						.collect(Collectors.toList())
+						.forEach(x -> list.add(x.getName().toLowerCase()));
+			}
 		}
 		if (args.length >= 3 && args.length % 2 != 0) {
 			list.addAll(Arrays.asList("1", "2", "3", "4", "5"));

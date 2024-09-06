@@ -221,7 +221,7 @@ public class Test implements ICommand{
         ItemStack supahDiamondChestplate = new ItemStack(Material.DIAMOND_CHESTPLATE);
         ItemStack supahDiamond = new ItemStack(Material.DIAMOND);
         ItemMeta supahDiamondMeta = supahDiamond.getItemMeta();
-        supahDiamondMeta.addEnchant(Enchantment.DURABILITY, 10, true);
+        supahDiamondMeta.addEnchant(Enchantment.AQUA_AFFINITY, 10, true);
         supahDiamond.setItemMeta(supahDiamondMeta);
         ItemStack[] customContent = new ItemStack[]{
                 supahDiamond,null,supahDiamond,

@@ -4,6 +4,7 @@ package com.dutchjelly.bukkitadapter;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.exceptions.ConfigError;
 import com.dutchjelly.craftenhance.gui.util.SkullCreator;
+import com.dutchjelly.craftenhance.itemcreation.EnchantmentUtil;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
@@ -87,9 +88,14 @@ public class Adapter {
 			meta.setDisplayName(displayName);
 			meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 			//meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-			meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
-			if (glow)
-				meta.addEnchant(Enchantment.DURABILITY, 10, true);
+			meta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
+			if (glow) {
+				if (self().getVersionChecker().newerThan(ServerVersion.v1_19)) {
+				meta.addEnchant(Enchantment.AQUA_AFFINITY, 10, true);
+				}else{
+					meta.addEnchant(EnchantmentUtil.getByName("DURABILITY"), 10, true);
+				}
+			}
 			item.setItemMeta(meta);
 		}
 		return item;
