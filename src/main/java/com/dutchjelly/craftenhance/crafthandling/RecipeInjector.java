@@ -255,7 +255,7 @@ public class RecipeInjector implements Listener {
 				}
 			}
 		}
-		Debug.Send(Type.Crafting, () -> "No recipe match found and the recult is set to air.");
+		Debug.Send(Type.Crafting, () -> "No recipe match found and the result is set to air.");
 		result.accept(null); //We found similar custom recipes, but none matched exactly. So set result to null.
 	}
 
