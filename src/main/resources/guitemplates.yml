@@ -564,6 +564,8 @@ Menus:
           - "&fChange or set world."
           - ""
           - "&fRight-click to remove world."
+          - "&fRight-click and hold shift to remove all worlds."
+          - "&6"
           - "&fLeft-click to add world."
           - "&fShift and left-click to add world"
           - "&fwithout check if the world is valid."

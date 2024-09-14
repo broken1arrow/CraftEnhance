@@ -127,7 +127,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 
 			@Override
 			public ItemStack getItem() {
-				final Map<String, String> placeHolders = getPalceholders();
+				final Map<String, String> placeHolders = getPlaceholders();
 
 				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = value.getPassiveButton();
 				ItemStack itemStack = Adapter.getItemStack(button.getMaterial(), button.getDisplayName(), button.getLore(), button.getExtra(), button.isGlow());
@@ -338,7 +338,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 		return false;
 	}
 
-	private Map<String, String> getPalceholders() {
+	private Map<String, String> getPlaceholders() {
 		final Map<String, String> placeHolders = new HashMap<String, String>() {{
 			put(InfoItemPlaceHolders.Key.getPlaceHolder(), recipe.getKey() == null ? "null" : recipe.getKey());
 			if (recipe instanceof WBRecipe)

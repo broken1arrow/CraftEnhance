@@ -126,6 +126,10 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		}
 		if (value.isActionTypeEqual(ButtonType.AllowedWorldsCraft.name())) {
 			if (player.isConversing()) return true;
+			if (click.isRightClick() && click.isShiftClick()){
+				recipe.getAllowedWorlds().clear();
+				return true;
+			}
 			new HandleChatInput(this, message -> {
 				if (!this.handleSetWorld(message, click)) {
 					this.runTask(() -> this.menuOpen(player));
@@ -276,14 +280,14 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			return false;
 		final World allowedWorlds = Bukkit.getWorld(message);
 
-		if (!(click.isLeftClick() && click.isShiftClick()) && allowedWorlds == null) {
+		if (!(click.isRightClick() || click.isShiftClick()) && allowedWorlds == null) {
 			Messenger.Message("Please specify a world that exist. This world either don't exist or not loaded " + message, getViewer());
 			return true;
 		}
 		Set<String> worlds = recipe.getAllowedWorlds();
 		if (worlds == null) worlds = new HashSet<>();
 		if (!click.isRightClick() && worlds.stream().anyMatch(world -> world.equals(message))) {
-			Messenger.Message("This world is alredy set." + message, getViewer());
+			Messenger.Message("This world is already set." + message, getViewer());
 			return true;
 		}
 		if (click.isLeftClick()) worlds.add(message);
