@@ -10,7 +10,7 @@
     <description>This is a minecraft plugin to enhance crafting.</description>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-       <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.target>21</maven.compiler.target>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.release>8</maven.compiler.release>
         <utility-library>0.111</utility-library>
@@ -77,10 +77,10 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
-   <!--     <repository>
-            <id>itemsadder-repo</id>
-            <url>https://maven.pkg.github.com/LoneDev6/API-ItemsAdder</url>
-        </repository>-->
+        <!--     <repository>
+                 <id>itemsadder-repo</id>
+                 <url>https://maven.pkg.github.com/LoneDev6/API-ItemsAdder</url>
+             </repository>-->
         <repository>
             <id>codemc-repo</id>
             <url>https://repo.codemc.io/repository/maven-public/</url>
