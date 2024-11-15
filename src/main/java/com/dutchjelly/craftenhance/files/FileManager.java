@@ -167,9 +167,9 @@ public class FileManager {
 		//itemsConfig = getYamlConfig(itemsFile);
 		items.clear();
 		if (itemsConfig != null)
-		for (final String key : itemsConfig.getKeys(false)) {
-			items.put(key, itemsConfig.getItemStack(key));
-		}
+			for (final String key : itemsConfig.getKeys(false)) {
+				items.put(key, itemsConfig.getItemStack(key));
+			}
 	}
 
 	public Map<String, ItemStack> getItems() {
@@ -272,13 +272,13 @@ public class FileManager {
 			if (key == null) continue;
 			final String[] parsedKey = key.split(",");
 			final World world = Bukkit.getServer().getWorld(UUID.fromString(parsedKey[3]));
-			if ( world != null){
-			final Location loc = new Location(
-					world,
-					Integer.parseInt(parsedKey[0]),
-					Integer.parseInt(parsedKey[1]),
-					Integer.parseInt(parsedKey[2]));
-			blockOwners.put(loc, UUID.fromString(containerOwnerConfig.getString(key)));
+			if (world != null) {
+				final Location loc = new Location(
+						world,
+						Integer.parseInt(parsedKey[0]),
+						Integer.parseInt(parsedKey[1]),
+						Integer.parseInt(parsedKey[2]));
+				blockOwners.put(loc, UUID.fromString(containerOwnerConfig.getString(key)));
 			}
 		}
 		return blockOwners;

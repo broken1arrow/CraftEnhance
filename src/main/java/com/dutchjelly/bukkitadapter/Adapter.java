@@ -53,7 +53,7 @@ public class Adapter {
 		if (color == null) {
 			final Material mat = Adapter.getMaterial(material);
 			if (mat == null) {
-				Messenger.Error("Could not find " + material);
+				Messenger.Error("Could not find the material. It is set too: " + material);
 				return null;
 			}
 			item = new ItemStack(mat);
