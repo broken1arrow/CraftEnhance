@@ -65,7 +65,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 			if (partialMatch instanceof Boolean)
 				this.checkPartialMatch = (boolean) args.get("check_partial_match");
 			else
-				this.checkPartialMatch = Boolean.getBoolean(args.get("check_partial_match") + "");
+				this.checkPartialMatch = Boolean.parseBoolean(args.get("check_partial_match") + "");
 		}
 
 		recipeKeys = (List<String>) args.get("recipe");
@@ -76,7 +76,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 				if (world != null) {
 					final World bukkitWorld = Bukkit.getWorld(world);
 					if (bukkitWorld == null)
-						Messenger.Error("This world seams to not exist: '" + world + "'. Will still be added.");
+						Messenger.Error("This world seams to not exist or not loaded yet: '" + world + "'. Will still be added and will attempt to load in later stage.");
 					worlds.add(world);
 				}
 			});
