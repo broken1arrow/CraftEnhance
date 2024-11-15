@@ -1,152 +1,159 @@
 package com.dutchjelly.craftenhance.gui.guis;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import com.dutchjelly.craftenhance.IEnhancedRecipe;
-import com.dutchjelly.craftenhance.PermissionTypes;
-
+import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
-import com.dutchjelly.craftenhance.gui.GuiManager;
-import com.dutchjelly.craftenhance.gui.templates.GuiTemplate;
+import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
+import com.dutchjelly.craftenhance.files.CategoryData;
+import com.dutchjelly.craftenhance.files.MenuSettingsCache;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorBlast;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorFurnace;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorSmoker;
+import com.dutchjelly.craftenhance.gui.guis.viewers.RecipeViewRecipe;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
-import com.dutchjelly.craftenhance.messaging.Debug;
-
-import com.dutchjelly.craftenhance.messaging.Messenger;
+import com.dutchjelly.craftenhance.prompt.HandleChatInput;
+import com.dutchjelly.craftenhance.util.PermissionTypes;
+import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
+import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
+import org.broken.arrow.menu.library.button.MenuButton;
+import org.broken.arrow.menu.library.button.logic.ButtonUpdateAction;
+import org.broken.arrow.menu.library.button.logic.FillMenuButton;
+import org.broken.arrow.menu.library.holder.MenuHolderPage;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-public class RecipesViewer extends GUIElement {
+import javax.annotation.Nonnull;
+import java.util.List;
+import java.util.Map.Entry;
 
-	protected List<IEnhancedRecipe> recipes;
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
+import static com.dutchjelly.craftenhance.gui.util.FormatListContents.canSeeRecipes;
 
-	//Positions of format (itemsPerPage*pageNumber) + (index of slot in fill-space).
-	private Map<Integer, IEnhancedRecipe> recipePositions;
+public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
+	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
+	private final MenuTemplate menuTemplate;
+	private final CategoryData categoryData;
 
-    private Inventory[] inventories;
-    private int currentPage = 0;
-	//TODO: implement map for recipe location mapping to allow customizable recipe locations. I'm thinking of making that a config thing in a RecipesViewer GuiTemplate.
-
-	public RecipesViewer(GuiManager manager, GuiTemplate template, GUIElement previous, Player p, List<IEnhancedRecipe> recipes){
-        super(manager, template, previous, p);
-	    Debug.Send("An instance is being made for a recipes viewer");
-	    this.recipes = recipes;
-	    this.addBtnListener(ButtonType.NxtPage, this::handlePageChangingClicked);
-	    this.addBtnListener(ButtonType.PrvPage, this::handlePageChangingClicked);
-        generateInventories(null);
-	}
-
-	//protected so a editor doesn't have to create a new instance when it deletes something and the user goes to previous page.
-	protected void generateInventories(Player subscriber){
-
-        int itemsPerPage = getTemplate().getFillSpace().size();
-        int requiredPages = Math.max((int)Math.ceil((double)recipes.size()/itemsPerPage), 1);
-        //We need more pages if statically positioned recipes are placed at a higher page index.
-        requiredPages = Math.max(requiredPages, recipes.stream().map(x -> x.getPage()).max(Integer::compare).orElse(0)+1);
-
-        List<Integer> fillSpace = getTemplate().getFillSpace();
-
-        recipePositions = new HashMap<>();
-        List<IEnhancedRecipe> notPositioned = new ArrayList<>();
-
-
-        //Look to position statically positioned recipes.
-        for (IEnhancedRecipe recipe : recipes) {
-            if(recipe.getSlot() == -1 || recipe.getPage() == -1){
-                notPositioned.add(recipe);
-                continue;
-            }
-            if(!fillSpace.contains(recipe.getSlot())){
-                Messenger.Message("Could not position recipe with key " + recipe.getKey() + " because it's outside of the fill space.", subscriber);
-                notPositioned.add(recipe);
-                continue;
-            }
-
-            int location = recipe.getPage()*itemsPerPage + fillSpace.indexOf(recipe.getSlot());
-            if(recipePositions.containsKey(location)){
-                Messenger.Message("Could not position recipe with key " + recipe.getKey() + " because another recipe has the same location", subscriber);
-                notPositioned.add(recipe);
-                continue;
-            }
-            recipePositions.put(location, recipe);
-        }
-
-        //Position non-positioned recipes by just increasing the indexes until one is not taken.
-        int notPositionedIndex = 0, currentPosition = -1;
-        while(notPositionedIndex < notPositioned.size()){
-            while(recipePositions.containsKey(++currentPosition));
-            recipePositions.put(currentPosition, notPositioned.get(notPositionedIndex++));
-        }
-
-        inventories = new Inventory[requiredPages];
-        int titledInventories = getTemplate().getInvTitles().size();
-        for(int i = 0; i < requiredPages; i++) {
-            inventories[i] = GuiUtil.CopyInventory(getTemplate().getTemplate(), getTemplate().getInvTitles().get(i % titledInventories), this);
-        }
-
-        //It does get quite confusing here! It's mapping the locations to the actual locations specified in fill-space.
-        for (int position : recipePositions.keySet()) {
-            inventories[position/itemsPerPage].setItem(fillSpace.get(position%itemsPerPage), recipePositions.get(position).getResult());
-        }
-
-        //Check if current-page is not outside the bounds in case a recipe is removed.
-        if(currentPage >= inventories.length) currentPage = inventories.length-1;
-	}
-
-    private void handlePageChangingClicked(ItemStack btn, ButtonType btnType){
-        int direction = btnType == ButtonType.PrvPage ? -1 : 1;
-        currentPage += direction;
-        if(currentPage < 0) currentPage = inventories.length-1;
-        else if(currentPage >= inventories.length) currentPage = 0;
-        getManager().openGUI(getPlayer(), this);
-    }
-
-    @Override
-	public Inventory getInventory() {
-		return inventories[currentPage];
+	public RecipesViewer(final CategoryData categoryData, final String recipeSeachFor, final Player player) {
+		super(canSeeRecipes(categoryData.getEnhancedRecipes(recipeSeachFor), player));
+		this.menuTemplate = menuSettingsCache.getTemplate("RecipesViewer");
+		this.categoryData = categoryData;
+		setFillSpace(this.menuTemplate.getFillSlots());
+		setTitle(() -> this.menuTemplate.getMenuTitle() +
+				(categoryData.getDisplayName() == null || categoryData.getDisplayName().isEmpty() ?
+						categoryData.getRecipeCategory() : categoryData.getDisplayName()));
+		setMenuSize(GuiUtil.invSize("RecipesViewer", this.menuTemplate.getAmountOfButtons()));
+		setMenuOpenSound(this.menuTemplate.getSound());
+		this.setUseColorConversion(true);
+		this.setIgnoreItemCheck(true);
 	}
 
 	@Override
-	public void handleEventRest(InventoryClickEvent e) {
-        int clickedSlot = e.getSlot();
-        List<Integer> fillSpace = getTemplate().getFillSpace();
-        if(!fillSpace.contains(clickedSlot))
-            return;
-
-        int clickedRecipePosition = currentPage*fillSpace.size() + fillSpace.indexOf(clickedSlot);
-        if(!recipePositions.containsKey(clickedRecipePosition))
-            return;
-        handleRecipeClick(recipePositions.get(clickedRecipePosition), e.getClick());
+	public MenuButton getButtonAt(final int slot) {
+		if (this.menuTemplate == null) return null;
+		for (final Entry<List<Integer>, MenuButtonData> menuTemplate : this.menuTemplate.getMenuButtons().entrySet()) {
+			if (menuTemplate.getKey().contains(slot)) {
+				return registerButtons(menuTemplate.getValue());
+			}
+		}
+		return null;
 	}
 
-	private void handleRecipeClick(IEnhancedRecipe clickedRecipe, ClickType clickType){
-	    Debug.Send("handling recipe click..");
-	    if((clickType == ClickType.MIDDLE || clickType == ClickType.RIGHT) && getPlayer().hasPermission(PermissionTypes.Edit.getPerm())){
-	        if(clickedRecipe instanceof WBRecipe)
-                getManager().openGUI(getPlayer(), new WBRecipeEditor(getManager(),getManager().getMain().getGuiTemplatesFile().getTemplate(WBRecipeEditor.class), this, getPlayer(), (WBRecipe)clickedRecipe));
-            else Debug.Send("Could not find the class of a clicked recipe.");
-            return;
-	    }
-        if(clickedRecipe instanceof WBRecipe)
-            getManager().openGUI(getPlayer(), new WBRecipeViewer(getManager(),getManager().getMain().getGuiTemplatesFile().getTemplate(WBRecipeViewer.class), this, getPlayer(), (WBRecipe)clickedRecipe));
-        else Debug.Send("Could not find the class of a clicked recipe.");
-    }
 
-	@Override
-	public boolean isCancelResponsible() {
+	private MenuButton registerButtons(final MenuButtonData value) {
+		return new MenuButton() {
+			@Override
+			public void onClickInsideMenu(@Nonnull final Player player, @Nonnull final Inventory menu, @Nonnull final ClickType click, @Nonnull final ItemStack clickedItem) {
+				if (run(value, menu, player, click))
+					updateButtons();
+			}
+
+			@Override
+			public ItemStack getItem() {
+				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = null;
+				if (getViewer().hasPermission(PermissionTypes.Edit.getPerm()))
+					button = value.getActiveButton();
+				if (button == null)
+					button = value.getPassiveButton();
+
+				return Adapter.getItemStack(button.getMaterial(), button.getDisplayName(), button.getLore(), button.getExtra(), button.isGlow());
+			}
+		};
+	}
+
+	public boolean run(final MenuButtonData value, final Inventory menu, final Player player, final ClickType click) {
+		if (value.isActionTypeEqual(ButtonType.PrvPage.name())) {
+			previousPage();
+			return true;
+		}
+		if (value.isActionTypeEqual(ButtonType.NxtPage.name())) {
+			nextPage();
+			return true;
+		}
+		if (value.isActionTypeEqual(ButtonType.Search.name())) {
+			if (click == ClickType.RIGHT)
+				new HandleChatInput(this, msg -> {
+					if (GuiUtil.seachCategory(msg)) {
+						new RecipesViewer(categoryData, msg, player).menuOpen(getViewer());
+						return false;
+					}
+					return true;
+				});
+			/*	self().getGuiManager().waitForChatInput(this, getViewer(), (msg) -> {
+					if (GuiUtil.seachCategory(msg)) {
+						new RecipesViewer(categoryData,msg,player).menuOpen(getViewer());
+						return false;
+					}
+					return true;
+				});*/
+			else new RecipesViewer(categoryData, "", player).menuOpen(player);
+		}
+		if (value.isActionTypeEqual(ButtonType.Back.name())) {
+			new RecipesViewerCategorys("").menuOpen(player);
+		}
 		return false;
 	}
 
+	@Override
+	public FillMenuButton<EnhancedRecipe> createFillMenuButton() {
+		return new FillMenuButton<>((player, itemStacks, clickType, itemStack, enhancedRecipe) -> {
+			boolean allowClick = (clickType == ClickType.MIDDLE || clickType == ClickType.RIGHT) && getViewer().hasPermission(PermissionTypes.Edit.getPerm());
 
-	public void setPage(int page){
-	    if(page < 0) page = 0;
-	    currentPage = Math.min(page, inventories.length-1);
-    }
+			if (enhancedRecipe instanceof WBRecipe) {
+				if (allowClick)
+					new RecipeEditor<>((WBRecipe) enhancedRecipe, categoryData, null, ButtonType.ChooseWorkbenchType).menuOpen(player);
+				else new RecipeViewRecipe<>(categoryData, (WBRecipe) enhancedRecipe, "WBRecipeViewer").menuOpen(player);
+			}
+			if (enhancedRecipe instanceof FurnaceRecipe) {
+				if (allowClick)
+					new RecipeEditorFurnace((FurnaceRecipe) enhancedRecipe, categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
+				else
+					new RecipeViewRecipe<>(categoryData, (FurnaceRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
+			}
+			if (enhancedRecipe instanceof BlastRecipe) {
+				if (allowClick)
+					new RecipeEditorBlast((BlastRecipe) enhancedRecipe, categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
+				else
+					new RecipeViewRecipe<>(categoryData, (BlastRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
+			}
+			if (enhancedRecipe instanceof SmokerRecipe) {
+				if (allowClick)
+					new RecipeEditorSmoker((SmokerRecipe) enhancedRecipe, categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
+				else
+					new RecipeViewRecipe<>(categoryData, (SmokerRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
+			}
+			return ButtonUpdateAction.NONE;
+		}, (slot, enhancedRecipe) -> {
+			if (enhancedRecipe != null) {
+				return enhancedRecipe.getDisplayItem();
+			}
+			return null;
+		});
+	}
 }

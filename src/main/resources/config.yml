@@ -3,13 +3,15 @@
 # ---------------------------------------- #
 
 enable-debug: false
+enable_crafting-debug: false
+enable_smelting-debug: false
 enable-recipes: true
 
 # This update checker checks for new versions on the github page.
 enable-updatechecker: true
 
 # If this option is enabled, people can only see recipes that they have permissions to.
-only-show-available: false
+only-show-available: true
 
 # Enable this to make the players learn the recipes (making them show up in the green recipe book)
 learn-recipes: false
@@ -17,16 +19,25 @@ learn-recipes: false
 debug-prefix: "[DEBUG] "
 global-prefix: "&7[&bCraft&dEnhance&7] &r"
 
+#If it shall save the recipe when close menu
+save_on_close: false
+
+#This control if the crafter should craft the custom recipes.
+#It will not change the outcome of the Minecraft recipes.
+turn_of_crafter: true
+
 # These permissions are used globally by all features of the plugin.
 perms:
   recipe-editor: "craftenhance.edit"
   recipe-viewer: "craftenhance.view"
   item-editor: "craftenhance.edititems"
+  categorys-editor: "craftenhance.edit_categorys"
 
 messages:
   global:
     no-perms: "You don't have permission to do that."
   commands:
     show-options: "You entered an unfinished command. It can be completed by adding one of the following arguments: &e[PLACEHOLDER]&r."
-    few-arguments: "Expected [PLACEHOLDER] arguments for the command." 
+    few-arguments: "Expected at least [PLACEHOLDER] arguments for the command."
     only-for-players: "This command is only for players."
+    not-valid-recipe-option: "Your selected recipe option '[recipe-edit]' does not exist. Please choose an option to create a recipe [recipe-options]."

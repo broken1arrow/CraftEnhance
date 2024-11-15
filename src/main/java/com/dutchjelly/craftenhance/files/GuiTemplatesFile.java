@@ -1,15 +1,12 @@
 package com.dutchjelly.craftenhance.files;
 
-import com.dutchjelly.craftenhance.ConfigError;
+import com.dutchjelly.craftenhance.exceptions.ConfigError;
 import com.dutchjelly.craftenhance.gui.guis.GUIElement;
 import com.dutchjelly.craftenhance.gui.templates.GuiTemplate;
-import com.dutchjelly.craftenhance.messaging.Debug;
-import com.dutchjelly.craftenhance.messaging.Messenger;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.Map;
 
 public class GuiTemplatesFile {
@@ -29,7 +26,7 @@ public class GuiTemplatesFile {
     }
 
     public void load(){
-        if(!file.exists())
+     /*   if(!file.exists())
             plugin.saveResource(GUI_FILE_NAME, false);
         templateConfig = YamlConfiguration.loadConfiguration(file);
         templates = new HashMap<>();
@@ -50,7 +47,7 @@ public class GuiTemplatesFile {
                 Messenger.Error("There was an error that occurred when loading the gui template of " + key + ":");
                 configError.printStackTrace();
             }
-        }
+        }*/
     }
 
     public GuiTemplate getTemplate(Class<? extends GUIElement> clazz){

@@ -1,5 +1,4 @@
-package com.dutchjelly.craftenhance;
-
+package com.dutchjelly.craftenhance.util;
 
 import lombok.Getter;
 import lombok.Setter;

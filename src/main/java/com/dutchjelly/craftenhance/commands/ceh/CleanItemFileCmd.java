@@ -29,6 +29,7 @@ public class CleanItemFileCmd implements ICommand {
 
 	@Override
 	public void handleConsoleCommand(CommandSender sender, String[] args) {
-		Messenger.MessageFromConfig("messages.commands.only-for-players", sender);
+		handler.getMain().getFm().cleanItemFile();
+		Messenger.Message("Successfully cleared all unused items.", sender);
 	}
 }

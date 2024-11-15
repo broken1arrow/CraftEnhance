@@ -10,14 +10,14 @@ import java.net.URLConnection;
 
 public class GithubLoader {
 
-    private final String rawUrl = "https://raw.githubusercontent.com/DutchJelly/CraftEnhance/master/recent_version.txt";
+    private final String rawUrl = "https://raw.githubusercontent.com/broken1arrow/CraftEnhance/master/recent_version.txt";//"https://raw.githubusercontent.com/DutchJelly/CraftEnhance/master/recent_version.txt";
 
     private URLConnection connection;
     private VersionChecker checker;
     private String version;
 
-    public static GithubLoader init(VersionChecker checker){
-        GithubLoader loader = new GithubLoader();
+    public static GithubLoader init(final VersionChecker checker){
+        final GithubLoader loader = new GithubLoader();
         loader.checker = checker;
         if(!loader.openConnection()) return null;
 
@@ -29,17 +29,17 @@ public class GithubLoader {
     }
 
     public void readVersion(){
-        InputStream inputStream;
-        ByteArrayOutputStream outputStream;
+        final InputStream inputStream;
+        final ByteArrayOutputStream outputStream;
         try {
             outputStream = new ByteArrayOutputStream();
             inputStream = connection.getInputStream();
-            byte[] buffer = new byte[128];
+            final byte[] buffer = new byte[128];
             int i;
             while((i = inputStream.read(buffer)) != -1)
                 outputStream.write(buffer, 0, i);
             version = new String(outputStream.toByteArray(), "UTF-8");
-        } catch (Exception e) {
+        } catch (final Exception e) {
             Messenger.Message("(fatal) The update checker could not extract the version from the url connection.");
         }
     }
@@ -47,7 +47,7 @@ public class GithubLoader {
     private boolean openConnection(){
         try {
             connection = (new URL(rawUrl)).openConnection();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             Messenger.Message("(fatal) The update checker could not open URL connection.");
             return false;
         }

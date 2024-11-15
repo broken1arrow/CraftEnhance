@@ -16,6 +16,11 @@ Some examples of why I would use this plugin as an API in certain cases is to:
 
 ### Changelog
 
+##### 2.5.0
+```diff
++ redo the whole menu system.
+```
+
 ##### 2.4.2
 ```diff
 + Now `ExactChoice` is only used when `learn-recipes` is set to true.

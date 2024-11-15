@@ -1,4 +1,4 @@
-package com.dutchjelly.craftenhance;
+package com.dutchjelly.craftenhance.exceptions;
 
 import com.dutchjelly.craftenhance.messaging.Messenger;
 
@@ -12,5 +12,4 @@ public class ConfigError extends RuntimeException {
     public void printStackTrace(){
         Messenger.Error("(Configuration error) " + getMessage());
     }
-
 }

@@ -1,8 +1,10 @@
 package com.dutchjelly.craftenhance.gui.templates;
 
 import com.dutchjelly.bukkitadapter.Adapter;
-import com.dutchjelly.craftenhance.ConfigError;
+import com.dutchjelly.craftenhance.exceptions.ConfigError;
 import com.dutchjelly.craftenhance.gui.util.SkullCreator;
+import com.dutchjelly.craftenhance.itemcreation.EnchantmentUtil;
+import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import lombok.Getter;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
@@ -17,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class GuiItemTemplate {
 
@@ -79,9 +83,15 @@ public class GuiItemTemplate {
         meta.setDisplayName(name);
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-        meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
-        if(glow)
-            meta.addEnchant(Enchantment.DURABILITY, 10, true);
+        if (self().getVersionChecker().olderThan(ServerVersion.v1_21))
+            meta.addItemFlags(ItemFlag.valueOf("HIDE_POTION_EFFECTS"));
+        if (glow) {
+            if (self().getVersionChecker().newerThan(ServerVersion.v1_20)) {
+                meta.addEnchant(Enchantment.AQUA_AFFINITY, 10, true);
+            } else {
+                meta.addEnchant(EnchantmentUtil.getByName("DURABILITY"), 10, true);
+            }
+        }
 
         item.setItemMeta(meta);
     }

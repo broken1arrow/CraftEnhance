@@ -1,79 +1,159 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>CraftEnhance</groupId>
-	<artifactId>CraftEnhance</artifactId>
-	<version>2.4.2</version>
-	<name>CraftEnhance</name>
-	<description>This is a minecraft plugin to enhance crafting.</description>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<maven.compiler.source>1.8</maven.compiler.source>
-	</properties>
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<version>2.8.1</version>
-				<executions>
-					<execution>
-						<id>default-deploy</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>deploy</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
-	<repositories>
-		<repository>
-			<id>spigot-repo</id>
-			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
-		</repository>
-
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>CraftEnhance</groupId>
+    <artifactId>CraftEnhance</artifactId>
+    <version>2.5.6.3.2</version>
+    <name>CraftEnhance</name>
+    <description>This is a minecraft plugin to enhance crafting.</description>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+       <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.release>8</maven.compiler.release>
+        <utility-library>0.111</utility-library>
+        <dependencys_path>com.dutchjelly.craftenhance.libs</dependencys_path>
+    </properties>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <finalName>${project.name}-${project.version}</finalName>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.github.broken1arrow.Utility-Library:conversation-prompt*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:nbt*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:menu-library*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:title-update*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:nbt*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:menu-configuration-manager*
+                                    </include>
+                                    <include>com.github.broken1arrow.Utility-Library:yaml-utility*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:serialize-utility*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:color-conversion*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:log-and-validate*</include>
+                                </includes>
+                            </artifactSet>
+                            <relocations>
+                                <relocation>
+                                    <pattern>org.broken.arrow</pattern>
+                                    <shadedPattern>${dependencys_path}</shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+    <repositories>
+        <repository>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
         <repository>
             <id>minecraft-repo</id>
             <url>https://libraries.minecraft.net/</url>
         </repository>
-	</repositories>
-	<dependencies>
-		<dependency>
-			<!--- Spigot api -->
-			<groupId>org.spigotmc</groupId>
-			<artifactId>spigot-api</artifactId>
-			<version>1.16.3-R0.1-SNAPSHOT</version>
-		</dependency>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+   <!--     <repository>
+            <id>itemsadder-repo</id>
+            <url>https://maven.pkg.github.com/LoneDev6/API-ItemsAdder</url>
+        </repository>-->
+        <repository>
+            <id>codemc-repo</id>
+            <url>https://repo.codemc.io/repository/maven-public/</url>
+            <layout>default</layout>
+        </repository>
+    </repositories>
+    <dependencies>
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>1.21-R0.1-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.12</version>
+            <version>1.18.34</version>
             <scope>provided</scope>
         </dependency>
-
-		<dependency>
-			<groupId>com.mojang</groupId>
-			<artifactId>authlib</artifactId>
-			<version>1.5.21</version>
-			<scope>provided</scope>
-		</dependency>
+        <dependency>
+            <groupId>com.mojang</groupId>
+            <artifactId>authlib</artifactId>
+            <version>3.11.49</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.broken1arrow.Utility-Library</groupId>
+            <artifactId>conversation-prompt</artifactId>
+            <version>${utility-library}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.broken1arrow.Utility-Library</groupId>
+            <artifactId>nbt</artifactId>
+            <version>${utility-library}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.broken1arrow.Utility-Library</groupId>
+            <artifactId>menu-library</artifactId>
+            <version>${utility-library}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.broken1arrow.Utility-Library</groupId>
+            <artifactId>title-update</artifactId>
+            <version>${utility-library}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.broken1arrow.Utility-Library</groupId>
+            <artifactId>menu-configuration-manager</artifactId>
+            <version>${utility-library}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+            <scope>compile</scope>
+        </dependency>
         <!--<dependency>-->
-            <!--<groupId>org.bukkit</groupId>-->
-            <!--<artifactId>bukkit</artifactId>-->
-            <!--<version>1.16.1-R0.1-SNAPSHOT</version>-->
-            <!--<scope>system</scope>-->
-            <!--<systemPath>${project.basedir}/craftbukkit-1.16.1.jar</systemPath>-->
+        <!--<groupId>dev.lone</groupId>-->
+        <!--<artifactId>api-itemsadder</artifactId>-->
+        <!--<version>2.4.21</version>-->
         <!--</dependency>-->
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>2.8.5</version>
-			<scope>compile</scope>
-		</dependency>
-
-
-	</dependencies>
+        <!--<dependency>-->
+        <!--<groupId>org.bukkit</groupId>-->
+        <!--<artifactId>bukkit</artifactId>-->
+        <!--<version>1.16.1-R0.1-SNAPSHOT</version>-->
+        <!--<scope>system</scope>-->
+        <!--<systemPath>${project.basedir}/craftbukkit-1.16.1.jar</systemPath>-->
+        <!--</dependency>-->
+    </dependencies>
 </project>
 
 
