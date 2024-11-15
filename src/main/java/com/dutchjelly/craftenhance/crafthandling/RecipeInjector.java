@@ -204,7 +204,7 @@ public class RecipeInjector implements Listener {
 							}
 						});
 					} else {
-						Debug.Send(Type.Crafting, () -> "This recipe deosen't contains Modeldata and will be crafted if the recipe is not cancelled.");
+						Debug.Send(Type.Crafting, () -> "This recipe doesn't contains Modeldata and will be crafted if the recipe is not cancelled.");
 
 						final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(eRecipe, wbRecipe, wbRecipe.getResult().clone());
 						if (beforeCraftOutputEvent.isCancelled()) {
