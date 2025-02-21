@@ -74,25 +74,25 @@ public class CreateRecipeCmd implements ICommand {
 			case "workbench":
 				recipe = new WBRecipe(permission , null, new ItemStack[9]);
 				recipe.setKey(args[1]);
-				RecipeEditor<EnhancedRecipe> recipeEditor = new RecipeEditor<>(recipe, null, null, ButtonType.ChooseWorkbenchType);
+				RecipeEditor<EnhancedRecipe> recipeEditor = new RecipeEditor<>(recipe,0, null, null, ButtonType.ChooseWorkbenchType);
 				recipeEditor.menuOpen(p);
 				break;
 			case "furnace":
 				recipe = new FurnaceRecipe(permission , null, new ItemStack[1]);
 				recipe.setKey(args[1]);
-				RecipeEditorFurnace editorFurnace = new RecipeEditorFurnace((FurnaceRecipe) recipe, null, null, ButtonType.ChooseWorkbenchType);
+				RecipeEditorFurnace editorFurnace = new RecipeEditorFurnace((FurnaceRecipe) recipe,0, null, null, ButtonType.ChooseWorkbenchType);
 				editorFurnace.menuOpen(p);
 				break;
 			case "blast":
 				recipe = new BlastRecipe(permission , null, new ItemStack[1]);
 				recipe.setKey(args[1]);
-				RecipeEditorBlast editorBlast = new RecipeEditorBlast((BlastRecipe)  recipe, null, null, ButtonType.ChooseWorkbenchType,true);
+				RecipeEditorBlast editorBlast = new RecipeEditorBlast((BlastRecipe)  recipe, 0, null, null, ButtonType.ChooseWorkbenchType,true);
 				editorBlast.menuOpen(p);
 				break;
 			case "smoker":
 				recipe = new SmokerRecipe(permission , null, new ItemStack[1]);
 				recipe.setKey(args[1]);
-				RecipeEditorSmoker editorSmoker = new RecipeEditorSmoker((SmokerRecipe)  recipe, null, null, ButtonType.ChooseWorkbenchType,true);
+				RecipeEditorSmoker editorSmoker = new RecipeEditorSmoker((SmokerRecipe)  recipe, 0, null, null, ButtonType.ChooseWorkbenchType,true);
 				editorSmoker.menuOpen(p);
 				break;
 			default:

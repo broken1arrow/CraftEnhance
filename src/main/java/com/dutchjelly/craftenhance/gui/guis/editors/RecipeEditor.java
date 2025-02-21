@@ -49,6 +49,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
 	private final IngredientsCache ingredientsCache;
 	private final boolean checkPartialMatch;
+	private final int page;
 	private String permission;
 	@Getter
 	private final RecipeT recipe;
@@ -62,12 +63,13 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 	private final ButtonType editorType;
 	private final CategoryData categoryData;
 
-	public RecipeEditor(final RecipeT recipe, final CategoryData categoryData, final String permission, final ButtonType editorType) {
-		this(recipe, categoryData, permission, editorType, true);
+	public RecipeEditor(final RecipeT recipe, final int page, final CategoryData categoryData, final String permission, final ButtonType editorType) {
+		this(recipe, page, categoryData, permission, editorType, true);
 	}
 
-	public RecipeEditor(final RecipeT recipe, final CategoryData categoryData, final String permission, final ButtonType editorType, final boolean clearItems) {
+	public RecipeEditor(final RecipeT recipe, final int page, final CategoryData categoryData, final String permission, final ButtonType editorType, final boolean clearItems) {
 		super(formatRecipes(recipe, self().getIngredientsCache(), !clearItems));
+		this.page = page;
 		if (permission == null || permission.equals(""))
 			this.permission = recipe.getPermission();
 		else this.permission = permission;
@@ -152,7 +154,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 		}
 		if (value.isActionTypeEqual(ButtonType.RecipeSettings.name())) {
 			if (recipe instanceof WBRecipe)
-				new RecipeSettings<>(this.recipe, this.categoryData, this.permission, this.editorType)
+				new RecipeSettings<>(this.recipe, this.page, this.categoryData, this.permission, this.editorType)
 						.menuOpen(player);
 		}
 
@@ -168,22 +170,26 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 			final Map<Integer, ItemStack> map = checkItemsInsideInventory.getItemsFromSetSlots(menu, player, false);
 			save(map, player, true);
 			if (this.recipe instanceof WBRecipe) {
-				new RecipeEditor<>((WBRecipe) this.recipe, categoryData, null, ButtonType.ChooseWorkbenchType).menuOpen(player);
+				new RecipeEditor<>((WBRecipe) this.recipe, this.page, categoryData, null, ButtonType.ChooseWorkbenchType).menuOpen(player);
 			}
 			if (this.recipe instanceof FurnaceRecipe) {
-				new RecipeEditorFurnace((FurnaceRecipe) this.recipe, categoryData, null, ButtonType.ChooseFurnaceType,false).menuOpen(player);
+				new RecipeEditorFurnace((FurnaceRecipe) this.recipe, this.page,categoryData, null, ButtonType.ChooseFurnaceType, false).menuOpen(player);
 			}
 			if (this.recipe instanceof BlastRecipe) {
-				new RecipeEditorBlast((BlastRecipe) this.recipe, categoryData, null, ButtonType.ChooseBlastType,false).menuOpen(player);
+				new RecipeEditorBlast((BlastRecipe) this.recipe, this.page,categoryData, null, ButtonType.ChooseBlastType, false).menuOpen(player);
 			}
 			if (this.recipe instanceof SmokerRecipe) {
-				new RecipeEditorSmoker((SmokerRecipe) this.recipe, categoryData, null, ButtonType.ChooseSmokerType,false).menuOpen(player);
+				new RecipeEditorSmoker((SmokerRecipe) this.recipe, this.page,categoryData, null, ButtonType.ChooseSmokerType, false).menuOpen(player);
 			}
 		}
 		if (value.isActionTypeEqual(ButtonType.Back.name())) {
-			if (this.categoryData != null)
-				new RecipesViewer(this.categoryData, "", player).menuOpen(player);
-			else
+			if (this.categoryData != null) {
+				System.out.println("this.slot," + this.page);
+				final RecipesViewer recipesViewer = new RecipesViewer(this.categoryData, "", player);
+				recipesViewer.menuOpen(player);
+				if ( this.page > 0)
+					recipesViewer.setPage( this.page);
+			} else
 				new EditorTypeSelector(null, permission).menuOpen(player);
 		}
 		return onPlayerClick(this.recipe, this.categoryData, this.permission, value.getActionType(), player);

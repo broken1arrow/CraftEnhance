@@ -15,7 +15,7 @@ import java.util.Map;
 public class RecipeSettingsFurnace extends RecipeSettings<FurnaceRecipe> {
 
 	public RecipeSettingsFurnace(final FurnaceRecipe recipe, final CategoryData categoryData, final String permission, final ButtonType editorType) {
-		super(recipe, categoryData, permission, editorType);
+		super(recipe, 0, categoryData, permission, editorType);
 	}
 
 	protected boolean onPlayerClick(final FurnaceRecipe furnaceRecipe, final String buttonAction, final Player player) {
@@ -44,7 +44,7 @@ public class RecipeSettingsFurnace extends RecipeSettings<FurnaceRecipe> {
 			}).setMessages("Please input an exp amount.Type q, exit, cancel to turn it off.").start(getViewer());
 			return true;
 		}
-		if (buttonAction.equalsIgnoreCase(  ButtonType.SetCookTime.name())) {
+		if (buttonAction.equalsIgnoreCase(ButtonType.SetCookTime.name())) {
 			if (player.isConversing()) return true;
 			new HandleChatInput(this, (msg) -> {
 				short parsed;
@@ -73,7 +73,7 @@ public class RecipeSettingsFurnace extends RecipeSettings<FurnaceRecipe> {
 
 	@Override
 	protected void handleBack(final FurnaceRecipe recipe, final CategoryData categoryData, final Player player) {
-		new RecipeEditorFurnace(recipe, categoryData, null, ButtonType.ChooseFurnaceType,false).menuOpen(player);
+		new RecipeEditorFurnace(recipe, this.page, categoryData, null, ButtonType.ChooseFurnaceType, false).menuOpen(player);
 	}
 
 	@Override

@@ -16,6 +16,7 @@ import com.dutchjelly.craftenhance.gui.guis.viewers.RecipeViewRecipe;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
+import com.dutchjelly.craftenhance.util.PaginatedItems;
 import com.dutchjelly.craftenhance.util.PermissionTypes;
 import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
 import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
@@ -33,15 +34,15 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
-import static com.dutchjelly.craftenhance.gui.util.FormatListContents.canSeeRecipes;
 
 public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
 	private final MenuTemplate menuTemplate;
 	private final CategoryData categoryData;
 
-	public RecipesViewer(final CategoryData categoryData, final String recipeSeachFor, final Player player) {
-		super(canSeeRecipes(categoryData.getEnhancedRecipes(recipeSeachFor), player));
+	public RecipesViewer(final CategoryData categoryData, final String recipeSearchFor, final Player player) {
+		//super(canSeeRecipes(categoryData.getEnhancedRecipes(recipeSearchFor), player));
+		super(new PaginatedItems(categoryData,self().getMenuSettingsCache().getTemplate("RecipesViewer")).retrieveList(player,recipeSearchFor) );
 		this.menuTemplate = menuSettingsCache.getTemplate("RecipesViewer");
 		this.categoryData = categoryData;
 		setFillSpace(this.menuTemplate.getFillSlots());
@@ -127,26 +128,26 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 
 			if (enhancedRecipe instanceof WBRecipe) {
 				if (allowClick)
-					new RecipeEditor<>((WBRecipe) enhancedRecipe, categoryData, null, ButtonType.ChooseWorkbenchType).menuOpen(player);
-				else new RecipeViewRecipe<>(categoryData, (WBRecipe) enhancedRecipe, "WBRecipeViewer").menuOpen(player);
+					new RecipeEditor<>((WBRecipe) enhancedRecipe,getPageNumber(), categoryData, null, ButtonType.ChooseWorkbenchType).menuOpen(player);
+				else new RecipeViewRecipe<>(categoryData, getPageNumber(),(WBRecipe) enhancedRecipe, "WBRecipeViewer").menuOpen(player);
 			}
 			if (enhancedRecipe instanceof FurnaceRecipe) {
 				if (allowClick)
-					new RecipeEditorFurnace((FurnaceRecipe) enhancedRecipe, categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
+					new RecipeEditorFurnace((FurnaceRecipe) enhancedRecipe, getPageNumber(),categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
 				else
-					new RecipeViewRecipe<>(categoryData, (FurnaceRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
+					new RecipeViewRecipe<>(categoryData, getPageNumber(),(FurnaceRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
 			}
 			if (enhancedRecipe instanceof BlastRecipe) {
 				if (allowClick)
-					new RecipeEditorBlast((BlastRecipe) enhancedRecipe, categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
+					new RecipeEditorBlast((BlastRecipe) enhancedRecipe, getPageNumber(),categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
 				else
-					new RecipeViewRecipe<>(categoryData, (BlastRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
+					new RecipeViewRecipe<>(categoryData,getPageNumber(), (BlastRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
 			}
 			if (enhancedRecipe instanceof SmokerRecipe) {
 				if (allowClick)
-					new RecipeEditorSmoker((SmokerRecipe) enhancedRecipe, categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
+					new RecipeEditorSmoker((SmokerRecipe) enhancedRecipe, getPageNumber(),categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
 				else
-					new RecipeViewRecipe<>(categoryData, (SmokerRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
+					new RecipeViewRecipe<>(categoryData, getPageNumber(),(SmokerRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
 			}
 			return ButtonUpdateAction.NONE;
 		}, (slot, enhancedRecipe) -> {

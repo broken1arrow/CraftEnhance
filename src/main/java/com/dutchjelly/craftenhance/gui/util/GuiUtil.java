@@ -183,7 +183,7 @@ public class GuiUtil {
         if (size <= 36) return 36;
         if (size <= 45) return 45;
         if (size > 54)
-            Messenger.Error("This menu "+ menu + " has set bigger inventory size an it can handle, your set size " + size + ". will defult to 54.");
+            Messenger.Error("This menu "+ menu + " has set bigger inventory size an it can handle, your set size " + size + ". will default to 54.");
         return 54;
     }
 
