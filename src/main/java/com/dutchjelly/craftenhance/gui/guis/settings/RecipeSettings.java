@@ -45,6 +45,7 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
+	protected final int page;
 	private String permission;
 	private final MenuTemplate menuTemplate;
 	@Getter
@@ -53,7 +54,8 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	private final ButtonType editorType;
 	private final CategoryData categoryData;
 
-	public RecipeSettings(final RecipeT recipe, final CategoryData categoryData, final String permission, final ButtonType editorType) {
+	public RecipeSettings(final RecipeT recipe, int pageNumber, final CategoryData categoryData, final String permission, final ButtonType editorType) {
+		page = pageNumber;
 		if (permission == null || permission.equals("")) this.permission = recipe.getPermission();
 		else this.permission = permission;
 		this.editorType = editorType;
@@ -72,7 +74,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		if (menuTemplate != null) {
 			setMenuSize(GuiUtil.invSize("RecipeSettings", this.menuTemplate.getAmountOfButtons()));
 			final String title = menuTemplate.getMenuTitle() == null ? "editor" : menuTemplate.getMenuTitle().replace(InfoItemPlaceHolders.Recipe_type.getPlaceHolder(), recipe.getType().name().toLowerCase());
-			setTitle(()-> title);
+			setTitle(() -> title);
 			//setFillSpace(menuTemplate.getFillSlots());
 			setMenuOpenSound(this.menuTemplate.getSound());
 		}
@@ -121,12 +123,12 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 	public boolean run(final MenuButtonData value, final Inventory menu, final Player player, final ClickType click) {
 		if (value.isActionTypeEqual(ButtonType.SetPosition.name())) {
-			new HandleChatInput(this, this::handlePositionChange);
+			new HandleChatInput(this, this::handlePositionChange).setMessages("Type specify a page and slot number separated by a space or type q, exit or cancel to close conversion.").start(player);
 			return true;
 		}
 		if (value.isActionTypeEqual(ButtonType.AllowedWorldsCraft.name())) {
 			if (player.isConversing()) return true;
-			if (click.isRightClick() && click.isShiftClick()){
+			if (click.isRightClick() && click.isShiftClick()) {
 				recipe.getAllowedWorlds().clear();
 				return true;
 			}
@@ -194,9 +196,9 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		}
 		if (value.isActionTypeEqual(ButtonType.Back.name())) {
 			if (this.recipe instanceof WBRecipe) {
-				new RecipeEditor<>((WBRecipe) this.recipe, categoryData, null, ButtonType.ChooseWorkbenchType,false).menuOpen(player);
+				new RecipeEditor<>((WBRecipe) this.recipe, this.page, this.categoryData, null, ButtonType.ChooseWorkbenchType, false).menuOpen(player);
 			}
-			handleBack(this.recipe,categoryData, player);
+			handleBack(this.recipe, categoryData, player);
 		}
 		return onPlayerClick(this.recipe, value.getActionType(), player);
 	}
@@ -268,8 +270,8 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		}
 		recipe.setPage(page);
 		recipe.setSlot(slot);
-
 		Messenger.Message("Set the page to " + page + ", and the slot to " + slot + ". This will get auto-filled if it's not available.", getViewer());
+		this.runTask(() -> this.menuOpen(player));
 		return false;
 	}
 
@@ -373,6 +375,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	protected boolean onPlayerClick(final RecipeT recipe, final String buttonAction, final Player player) {
 		return false;
 	}
+
 	protected void handleBack(final RecipeT recipe, final CategoryData categoryData, final Player player) {
 	}
 

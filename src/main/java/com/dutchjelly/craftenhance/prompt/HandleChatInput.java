@@ -52,7 +52,7 @@ public class HandleChatInput extends SimpleConversation {
 	}
 
 	@Override
-	protected ConversationCanceller getCanceller()  {
+	protected ConversationCanceller getCanceller() {
 		return new SimpleCanceller(" ");
 	}
 
@@ -77,6 +77,8 @@ public class HandleChatInput extends SimpleConversation {
 			Player player = getPlayer();
 			if (conversationContext.getForWhom() instanceof Player)
 				player = getPlayer(conversationContext);
+			if (this.messages.isEmpty()) return "No message set for this conversion: " + this.menuHolder.getTitle();
+
 			final String lastMessage = this.messages.get(this.messages.size() - 1);
 			for (final String message : this.messages) {
 				if (message.equals(lastMessage)) break;

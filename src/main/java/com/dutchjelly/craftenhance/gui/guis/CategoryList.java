@@ -96,7 +96,7 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 			return true;
 		}
 		if (value.isActionTypeEqual(ButtonType.Back.name())) {
-			new RecipeSettings<>(this.recipe, this.categoryData, null, editorType)
+			new RecipeSettings<>(this.recipe,0 ,this.categoryData, null, editorType)
 					.menuOpen(player);
 			//new RecipeEditor<>(this.recipe, this.categoryData, null,  editorType).menuOpen(player);
 		}
@@ -144,7 +144,7 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 						return ButtonUpdateAction.NONE;
 					}
 				}
-				new RecipeSettings<>(recipe, categoryData, null, editorType).menuOpen(player);
+				new RecipeSettings<>(recipe, 0,categoryData, null, editorType).menuOpen(player);
 			}
 			return ButtonUpdateAction.NONE;
 		}, (slot, containerData) -> {

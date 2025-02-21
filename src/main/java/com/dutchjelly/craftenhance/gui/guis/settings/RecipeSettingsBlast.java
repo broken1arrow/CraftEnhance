@@ -15,7 +15,7 @@ import java.util.Map;
 public class RecipeSettingsBlast extends RecipeSettings<BlastRecipe>{
 
 	public RecipeSettingsBlast(final BlastRecipe recipe, final CategoryData categoryData, final String permission, final ButtonType editorType) {
-		super(recipe, categoryData, permission, editorType);
+		super(recipe, 0,categoryData, permission, editorType);
 	}
 
 	protected boolean onPlayerClick(final BlastRecipe blastRecipe, final String buttonAction, final Player player) {
@@ -73,7 +73,7 @@ public class RecipeSettingsBlast extends RecipeSettings<BlastRecipe>{
 
 	@Override
 	protected void handleBack(final BlastRecipe recipe, final CategoryData categoryData, final Player player) {
-		new RecipeEditorBlast(recipe, categoryData, null, ButtonType.ChooseFurnaceType,false).menuOpen(player);
+		new RecipeEditorBlast(recipe, this.page,categoryData, null, ButtonType.ChooseFurnaceType,false).menuOpen(player);
 	}
 
 	@Override

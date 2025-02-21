@@ -15,7 +15,7 @@ import java.util.Map;
 public class RecipeSettingsSmoker extends RecipeSettings<SmokerRecipe>{
 
 	public RecipeSettingsSmoker(final SmokerRecipe recipe, final CategoryData categoryData, final String permission, final ButtonType editorType) {
-		super(recipe, categoryData, permission, editorType);
+		super(recipe, 0,categoryData, permission, editorType);
 	}
 	protected boolean onPlayerClick(final SmokerRecipe furnaceRecipe, final String buttonAction, final Player player) {
 		if (player.isConversing()) return true;
@@ -72,7 +72,7 @@ public class RecipeSettingsSmoker extends RecipeSettings<SmokerRecipe>{
 
 	@Override
 	protected void handleBack(final SmokerRecipe recipe, final CategoryData categoryData, final Player player) {
-		new RecipeEditorSmoker(recipe, categoryData, null, ButtonType.ChooseFurnaceType,false).menuOpen(player);
+		new RecipeEditorSmoker(recipe, this.page,categoryData, null, ButtonType.ChooseFurnaceType,false).menuOpen(player);
 	}
 
 	@Override

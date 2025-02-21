@@ -12,8 +12,8 @@ import java.util.Map;
 
 public class RecipeEditorSmoker extends RecipeEditor<SmokerRecipe> {
 
-	public RecipeEditorSmoker(final SmokerRecipe recipe, final CategoryData categoryData, final String permission, final ButtonType editorType,boolean clearItems) {
-		super(recipe, categoryData, permission, editorType, clearItems);
+	public RecipeEditorSmoker(final SmokerRecipe recipe,final int page, final CategoryData categoryData, final String permission, final ButtonType editorType,boolean clearItems) {
+		super(recipe, page,categoryData, permission, editorType, clearItems);
 	}
 
 	@Override

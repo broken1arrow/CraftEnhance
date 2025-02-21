@@ -50,10 +50,10 @@ public class CategoryData implements ConfigurationSerializeUtility {
 	public List<EnhancedRecipe> getEnhancedRecipes() {
 		return enhancedRecipes;
 	}
-	public List<EnhancedRecipe> getEnhancedRecipes(final String recipeSeachFor) {
-		if (recipeSeachFor == null || recipeSeachFor.equals(""))
+	public List<EnhancedRecipe> getEnhancedRecipes(final String recipeSearchFor) {
+		if (recipeSearchFor == null || recipeSearchFor.equals(""))
 		return enhancedRecipes;
-		return enhancedRecipes.stream().filter(x -> x.getKey().contains(recipeSeachFor)).collect(Collectors.toList());
+		return enhancedRecipes.stream().filter(x -> x.getKey().contains(recipeSearchFor)).collect(Collectors.toList());
 	}
 	public void addEnhancedRecipes(final EnhancedRecipe enhancedRecipes) {
 		this.enhancedRecipes.add(enhancedRecipes);

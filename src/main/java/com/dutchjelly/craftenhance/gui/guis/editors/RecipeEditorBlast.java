@@ -12,8 +12,8 @@ import java.util.Map;
 
 public class RecipeEditorBlast extends RecipeEditor<BlastRecipe> {
 
-	public RecipeEditorBlast(final BlastRecipe recipe, final CategoryData categoryData, final String permission, final ButtonType editorType,boolean clearItems)  {
-		super(recipe, categoryData, permission, editorType,clearItems);
+	public RecipeEditorBlast(final BlastRecipe recipe,final int page,final CategoryData categoryData, final String permission, final ButtonType editorType, boolean clearItems) {
+		super(recipe, page, categoryData, permission, editorType, clearItems);
 
 
 	}

@@ -60,16 +60,16 @@ public class RecipesCmd implements ICommand {
 						final EnhancedRecipe recipe = getRecipe(categoryData.getEnhancedRecipes(), args[2]);
 						if (recipe instanceof WBRecipe) {
 							if ( p.hasPermission(PermissionTypes.Edit.getPerm()))
-								new RecipeEditor<>((WBRecipe) recipe, categoryData, null, ButtonType.ChooseWorkbenchType).menuOpen(p);
+								new RecipeEditor<>((WBRecipe) recipe,0, categoryData, null, ButtonType.ChooseWorkbenchType).menuOpen(p);
 							else
-								new RecipeViewRecipe<>(categoryData, (WBRecipe) recipe, "WBRecipeViewer").menuOpen(p);
+								new RecipeViewRecipe<>(categoryData, 0,(WBRecipe) recipe, "WBRecipeViewer").menuOpen(p);
 							return;
 						}
 						if (recipe  instanceof FurnaceRecipe) {
 							if (p.hasPermission(PermissionTypes.Edit.getPerm()))
-								new RecipeEditor<>((FurnaceRecipe) recipe, categoryData,null, ButtonType.ChooseFurnaceType).menuOpen(p);
+								new RecipeEditor<>((FurnaceRecipe) recipe,0, categoryData,null, ButtonType.ChooseFurnaceType).menuOpen(p);
 							else
-								new RecipeViewRecipe<>(categoryData, (FurnaceRecipe) recipe, "FurnaceRecipeViewer").menuOpen(p);
+								new RecipeViewRecipe<>(categoryData, 0,(FurnaceRecipe) recipe, "FurnaceRecipeViewer").menuOpen(p);
 							return;
 						}
 					}

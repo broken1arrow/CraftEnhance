@@ -87,7 +87,7 @@ public class EditorTypeSelector extends MenuHolder {
 		if (value.isActionTypeEqual( ButtonType.ChooseWorkbenchType.name())){
 			EnhancedRecipe	newRecipe = new WBRecipe(permission, null, new ItemStack[9]);
 			newRecipe.setKey(getFreshKey(recipeKey));
-			final RecipeEditor<EnhancedRecipe> recipeEditor = new RecipeEditor<>(newRecipe, null,permission,
+			final RecipeEditor<EnhancedRecipe> recipeEditor = new RecipeEditor<>(newRecipe,0, null,permission,
 					value.isActionTypeEqual(ButtonType.ChooseFurnaceType.name()) ? ButtonType.ChooseFurnaceType: ButtonType.ChooseWorkbenchType);
 			recipeEditor.menuOpen(player);
 			return;
@@ -95,19 +95,19 @@ public class EditorTypeSelector extends MenuHolder {
 		if (value.isActionTypeEqual( ButtonType.ChooseFurnaceType.name())){
 			FurnaceRecipe furnaceRecipe = new FurnaceRecipe(permission, null, new ItemStack[1]);
 			furnaceRecipe.setKey(getFreshKey(recipeKey));
-			new RecipeEditorFurnace(furnaceRecipe,null,permission,ButtonType.ChooseFurnaceType,true).menuOpen(player);
+			new RecipeEditorFurnace(furnaceRecipe,0,null,permission,ButtonType.ChooseFurnaceType,true).menuOpen(player);
 			return;
 		}
 		if (value.isActionTypeEqual( ButtonType.ChooseBlastType.name())){
 			BlastRecipe blastRecipe = new BlastRecipe(permission, null, new ItemStack[1]);
 			blastRecipe.setKey(getFreshKey(recipeKey));
-			new RecipeEditorBlast(blastRecipe,null,permission,ButtonType.ChooseBlastType,true).menuOpen(player);
+			new RecipeEditorBlast(blastRecipe,0,null,permission,ButtonType.ChooseBlastType,true).menuOpen(player);
 			return;
 		}
 		if (value.isActionTypeEqual( ButtonType.ChooseSmokerType.name())){
 			SmokerRecipe blastRecipe = new SmokerRecipe(permission, null, new ItemStack[1]);
 			blastRecipe.setKey(getFreshKey(recipeKey));
-			new RecipeEditorSmoker(blastRecipe,null,permission,ButtonType.ChooseSmokerType,true).menuOpen(player);
+			new RecipeEditorSmoker(blastRecipe,0,null,permission,ButtonType.ChooseSmokerType,true).menuOpen(player);
 		}
 	}
 }
