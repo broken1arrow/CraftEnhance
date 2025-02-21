@@ -146,8 +146,12 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 		if (value.isActionTypeEqual(ButtonType.DeleteRecipe.name())) {
 			self().getFm().removeRecipe(recipe);
 			RecipeLoader.getInstance().unloadRecipe(recipe);
-			if (this.categoryData != null)
-				new RecipesViewer(this.categoryData, "", player).menuOpen(player);
+			if (this.categoryData != null) {
+				final RecipesViewer recipesViewer = new RecipesViewer(this.categoryData, "", player);
+				recipesViewer.menuOpen(player);
+				if ( this.page > 0)
+					recipesViewer.setPage( this.page);
+			}
 			else
 				new EditorTypeSelector(null, permission).menuOpen(player);
 			return true;
@@ -184,7 +188,6 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 		}
 		if (value.isActionTypeEqual(ButtonType.Back.name())) {
 			if (this.categoryData != null) {
-				System.out.println("this.slot," + this.page);
 				final RecipesViewer recipesViewer = new RecipesViewer(this.categoryData, "", player);
 				recipesViewer.menuOpen(player);
 				if ( this.page > 0)
