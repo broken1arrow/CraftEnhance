@@ -128,26 +128,26 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 
 			if (enhancedRecipe instanceof WBRecipe) {
 				if (allowClick)
-					new RecipeEditor<>((WBRecipe) enhancedRecipe,getPageNumber(), categoryData, null, ButtonType.ChooseWorkbenchType).menuOpen(player);
-				else new RecipeViewRecipe<>(categoryData, getPageNumber(),(WBRecipe) enhancedRecipe, "WBRecipeViewer").menuOpen(player);
+					new RecipeEditor<>((WBRecipe) enhancedRecipe,this.getPageNumber(), categoryData, null, ButtonType.ChooseWorkbenchType).menuOpen(player);
+				else new RecipeViewRecipe<>(categoryData, this.getPageNumber(),(WBRecipe) enhancedRecipe, "WBRecipeViewer").menuOpen(player);
 			}
 			if (enhancedRecipe instanceof FurnaceRecipe) {
 				if (allowClick)
-					new RecipeEditorFurnace((FurnaceRecipe) enhancedRecipe, getPageNumber(),categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
+					new RecipeEditorFurnace((FurnaceRecipe) enhancedRecipe, this.getPageNumber(),categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
 				else
-					new RecipeViewRecipe<>(categoryData, getPageNumber(),(FurnaceRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
+					new RecipeViewRecipe<>(categoryData, this.getPageNumber(),(FurnaceRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
 			}
 			if (enhancedRecipe instanceof BlastRecipe) {
 				if (allowClick)
-					new RecipeEditorBlast((BlastRecipe) enhancedRecipe, getPageNumber(),categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
+					new RecipeEditorBlast((BlastRecipe) enhancedRecipe, this.getPageNumber(),categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
 				else
-					new RecipeViewRecipe<>(categoryData,getPageNumber(), (BlastRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
+					new RecipeViewRecipe<>(categoryData,this.getPageNumber(), (BlastRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
 			}
 			if (enhancedRecipe instanceof SmokerRecipe) {
 				if (allowClick)
-					new RecipeEditorSmoker((SmokerRecipe) enhancedRecipe, getPageNumber(),categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
+					new RecipeEditorSmoker((SmokerRecipe) enhancedRecipe, this.getPageNumber(),categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
 				else
-					new RecipeViewRecipe<>(categoryData, getPageNumber(),(SmokerRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
+					new RecipeViewRecipe<>(categoryData, this.getPageNumber(),(SmokerRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
 			}
 			return ButtonUpdateAction.NONE;
 		}, (slot, enhancedRecipe) -> {
