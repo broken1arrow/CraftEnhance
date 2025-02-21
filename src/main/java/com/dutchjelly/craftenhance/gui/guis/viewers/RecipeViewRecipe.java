@@ -42,8 +42,9 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 	private final MenuTemplate menuTemplate;
 	private final CategoryData categoryData;
 	private final RecipeT recipe;
+	private final int page;
 
-	public RecipeViewRecipe(final CategoryData categoryData, final RecipeT recipe, final String menuType) {
+	public RecipeViewRecipe(final CategoryData categoryData, final int pageNumber, final RecipeT recipe, final String menuType) {
 		super(formatRecipes(recipe, null, false));
 		this.recipe = recipe;
 		this.categoryData = categoryData;
@@ -53,6 +54,7 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 		setMenuSize(27);
 		this.setUseColorConversion(true);
 		this.setIgnoreItemCheck(true);
+		this.page = pageNumber;
 	}
 
 	@Override
@@ -109,21 +111,24 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 
 	public boolean run(final MenuButtonData value, final Inventory menu, final Player player, final ClickType click) {
 		if (value.isActionTypeEqual(ButtonType.Back.name())) {
-			new RecipesViewer(categoryData, "", player).menuOpen(player);
+			final RecipesViewer recipesViewer = new RecipesViewer(this.categoryData, "", player);
+			recipesViewer.menuOpen(player);
+			if ( this.page > 0)
+				recipesViewer.setPage( this.page);
 		}
 		if (value.isActionTypeEqual(ButtonType.edit_recipe.name())) {
 			if (player.hasPermission(PermissionTypes.Edit.getPerm())) {
 				if (recipe instanceof WBRecipe) {
-					new RecipeEditor<>((WBRecipe) recipe, categoryData, null, ButtonType.ChooseWorkbenchType).menuOpen(player);
+					new RecipeEditor<>((WBRecipe) recipe, this.page, categoryData, null, ButtonType.ChooseWorkbenchType).menuOpen(player);
 				}
 				if (recipe instanceof FurnaceRecipe) {
-					new RecipeEditorFurnace((FurnaceRecipe) recipe, categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
+					new RecipeEditorFurnace((FurnaceRecipe) recipe, this.page,categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
 				}
 				if (recipe instanceof BlastRecipe) {
-					new RecipeEditorBlast((BlastRecipe) recipe, categoryData, null, ButtonType.ChooseBlastType, true).menuOpen(player);
+					new RecipeEditorBlast((BlastRecipe) recipe, this.page,categoryData, null, ButtonType.ChooseBlastType, true).menuOpen(player);
 				}
 				if (recipe instanceof SmokerRecipe) {
-					new RecipeEditorSmoker((SmokerRecipe) recipe, categoryData, null, ButtonType.ChooseSmokerType, true).menuOpen(player);
+					new RecipeEditorSmoker((SmokerRecipe) recipe, this.page,categoryData, null, ButtonType.ChooseSmokerType, true).menuOpen(player);
 				}
 			}
 			return false;
