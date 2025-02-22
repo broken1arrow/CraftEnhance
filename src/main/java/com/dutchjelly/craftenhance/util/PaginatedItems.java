@@ -38,7 +38,6 @@ public class PaginatedItems {
 
 	private void addDuplicates(final Item item) {
 		int index = (item.page != -1) ? findNextFreeSlotInPage(item.page) : findNextFreeSlot();
-
 		if (index == -1) {
 			// No space left, move to a new page
 			item.page = (itemList.size() / slotsPerPage) + 1;
@@ -86,19 +85,20 @@ public class PaginatedItems {
 	}
 
 	private int findNextFreeSlot() {
+		int index = 0;
 		for (int i = 0; i < itemList.size(); i++) {
+			index++;
 			if (itemList.get(i) == null) {
 				return i;
 			}
 		}
-		return -1;
+		return index >= itemList.size() - 1 ? itemList.size() : index;
 	}
 
 	public static class Item {
 		private final EnhancedRecipe enhancedRecipe;
 		int page;
 		int slot;
-
 
 		Item(final EnhancedRecipe recipe) {
 			this.enhancedRecipe = recipe;
@@ -109,6 +109,15 @@ public class PaginatedItems {
 
 		public EnhancedRecipe getEnhancedRecipe() {
 			return enhancedRecipe;
+		}
+
+		@Override
+		public String toString() {
+			return "Item{" +
+					"enhancedRecipe=" + enhancedRecipe +
+					", page=" + page +
+					", slot=" + slot +
+					'}';
 		}
 	}
 }
