@@ -3,6 +3,7 @@ package com.dutchjelly.craftenhance.messaging;
 import com.dutchjelly.craftenhance.CraftEnhance;
 
 import java.util.function.Supplier;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.dutchjelly.craftenhance.messaging.Debug.Type.Crafting;
@@ -59,12 +60,20 @@ public class Debug {
 	public static void Send(final Object[] arr) {
 		if (arr == null) return;
 		logger.info(prefix + " ");
-		for (int i = 0; i < arr.length; i++) {
-			if (arr[i] == null) continue;
-			logger.info(arr[i].toString());
+		for (final Object o : arr) {
+			if (o == null) continue;
+			logger.info(o.toString());
 		}
 		logger.info("");
 	}
+
+	public static void error(final String message) {
+		logger.log(Level.WARNING,prefix + message);
+	}
+	public static void error(final String message,Throwable throwable) {
+		logger.log(Level.WARNING,prefix + message,throwable);
+	}
+
 
 	public enum Type {
 		Crafting,
