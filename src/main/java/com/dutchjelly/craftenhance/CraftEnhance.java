@@ -27,6 +27,7 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
+import com.dutchjelly.craftenhance.database.RecipeDatabase;
 import com.dutchjelly.craftenhance.files.CategoryDataCache;
 import com.dutchjelly.craftenhance.files.ConfigFormatter;
 import com.dutchjelly.craftenhance.files.FileManager;
@@ -62,6 +63,8 @@ public class CraftEnhance extends JavaPlugin {
 		return plugin;
 	}
 
+	@Getter
+	private RecipeDatabase database;
 	private Metrics metrics;
 	@Getter
 	private FileManager fm;
@@ -97,6 +100,7 @@ public class CraftEnhance extends JavaPlugin {
 		this.ingredientsCache = new IngredientsCache();
 		saveDefaultConfig();
 		Debug.init(this);
+		this.database = new RecipeDatabase();
 
 		if (isReloading)
 			Bukkit.getScheduler().runTaskAsynchronously(this, () -> loadPluginData(isReloading));
@@ -124,6 +128,7 @@ public class CraftEnhance extends JavaPlugin {
 			metrics = new Metrics(this, metricsId);
 		}
 		CraftEnhanceAPI.registerListener(new ExecuteCommand());
+		this.database.saveRecipes();
 	}
 
 

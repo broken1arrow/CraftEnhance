@@ -54,7 +54,8 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 		}
 
 		if (args.containsKey("oncraftcommand")) {
-			onCraftCommand = (String) args.get("oncraftcommand");
+			final Object oncraftcommand = args.get("oncraftcommand");
+			onCraftCommand = oncraftcommand instanceof Boolean ? oncraftcommand + "" : (String) oncraftcommand;
 		}
 
 		if (args.containsKey("hidden"))
@@ -81,10 +82,11 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 				}
 			});
 		this.allowedWorlds = worlds;
-
-		setContent(new ItemStack[recipeKeys.size()]);
-		for (int i = 0; i < content.length; i++) {
-			content[i] = fm.getItem(recipeKeys.get(i));
+		if (recipeKeys != null) {
+			setContent(new ItemStack[recipeKeys.size()]);
+			for (int i = 0; i < content.length; i++) {
+				content[i] = fm.getItem(recipeKeys.get(i));
+			}
 		}
 		this.deserialize = args;
 	}
@@ -168,11 +170,17 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 	@Override
 	public String toString() {
 		return "EnhancedRecipe{" +
-				"key='" + key + '\'' +
+				"recipe_name='" + key + '\'' +
 				", result=" + result +
 				", content=" + Arrays.toString(content) +
-				", recipe-type=" + type +
-				"}";
+				", matchType=" + matchType +
+				", permission='" + permission + '\'' +
+				", hidden=" + hidden +
+				", on_craft_command='" + onCraftCommand + '\'' +
+				", type=" + type +
+				", allowedWorlds=" + allowedWorlds +
+				", checkPartialMatch=" + checkPartialMatch +
+				"} ";
 	}
 
 	public void setPermission(final String permission) {
@@ -222,5 +230,6 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 	public abstract boolean matches(ItemStack[] content);
 
 	public abstract boolean matches(ItemStack[] content, IMatcher<ItemStack> matcher);
+
 	public abstract boolean matchesBlockType(final Material blockSmelting);
 }
