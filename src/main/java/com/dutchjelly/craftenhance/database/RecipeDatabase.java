@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
@@ -176,15 +177,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 
 	public void insertAllowedWorlds(Connection connection, String recipeId, Set<String> allowedWorlds) throws SQLException {
 		if (allowedWorlds == null || allowedWorlds.isEmpty()) return;
-/*
-		try (PreparedStatement pstmt = connection.prepareStatement(INSERT_OR_REPLACE_WORLDS_SQL)) {
-			for (String world : allowedWorlds) {
-				pstmt.setString(1, recipeId);
-				pstmt.setString(2, world);
-				pstmt.addBatch();
-			}
-			updateSQL(pstmt);
-		}*/
+
 		try (PreparedStatement updateStmt = connection.prepareStatement(UPDATE_WORLDS_SQL);
 		     PreparedStatement insertStmt = connection.prepareStatement(INSERT_WORLDS_SQL)) {
 
@@ -207,7 +200,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 	}
 
 	// Insert a recipe
-	public void insertRecipe(@NonNull Connection conn, EnhancedRecipe recipe, String resultItemId) {
+	public void insertRecipe(@NonNull Connection conn, EnhancedRecipe recipe, RecipeType recipeType) {
 
 		try (PreparedStatement pstmt = conn.prepareStatement(INSERT_RECIPES_SQL, Statement.RETURN_GENERATED_KEYS)) {
 			pstmt.setString(1, recipe.getKey());  // Explicitly set the recipe ID
@@ -220,7 +213,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 			pstmt.setBoolean(8, recipe.isHidden());
 			pstmt.setBoolean(9, recipe.isCheckPartialMatch());
 			pstmt.setString(10, recipe.getOnCraftCommand());
-			pstmt.setString(11, resultItemId);
+			pstmt.setString(11, recipeType.name());
 
 
 			boolean isShapeless = (recipe instanceof WBRecipe) && ((WBRecipe) recipe).isShapeless();
@@ -236,42 +229,6 @@ public class RecipeDatabase implements RecipeSQLQueries {
 		}
 	}
 
-	public void insertOrUpdateItem(Connection conn, final int slot, final String recipeName, final String itemName, byte[] nbtData) {
-		if (itemName == null || nbtData == null) return;
-
-		// Check if the item already exists by name
-		try (PreparedStatement checkStmt = conn.prepareStatement(CHECK_ITEM_EXISTENCE_SQL)) {
-			checkStmt.setString(1, recipeName);
-			checkStmt.setInt(2, slot);
-			ResultSet rs = checkStmt.executeQuery();
-
-			if (rs.next()) {
-				try (PreparedStatement updateStmt = conn.prepareStatement(UPDATE_ITEM_SQL)) {
-					updateStmt.setBytes(1, nbtData);
-					updateStmt.setString(2, recipeName);
-					updateStmt.setInt(3, slot);
-					updateSQL(updateStmt);
-					rs.getInt(1);
-				}
-			} else {
-				try (PreparedStatement insertStmt = conn.prepareStatement(INSERT_ITEM_SQL, Statement.RETURN_GENERATED_KEYS)) {
-					insertStmt.setString(1, recipeName);
-					insertStmt.setInt(2, slot);
-					insertStmt.setString(3, itemName);
-					insertStmt.setBytes(4, nbtData);
-					insertStmt.setString(5, "INGREDIENT");
-					updateSQL(insertStmt);
-
-					ResultSet insertRs = insertStmt.getGeneratedKeys();
-					if (insertRs.next()) {
-						insertRs.getInt(1);
-					}
-				}
-			}
-		} catch (SQLException e) {
-			Debug.error("Failed to insert or update the itemstack", e);
-		}
-	}
 
 	// Retrieve a recipe with its ingredients
 	public EnhancedRecipe getRecipe(Connection conn, String recipeId) {
@@ -310,7 +267,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 
 			Set<String> allowedWorlds = getAllowedWorlds(conn, recipeId);
 			recipe.setAllowedWorlds(allowedWorlds);
-
+			System.out.println("recipe: " + recipe);
 			return recipe;
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
@@ -408,15 +365,28 @@ public class RecipeDatabase implements RecipeSQLQueries {
 				if (recipeResultSet.next()) {
 					updateRecipe(connection, recipe, recipeResultSet);
 				} else {
-					String newItemId = insertNewResultItem(connection, recipe);
-					insertRecipe(connection, recipe, newItemId);
+					insertRecipe(connection, recipe, RecipeType.RESULT);
 				}
+				insertOrUpdateItem(connection, ingredients -> {
+					ingredients.setSlot( recipe.getResultSlot());
+					ingredients.setRecipeName(recipe.getKey());
+					final ItemStack result = recipe.getResult();
+					ingredients.setItemData(serializeItemStack(new ItemStack[]{result}));
+					ingredients.setItemName(this.getItemKey(result));
+					ingredients.setRecipeType(RecipeType.RESULT);
+				});
 			}
 			ItemStack[] itemStacks = recipe.getContent();
 			for (int i = 0; i < itemStacks.length; i++) {
 				ItemStack item = itemStacks[i];
 				String itemName = getItemKey(item);
-				insertOrUpdateItem(connection, i, recipeName, itemName, serializeItemStack(new ItemStack[]{item}));
+				final int slot = i;
+				insertOrUpdateItem(connection, ingredients -> {
+					ingredients.setSlot(slot);
+					ingredients.setItemData(serializeItemStack(new ItemStack[]{item}));
+					ingredients.setRecipeName(recipeName);
+					ingredients.setItemName(itemName);
+				});
 			}
 			this.insertAllowedWorlds(connection, recipeName, recipe.getAllowedWorlds());
 		} catch (SQLException e) {
@@ -432,24 +402,6 @@ public class RecipeDatabase implements RecipeSQLQueries {
 	private void updateRecipe(final Connection connection, final EnhancedRecipe recipe, final ResultSet recipeResultSet) throws SQLException {
 
 		String resultItemType = recipeResultSet.getString("result_item_type");
-
-		try (PreparedStatement selectItemStmt = connection.prepareStatement(SELECT_ITEM_FROM_RECIPE_SLOT_SQL)) {
-			selectItemStmt.setString(1, recipe.getKey());
-			selectItemStmt.setInt(2, 9);
-
-			try (ResultSet itemResultSet = selectItemStmt.executeQuery()) {
-				if (itemResultSet.next()) {
-					try (PreparedStatement updateItemStmt = connection.prepareStatement(UPDATE_ITEM_SQL)) {
-						updateItemStmt.setBytes(1, serializeItemStack(new ItemStack[]{recipe.getResult()}));
-						updateItemStmt.setString(2, itemResultSet.getString("recipe_id"));
-						updateItemStmt.setInt(3, itemResultSet.getInt("slot"));
-						updateSQL(updateItemStmt);
-					}
-				} else {
-					resultItemType = insertNewResultItem(connection, recipe);
-				}
-			}
-		}
 
 		try (PreparedStatement pstmt = connection.prepareStatement(UPDATE_RECIPE_SQL)) {
 			pstmt.setInt(1, recipe.getPage());
@@ -471,17 +423,50 @@ public class RecipeDatabase implements RecipeSQLQueries {
 		}
 	}
 
+	public void insertOrUpdateItem(Connection conn, Consumer<IngredientWrapper> callback) {
+		if (callback == null) return;
 
-	private String insertNewResultItem(Connection connection, EnhancedRecipe recipe) throws SQLException {
+		IngredientWrapper ingredientWrapper = new IngredientWrapper();
+		callback.accept(ingredientWrapper);
+		final int slot = ingredientWrapper.getSlot();
+		final String recipeName = ingredientWrapper.getRecipeName();
+		final String itemName = ingredientWrapper.getItemName();
+		byte[] nbtData = ingredientWrapper.getItemData();
+		RecipeType recipeType = ingredientWrapper.getRecipeType();
 
-		try (PreparedStatement insertItemStmt = connection.prepareStatement(INSERT_ITEM_SQL, Statement.RETURN_GENERATED_KEYS)) {
-			insertItemStmt.setString(1, recipe.getKey());
-			insertItemStmt.setInt(2, 9);
-			insertItemStmt.setString(3, getItemKey(recipe.getResult()));
-			insertItemStmt.setBytes(4, serializeItemStack(new ItemStack[]{recipe.getResult()}));
-			insertItemStmt.setString(5, "RESULT");
-			updateSQL(insertItemStmt);
-			return "RESULT";
+
+		if (itemName == null || nbtData == null) return;
+
+		try (PreparedStatement checkStmt = conn.prepareStatement(CHECK_ITEM_EXISTENCE_SQL)) {
+			checkStmt.setString(1, recipeName);
+			checkStmt.setInt(2, slot);
+			ResultSet rs = checkStmt.executeQuery();
+
+			if (rs.next()) {
+				try (PreparedStatement updateStmt = conn.prepareStatement(UPDATE_ITEM_SQL)) {
+					updateStmt.setBytes(1, nbtData);
+					updateStmt.setString(2, recipeName);
+					updateStmt.setInt(3, slot);
+					updateSQL(updateStmt);
+					rs.getInt(1);
+				}
+			} else {
+				try (PreparedStatement insertStmt = conn.prepareStatement(INSERT_ITEM_SQL, Statement.RETURN_GENERATED_KEYS)) {
+					insertStmt.setString(1, recipeName);
+					insertStmt.setInt(2, slot);
+					insertStmt.setString(3, itemName);
+					insertStmt.setBytes(4, nbtData);
+					insertStmt.setString(5, recipeType.name());
+					updateSQL(insertStmt);
+
+					ResultSet insertRs = insertStmt.getGeneratedKeys();
+					if (insertRs.next()) {
+						insertRs.getInt(1);
+					}
+				}
+			}
+		} catch (SQLException e) {
+			Debug.error("Failed to insert or update the itemstack", e);
 		}
 	}
 
@@ -506,4 +491,5 @@ public class RecipeDatabase implements RecipeSQLQueries {
 	public ItemStack[] deserializeItemStack(final byte[] itemStacks) {
 		return RegisterNbtAPI.deserializeItemStack(itemStacks);
 	}
+
 }

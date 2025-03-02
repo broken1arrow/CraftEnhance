@@ -124,7 +124,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 	private String onCraftCommand;
 
 	@Getter
-	private RecipeType type;
+	private final RecipeType type = RecipeType.WORKBENCH;
 
 	@Getter
 	@Setter
