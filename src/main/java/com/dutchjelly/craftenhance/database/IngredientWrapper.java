@@ -5,7 +5,7 @@ public class IngredientWrapper {
 		private int slot;
 		private String recipeName;
 		private String itemName;
-		private RecipeType recipeType = RecipeType.INGREDIENT;
+		private RecipeIngredientType recipeIngredientType = RecipeIngredientType.INGREDIENT;
 
 		public IngredientWrapper() {
 		}
@@ -42,11 +42,11 @@ public class IngredientWrapper {
 			this.itemName = itemName;
 		}
 
-		public RecipeType getRecipeType() {
-			return recipeType;
+		public RecipeIngredientType getRecipeType() {
+			return recipeIngredientType;
 		}
 
-		public void setRecipeType(final RecipeType recipeType) {
-			this.recipeType = recipeType;
+		public void setRecipeType(final RecipeIngredientType recipeIngredientType) {
+			this.recipeIngredientType = recipeIngredientType;
 		}
 	}

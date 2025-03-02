@@ -46,5 +46,18 @@ public enum RecipeType {
 				return null;
 		}
 	}
+	public static RecipeType getType(String type) {
+		if (type == null) return WORKBENCH;
 
+		RecipeType [] recipeTypes = values();
+		String typeUp = type.toUpperCase();
+
+		for (RecipeType recipeType : recipeTypes) {
+			if (recipeType.name().equals(typeUp)) {
+				return recipeType;
+			}
+		}
+
+		return WORKBENCH;
+	}
 }

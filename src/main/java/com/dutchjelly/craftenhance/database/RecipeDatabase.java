@@ -1,7 +1,11 @@
 package com.dutchjelly.craftenhance.database;
 
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import lombok.NonNull;
 import org.broken.arrow.nbt.library.RegisterNbtAPI;
@@ -131,6 +135,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 	public void createTables(Connection conn) {
 		String createRecipesTable = " CREATE TABLE IF NOT EXISTS recipes ( "
 				+ "id TEXT PRIMARY KEY, "
+				+ "recipe_type TEXT NOT NULL, "
 				+ "page INTEGER NOT NULL, "
 				+ "slot INTEGER NOT NULL, "
 				+ "result_slot INTEGER NOT NULL, "
@@ -200,24 +205,25 @@ public class RecipeDatabase implements RecipeSQLQueries {
 	}
 
 	// Insert a recipe
-	public void insertRecipe(@NonNull Connection conn, EnhancedRecipe recipe, RecipeType recipeType) {
+	public void insertRecipe(@NonNull Connection conn, EnhancedRecipe recipe, RecipeIngredientType recipeIngredientType) {
 
 		try (PreparedStatement pstmt = conn.prepareStatement(INSERT_RECIPES_SQL, Statement.RETURN_GENERATED_KEYS)) {
 			pstmt.setString(1, recipe.getKey());  // Explicitly set the recipe ID
-			pstmt.setInt(2, recipe.getPage());
-			pstmt.setInt(3, recipe.getSlot());
-			pstmt.setInt(4, recipe.getResultSlot());
-			pstmt.setString(5, recipe.getRecipeCategory());
-			pstmt.setString(6, recipe.getPermission());
-			pstmt.setString(7, String.valueOf(recipe.getMatchType()));
-			pstmt.setBoolean(8, recipe.isHidden());
-			pstmt.setBoolean(9, recipe.isCheckPartialMatch());
-			pstmt.setString(10, recipe.getOnCraftCommand());
-			pstmt.setString(11, recipeType.name());
+			pstmt.setString(2, recipe.getType().name());
+			pstmt.setInt(3, recipe.getPage());
+			pstmt.setInt(4, recipe.getSlot());
+			pstmt.setInt(5, recipe.getResultSlot());
+			pstmt.setString(6, recipe.getRecipeCategory());
+			pstmt.setString(7, recipe.getPermission());
+			pstmt.setString(8, String.valueOf(recipe.getMatchType()));
+			pstmt.setBoolean(9, recipe.isHidden());
+			pstmt.setBoolean(10, recipe.isCheckPartialMatch());
+			pstmt.setString(11, recipe.getOnCraftCommand());
+			pstmt.setString(12, recipeIngredientType.name());
 
 
 			boolean isShapeless = (recipe instanceof WBRecipe) && ((WBRecipe) recipe).isShapeless();
-			pstmt.setBoolean(12, isShapeless);
+			pstmt.setBoolean(13, isShapeless);
 			try {
 				updateSQL(pstmt);
 			} catch (SQLException e) {
@@ -232,6 +238,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 
 	// Retrieve a recipe with its ingredients
 	public EnhancedRecipe getRecipe(Connection conn, String recipeId) {
+		EnhancedRecipe recipe;
 
 		try (PreparedStatement pstmt = conn.prepareStatement(SELECT_RECIPE_JOIN_SQL)) {
 
@@ -258,7 +265,32 @@ public class RecipeDatabase implements RecipeSQLQueries {
 			map.put("oncraftcommand", rs.getBoolean("on_craft_command"));
 			map.put("shapeless", rs.getBoolean("shapeless"));
 
-			EnhancedRecipe recipe = WBRecipe.deserialize(map);
+			RecipeType type = RecipeType.getType(rs.getString("recipe_type"));
+			System.out.println("type " + type);
+			if (type != null) {
+				switch (type) {
+					case FURNACE:
+						map.put("duration", 2);
+						map.put("exp", 1.5);
+						recipe = FurnaceRecipe.deserialize(map);
+						break;
+					case BLAST:
+						map.put("duration", 2);
+						map.put("exp", 1.5);
+						recipe = BlastRecipe.deserialize(map);
+						break;
+					case SMOKER:
+						map.put("duration", 2);
+						map.put("exp", 1.5);
+						recipe = SmokerRecipe.deserialize(map);
+						break;
+					default:
+						recipe = WBRecipe.deserialize(map);
+				}
+			} else {
+				recipe = WBRecipe.deserialize(map);
+			}
+
 			recipe.setResult(resultItem);
 			recipe.setKey(recipeId);
 
@@ -365,15 +397,15 @@ public class RecipeDatabase implements RecipeSQLQueries {
 				if (recipeResultSet.next()) {
 					updateRecipe(connection, recipe, recipeResultSet);
 				} else {
-					insertRecipe(connection, recipe, RecipeType.RESULT);
+					insertRecipe(connection, recipe, RecipeIngredientType.RESULT);
 				}
 				insertOrUpdateItem(connection, ingredients -> {
-					ingredients.setSlot( recipe.getResultSlot());
+					ingredients.setSlot(recipe.getResultSlot());
 					ingredients.setRecipeName(recipe.getKey());
 					final ItemStack result = recipe.getResult();
 					ingredients.setItemData(serializeItemStack(new ItemStack[]{result}));
 					ingredients.setItemName(this.getItemKey(result));
-					ingredients.setRecipeType(RecipeType.RESULT);
+					ingredients.setRecipeType(RecipeIngredientType.RESULT);
 				});
 			}
 			ItemStack[] itemStacks = recipe.getContent();
@@ -405,20 +437,21 @@ public class RecipeDatabase implements RecipeSQLQueries {
 
 		try (PreparedStatement pstmt = connection.prepareStatement(UPDATE_RECIPE_SQL)) {
 			pstmt.setInt(1, recipe.getPage());
-			pstmt.setInt(2, recipe.getSlot());
-			pstmt.setInt(3, recipe.getResultSlot());
-			pstmt.setString(4, recipe.getRecipeCategory());
-			pstmt.setString(5, recipe.getPermission());
-			pstmt.setString(6, String.valueOf(recipe.getMatchType()));
-			pstmt.setBoolean(7, recipe.isHidden());
-			pstmt.setBoolean(8, recipe.isCheckPartialMatch());
-			pstmt.setString(9, recipe.getOnCraftCommand());
-			pstmt.setString(10, resultItemType);
+			pstmt.setString(2, recipe.getType().name());
+			pstmt.setInt(3, recipe.getSlot());
+			pstmt.setInt(4, recipe.getResultSlot());
+			pstmt.setString(5, recipe.getRecipeCategory());
+			pstmt.setString(6, recipe.getPermission());
+			pstmt.setString(7, String.valueOf(recipe.getMatchType()));
+			pstmt.setBoolean(8, recipe.isHidden());
+			pstmt.setBoolean(9, recipe.isCheckPartialMatch());
+			pstmt.setString(10, recipe.getOnCraftCommand());
+			pstmt.setString(11, resultItemType);
 
 			boolean isShapeless = (recipe instanceof WBRecipe) && ((WBRecipe) recipe).isShapeless();
-			pstmt.setBoolean(11, isShapeless);
+			pstmt.setBoolean(12, isShapeless);
 
-			pstmt.setString(12, recipeResultSet.getString("id"));
+			pstmt.setString(13, recipeResultSet.getString("id"));
 			updateSQL(pstmt);
 		}
 	}
@@ -432,7 +465,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 		final String recipeName = ingredientWrapper.getRecipeName();
 		final String itemName = ingredientWrapper.getItemName();
 		byte[] nbtData = ingredientWrapper.getItemData();
-		RecipeType recipeType = ingredientWrapper.getRecipeType();
+		RecipeIngredientType recipeIngredientType = ingredientWrapper.getRecipeType();
 
 
 		if (itemName == null || nbtData == null) return;
@@ -456,7 +489,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 					insertStmt.setInt(2, slot);
 					insertStmt.setString(3, itemName);
 					insertStmt.setBytes(4, nbtData);
-					insertStmt.setString(5, recipeType.name());
+					insertStmt.setString(5, recipeIngredientType.name());
 					updateSQL(insertStmt);
 
 					ResultSet insertRs = insertStmt.getGeneratedKeys();
