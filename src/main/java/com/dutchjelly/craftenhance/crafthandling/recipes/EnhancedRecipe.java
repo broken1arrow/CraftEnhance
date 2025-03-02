@@ -177,7 +177,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 				", permission='" + permission + '\'' +
 				", hidden=" + hidden +
 				", on_craft_command='" + onCraftCommand + '\'' +
-				", type=" + type +
+				", type=" + this.getType() +
 				", allowedWorlds=" + allowedWorlds +
 				", checkPartialMatch=" + checkPartialMatch +
 				"} ";
@@ -221,6 +221,10 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 	public void save() {
 		if (validate() == null)
 			CraftEnhance.self().getFm().saveRecipe(this);
+	}
+
+	public RecipeType getType() {
+		return type;
 	}
 
 	public void load() {
