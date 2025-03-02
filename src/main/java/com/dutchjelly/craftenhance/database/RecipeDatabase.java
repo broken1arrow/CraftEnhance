@@ -311,6 +311,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 
 		try (PreparedStatement pstmt = conn.prepareStatement(SELECT_INGREDIENTS_SQL)) {
 			pstmt.setString(1, recipeId);
+			pstmt.setString(2, RecipeIngredientType.INGREDIENT.name());
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
 				byte[] nbtData = rs.getBytes("item_nbt");

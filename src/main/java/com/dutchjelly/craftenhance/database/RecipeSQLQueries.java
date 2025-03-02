@@ -15,6 +15,7 @@ public interface RecipeSQLQueries {
 			"FROM items i " +
 			"WHERE i.recipe_id = ? " +
 			"AND i.slot BETWEEN 0 AND 8 " +
+			"AND i.type = ? " +
 			"ORDER BY i.slot;";
 	String SELECT_WORLDS_SQL = "SELECT world FROM allowed_worlds WHERE recipe_id = ?;";
 
