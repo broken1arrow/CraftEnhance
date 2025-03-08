@@ -43,7 +43,7 @@ public class CreateRecipeCmd implements ICommand {
 		//Fill in a unique key and empty permission for the user.
 		if (args.length == 0) {
 			int uniqueKeyIndex = 1;
-			while (!handler.getMain().getFm().isUniqueRecipeKey("recipe" + uniqueKeyIndex))
+			while (!handler.getMain().getCacheRecipes().isUniqueRecipeKey("recipe" + uniqueKeyIndex))
 				uniqueKeyIndex++;
             /*EditorTypeSelector gui = new EditorTypeSelector(handler.getMain().getGuiManager(), handler.getMain().getGuiTemplatesFile().getTemplate(EditorTypeSelector.class), null, p, "recipe" + uniqueKeyIndex, null);
             handler.getMain().getGuiManager().openGUI(p, gui);*/
@@ -55,7 +55,7 @@ public class CreateRecipeCmd implements ICommand {
 			Messenger.MessageFromConfig("messages.commands.few-arguments", p, "2");
 			return;
 		}
-		if (!handler.getMain().getFm().isUniqueRecipeKey(args[1])) {
+		if (!handler.getMain().getCacheRecipes().isUniqueRecipeKey(args[1])) {
 			Messenger.Message("The specified recipe key isn't unique.", p);
 			return;
 		}
@@ -119,7 +119,7 @@ public class CreateRecipeCmd implements ICommand {
 			tab.add("smoker");
 		}
 		if (args.length == 3) {
-			tab.add("key");
+			tab.add("permission");
 		}
 		return tab;
 	}

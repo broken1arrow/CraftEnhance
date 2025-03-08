@@ -11,6 +11,10 @@ public interface RecipeSQLQueries {
 			"FROM recipes r " +
 			"JOIN items i ON r.result_item_type = i.type AND r.id = i.recipe_id " +
 			"WHERE r.id = ?;";
+
+	String SELECT_ALL_RECIPE_JOIN_SQL = "SELECT r.*, i.item_nbt AS result_nbt " +
+			"FROM recipes r " +
+			"JOIN items i ON r.result_item_type = i.type AND r.id = i.recipe_id;";
 	String SELECT_INGREDIENTS_SQL = "SELECT i.item_nbt, i.slot " +
 			"FROM items i " +
 			"WHERE i.recipe_id = ? " +

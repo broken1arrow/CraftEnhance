@@ -2,6 +2,7 @@ package com.dutchjelly.craftenhance.crafthandling.recipes.furnace;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
@@ -25,6 +26,10 @@ public class BlastRecipe extends FurnaceRecipe {
 
 	public BlastRecipe(final String perm, final ItemStack result, final ItemStack[] content) {
 		super(perm, result, content);
+	}
+
+	public BlastRecipe(final EnhancedRecipe enhancedRecipe) {
+		super(enhancedRecipe);
 	}
 
 	@Override

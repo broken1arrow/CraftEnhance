@@ -39,7 +39,9 @@ public class FurnaceRecipe extends EnhancedRecipe {
 	public FurnaceRecipe(final String perm, final ItemStack result, final ItemStack[] content) {
 		super(perm, result, content);
 	}
-
+	protected FurnaceRecipe(EnhancedRecipe enhancedRecipe){
+		super(enhancedRecipe);
+	}
 	public static FurnaceRecipe deserialize(final Map<String, Object> args) {
 		final FurnaceRecipe recipe = new FurnaceRecipe(args);
 		recipe.duration = (int) args.get("duration");

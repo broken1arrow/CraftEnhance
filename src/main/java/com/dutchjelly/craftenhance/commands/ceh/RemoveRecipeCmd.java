@@ -46,7 +46,7 @@ public class RemoveRecipeCmd implements ICommand  {
 		List<EnhancedRecipe> enhancedRecipes = RecipeLoader.getInstance().getLoadedRecipes();
 		for (EnhancedRecipe recipe : enhancedRecipes) {
 			if (recipe.getKey().equals(args[0])) {
-				self().getFm().removeRecipe(recipe);
+				self().getCacheRecipes().remove(recipe);
 				RecipeLoader.getInstance().unloadRecipe(recipe);
 				Messenger.Message("The specified recipe is removed " + recipe.getKey(), sender);
 				return;

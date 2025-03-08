@@ -28,7 +28,7 @@ public class SpecsCommand implements ICommand {
 			Messenger.MessageFromConfig("messages.commands.few-arguments", p, "1");
 			return;
 		}
-		EnhancedRecipe recipe = handler.getMain().getFm().getRecipe(args[0]);
+		EnhancedRecipe recipe = handler.getMain().getCacheRecipes().getRecipe(args[0]);
 		if(recipe == null) {
 			Messenger.Message("That recipe key doesn't exist", p);
 			return;

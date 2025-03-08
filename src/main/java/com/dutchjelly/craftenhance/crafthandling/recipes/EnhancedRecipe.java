@@ -3,6 +3,8 @@ package com.dutchjelly.craftenhance.crafthandling.recipes;
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
+import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
@@ -29,7 +31,17 @@ import java.util.Set;
 
 public abstract class EnhancedRecipe extends GuiPlacable implements ConfigurationSerializable, ServerLoadable {
 
-	public EnhancedRecipe() {
+	protected EnhancedRecipe(EnhancedRecipe enhancedRecipe) {
+		this("", null, null);
+		this.key = enhancedRecipe.getKey();
+		this.onCraftCommand = enhancedRecipe.getOnCraftCommand();
+		this.allowedWorlds = enhancedRecipe.getAllowedWorlds();
+		this.checkPartialMatch = enhancedRecipe.isCheckPartialMatch();
+		this.matchType = enhancedRecipe.getMatchType();
+		this.deserialize = enhancedRecipe.getDeserialize();
+		this.id = enhancedRecipe.getId();
+		this.hidden = enhancedRecipe.isHidden();
+		this.serialize = enhancedRecipe.getSerialize();
 	}
 
 	public EnhancedRecipe(final String perm, final ItemStack result, final ItemStack[] content) {
@@ -55,7 +67,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 
 		if (args.containsKey("oncraftcommand")) {
 			final Object oncraftcommand = args.get("oncraftcommand");
-			onCraftCommand = oncraftcommand instanceof Boolean ? oncraftcommand + "" : (String) oncraftcommand;
+			onCraftCommand = oncraftcommand instanceof Boolean ? "" : (String) oncraftcommand;
 		}
 
 		if (args.containsKey("hidden"))
@@ -137,6 +149,19 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 	@Setter
 	private boolean checkPartialMatch;
 
+	public EnhancedRecipe copy() {
+		switch (this.getType()) {
+			case FURNACE:
+				return new FurnaceRecipe(this);
+			case BLAST:
+				return new BlastRecipe(this);
+			case SMOKER:
+				return new SmokerRecipe(this);
+			default:
+				return new WBRecipe(this);
+		}
+	}
+
 	@Nonnull
 	@Override
 	public Map<String, Object> serialize() {
@@ -149,7 +174,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 			put("check_partial_match", checkPartialMatch);
 			put("oncraftcommand", onCraftCommand);
 			put("result", fm.getItemKey(result));
-			put("recipe", Arrays.stream(content).map(x -> fm.getItemKey(x)).toArray(String[]::new));
+			put("recipe", Arrays.stream(content).map(fm::getItemKey).toArray(String[]::new));
 			put("allowed_worlds", allowedWorlds != null ? new ArrayList<>(allowedWorlds) : new ArrayList<>());
 			if (serialize != null && !serialize.isEmpty())
 				putAll(serialize);
@@ -219,21 +244,28 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 	}
 
 	public void save() {
-		if (validate() == null)
-			CraftEnhance.self().getFm().saveRecipe(this);
+		if (validate() == null) {
+			CraftEnhance.self().getCacheRecipes().save(this);
+		}
 	}
 
-	public RecipeType getType() {
-		return type;
+	public void remove() {
+		CraftEnhance.self().getCacheRecipes().remove(this);
 	}
 
 	public void load() {
 		RecipeLoader.getInstance().loadRecipe(this);
 	}
 
+	public RecipeType getType() {
+		return type;
+	}
+
+
 	public abstract boolean matches(ItemStack[] content);
 
 	public abstract boolean matches(ItemStack[] content, IMatcher<ItemStack> matcher);
 
 	public abstract boolean matchesBlockType(final Material blockSmelting);
+
 }

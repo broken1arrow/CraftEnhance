@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 @CommandRoute(cmdPath="ceh.setpermission", perms="perms.recipe-editor")
 public class SetPermissionCmd implements ICommand {
 
-	private CustomCmdHandler handler;
+	private final CustomCmdHandler handler;
 	
 	public SetPermissionCmd(CustomCmdHandler handler){
 		this.handler = handler;
@@ -28,14 +28,14 @@ public class SetPermissionCmd implements ICommand {
 			Messenger.MessageFromConfig("messages.commands.few-arguments", p, "2");
 			return;
 		}
-		EnhancedRecipe recipe = handler.getMain().getFm().getRecipe(args[0]);
+		EnhancedRecipe recipe = handler.getMain().getCacheRecipes().getRecipe(args[0]);
 		if(recipe == null) {
 			Messenger.Message("That recipe key doesn't exist", p);
 			return;
 		}
 
 		recipe.setPermission(args[1]);
-		handler.getMain().getFm().saveRecipe(recipe);
+		recipe.save();
 		Messenger.Message("Successfully set the permissions of the recipe to " + args[1] + ".", p);
 	}
 

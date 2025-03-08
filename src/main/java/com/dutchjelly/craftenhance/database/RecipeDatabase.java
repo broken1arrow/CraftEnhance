@@ -29,45 +29,33 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
+import static com.dutchjelly.craftenhance.messaging.Debug.Send;
 
 public class RecipeDatabase implements RecipeSQLQueries {
 	private static final String URL = "jdbc:sqlite:" + self().getDataFolder() + "/recipes.db";
 
-	public void saveRecipes() {
-
-		save();
-	}
-
-	private void save() {
+	public RecipeDatabase() {
 		try (Connection connection = connect()) {
 			createTables(connection);
-			connection.setAutoCommit(false);
-			try {
-				for (EnhancedRecipe recipe : self().getFm().getRecipes()) {
-					saveRecipe(connection, recipe);
-
-					getRecipe(connection, recipe.getKey());
-				}
-				connection.commit();
-			} finally {
-				try {
-					connection.setAutoCommit(true);
-				} catch (SQLException e) {
-					Debug.error("Could not not reset back the auto commit.", e);
-				}
-			}
 		} catch (SQLException exception) {
 			Debug.error("Failed to connect to database", exception);
 		}
 	}
 
+
+	public void saveRecipes() {
+		save();
+	}
+
 	public void saveRecipe(@NonNull final EnhancedRecipe recipe) {
+		Send("Saving recipe '" + recipe.getKey() + "' with data: " + recipe.toString());
 		try (Connection connection = connect()) {
 			connection.setAutoCommit(false);
 			try {
 				saveRecipe(connection, recipe);
 			} finally {
 				try {
+					connection.commit();
 					connection.setAutoCommit(true);
 				} catch (SQLException e) {
 					Debug.error("Could not not reset back the auto commit.", e);
@@ -76,6 +64,16 @@ public class RecipeDatabase implements RecipeSQLQueries {
 		} catch (SQLException exception) {
 			Debug.error("Failed to connect to database", exception);
 		}
+	}
+
+	@NonNull
+	public List<EnhancedRecipe> loadRecipes() {
+		try (Connection connection = connect()) {
+			return this.getAllRecipe(connection);
+		} catch (SQLException exception) {
+			Debug.error("Failed to connect to database", exception);
+		}
+		return new ArrayList<>();
 	}
 
 	@Nullable
@@ -88,35 +86,72 @@ public class RecipeDatabase implements RecipeSQLQueries {
 		return null;
 	}
 
-	public void deleteRecipe(@NonNull final String recipeId) {
+	public void deleteRecipe(@NonNull final EnhancedRecipe enhancedRecipe) {
 		try (Connection connection = connect()) {
-			deleteRecipe(connection, recipeId);
+			connection.setAutoCommit(false);
+			Send("Removing recipe '" + enhancedRecipe.getKey() + "' with data: " + enhancedRecipe.toString());
+			deleteRecipe(connection, enhancedRecipe);
+			try {
+				connection.commit();
+				connection.setAutoCommit(true);
+			} catch (SQLException e) {
+				Debug.error("Could not not reset back the auto commit.", e);
+			}
 		} catch (SQLException exception) {
 			Debug.error("Failed to connect to database", exception);
 		}
 	}
 
-	private void removeAllowedWorld(@NonNull final String recipeId, @NonNull final String world) {
+	public void removeAllowedWorlds(@NonNull final EnhancedRecipe enhancedRecipe) {
 		try (Connection connection = connect()) {
-			removeAllowedWorld(connection, recipeId, world);
+			connection.setAutoCommit(false);
+			this.removeAllowedWorld(connection, enhancedRecipe.getKey(), enhancedRecipe.getAllowedWorlds().toArray(new String[0]));
+			try {
+				connection.commit();
+				connection.setAutoCommit(true);
+			} catch (SQLException e) {
+				Debug.error("Could not not reset back the auto commit.", e);
+			}
 		} catch (SQLException exception) {
 			Debug.error("Failed to connect to database", exception);
 		}
 	}
 
-	public void deleteIngredient(@NonNull final String recipeId, @NonNull final ItemStack itemStack) {
-		EnhancedRecipe recipe = self().getFm().getRecipes().stream().filter(enhancedRecipe -> enhancedRecipe.getKey().equals(recipeId)).findFirst().orElse(null);
-		if (recipe == null) return;
+	private void removeAllowedWorld(@NonNull final EnhancedRecipe enhancedRecipe, @NonNull final String world) {
+		try (Connection connection = connect()) {
+			removeAllowedWorld(connection, enhancedRecipe.getKey(), world);
+		} catch (SQLException exception) {
+			Debug.error("Failed to connect to database", exception);
+		}
+	}
 
-		boolean isResult = recipe.getResult().isSimilar(itemStack);
-		int slot = recipe.getResultSlot();
+	public void deleteAllIngredients(@NonNull final EnhancedRecipe enhancedRecipe) {
+		try (Connection connection = connect()) {
+			connection.setAutoCommit(false);
+			this.deleteAllIngredients(connection, enhancedRecipe);
+			try {
+				connection.commit();
+				connection.setAutoCommit(true);
+			} catch (SQLException e) {
+				Debug.error("Could not not reset back the auto commit.", e);
+			}
+		} catch (SQLException exception) {
+			Debug.error("Failed to connect to database", exception);
+		}
+	}
+
+
+	public void deleteIngredient(@NonNull final EnhancedRecipe enhancedRecipe, @NonNull final ItemStack itemStack) {
+		boolean isResult = enhancedRecipe.getResult().isSimilar(itemStack);
+		int slot = enhancedRecipe.getResultSlot();
+
 		if (!isResult) {
-			slot = getSlotIngredient(itemStack, recipe, slot);
+			slot = getSlotIngredient(enhancedRecipe, itemStack, slot);
 		}
 		if (slot < 0) return;
 
 		try (Connection connection = connect()) {
-			deleteIngredient(connection, recipeId, slot);
+			this.deleteIngredient(connection, enhancedRecipe.getKey(), slot);
 		} catch (SQLException exception) {
 			Debug.error("Failed to connect to database", exception);
 		}
@@ -235,6 +270,27 @@ public class RecipeDatabase implements RecipeSQLQueries {
 		}
 	}
 
+	private void save() {
+		try (Connection connection = connect()) {
+			connection.setAutoCommit(false);
+			try {
+				List<EnhancedRecipe> tempList = new ArrayList<>(self().getCacheRecipes().getRecipes());
+				for (EnhancedRecipe recipe : tempList) {
+					saveRecipe(connection, recipe);
+				}
+				connection.commit();
+			} finally {
+				try {
+					connection.setAutoCommit(true);
+				} catch (SQLException e) {
+					Debug.error("Could not not reset back the auto commit.", e);
+				}
+			}
+		} catch (SQLException exception) {
+			Debug.error("Failed to connect to database", exception);
+		}
+	}
+
 
 	// Retrieve a recipe with its ingredients
 	public EnhancedRecipe getRecipe(Connection conn, String recipeId) {
@@ -246,68 +302,90 @@ public class RecipeDatabase implements RecipeSQLQueries {
 			ResultSet rs = pstmt.executeQuery();
 			if (!rs.next()) return null;
 
-			Object resultNbt = rs.getBytes("result_nbt");
-			ItemStack resultItem = null;
-			if (resultNbt != null) {
-				final ItemStack[] itemStacks = deserializeItemStack((byte[]) resultNbt);
-				if (itemStacks != null && itemStacks.length > 0) resultItem = itemStacks[0];
-			}
-
-			Map<String, Object> map = new HashMap<>();
-			map.put("page", rs.getInt("page"));
-			map.put("slot", rs.getInt("slot"));
-			map.put("result_slot", rs.getInt("result_slot"));
-			map.put("category", rs.getString("category"));
-			map.put("permission", rs.getString("permission"));
-			map.put("matchtype", rs.getString("matchtype"));
-			map.put("hidden", rs.getBoolean("hidden"));
-			map.put("check_partial_match", rs.getBoolean("check_partial_match"));
-			map.put("oncraftcommand", rs.getBoolean("on_craft_command"));
-			map.put("shapeless", rs.getBoolean("shapeless"));
-
-			RecipeType type = RecipeType.getType(rs.getString("recipe_type"));
-			System.out.println("type " + type);
-			if (type != null) {
-				switch (type) {
-					case FURNACE:
-						map.put("duration", 2);
-						map.put("exp", 1.5);
-						recipe = FurnaceRecipe.deserialize(map);
-						break;
-					case BLAST:
-						map.put("duration", 2);
-						map.put("exp", 1.5);
-						recipe = BlastRecipe.deserialize(map);
-						break;
-					case SMOKER:
-						map.put("duration", 2);
-						map.put("exp", 1.5);
-						recipe = SmokerRecipe.deserialize(map);
-						break;
-					default:
-						recipe = WBRecipe.deserialize(map);
-				}
-			} else {
-				recipe = WBRecipe.deserialize(map);
-			}
-
-			recipe.setResult(resultItem);
-			recipe.setKey(recipeId);
-
-			List<ItemStack> ingredients = getRecipeIngredients(conn, recipeId);
-			recipe.setContent(ingredients.toArray(new ItemStack[0]));
-
-			Set<String> allowedWorlds = getAllowedWorlds(conn, recipeId);
-			recipe.setAllowedWorlds(allowedWorlds);
-			System.out.println("recipe: " + recipe);
+			recipe = getEnhancedRecipe(conn, recipeId, rs);
 			return recipe;
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private List<ItemStack> getRecipeIngredients(Connection conn, String recipeId) throws SQLException {
-		List<ItemStack> ingredients = new ArrayList<>(Collections.nCopies(9, null));
+	public List<EnhancedRecipe> getAllRecipe(Connection conn) {
+		List<EnhancedRecipe> enhancedRecipes = new ArrayList<>();
+		try (PreparedStatement pstmt = conn.prepareStatement(SELECT_ALL_RECIPE_JOIN_SQL)) {
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
+				final EnhancedRecipe recipe = getEnhancedRecipe(conn, rs.getString("id"), rs);
+				enhancedRecipes.add(recipe);
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+		return enhancedRecipes;
+	}
+
+	private EnhancedRecipe getEnhancedRecipe(final Connection conn, final String recipeId, final ResultSet rs) throws SQLException {
+		EnhancedRecipe recipe;
+		Object resultNbt = rs.getBytes("result_nbt");
+		ItemStack resultItem = null;
+		if (resultNbt != null) {
+			final ItemStack[] itemStacks = deserializeItemStack((byte[]) resultNbt);
+			if (itemStacks != null && itemStacks.length > 0) resultItem = itemStacks[0];
+		}
+
+		Map<String, Object> map = new HashMap<>();
+		map.put("page", rs.getInt("page"));
+		map.put("slot", rs.getInt("slot"));
+		map.put("result_slot", rs.getInt("result_slot"));
+		map.put("category", rs.getString("category"));
+		map.put("permission", rs.getString("permission"));
+		map.put("matchtype", rs.getString("matchtype"));
+		map.put("hidden", rs.getBoolean("hidden"));
+		map.put("check_partial_match", rs.getBoolean("check_partial_match"));
+		map.put("oncraftcommand", rs.getString("on_craft_command"));
+		map.put("shapeless", rs.getBoolean("shapeless"));
+
+		RecipeType type = RecipeType.getType(rs.getString("recipe_type"));
+		if (type != null) {
+			switch (type) {
+				case FURNACE:
+					map.put("duration", 2);
+					map.put("exp", 1.5);
+					recipe = FurnaceRecipe.deserialize(map);
+					break;
+				case BLAST:
+					map.put("duration", 2);
+					map.put("exp", 1.5);
+					recipe = BlastRecipe.deserialize(map);
+					break;
+				case SMOKER:
+					map.put("duration", 2);
+					map.put("exp", 1.5);
+					recipe = SmokerRecipe.deserialize(map);
+					break;
+				default:
+					recipe = WBRecipe.deserialize(map);
+			}
+		} else {
+			recipe = WBRecipe.deserialize(map);
+		}
+
+		recipe.setResult(resultItem);
+		recipe.setKey(recipeId);
+
+		List<ItemStack> ingredients = getRecipeIngredients(conn, recipeId, type);
+		recipe.setContent(ingredients.toArray(new ItemStack[0]));
+
+		Set<String> allowedWorlds = getAllowedWorlds(conn, recipeId);
+		recipe.setAllowedWorlds(allowedWorlds);
+		System.out.println("recipe: " + recipe);
+		return recipe;
+	}
+
+	private List<ItemStack> getRecipeIngredients(Connection conn, String recipeId, final RecipeType type) throws SQLException {
+		int maxAmount = 9;
+		if (type != RecipeType.WORKBENCH)
+			maxAmount = 1;
+		List<ItemStack> ingredients = new ArrayList<>(Collections.nCopies(maxAmount, null));
 
 		try (PreparedStatement pstmt = conn.prepareStatement(SELECT_INGREDIENTS_SQL)) {
 			pstmt.setString(1, recipeId);
@@ -317,10 +395,8 @@ public class RecipeDatabase implements RecipeSQLQueries {
 				byte[] nbtData = rs.getBytes("item_nbt");
 				ItemStack[] items = deserializeItemStack(nbtData);
 				int slot = rs.getInt("slot");
-
-				if (slot >= 0 && slot < 9 && items != null && items.length > 0) {
+				if (slot >= 0 && slot < maxAmount && items != null && items.length > 0) {
 					ingredients.set(slot, items[0]);
-
 				}
 			}
 		}
@@ -341,39 +417,65 @@ public class RecipeDatabase implements RecipeSQLQueries {
 		return worlds;
 	}
 
-	public void deleteRecipe(Connection conn, String recipeId) throws SQLException {
+	public void deleteRecipe(Connection connection, EnhancedRecipe enhancedRecipe) throws SQLException {
 		String sql = "DELETE FROM recipes WHERE id = ?;";
+		this.deleteAllIngredients(connection, enhancedRecipe);
+		this.removeAllowedWorld(connection, enhancedRecipe.getKey(), enhancedRecipe.getAllowedWorlds().toArray(new String[0]));
 
-		try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-			pstmt.setString(1, recipeId);
+		try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+			pstmt.setString(1, enhancedRecipe.getKey());
 			int rowsAffected = pstmt.executeUpdate();
 			if (rowsAffected > 0) {
-				System.out.println("Recipe " + recipeId + " deleted successfully.");
+				Send("Recipe '" + enhancedRecipe.getKey() + "' deleted successfully.");
 			} else {
-				System.out.println("Recipe " + recipeId + " not found.");
+				Send("Recipe '" + enhancedRecipe.getKey() + "' not found.");
 			}
 		}
 	}
 
-	private void removeAllowedWorld(Connection conn, String recipeId, String world) throws SQLException {
-		try (PreparedStatement pstmt = conn.prepareStatement(DELETE_WORLD_SQL)) {
-			pstmt.setString(1, recipeId);
-			pstmt.setString(2, world);
-			pstmt.executeUpdate();
+	private void removeAllowedWorld(Connection connection, String recipeId, String... worlds) throws SQLException {
+		if (worlds == null || worlds.length == 0) return;
+		boolean batchMode = worlds.length > 1;
+
+		try (PreparedStatement pstmt = connection.prepareStatement(DELETE_WORLD_SQL)) {
+			for (String world : worlds) {
+				pstmt.setString(1, recipeId);
+				pstmt.setString(2, world);
+				if (batchMode) {
+					pstmt.addBatch();
+				} else {
+					int rowsAffected = pstmt.executeUpdate();
+				}
+			}
+			if (batchMode) {
+				int[] rowsAffected = pstmt.executeBatch();
+			}
 		}
 	}
 
-	public void deleteIngredient(Connection conn, String recipeId, int slot) throws SQLException {
-		String sql = "DELETE FROM items WHERE recipe_id = ? AND slot = ?);";
+	private void deleteIngredient(Connection conn, String recipeId, Integer... slots) throws SQLException {
+		if (slots == null || slots.length == 0) return;
+
+		String sql = "DELETE FROM items WHERE recipe_id = ? AND slot = ?;";
+		boolean batchMode = slots.length > 1;
 
 		try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-			pstmt.setString(1, recipeId);
-			pstmt.setInt(2, slot);
-			int rowsAffected = pstmt.executeUpdate();
-			if (rowsAffected > 0) {
-				System.out.println("Ingredient removed from recipe " + recipeId);
-			} else {
-				System.out.println("Ingredient not found in recipe " + recipeId);
+			for (int slot : slots) {
+				pstmt.setString(1, recipeId);
+				pstmt.setInt(2, slot);
+
+				if (batchMode) {
+					pstmt.addBatch(); // Add to batch
+				} else {
+					int rowsAffected = pstmt.executeUpdate(); // Execute immediately if not in batch mode
+					logDeletionResult(recipeId, rowsAffected);
+				}
+			}
+			if (batchMode) {
+				int[] results = pstmt.executeBatch();
+				for (int rowsAffected : results) {
+					logDeletionResult(recipeId, rowsAffected);
+				}
 			}
 		}
 	}
@@ -457,6 +559,14 @@ public class RecipeDatabase implements RecipeSQLQueries {
 		}
 	}
 
+	private void deleteAllIngredients(final Connection connection, final EnhancedRecipe enhancedRecipe) throws SQLException {
+		int resultSlot = enhancedRecipe.getResultSlot();
+		List<Integer> slots = new ArrayList<>();
+		slots.add(resultSlot);
+		slots.addAll(getAllIngredientSlots(enhancedRecipe));
+		this.deleteIngredient(connection, enhancedRecipe.getKey(), slots.toArray(new Integer[0]));
+	}
+
 	public void insertOrUpdateItem(Connection conn, Consumer<IngredientWrapper> callback) {
 		if (callback == null) return;
 
@@ -504,16 +614,36 @@ public class RecipeDatabase implements RecipeSQLQueries {
 		}
 	}
 
-	private int getSlotIngredient(final ItemStack itemStack, final EnhancedRecipe recipe, int slot) {
+	private void logDeletionResult(String recipeId, int rowsAffected) {
+		if (rowsAffected > 0) {
+			Send("Ingredient removed from recipe " + recipeId);
+		} else {
+			Send("Ingredient not found in recipe " + recipeId);
+		}
+	}
+
+	private int getSlotIngredient(final EnhancedRecipe recipe, final ItemStack itemStack, int slot) {
 		final ItemStack[] content = recipe.getContent();
 		for (int i = 0; i < content.length; i++) {
-			ItemStack item = content[0];
+			ItemStack item = content[i];
 			if (itemStack.isSimilar(item)) {
 				slot = i;
 				break;
 			}
 		}
 		return slot;
+	}
+
+	private List<Integer> getAllIngredientSlots(final EnhancedRecipe recipe) {
+		List<Integer> slots = new ArrayList<>();
+		final ItemStack[] content = recipe.getContent();
+		for (int i = 0; i < content.length; i++) {
+			ItemStack item = content[i];
+			if (item != null) {
+				slots.add(i);
+			}
+		}
+		return slots;
 	}
 
 	@Nonnull
