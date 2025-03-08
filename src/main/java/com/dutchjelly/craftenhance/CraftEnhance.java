@@ -98,6 +98,7 @@ public class CraftEnhance extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		plugin = this;
+		Debug.init(this);
 
 		this.database = new RecipeDatabase();
 		this.saveScheduler = new SaveScheduler();
@@ -110,8 +111,6 @@ public class CraftEnhance extends JavaPlugin {
 			registerMenuAPI = new RegisterMenuAPI(this);
 		this.ingredientsCache = new IngredientsCache();
 		saveDefaultConfig();
-		Debug.init(this);
-
 
 		if (isReloading)
 			Bukkit.getScheduler().runTaskAsynchronously(this, () -> loadPluginData(isReloading));
