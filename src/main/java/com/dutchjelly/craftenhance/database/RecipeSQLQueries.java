@@ -5,17 +5,17 @@ public interface RecipeSQLQueries {
 	String SELECT_RECIPE_SQL = "SELECT id, recipe_type, page, slot, result_slot, category, permission, matchtype, hidden, check_partial_match, on_craft_command, result_item_type, shapeless FROM recipes WHERE id = ?";
 	String CHECK_ITEM_EXISTENCE_SQL = "SELECT slot FROM items WHERE recipe_id = ? AND slot = ?;";
 	String SELECT_ITEM_FROM_RECIPE_SLOT_SQL = "SELECT recipe_id, slot FROM items WHERE recipe_id = ? AND slot = ?;";
-	String SELECT_FURNACE_DATA_SQL = "SELECT recipe_id, slot FROM furnace_data WHERE recipe_id = ?;";
+	String SELECT_FURNACE_DATA_SQL = "SELECT recipe_id, duration, exp FROM furnace_data WHERE recipe_id = ?;";
 	String SELECT_RECIPE_JOIN_SQL = "SELECT r.*, i.item_nbt AS result_nbt, furn.duration, furn.exp " +
 			"FROM recipes r " +
 			"JOIN items i ON r.result_item_type = i.type AND r.id = i.recipe_id " +
-			"JOIN furnace_data furn ON r.id = furn.recipe_id" +
+			"LEFT JOIN furnace_data furn ON r.id = furn.recipe_id" +
 			"WHERE r.id = ?;";
 
 	String SELECT_ALL_RECIPE_JOIN_SQL = "SELECT r.*, i.item_nbt AS result_nbt, furn.duration, furn.exp " +
 			"FROM recipes r " +
 			"JOIN items i ON r.result_item_type = i.type AND r.id = i.recipe_id " +
-			"JOIN furnace_data furn ON r.id = furn.recipe_id" +
+			"LEFT JOIN furnace_data furn ON r.id = furn.recipe_id" +
 			";";
 	String SELECT_INGREDIENTS_SQL = "SELECT i.item_nbt, i.slot " +
 			"FROM items i " +

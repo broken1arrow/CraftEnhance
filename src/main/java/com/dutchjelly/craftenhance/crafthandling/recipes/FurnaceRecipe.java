@@ -39,12 +39,17 @@ public class FurnaceRecipe extends EnhancedRecipe {
 	public FurnaceRecipe(final String perm, final ItemStack result, final ItemStack[] content) {
 		super(perm, result, content);
 	}
-	protected FurnaceRecipe(EnhancedRecipe enhancedRecipe){
+
+	protected FurnaceRecipe(EnhancedRecipe enhancedRecipe) {
 		super(enhancedRecipe);
 	}
+
 	public static FurnaceRecipe deserialize(final Map<String, Object> args) {
 		final FurnaceRecipe recipe = new FurnaceRecipe(args);
 		recipe.duration = (int) args.get("duration");
+		if (recipe.duration == 0) {
+			recipe.duration = 160;
+		}
 		recipe.exp = (float) (double) args.get("exp"); //snake yaml saves floats as doubles so we need to first parse to double
 		return recipe;
 	}
@@ -71,7 +76,7 @@ public class FurnaceRecipe extends EnhancedRecipe {
 
 	@Override
 	public boolean matchesBlockType(final Material blockSmelting) {
-		if (self().getVersionChecker().olderThan(ServerVersion.v1_13)){
+		if (self().getVersionChecker().olderThan(ServerVersion.v1_13)) {
 			return blockSmelting == Material.getMaterial("BURNING_FURNACE");
 		}
 		return blockSmelting == Material.FURNACE;
@@ -83,7 +88,7 @@ public class FurnaceRecipe extends EnhancedRecipe {
 
 	@Override
 	public Recipe getServerRecipe() {
-		int duration =  self().getVersionChecker().olderThan(ServerVersion.v1_17) ?  this.duration : 200;
+		int duration = self().getVersionChecker().olderThan(ServerVersion.v1_17) ? this.duration : 200;
 		return Adapter.GetFurnaceRecipe(CraftEnhance.self(), ServerRecipeTranslator.GetFreeKey(getKey()), getResult(), getContent()[0], duration, getExp());
 	}
 
