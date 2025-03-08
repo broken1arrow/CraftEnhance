@@ -304,12 +304,14 @@ public class RecipeDatabase implements RecipeSQLQueries {
 					updateFurn.setInt(1, furnaceRecipe.getDuration());
 					updateFurn.setFloat(2, furnaceRecipe.getExp());
 					updateFurn.setString(3, recipe.getKey());
+					this.updateSQL(updateFurn);
 				}
 			} else {
 				try (PreparedStatement insertFurn = conn.prepareStatement(INSERT_FURNACE_DATA_SQL)) {
 					insertFurn.setString(1, recipe.getKey());
 					insertFurn.setInt(2, furnaceRecipe.getDuration());
 					insertFurn.setFloat(3, furnaceRecipe.getExp());
+					this.updateSQL(insertFurn);
 				}
 			}
 		}
@@ -422,7 +424,6 @@ public class RecipeDatabase implements RecipeSQLQueries {
 
 		Set<String> allowedWorlds = getAllowedWorlds(conn, recipeId);
 		recipe.setAllowedWorlds(allowedWorlds);
-		System.out.println("recipe: " + recipe);
 		return recipe;
 	}
 
