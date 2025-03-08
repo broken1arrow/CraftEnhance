@@ -144,7 +144,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 	public boolean run(final MenuButtonData value, final Inventory menu, final Player player, final ClickType click) {
 
 		if (value.isActionTypeEqual(ButtonType.DeleteRecipe.name())) {
-			self().getFm().removeRecipe(recipe);
+			self().getCacheRecipes().remove(recipe);
 			RecipeLoader.getInstance().unloadRecipe(recipe);
 			if (this.categoryData != null) {
 				final RecipesViewer recipesViewer = new RecipesViewer(this.categoryData, "", player);
@@ -270,9 +270,9 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 
 	@Nullable
 	private ItemStack[] getIngredients(final Map<Integer, ItemStack> map, final Player player) {
-
-		final int resultSlot = this.menuTemplate.getFillSlots().get(recipe.getContent().length);
-		final List<ItemStack> arrays = new ArrayList<>(recipe.getContent().length);
+		List<Integer> fillSlots = this.menuTemplate.getFillSlots();
+		final int resultSlot = fillSlots != null && fillSlots.size() > recipe.getContent().length ? this.menuTemplate.getFillSlots().get(recipe.getContent().length) : fillSlots.size();
+		final List<ItemStack> stackList = new ArrayList<>(recipe.getContent().length);
 		int index = 0;
 		for (final Integer slot : this.menuTemplate.getFillSlots()) {
 			final ItemStack itemStack = map.get(slot);
@@ -280,8 +280,10 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 				Messenger.Message("Recipes only support amounts of 1 in the content.", player);
 				itemStack.setAmount(1);
 			}
+			if(index > stackList.size())
+				break;
 			if (slot != resultSlot)
-				arrays.add(index, itemStack);
+				stackList.add(index, itemStack);
 			if (slot == resultSlot)
 				this.recipe.setResultSlot(index);
 			index++;
@@ -289,12 +291,12 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 		}
 
 		this.result = map.remove(resultSlot);
-		if (!arrays.stream().anyMatch(x -> x != null)) {
+		if (!stackList.stream().anyMatch(x -> x != null)) {
 			return null;
 		}
 		if (recipe instanceof FurnaceRecipe)
-			return arrays.toArray(new ItemStack[1]);
-		final ItemStack[] itemstacks = arrays.toArray(new ItemStack[0]);
+			return stackList.toArray(new ItemStack[1]);
+		final ItemStack[] itemstacks = stackList.toArray(new ItemStack[0]);
 /*		for (final ItemStack lastItem : itemstacks){
 			if (lastItem != null)
 				lastItemIndex++;
@@ -309,42 +311,6 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 			copy = itemstacks;
 		}*/
 		return itemstacks;
-	}
-
-	public boolean handlePositionChange(final String message) {
-		if (message == null || message.trim() == "") return false;
-
-		if (message.equals("") || message.equalsIgnoreCase("q") || message.equalsIgnoreCase("cancel") || message.equalsIgnoreCase("quit") || message.equalsIgnoreCase("exit"))
-			return false;
-
-		final String[] args = message.split(" ");
-
-		if (args.length != 2) {
-			Messenger.Message("Please specify a page and slot number separated by a space.", getViewer());
-			return true;
-		}
-		int page = 0, slot = 0;
-		try {
-			page = Integer.parseInt(args[0]);
-		} catch (final NumberFormatException e) {
-			Messenger.Message("Could not parse the page number.", getViewer());
-			return true;
-		}
-
-		try {
-			slot = Integer.parseInt(args[1]);
-		} catch (final NumberFormatException e) {
-			Messenger.Message("Could not parse the slot number.", getViewer());
-			return true;
-		}
-		recipe.setPage(page);
-		recipe.setSlot(slot);
-
-		Messenger.Message("Set the page to " + page + ", and the slot to " + slot + ". This will get auto-filled if it's not available.", getViewer());
-		self().getFm().saveRecipe(recipe);
-
-		//updatePlaceHolders();
-		return false;
 	}
 
 	private Map<String, String> getPlaceholders() {

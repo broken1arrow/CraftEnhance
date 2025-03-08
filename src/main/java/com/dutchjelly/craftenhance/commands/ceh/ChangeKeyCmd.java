@@ -29,7 +29,7 @@ public class ChangeKeyCmd implements ICommand {
 			Messenger.MessageFromConfig("messages.commands.few-arguments", p, "2");
 			return;
 		}
-		EnhancedRecipe recipe = handler.getMain().getFm().getRecipe(args[0]);
+		EnhancedRecipe recipe = handler.getMain().getCacheRecipes().getRecipe(args[0]);
 		if(recipe == null) {
 			Messenger.Message("That recipe key doesn't exist", p);
 			return;
@@ -37,10 +37,10 @@ public class ChangeKeyCmd implements ICommand {
 
 		//TODO this method of changing the key changes the order of the recipes, which is a weird side-effect, so resolve this
 
-		handler.getMain().getFm().removeRecipe(recipe);
+		recipe.remove();
         RecipeLoader.getInstance().unloadRecipe(recipe);
 		recipe.setKey(args[1]);
-		handler.getMain().getFm().saveRecipe(recipe);
+		recipe.save();
         RecipeLoader.getInstance().loadRecipe(recipe);
 		Messenger.Message("The key has been changed to " + args[1] + ".", p);
 	}
@@ -51,15 +51,16 @@ public class ChangeKeyCmd implements ICommand {
 			Messenger.MessageFromConfig("messages.commands.few-arguments", sender, "2");
 			return;
 		}
-        EnhancedRecipe recipe = handler.getMain().getFm().getRecipe(args[0]);
+        EnhancedRecipe recipe = handler.getMain().getCacheRecipes().getRecipe(args[0]);
 		if(recipe == null) {
 			Messenger.Message("That recipe key doesn't exist", sender);
 			return;
 		}
-        handler.getMain().getFm().removeRecipe(recipe);
+
+		recipe.remove();
         RecipeLoader.getInstance().unloadRecipe(recipe);
         recipe.setKey(args[1]);
-        handler.getMain().getFm().saveRecipe(recipe);
+		recipe.save();
         RecipeLoader.getInstance().loadRecipe(recipe);
         Messenger.Message("The key has been changed to " + args[1] + ".", sender);
 	}

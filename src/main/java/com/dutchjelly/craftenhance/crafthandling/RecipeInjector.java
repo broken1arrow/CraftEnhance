@@ -567,6 +567,7 @@ public class RecipeInjector implements Listener {
 
 	private boolean isCraftingAllowedInWorld(final Location location, final EnhancedRecipe eRecipe) {
 		final Set<String> allowedWorlds = eRecipe.getAllowedWorlds();
+		//todo Similar recipes could prevent world blocking from working.
 		if (allowedWorlds == null || allowedWorlds.isEmpty()) return false;
 		if (location != null) {
 			if (location.getWorld() == null) return true;

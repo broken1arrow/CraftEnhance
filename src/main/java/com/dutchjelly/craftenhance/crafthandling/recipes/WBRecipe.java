@@ -36,8 +36,12 @@ public class WBRecipe extends EnhancedRecipe {
             shapeless = (Boolean) args.get("shapeless");
     }
 
-    public WBRecipe(){
+    protected WBRecipe(EnhancedRecipe enhancedRecipe){
+	    super(enhancedRecipe);
+    }
 
+    public WBRecipe() {
+        super("", null, null);
     }
 
 

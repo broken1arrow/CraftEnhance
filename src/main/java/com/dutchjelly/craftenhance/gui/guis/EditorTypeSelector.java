@@ -47,11 +47,11 @@ public class EditorTypeSelector extends MenuHolder {
 	}
 
 	private String getFreshKey(String keySeed) {
-		if (keySeed == null || !self().getFm().isUniqueRecipeKey(keySeed)) {
+		if (keySeed == null || !self().getCacheRecipes().isUniqueRecipeKey(keySeed)) {
 			int uniqueKeyIndex = 1;
 			keySeed = "recipe";
 
-			while (!self().getFm().isUniqueRecipeKey(keySeed + uniqueKeyIndex)) uniqueKeyIndex++;
+			while (!self().getCacheRecipes().isUniqueRecipeKey(keySeed + uniqueKeyIndex)) uniqueKeyIndex++;
 			keySeed += uniqueKeyIndex;
 		}
 		return keySeed;

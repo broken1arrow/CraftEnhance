@@ -23,13 +23,13 @@ public class CleanItemFileCmd implements ICommand {
 
 	@Override
 	public void handlePlayerCommand(Player p, String[] args) {
-		handler.getMain().getFm().cleanItemFile();
-		Messenger.Message("Successfully cleared all unused items.", p);
+		//handler.getMain().getFm().cleanItemFile();
+		Messenger.Message("Not used any more, as it store items inside a SQL database and not allowing duplicates. But in case it is needed it will stay a little longer.", p);
 	}
 
 	@Override
 	public void handleConsoleCommand(CommandSender sender, String[] args) {
-		handler.getMain().getFm().cleanItemFile();
-		Messenger.Message("Successfully cleared all unused items.", sender);
+		//handler.getMain().getFm().cleanItemFile();
+		Messenger.Message("Not used any more, as it store items inside a SQL database and not allowing duplicates. But in case it is needed it will stay a little longer.", sender);
 	}
 }

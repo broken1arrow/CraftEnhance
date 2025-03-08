@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.files;
 
+import com.dutchjelly.craftenhance.cache.CacheRecipes;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.messaging.Debug;
@@ -49,6 +50,7 @@ public class FileManager {
 
 	private Map<String, ItemStack> items;
 	private List<EnhancedRecipe> recipes;
+	private CacheRecipes cacheRecipes;
 
 	private FileManager(final boolean useJson) {
 		this.useJson = useJson;
@@ -60,10 +62,11 @@ public class FileManager {
 		fm.items = new HashMap<>();
 		fm.recipes = new ArrayList<>();
 		fm.logger = main.getLogger();
+		fm.cacheRecipes =  main.getCacheRecipes();
 		fm.dataFolder = main.getDataFolder();
 		fm.dataFolder.mkdir();
-		fm.itemsFile = fm.getFile(fm.useJson ? "items.json" : "items.yml");
-		fm.recipesFile = fm.getFile("recipes.yml");
+		fm.itemsFile = new File(fm.dataFolder, fm.useJson ? "items.json" : "items.yml");
+		fm.recipesFile = new File(fm.dataFolder,"recipes.yml");
 		fm.serverRecipeFile = fm.getFile("server-recipes.yml");
 		fm.containerOwnerFile = fm.getFile("container-owners.yml");
 		return fm;
@@ -126,6 +129,9 @@ public class FileManager {
 	public void cacheRecipes() {
 		Debug.Send("The file manager is caching recipes...");
 		EnhancedRecipe keyValue;
+		if(!recipesFile.exists())
+			return;
+
 		recipesConfig = getYamlConfig(recipesFile);
 		recipes.clear();
 		for (final String key : recipesConfig.getKeys(false)) {
@@ -138,12 +144,18 @@ public class FileManager {
 				continue;
 			}
 			keyValue.setKey(key);
-			recipes.add(keyValue);
+			cacheRecipes.add(keyValue);
+			//recipes.add(keyValue);
 		}
+
+		cacheRecipes.save();
+		this.recipesFile.renameTo(new File(dataFolder, "recipe_copy.yml"));
 	}
 
 	@SneakyThrows
 	public void cacheItems() {
+		if(!itemsFile.exists())
+			return;
 
 		if (useJson) {
 
@@ -159,17 +171,19 @@ public class FileManager {
 			final Map<String, Map<String, Object>> serialized = gson.fromJson(json.toString(), typeToken);
 			if (serialized != null)
 				serialized.keySet().forEach(x -> items.put(x, ItemStack.deserialize(serialized.get(x))));
-			return;
+		} else {
+			if (itemsConfig == null)
+				itemsConfig = new YamlConfiguration();
+			itemsConfig.load(itemsFile);
+			//itemsConfig = getYamlConfig(itemsFile);
+			items.clear();
+			if (itemsConfig != null)
+				for (final String key : itemsConfig.getKeys(false)) {
+					items.put(key, itemsConfig.getItemStack(key));
+				}
 		}
-		if (itemsConfig == null)
-			itemsConfig = new YamlConfiguration();
-		itemsConfig.load(itemsFile);
-		//itemsConfig = getYamlConfig(itemsFile);
-		items.clear();
-		if (itemsConfig != null)
-			for (final String key : itemsConfig.getKeys(false)) {
-				items.put(key, itemsConfig.getItemStack(key));
-			}
+
+		this.itemsFile.renameTo(new File(dataFolder, useJson ? "items-copy.json" : "items-copy.yml"));
 	}
 
 	public Map<String, ItemStack> getItems() {
