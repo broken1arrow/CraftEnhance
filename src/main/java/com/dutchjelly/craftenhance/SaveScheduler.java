@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance;
 
+import com.dutchjelly.craftenhance.messaging.Debug;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -46,7 +47,7 @@ public class SaveScheduler implements Runnable {
 		}
 
 		if (now - lastSaveTime >= SAVE_INTERVAL) {
-			System.out.println("saving");
+			Debug.Send("Doing the scheduler save task.");
 			self().getCacheRecipes().save();
 			lastSaveTime = now;
 		}
@@ -57,12 +58,13 @@ public class SaveScheduler implements Runnable {
 		if (taskQueue.isEmpty() || isRunningTask) {
 			return;
 		}
-		System.out.println("can runn " );
+		Debug.Send("Doing the batch save to the database.");
 		isRunningTask = true;
 		new BukkitRunnable() {
 			@Override
 			public void run() {
 				int batchSize = 4;
+				Debug.Send("Working with the batch of: " + taskQueue.size());
 				for (int i = 0; i < batchSize && !taskQueue.isEmpty(); i++) {
 					Runnable nextTask = taskQueue.poll();
 					if (nextTask != null) {
