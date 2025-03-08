@@ -32,6 +32,7 @@ perms:
   recipe-viewer: "craftenhance.view"
   item-editor: "craftenhance.edititems"
   categorys-editor: "craftenhance.edit_categorys"
+  view-all: "craftenhance.view-all"
 
 messages:
   global:

@@ -6,6 +6,39 @@ Menus:
       fill-space: 0-44
       sound: BLOCK_NOTE_BLOCK_BASEDRUM
     buttons:
+      "-1":
+        action_type: FillItems
+        passive:
+          material: BOOK
+          name: "&a"
+          lore:
+            - "&f<-- info -->"
+            - "&fShaped:&6 [shaped]"
+            - "&fType:&6 [Recipe_type]"
+            - "&fPerm:&6 [permission]"
+            - "&fAllowed to craft in this worlds:"
+            - "&6[worlds]"
+            - "&fCategory:&6 [category]"
+          glow: false
+        active:
+          material: BOOK
+          name: "&a"
+          lore:
+            - "&f<-- info -->"
+            - "&fShaped:&6 [shaped]"
+            - "&fType:&6 [Recipe_type]"
+            - "&fPerm:&6 [permission]"
+            - "&fAllowed to craft in this worlds:"
+            - "&6[worlds]"
+            - "&fCategory:&6 [category]"
+            - "&fHidden:&6 [hidden]"
+            - "&fSlot:&6 [slot]"
+            - "&fPage:&6 [page]"
+            - "&fExperience:&6 [exp]"
+            - "&fDuration:&6 [duration]"
+            - "&fMatch description:"
+            - "&6[match meta]"
+          glow: true
       "46":
         action_type: PrvPage
         extra: LIGHT_BLUE

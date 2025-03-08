@@ -70,6 +70,8 @@ public class GuiUtil {
     }
 
     public static List<String> setcolorLore(final List<String> lore) {
+        if(lore == null) return new ArrayList<>();
+
         final List<String> lores = new ArrayList<>();
         for (final String text : lore) {
             if (text == null) {

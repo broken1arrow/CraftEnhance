@@ -3,6 +3,7 @@ package com.dutchjelly.craftenhance.crafthandling.recipes.utility;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
+import com.dutchjelly.craftenhance.util.StringUtil;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.FurnaceRecipe;
@@ -59,5 +60,9 @@ public enum RecipeType {
 		}
 
 		return WORKBENCH;
+	}
+
+	public String capitalize(){
+		return StringUtil.capitalizeFully(this.name().toLowerCase());
 	}
 }
