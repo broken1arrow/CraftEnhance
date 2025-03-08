@@ -4,6 +4,7 @@ import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.SaveScheduler;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.database.RecipeDatabase;
+import com.dutchjelly.craftenhance.messaging.Debug;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -46,7 +47,6 @@ public class CacheRecipes {
 	public void remove(EnhancedRecipe enhancedRecipe) {
 		EnhancedRecipe recipe = enhancedRecipe;
 		saveSchedule.addTask(() -> {
-			System.out.println("recipe shall be removed: " + recipe);
 			this.database.deleteRecipe(recipe);
 		});
 		recipes.remove(enhancedRecipe);

@@ -87,9 +87,10 @@ public class RecipeDatabase implements RecipeSQLQueries {
 	}
 
 	public void deleteRecipe(@NonNull final EnhancedRecipe enhancedRecipe) {
+		Send("Removing recipe '" + enhancedRecipe.getKey() + "' with data: " + enhancedRecipe.toString());
+
 		try (Connection connection = connect()) {
 			connection.setAutoCommit(false);
-			Send("Removing recipe '" + enhancedRecipe.getKey() + "' with data: " + enhancedRecipe.toString());
 			deleteRecipe(connection, enhancedRecipe);
 			try {
 				connection.commit();
