@@ -141,6 +141,18 @@ public class RecipeDatabase implements RecipeSQLQueries {
 		}
 	}
 
+	public void removeFurnaceData(@NonNull final EnhancedRecipe enhancedRecipe) {
+		try (Connection connection = connect()) {
+			this.removeFurnaceData(connection, enhancedRecipe);
+			try {
+				connection.commit();
+			} catch (SQLException e) {
+				Debug.error("Could not not commit changes.", e);
+			}
+		} catch (SQLException exception) {
+			Debug.error("Failed to connect to database", exception);
+		}
+	}
 
 	public void deleteIngredient(@NonNull final EnhancedRecipe enhancedRecipe, @NonNull final ItemStack itemStack) {
 		boolean isResult = enhancedRecipe.getResult().isSimilar(itemStack);
@@ -163,8 +175,8 @@ public class RecipeDatabase implements RecipeSQLQueries {
 		return DriverManager.getConnection(URL);
 	}
 
-	private static void updateSQL(final PreparedStatement updateItemStmt) throws SQLException {
-		updateItemStmt.executeUpdate();
+	private int updateSQL(final PreparedStatement updateItemStmt) throws SQLException {
+		return updateItemStmt.executeUpdate();
 	}
 
 	// Create tables
@@ -207,10 +219,19 @@ public class RecipeDatabase implements RecipeSQLQueries {
 				+ "PRIMARY KEY (recipe_id, world), "
 				+ "FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE);";
 
+		String furnaceData = " CREATE TABLE IF NOT EXISTS furnace_data ("
+				+ "recipe_id TEXT NOT NULL, "
+				+ "duration INTEGER NOT NULL, "
+				+ "exp DECIMAL(10,5) NOT NULL, "
+				+ "PRIMARY KEY (recipe_id), "
+				+ "FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE);";
+
 		try (Statement stmt = conn.createStatement()) {
-			stmt.execute(createItemsTable);
-			stmt.execute(createRecipesTable);
-			stmt.execute(createAllowedWorldsTable);
+			stmt.addBatch(createItemsTable);
+			stmt.addBatch(createRecipesTable);
+			stmt.addBatch(createAllowedWorldsTable);
+			stmt.addBatch(furnaceData);
+			stmt.executeBatch();
 		} catch (SQLException e) {
 			Debug.error("Failed to create one of the tables", e);
 		}
@@ -244,7 +265,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 	public void insertRecipe(@NonNull Connection conn, EnhancedRecipe recipe, RecipeIngredientType recipeIngredientType) {
 
 		try (PreparedStatement pstmt = conn.prepareStatement(INSERT_RECIPES_SQL, Statement.RETURN_GENERATED_KEYS)) {
-			pstmt.setString(1, recipe.getKey());  // Explicitly set the recipe ID
+			pstmt.setString(1, recipe.getKey());
 			pstmt.setString(2, recipe.getType().name());
 			pstmt.setInt(3, recipe.getPage());
 			pstmt.setInt(4, recipe.getSlot());
@@ -268,6 +289,29 @@ public class RecipeDatabase implements RecipeSQLQueries {
 			}
 		} catch (SQLException e) {
 			Debug.error("Failed to insert data", e);
+		}
+	}
+
+	private void updateFurnaces(final Connection conn, final EnhancedRecipe recipe) throws SQLException {
+		if (!(recipe instanceof FurnaceRecipe)) return;
+
+		FurnaceRecipe furnaceRecipe = ((FurnaceRecipe) recipe);
+		try (PreparedStatement furnPreparedStatement = conn.prepareStatement(SELECT_FURNACE_DATA_SQL)) {
+			furnPreparedStatement.setString(1, recipe.getKey());
+			ResultSet set = furnPreparedStatement.executeQuery();
+			if (set.next()) {
+				try (PreparedStatement updateFurn = conn.prepareStatement(UPDATE_FURNACE_DATA_SQL)) {
+					updateFurn.setInt(1, furnaceRecipe.getDuration());
+					updateFurn.setFloat(2, furnaceRecipe.getExp());
+					updateFurn.setString(3, recipe.getKey());
+				}
+			} else {
+				try (PreparedStatement insertFurn = conn.prepareStatement(INSERT_FURNACE_DATA_SQL)) {
+					insertFurn.setString(1, recipe.getKey());
+					insertFurn.setInt(2, furnaceRecipe.getDuration());
+					insertFurn.setFloat(3, furnaceRecipe.getExp());
+				}
+			}
 		}
 	}
 
@@ -349,18 +393,18 @@ public class RecipeDatabase implements RecipeSQLQueries {
 		if (type != null) {
 			switch (type) {
 				case FURNACE:
-					map.put("duration", 2);
-					map.put("exp", 1.5);
+					map.put("duration", rs.getInt("duration"));
+					map.put("exp", rs.getDouble("exp"));
 					recipe = FurnaceRecipe.deserialize(map);
 					break;
 				case BLAST:
-					map.put("duration", 2);
-					map.put("exp", 1.5);
+					map.put("duration", rs.getInt("duration"));
+					map.put("exp", rs.getDouble("exp"));
 					recipe = BlastRecipe.deserialize(map);
 					break;
 				case SMOKER:
-					map.put("duration", 2);
-					map.put("exp", 1.5);
+					map.put("duration", rs.getInt("duration"));
+					map.put("exp", rs.getDouble("exp"));
 					recipe = SmokerRecipe.deserialize(map);
 					break;
 				default:
@@ -422,10 +466,11 @@ public class RecipeDatabase implements RecipeSQLQueries {
 		String sql = "DELETE FROM recipes WHERE id = ?;";
 		this.deleteAllIngredients(connection, enhancedRecipe);
 		this.removeAllowedWorld(connection, enhancedRecipe.getKey(), enhancedRecipe.getAllowedWorlds().toArray(new String[0]));
+		this.removeFurnaceData(connection, enhancedRecipe);
 
 		try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
 			pstmt.setString(1, enhancedRecipe.getKey());
-			int rowsAffected = pstmt.executeUpdate();
+			int rowsAffected = this.updateSQL(pstmt);
 			if (rowsAffected > 0) {
 				Send("Recipe '" + enhancedRecipe.getKey() + "' deleted successfully.");
 			} else {
@@ -433,6 +478,16 @@ public class RecipeDatabase implements RecipeSQLQueries {
 			}
 		}
 	}
+
+	private void removeFurnaceData(final Connection connection, final EnhancedRecipe enhancedRecipe) throws SQLException {
+		if (!(enhancedRecipe instanceof FurnaceRecipe)) return;
+
+		try (PreparedStatement pstmt = connection.prepareStatement(DELETE_FURNACE_DATA_SQL)) {
+			pstmt.setString(1, enhancedRecipe.getKey());
+			int rowsAffected = this.updateSQL(pstmt);
+		}
+	}
+
 
 	private void removeAllowedWorld(Connection connection, String recipeId, String... worlds) throws SQLException {
 		if (worlds == null || worlds.length == 0) return;
@@ -512,6 +567,8 @@ public class RecipeDatabase implements RecipeSQLQueries {
 					ingredients.setRecipeType(RecipeIngredientType.RESULT);
 				});
 			}
+			this.updateFurnaces(connection, recipe);
+
 			ItemStack[] itemStacks = recipe.getContent();
 			for (int i = 0; i < itemStacks.length; i++) {
 				ItemStack item = itemStacks[i];
