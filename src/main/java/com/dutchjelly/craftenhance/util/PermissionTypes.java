@@ -15,7 +15,10 @@ public enum PermissionTypes {
         this.permPath = permPath;
     }
 
-    public String getPerm(){
-        return CraftEnhance.self().getConfig().getString(permPath);
+    public String getPerm() {
+        String permission = CraftEnhance.self().getConfig().getString(permPath);
+        if (permission == null)
+            permission = "craftenhance.permission.not.set";
+        return permission;
     }
 }

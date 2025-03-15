@@ -4,7 +4,6 @@ import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.SaveScheduler;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.database.RecipeDatabase;
-import com.dutchjelly.craftenhance.messaging.Debug;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -45,11 +44,11 @@ public class CacheRecipes {
 	}
 
 	public void remove(EnhancedRecipe enhancedRecipe) {
-		EnhancedRecipe recipe = enhancedRecipe;
 		saveSchedule.addTask(() -> {
-			this.database.deleteRecipe(recipe);
+			this.database.deleteRecipe(enhancedRecipe);
+			recipes.remove(enhancedRecipe);
 		});
-		recipes.remove(enhancedRecipe);
+		enhancedRecipe.setRemove(true);
 	}
 
 	public boolean isUniqueRecipeKey(final String key) {
@@ -64,6 +63,13 @@ public class CacheRecipes {
 	}
 
 	public void save(EnhancedRecipe enhancedRecipe) {
+		if(enhancedRecipe.isRemove()) {
+			saveSchedule.addTask(() -> {
+				this.database.deleteRecipe(enhancedRecipe);
+				recipes.remove(enhancedRecipe);
+			});
+			return;
+		}
 		saveSchedule.addTask(() -> this.database.saveRecipe(enhancedRecipe));
 	}
 

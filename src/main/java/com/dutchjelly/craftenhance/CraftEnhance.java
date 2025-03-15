@@ -55,6 +55,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class CraftEnhance extends JavaPlugin {
@@ -165,9 +166,9 @@ public class CraftEnhance extends JavaPlugin {
 		fm.saveContainerOwners(injector.getContainerOwners());
 		Debug.Send("Saving disabled recipes...");
 		fm.saveDisabledServerRecipes(RecipeLoader.getInstance().getDisabledServerRecipes().stream().map(x -> Adapter.GetRecipeIdentifier(x)).collect(Collectors.toList()));
-		cacheRecipes.getRecipes().forEach(EnhancedRecipe::save);
 		categoryDataCache.save();
-
+		CompletableFuture<Void> saveTask = CompletableFuture.runAsync(()-> this.cacheRecipes.save());
+		saveTask.join();
 	}
 
 	@Override

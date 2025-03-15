@@ -13,6 +13,7 @@ import com.dutchjelly.craftenhance.gui.interfaces.GuiPlacable;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.util.StringUtil;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -30,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class EnhancedRecipe extends GuiPlacable implements ConfigurationSerializable, ServerLoadable {
+
 
 	protected EnhancedRecipe(EnhancedRecipe enhancedRecipe) {
 		this("", null, null);
@@ -148,7 +150,9 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 	@Getter
 	@Setter
 	private boolean checkPartialMatch;
-
+	@Getter
+	@Setter
+	private boolean remove;
 	public EnhancedRecipe copy() {
 		switch (this.getType()) {
 			case FURNACE:
@@ -229,6 +233,13 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
         return s;
     }*/
 
+	@NonNull
+	public Set<String> getAllowedWorlds() {
+		if(allowedWorlds == null)
+			return new HashSet<>();
+		return allowedWorlds;
+	}
+
 	public String getAllowedWorldsFormatted() {
 		final StringBuilder stringBuilder = new StringBuilder();
 		if (allowedWorlds != null)
@@ -267,5 +278,4 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 	public abstract boolean matches(ItemStack[] content, IMatcher<ItemStack> matcher);
 
 	public abstract boolean matchesBlockType(final Material blockSmelting);
-
 }

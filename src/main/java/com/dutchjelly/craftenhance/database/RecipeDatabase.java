@@ -323,7 +323,11 @@ public class RecipeDatabase implements RecipeSQLQueries {
 			try {
 				List<EnhancedRecipe> tempList = new ArrayList<>(self().getCacheRecipes().getRecipes());
 				for (EnhancedRecipe recipe : tempList) {
-					saveRecipe(connection, recipe);
+					if(recipe.isRemove()) {
+						this.deleteRecipe(connection, recipe);
+						continue;
+					}
+					this.saveRecipe(connection, recipe);
 				}
 				connection.commit();
 			} finally {
@@ -463,19 +467,20 @@ public class RecipeDatabase implements RecipeSQLQueries {
 		return worlds;
 	}
 
-	public void deleteRecipe(Connection connection, EnhancedRecipe enhancedRecipe) throws SQLException {
+	private void deleteRecipe(@NonNull Connection connection,@NonNull EnhancedRecipe enhancedRecipe) throws SQLException {
 		String sql = "DELETE FROM recipes WHERE id = ?;";
 		this.deleteAllIngredients(connection, enhancedRecipe);
-		this.removeAllowedWorld(connection, enhancedRecipe.getKey(), enhancedRecipe.getAllowedWorlds().toArray(new String[0]));
+		final String recipeName = enhancedRecipe.getKey();
+		this.removeAllowedWorld(connection, recipeName, enhancedRecipe.getAllowedWorlds().toArray(new String[0]));
 		this.removeFurnaceData(connection, enhancedRecipe);
 
 		try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-			pstmt.setString(1, enhancedRecipe.getKey());
+			pstmt.setString(1, recipeName);
 			int rowsAffected = this.updateSQL(pstmt);
 			if (rowsAffected > 0) {
-				Send("Recipe '" + enhancedRecipe.getKey() + "' deleted successfully.");
+				Send("Recipe '" + recipeName + "' deleted successfully.");
 			} else {
-				Send("Recipe '" + enhancedRecipe.getKey() + "' not found.");
+				Send("Recipe '" + recipeName + "' not found.");
 			}
 		}
 	}
