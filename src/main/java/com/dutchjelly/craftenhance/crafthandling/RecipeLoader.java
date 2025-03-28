@@ -190,17 +190,18 @@ public class RecipeLoader {
 		if (categoryData != null && categoryData.getEnhancedRecipes() != null)
 			categoryData.getEnhancedRecipes().remove(recipe);
 
-		if (group == null) {
-			printGroupsDebugInfo();
-			Bukkit.getLogger().log(Level.SEVERE, "Could not unload recipe from groups because it doesn't exist.");
-			return;
-		}
 		final Recipe serverRecipe = loaded.get(recipe.getKey());
 
 		//Only unload from server if there are no similar server recipes.
 		if (serverRecipe != null) {
 			loaded.remove(recipe.getKey());
 			unloadRecipe(serverRecipe);
+		}
+
+		if (group == null) {
+			printGroupsDebugInfo();
+			Bukkit.getLogger().log(Level.SEVERE, "Could not unload recipe from group, because the recipe doesn't have a group.");
+			return;
 		}
 
         /* TODO (Optimization) When e.g. a shapeless recipe disappears from a recipe, not all recipes in that group are
@@ -322,6 +323,8 @@ public class RecipeLoader {
 	}
 
 	public void printGroupsDebugInfo() {
+		if (!Debug.isGeneralDebugEnable()) return;
+
 		for (final Map.Entry<RecipeType, List<RecipeGroup>> recipeGrouping : mappedGroupedRecipes.entrySet()) {
 			Debug.Send("Groups for recipes of type: " + recipeGrouping.getKey().toString());
 			for (final RecipeGroup group : recipeGrouping.getValue()) {

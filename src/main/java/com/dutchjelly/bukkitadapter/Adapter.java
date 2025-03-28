@@ -13,6 +13,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -87,8 +89,15 @@ public class Adapter {
 
 			meta.setDisplayName(displayName);
 			meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-			if (self().getVersionChecker().newerThan(ServerVersion.v1_20))
+			if (self().getVersionChecker().newerThan(ServerVersion.v1_20)) {
+				try {
+					AttributeModifier dummyModifier = new AttributeModifier(UUID.randomUUID(), "dummy", 0, AttributeModifier.Operation.ADD_NUMBER);
+					meta.addAttributeModifier(Attribute.MOVEMENT_SPEED, dummyModifier);
+				} catch (NoClassDefFoundError ex) {
+					self().getLogger().warning("The AttributeModifier is no longer supported and the tooltip will probably be visible again.");
+				}
 				meta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
+			}
 			else
 				meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 			if (glow) {
@@ -98,6 +107,10 @@ public class Adapter {
 					meta.addEnchant(EnchantmentUtil.getByName("DURABILITY"), 10, true);
 				}
 			}
+			for (ItemFlag flag : ItemFlag.values()) {
+				meta.addItemFlags(flag);
+			}
+
 			item.setItemMeta(meta);
 		}
 		return item;

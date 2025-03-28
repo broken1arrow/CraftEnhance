@@ -74,6 +74,9 @@ public class Debug {
 		logger.log(Level.WARNING,prefix + message,throwable);
 	}
 
+	public static boolean isGeneralDebugEnable() {
+		return enable;
+	}
 
 	public enum Type {
 		Crafting,

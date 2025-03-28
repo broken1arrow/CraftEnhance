@@ -17,6 +17,7 @@ import org.broken.arrow.menu.library.button.MenuButton;
 import org.broken.arrow.menu.library.button.logic.ButtonUpdateAction;
 import org.broken.arrow.menu.library.button.logic.FillMenuButton;
 import org.broken.arrow.menu.library.holder.MenuHolderPage;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -92,6 +93,11 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 			nextPage();
 			return true;
 		}
+		if (value.isActionTypeEqual(ButtonType.Back.name())) {
+			player.closeInventory();
+			if (value.getCommand() != null)
+				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), value.getCommand());
+		}
 		if (value.isActionTypeEqual(ButtonType.Search.name())) {
 			if (click == ClickType.RIGHT) {
 				Messenger.Message("Search for categorys.", getViewer());
@@ -106,7 +112,6 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 				;
 			} else new RecipesViewerCategorys("").menuOpen(player);
 		}
-
 		if (value.isActionTypeEqual(ButtonType.NewCategory.name()) && player.hasPermission(PermissionTypes.Categorys_editor.getPerm())) {
 			if (!player.isConversing()) {
 				new HandleChatInput(this, msg -> {

@@ -96,6 +96,7 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 			return true;
 		}
 		if (value.isActionTypeEqual(ButtonType.Back.name())) {
+
 			new RecipeSettings<>(this.recipe,0 ,this.categoryData, null, editorType)
 					.menuOpen(player);
 			//new RecipeEditor<>(this.recipe, this.categoryData, null,  editorType).menuOpen(player);

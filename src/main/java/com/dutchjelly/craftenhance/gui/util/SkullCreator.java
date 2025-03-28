@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.gui.util;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import org.bukkit.Bukkit;
@@ -10,14 +11,20 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Skull;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.profile.PlayerProfile;
+import org.bukkit.profile.PlayerTextures;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Base64;
 import java.util.UUID;
+
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 /**
  * A library for the Bukkit API to create player skulls
@@ -268,6 +275,22 @@ public class SkullCreator {
         return profile;
     }
 
+    private static PlayerProfile makePlayerProfile(String b64) throws MalformedURLException {
+        UUID id = new UUID(
+                b64.substring(b64.length() - 20).hashCode(),
+                b64.substring(b64.length() - 10).hashCode()
+        );
+
+        PlayerProfile profile = Bukkit.createPlayerProfile(id);
+        PlayerTextures textures = profile.getTextures();
+        textures.setSkin(getUrlFromBase64(b64));
+        profile.setTextures(textures);
+        return profile;
+    }
+    public static URL getUrlFromBase64(String base64) throws MalformedURLException {
+        String decoded = new String(Base64.getDecoder().decode(base64));
+        return new URL(decoded.substring("{\"textures\":{\"SKIN\":{\"url\":\"".length(), decoded.length() - "\"}}}".length()));
+    }
     private static void mutateBlockState(Skull block, String b64) {
         try {
             if (blockProfileField == null) {
@@ -275,19 +298,29 @@ public class SkullCreator {
                 blockProfileField.setAccessible(true);
             }
             blockProfileField.set(block, makeProfile(b64));
-        } catch (NoSuchFieldException | IllegalAccessException e) {
+        } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException e) {
             e.printStackTrace();
         }
     }
 
     private static void mutateItemMeta(SkullMeta meta, String b64) {
+        if(self().getVersionChecker().newerThan(ServerVersion.v1_20)){
+         try {
+           //  meta.setPlayerProfile(makePlayerProfile(b64));
+             meta.setOwnerProfile(makePlayerProfile(b64));
+         } catch (MalformedURLException ex2) {
+             Bukkit.getLogger().warning("Can't invoke the profile from the SkullMeta.");
+             ex2.printStackTrace();
+         }
+         return;
+        }
         try {
             if (metaSetProfileMethod == null) {
                 metaSetProfileMethod = meta.getClass().getDeclaredMethod("setProfile", GameProfile.class);
                 metaSetProfileMethod.setAccessible(true);
             }
             metaSetProfileMethod.invoke(meta, makeProfile(b64));
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | IllegalArgumentException ex ) {
             // if in an older API where there is no setProfile method,
             // we set the profile field directly.
             try {
@@ -297,7 +330,8 @@ public class SkullCreator {
                 }
                 metaProfileField.set(meta, makeProfile(b64));
 
-            } catch (NoSuchFieldException | IllegalAccessException ex2) {
+            } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException ex2) {
+                Bukkit.getLogger().warning("Can't invoke the profile from the SkullMeta.");
                 ex2.printStackTrace();
             }
         }
