@@ -100,14 +100,14 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 		}
 		if (value.isActionTypeEqual(ButtonType.Search.name())) {
 			if (click == ClickType.RIGHT) {
-				Messenger.Message("Search for categorys.", getViewer());
+				Messenger.Message("Search for categories.", getViewer());
 				new HandleChatInput(this, msg -> {
 					if (GuiUtil.seachCategory(msg)) {
 						new RecipesViewerCategorys(msg).menuOpen(getViewer());
 						return false;
 					}
 					return true;
-				}).setMessages("Search for categorys.")
+				}).setMessages("Search for categories.")
 						.start(getViewer());
 				;
 			} else new RecipesViewerCategorys("").menuOpen(player);
