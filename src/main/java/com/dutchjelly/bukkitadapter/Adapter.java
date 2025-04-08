@@ -53,12 +53,8 @@ public class Adapter {
 		final ItemStack item;
 
 		if (color == null) {
-			final Material mat = Adapter.getMaterial(material);
-			if (mat == null) {
-				Messenger.Error("Could not find the material. It is set too: " + material);
-				return null;
-			}
-			item = new ItemStack(mat);
+			item = getItemStack(material);
+			if (item == null) return null;
 		} else {
 			//Tricky way to support skull meta's using the color attribute as data.
 			if (material.equalsIgnoreCase(GUI_SKULL_MATERIAL_NAME)) {
@@ -71,8 +67,11 @@ public class Adapter {
 				else throw new ConfigError("specified skull meta is invalid");
 			} else {
 				final DyeColor dColor = dyeColor(color);
-				if (dColor == null) throw new ConfigError("color " + color + " not found");
-				item = Adapter.getColoredItem(material, dColor);
+				if (dColor != null) {
+					item = Adapter.getColoredItem(material, dColor);
+				} else {
+					item = getItemStack(material);
+				}
 			}
 		}
 		if (item == null) return null;
@@ -113,6 +112,17 @@ public class Adapter {
 
 			item.setItemMeta(meta);
 		}
+		return item;
+	}
+
+
+	private static ItemStack getItemStack(final String material) {
+		final Material mat = Adapter.getMaterial(material);
+		if (mat == null) {
+			Messenger.Error("Could not find the material. It is set too: " + material);
+			return null;
+		}
+		final ItemStack item = new ItemStack(mat);
 		return item;
 	}
 

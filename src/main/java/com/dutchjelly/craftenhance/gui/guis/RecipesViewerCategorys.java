@@ -96,8 +96,8 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 		if (value.isActionTypeEqual(ButtonType.Back.name())) {
 			player.closeInventory();
 			if (value.getExtra() != null) {
-				for (String command : value.getExtra() )
-				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command );
+				for (String command : value.getExtra())
+					Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%playername%",player.getName()));
 			}
 		}
 		if (value.isActionTypeEqual(ButtonType.Search.name())) {
