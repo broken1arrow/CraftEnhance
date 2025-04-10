@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -35,6 +36,9 @@ public class RecipeDatabase implements RecipeSQLQueries {
 	private static final String URL = "jdbc:sqlite:" + self().getDataFolder() + "/recipes.db";
 
 	public RecipeDatabase() {
+		File checkFile = self().getDataFolder();
+		if(!checkFile.exists())
+			checkFile.mkdirs();
 		try (Connection connection = connect()) {
 			createTables(connection);
 		} catch (SQLException exception) {
