@@ -102,6 +102,8 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 					Debug.info("To disable debugging messages when executing commands via the menu, set 'show_command_menu: false' in the config.yml file");
 				}
 				for (String command : value.getExtra()) {
+					if(command == null || command.equals("null"))
+						continue;
 					if (!containsKey || self().getConfig().getBoolean("show_command_menu")) {
 						Debug.info("Player: " + player.getName() + " run this command: " + command);
 					}
