@@ -26,6 +26,10 @@ save_on_close: false
 #It will not change the outcome of the Minecraft recipes.
 turn_of_crafter: true
 
+# Displays a message in the console when a command is executed via a menu button click.
+# The message includes the executed command and the name of the player who triggered it.
+show_command_menu: true
+
 # These permissions are used globally by all features of the plugin.
 perms:
   recipe-editor: "craftenhance.edit"

@@ -8,6 +8,7 @@ import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.FormatListContents;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
+import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import com.dutchjelly.craftenhance.util.PermissionTypes;
@@ -96,8 +97,16 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 		if (value.isActionTypeEqual(ButtonType.Back.name())) {
 			player.closeInventory();
 			if (value.getExtra() != null) {
-				for (String command : value.getExtra())
-					Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%playername%",player.getName()));
+				final boolean containsKey = self().getConfig().contains("show_command_menu");
+				if (!containsKey) {
+					Debug.info("To disable debugging messages when executing commands via the menu, set 'show_command_menu: false' in the config.yml file");
+				}
+				for (String command : value.getExtra()) {
+					if (!containsKey || self().getConfig().getBoolean("show_command_menu")) {
+						Debug.info("Player: " + player.getName() + " run this command: " + command);
+					}
+					Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%playername%", player.getName()));
+				}
 			}
 		}
 		if (value.isActionTypeEqual(ButtonType.Search.name())) {

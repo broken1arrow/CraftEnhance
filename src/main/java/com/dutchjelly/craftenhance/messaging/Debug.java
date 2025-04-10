@@ -73,6 +73,9 @@ public class Debug {
 	public static void error(final String message,Throwable throwable) {
 		logger.log(Level.WARNING,prefix + message,throwable);
 	}
+	public static void info(final String message) {
+		logger.log(Level.INFO,prefix + message);
+	}
 
 	public static boolean isGeneralDebugEnable() {
 		return enable;
