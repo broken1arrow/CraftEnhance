@@ -614,7 +614,6 @@ public class RecipeDatabase implements RecipeSQLQueries {
 					item = item.clone();
 
 				String itemName = getItemKey(item);
-				slot++;
 				if (recipe instanceof BrewingRecipe && recipe.getResultSlot() == slot) {
 					slot += 1;
 				}
@@ -627,6 +626,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 					ingredients.setRecipeName(recipeName);
 					ingredients.setItemName(itemName);
 				});
+				slot++;
 			}
 			this.insertAllowedWorlds(connection, recipeName, recipe.getAllowedWorlds());
 		} catch (SQLException e) {
