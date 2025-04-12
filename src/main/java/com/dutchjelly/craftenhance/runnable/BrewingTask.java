@@ -1,4 +1,4 @@
-package com.dutchjelly.bukkitadapter.runnable;
+package com.dutchjelly.craftenhance.runnable;
 
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;

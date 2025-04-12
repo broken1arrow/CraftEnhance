@@ -1,7 +1,7 @@
 package com.dutchjelly.craftenhance;
 
 import com.dutchjelly.bukkitadapter.Adapter;
-import com.dutchjelly.bukkitadapter.runnable.BrewingTask;
+import com.dutchjelly.craftenhance.runnable.BrewingTask;
 import com.dutchjelly.craftenhance.api.CraftEnhanceAPI;
 import com.dutchjelly.craftenhance.cache.CacheRecipes;
 import com.dutchjelly.craftenhance.commandhandling.CustomCmdHandler;
