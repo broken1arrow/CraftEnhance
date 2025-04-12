@@ -291,6 +291,7 @@ public class CraftEnhance extends JavaPlugin {
 		);
 		injector.registerContainerOwners(fm.getContainerOwners());
 		injector.setLoader(loader);
+		injector.reload();
 		//todo learn recipes are little broken. when you reload it.
 		if (isReloading && Bukkit.getOnlinePlayers().size() > 0)
 			if (self().getConfig().getBoolean("learn-recipes"))
