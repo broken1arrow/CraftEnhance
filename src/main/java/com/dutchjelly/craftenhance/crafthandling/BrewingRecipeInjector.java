@@ -29,11 +29,15 @@ public class BrewingRecipeInjector {
 
 	private final RecipeInjector recipeInjector;
 	private final CraftEnhance plugin = self();
-	private final boolean enableBrewing = plugin.getConfig().getBoolean("enable-brewing-recipes");
-	private final boolean enableCraft = plugin.getConfig().getBoolean("enable-recipes");
+	private boolean enableBrewing = plugin.getConfig().getBoolean("enable-brewing-recipes");
+	private boolean enableCraft = plugin.getConfig().getBoolean("enable-recipes");
 
 	public BrewingRecipeInjector(final RecipeInjector recipeInjector) {
 		this.recipeInjector = recipeInjector;
+	}
+	public void reloadSettings() {
+		enableBrewing = plugin.getConfig().getBoolean("enable-brewing-recipes");
+		 enableCraft = plugin.getConfig().getBoolean("enable-recipes");
 	}
 
 	public void onBrewClick(InventoryClickEvent event) {
