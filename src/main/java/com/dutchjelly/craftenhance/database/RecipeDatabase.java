@@ -411,6 +411,22 @@ public class RecipeDatabase implements RecipeSQLQueries {
 		map.put("shapeless", rs.getBoolean("shapeless"));
 
 		RecipeType type = RecipeType.getType(rs.getString("recipe_type"));
+		recipe = getEnhancedRecipe(rs, type, map);
+
+		recipe.setResult(resultItem);
+		recipe.setKey(recipeId);
+
+		List<ItemStack> ingredients = getRecipeIngredients(conn, recipeId, type);
+		recipe.setContent(ingredients.toArray(new ItemStack[0]));
+
+		Set<String> allowedWorlds = getAllowedWorlds(conn, recipeId);
+		recipe.setAllowedWorlds(allowedWorlds);
+		return recipe;
+	}
+
+	@Nonnull
+	private EnhancedRecipe getEnhancedRecipe(final ResultSet rs, final RecipeType type, final Map<String, Object> map) throws SQLException {
+		EnhancedRecipe recipe;
 		if (type != null) {
 			switch (type) {
 				case FURNACE:
@@ -439,15 +455,6 @@ public class RecipeDatabase implements RecipeSQLQueries {
 		} else {
 			recipe = WBRecipe.deserialize(map);
 		}
-
-		recipe.setResult(resultItem);
-		recipe.setKey(recipeId);
-
-		List<ItemStack> ingredients = getRecipeIngredients(conn, recipeId, type);
-		recipe.setContent(ingredients.toArray(new ItemStack[0]));
-
-		Set<String> allowedWorlds = getAllowedWorlds(conn, recipeId);
-		recipe.setAllowedWorlds(allowedWorlds);
 		return recipe;
 	}
 
