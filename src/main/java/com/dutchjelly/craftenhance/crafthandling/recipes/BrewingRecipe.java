@@ -110,6 +110,11 @@ public class BrewingRecipe extends EnhancedRecipe{
 	}
 
 	public static BrewingRecipe deserialize(final Map<String, Object> args) {
-		return new BrewingRecipe(args);
+		BrewingRecipe brewingRecipe = new BrewingRecipe(args);
+		brewingRecipe.duration = (int) args.get("duration");
+		if (brewingRecipe.duration == 0) {
+			brewingRecipe.duration = 20;
+		}
+		return brewingRecipe;
 	}
 }
