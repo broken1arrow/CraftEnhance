@@ -91,9 +91,9 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 		}
 	}
 
-
-	public void setLoader(final RecipeLoader loader) {
-		this.loader = loader;
+	public void reload() {
+		this.brewingRecipeInjector.reloadSettings();
+		//this.loader = RecipeLoader.getInstance();
 	}
 
 	//Add registrations of owners of containers.
@@ -139,9 +139,8 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 		final CraftingInventory craftingInventory = craftEvent.getInventory();
 		final Recipe serverRecipe = craftEvent.getRecipe();
 		final List<HumanEntity> viewers = craftEvent.getViewers();
-		this. workBenchRecipeInjector.craftItem(serverRecipe, craftingInventory.getMatrix(), craftingInventory, viewers, craftingInventory::setResult);
+		this.workBenchRecipeInjector.craftItem(serverRecipe, craftingInventory.getMatrix(), craftingInventory, viewers, craftingInventory::setResult);
 	}
-
 
 	@EventHandler
 	public void exstract(final FurnaceExtractEvent e) {
@@ -239,7 +238,6 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 		}
 	}
 
-
 	@EventHandler
 	public void onBrewClick(InventoryClickEvent event) {
 		if (event.getInventory().getType() != InventoryType.BREWING) return;
@@ -256,13 +254,11 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 	public void onBrew(BrewEvent event) {
 	}
 
-
 	public boolean isViewersAllowedCraft(final List<HumanEntity> viewers, final WBRecipe wbRecipe) {
 		if (viewers.isEmpty())
 			return true;
 		return viewers.stream().allMatch(x -> entityCanCraft(x, wbRecipe));
 	}
-
 
 	public boolean checkForDisabledRecipe(final List<Recipe> disabledServerRecipes, final @NonNull ItemStack result) {
 		if (disabledServerRecipes != null && !disabledServerRecipes.isEmpty())
@@ -397,40 +393,6 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 				|| (entity != null && entity.hasPermission(group.getPermission()));
 	}
 
-	private enum Matchning {
-		NON_MATCH,
-		SIMILAR,
-		MATCH,
-	}
-
-	private class SmeltListener implements Listener {
-
-		@EventHandler
-		public void startSmelt(FurnaceStartSmeltEvent event) {
-			final RecipeGroup group = getMatchingRecipeGroup(event.getBlock(), event.getSource());
-			FurnaceRecipe furnaceRecipe = getFurnaceRecipe(event.getBlock().getType(), group, event.getSource(), null);
-			if (furnaceRecipe == null) {
-				/*todo need to fix so you can stop it from progress if not allow to burn the item  */
-				return;
-			}
-			event.setTotalCookTime(furnaceRecipe.getDuration());
-		}
-	}
-
-	private class CrafterListener implements Listener {
-
-		@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = false)
-		public void CrafterCraft(final CrafterCraftEvent craftEvent) {
-			Crafter crafterInventory = ((Crafter) craftEvent.getBlock().getState());
-			workBenchRecipeInjector.craftItem(craftEvent.getRecipe(), crafterInventory.getInventory().getContents(), crafterInventory.getInventory(), new ArrayList<>(), (itemstack) -> {
-				if (itemstack != null)
-					craftEvent.setResult(itemstack);
-				else
-					craftEvent.setResult(new ItemStack(Material.AIR));
-			});
-		}
-	}
-
 	/**
 	 * Gets the top inventory from the InventoryView of an InventoryEvent,
 	 * using reflection to stay compatible with both old and new Spigot versions.
@@ -463,5 +425,43 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 
 	public RecipeLoader getLoader() {
 		return loader;
+	}
+
+	public void setLoader(final RecipeLoader loader) {
+		this.loader = loader;
+	}
+
+	private enum Matchning {
+		NON_MATCH,
+		SIMILAR,
+		MATCH,
+	}
+
+	private class SmeltListener implements Listener {
+
+		@EventHandler
+		public void startSmelt(FurnaceStartSmeltEvent event) {
+			final RecipeGroup group = getMatchingRecipeGroup(event.getBlock(), event.getSource());
+			FurnaceRecipe furnaceRecipe = getFurnaceRecipe(event.getBlock().getType(), group, event.getSource(), null);
+			if (furnaceRecipe == null) {
+				/*todo need to fix so you can stop it from progress if not allow to burn the item  */
+				return;
+			}
+			event.setTotalCookTime(furnaceRecipe.getDuration());
+		}
+	}
+
+	private class CrafterListener implements Listener {
+
+		@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = false)
+		public void CrafterCraft(final CrafterCraftEvent craftEvent) {
+			Crafter crafterInventory = ((Crafter) craftEvent.getBlock().getState());
+			workBenchRecipeInjector.craftItem(craftEvent.getRecipe(), crafterInventory.getInventory().getContents(), crafterInventory.getInventory(), new ArrayList<>(), (itemstack) -> {
+				if (itemstack != null)
+					craftEvent.setResult(itemstack);
+				else
+					craftEvent.setResult(new ItemStack(Material.AIR));
+			});
+		}
 	}
 }
