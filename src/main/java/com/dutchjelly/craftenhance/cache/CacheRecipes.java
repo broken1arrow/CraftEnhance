@@ -34,7 +34,7 @@ public class CacheRecipes {
 		return null;
 	}
 
-	public void add(EnhancedRecipe enhancedRecipe) {
+	public void add(final EnhancedRecipe enhancedRecipe) {
 		if (enhancedRecipe == null) return;
 		recipes.add(enhancedRecipe);
 	}
@@ -62,7 +62,7 @@ public class CacheRecipes {
 		saveSchedule.addTask(this.database::saveRecipes);
 	}
 
-	public void save(EnhancedRecipe enhancedRecipe) {
+	public void save(final EnhancedRecipe enhancedRecipe) {
 		if(enhancedRecipe.isRemove()) {
 			saveSchedule.addTask(() -> {
 				this.database.deleteRecipe(enhancedRecipe);
@@ -70,6 +70,7 @@ public class CacheRecipes {
 			});
 			return;
 		}
+		this.add(enhancedRecipe);
 		saveSchedule.addTask(() -> this.database.saveRecipe(enhancedRecipe));
 	}
 
