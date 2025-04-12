@@ -1,10 +1,19 @@
 package com.dutchjelly.craftenhance.gui.guis;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.settings.RecipeSettings;
+import com.dutchjelly.craftenhance.gui.guis.settings.RecipeSettingsBlast;
+import com.dutchjelly.craftenhance.gui.guis.settings.RecipeSettingsBrewing;
+import com.dutchjelly.craftenhance.gui.guis.settings.RecipeSettingsFurnace;
+import com.dutchjelly.craftenhance.gui.guis.settings.RecipeSettingsSmoker;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.FormatListContents;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
@@ -18,6 +27,7 @@ import org.broken.arrow.menu.library.button.MenuButton;
 import org.broken.arrow.menu.library.button.logic.ButtonUpdateAction;
 import org.broken.arrow.menu.library.button.logic.FillMenuButton;
 import org.broken.arrow.menu.library.holder.MenuHolderPage;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -81,7 +91,8 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 			@Override
 			public ItemStack getItem() {
 				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = value.getPassiveButton();
-				return Adapter.getItemStack(button.getMaterial(),button.getDisplayName(),button.getLore(),button.getExtra(),button.isGlow());
+				ItemStack itemStack = Adapter.getItemStack(button.getMaterial(), button.getDisplayName(), button.getLore(), button.getExtra(), button.isGlow());
+				return  GuiUtil.ReplaceAllPlaceHolders(itemStack, getPlaceholders(recipe));
 			}
 		};
 	}
@@ -91,15 +102,43 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 			previousPage();
 			return true;
 		}
-		if (value.isActionTypeEqual( ButtonType.NxtPage.name())) {
+		if (value.isActionTypeEqual(ButtonType.NxtPage.name())) {
 			nextPage();
 			return true;
 		}
 		if (value.isActionTypeEqual(ButtonType.Back.name())) {
-
-			new RecipeSettings<>(this.recipe,0 ,this.categoryData, null, editorType)
-					.menuOpen(player);
+			if (this.recipe instanceof WBRecipe) {
+				new RecipeSettings<>(this.recipe, 0, this.categoryData, null, editorType).menuOpen(player);
+			}
+			if (this.recipe instanceof FurnaceRecipe) {
+				new RecipeSettingsFurnace((FurnaceRecipe) this.recipe, categoryData, null, ButtonType.ChooseFurnaceType).menuOpen(player);
+			}
+			if (this.recipe instanceof BlastRecipe) {
+				new RecipeSettingsBlast((BlastRecipe) this.recipe, categoryData, null, ButtonType.ChooseBlastType).menuOpen(player);
+			}
+			if (this.recipe instanceof SmokerRecipe) {
+				new RecipeSettingsSmoker((SmokerRecipe) this.recipe, categoryData, null, ButtonType.ChooseSmokerType).menuOpen(player);
+			}
+			if (this.recipe instanceof BrewingRecipe) {
+				new RecipeSettingsBrewing((BrewingRecipe) this.recipe, categoryData, null, ButtonType.ChooseBrewingType).menuOpen(player);
+			}
 			//new RecipeEditor<>(this.recipe, this.categoryData, null,  editorType).menuOpen(player);
+		}
+		if (value.isActionTypeEqual(ButtonType.ChangeCategory.name())) {
+			if (player.isConversing()) return true;
+			new HandleChatInput(this, msg -> {
+				if (!GuiUtil.changeOrCreateCategory(msg, player, this.recipe)) {
+					this.runTask(() -> this.menuOpen(player));
+					return false;
+				}
+				return true;
+			}).setMessages("Change the category name, and optionally update the item. If no item is specified, the old one will be used by default." +
+							"Use the format:" +
+							"'old_category_name new_category_name crafting_table' (without quotes)." +
+							"If you're creating a new category instead, use:" +
+							"'category_name crafting_table' (without quotes)." +
+							"Type q, exit, or cancel to exit.")
+					.start(getViewer());
 		}
 
 		if (value.isActionTypeEqual(ButtonType.Search.name())) {
@@ -110,7 +149,7 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 						return false;
 					}
 					return true;
-				}).setMessages("Search for categorys.")
+				}).setMessages("Search for categories.")
 						.start(getViewer());
 			/*	Messenger.Message("Search for categorys.", getViewer());
 				self().getGuiManager().waitForChatInput(this, getViewer(), msg -> {
@@ -145,7 +184,7 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 						return ButtonUpdateAction.NONE;
 					}
 				}
-				new RecipeSettings<>(recipe, 0,categoryData, null, editorType).menuOpen(player);
+				new RecipeSettings<>(recipe, 0, categoryData, null, editorType).menuOpen(player);
 			}
 			return ButtonUpdateAction.NONE;
 		}, (slot, containerData) -> {
@@ -172,4 +211,18 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 			return null;
 		});
 	}
+
+	protected void runTask(final Runnable runnable) {
+		Bukkit.getScheduler().runTaskLater(self(), runnable, 1);
+	}
+
+	private Map<String, String> getPlaceholders(final EnhancedRecipe enhancedRecipe) {
+		final Player player = getViewer();
+		final Map<String, String> placeHolders = new HashMap<String, String>() {{
+			put(InfoItemPlaceHolders.Category.getPlaceHolder(), enhancedRecipe.getRecipeCategory());
+		}};
+
+		return placeHolders;
+	}
+
 }

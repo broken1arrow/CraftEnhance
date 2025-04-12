@@ -87,6 +87,7 @@ public class VersionChecker {
     }
 
     public boolean newerThan(final ServerVersion version) {
+
         return serverVersion(version) > 0;
     }
 

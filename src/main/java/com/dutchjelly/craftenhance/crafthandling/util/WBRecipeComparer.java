@@ -117,4 +117,27 @@ public class WBRecipeComparer {
         return !Arrays.stream(used).anyMatch(x -> x == false);
     }
 
+    public static boolean ingredientsMatchBrewing(ItemStack[] a, ItemStack[] b, final IMatcher<ItemStack> matcher){
+
+        if(a.length == 0 || b.length == 0) return false;
+        if(a.length != b.length) return false;
+
+        //use no primitive type to allow Boolean stream of objects instead of arrays.
+        final Boolean[] used = new Boolean[a.length];
+        Arrays.fill(used, false);
+
+        for(final ItemStack inRecipe : a){
+            if(inRecipe == null) continue;
+            //Look if inRecipe matches with an ingredient.
+            for(int i = 0; i < used.length; i++) {
+                if (used[i]) continue;
+                if(matcher.match(b[i], inRecipe)){
+                    used[i] = true;
+                    break;
+                }
+            }
+        }
+        return Arrays.stream(used).anyMatch(x -> x);
+    }
+
 }

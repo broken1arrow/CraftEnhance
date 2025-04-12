@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.bukkitadapter.runnable.BrewingTask;
 import com.dutchjelly.craftenhance.api.CraftEnhanceAPI;
 import com.dutchjelly.craftenhance.cache.CacheRecipes;
 import com.dutchjelly.craftenhance.commandhandling.CustomCmdHandler;
@@ -94,12 +95,15 @@ public class CraftEnhance extends JavaPlugin {
 	private CategoryDataCache categoryDataCache;
 	@Getter
 	private IngredientsCache ingredientsCache;
-
+	@Getter
+	private BrewingTask brewingTask;
 
 	@Override
 	public void onEnable() {
 		plugin = this;
 		Debug.init(this);
+		this.brewingTask = new BrewingTask();
+		this.brewingTask.start();
 
 		this.database = new RecipeDatabase();
 		this.saveScheduler = new SaveScheduler();

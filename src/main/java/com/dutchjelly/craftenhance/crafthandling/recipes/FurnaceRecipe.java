@@ -82,7 +82,7 @@ public class FurnaceRecipe extends EnhancedRecipe {
 		return blockSmelting == Material.FURNACE;
 	}
 
-	public boolean matcheType(final ItemStack[] content) {
+	public boolean matchesType(final ItemStack[] content) {
 		return content.length == 1 && ItemMatchers.matchType(content[0], getContent()[0]);
 	}
 

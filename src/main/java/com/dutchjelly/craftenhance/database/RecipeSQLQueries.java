@@ -26,7 +26,7 @@ public interface RecipeSQLQueries {
 	String SELECT_WORLDS_SQL = "SELECT world FROM allowed_worlds WHERE recipe_id = ?;";
 
 	String UPDATE_FURNACE_DATA_SQL = "UPDATE furnace_data SET duration = ?, exp = ?  WHERE recipe_id = ?;";
-	String UPDATE_ITEM_SQL = "UPDATE items SET item_nbt = ? WHERE recipe_id = ? and slot = ?;";
+	String UPDATE_ITEM_SQL = "UPDATE items SET item_nbt = ?, name = ? WHERE recipe_id = ? and slot = ?;";
 
 	String UPDATE_RECIPE_SQL = "UPDATE recipes " +
 			"SET page = ?, " +

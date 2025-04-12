@@ -44,6 +44,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 		this.id = enhancedRecipe.getId();
 		this.hidden = enhancedRecipe.isHidden();
 		this.serialize = enhancedRecipe.getSerialize();
+		this.remove = enhancedRecipe.isRemove();
 	}
 
 	public EnhancedRecipe(final String perm, final ItemStack result, final ItemStack[] content) {
@@ -161,9 +162,17 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 				return new BlastRecipe(this);
 			case SMOKER:
 				return new SmokerRecipe(this);
+			case BREWING:
+				return new BrewingRecipe(this);
 			default:
 				return new WBRecipe(this);
 		}
+	}
+
+	public ItemStack getResult() {
+		if (result == null)
+			return null;
+		return result.clone();
 	}
 
 	@Nonnull

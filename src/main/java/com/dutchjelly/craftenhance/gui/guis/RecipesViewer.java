@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.gui.guis;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
@@ -10,6 +11,7 @@ import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorBlast;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorBrewing;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorFurnace;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorSmoker;
 import com.dutchjelly.craftenhance.gui.guis.viewers.RecipeViewRecipe;
@@ -159,6 +161,12 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 				else
 					new RecipeViewRecipe<>(categoryData, this.getPageNumber(), (SmokerRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
 			}
+			if (enhancedRecipe instanceof BrewingRecipe) {
+				if (allowClick)
+					new RecipeEditorBrewing((BrewingRecipe) enhancedRecipe, this.getPageNumber(), categoryData, null, ButtonType.ChooseBrewingType, true).menuOpen(player);
+				else
+					new RecipeViewRecipe<>(categoryData, this.getPageNumber(), (BrewingRecipe) enhancedRecipe, "BrewerRecipeViewer").menuOpen(player);
+			}
 			return ButtonUpdateAction.NONE;
 		}, (slot, enhancedRecipe) -> {
 			if (enhancedRecipe != null) {
@@ -221,8 +229,13 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 			placeHolders.put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(furnaceRecipe.getExp()));
 			placeHolders.put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(furnaceRecipe.getDuration()));
 		} else {
-			placeHolders.put(InfoItemPlaceHolders.Exp.getPlaceHolder(), "not in use");
-			placeHolders.put(InfoItemPlaceHolders.Duration.getPlaceHolder(), "not in use");
+			if (enhancedRecipe instanceof BrewingRecipe) {
+				placeHolders.put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(((BrewingRecipe) enhancedRecipe) .getDuration()));
+				placeHolders.put(InfoItemPlaceHolders.Exp.getPlaceHolder(), "not in use");
+			} else {
+				placeHolders.put(InfoItemPlaceHolders.Exp.getPlaceHolder(), "not in use");
+				placeHolders.put(InfoItemPlaceHolders.Duration.getPlaceHolder(), "not in use");
+			}
 		}
 
 		return placeHolders;

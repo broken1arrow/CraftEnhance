@@ -3,6 +3,7 @@ package com.dutchjelly.craftenhance.commands.ceh;
 import com.dutchjelly.craftenhance.commandhandling.CommandRoute;
 import com.dutchjelly.craftenhance.commandhandling.CustomCmdHandler;
 import com.dutchjelly.craftenhance.commandhandling.ICommand;
+import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
@@ -11,6 +12,7 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
 import com.dutchjelly.craftenhance.gui.guis.EditorTypeSelector;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorBlast;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorBrewing;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorFurnace;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorSmoker;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
@@ -80,25 +82,31 @@ public class CreateRecipeCmd implements ICommand {
 			case "furnace":
 				recipe = new FurnaceRecipe(permission , null, new ItemStack[1]);
 				recipe.setKey(args[1]);
-				RecipeEditorFurnace editorFurnace = new RecipeEditorFurnace((FurnaceRecipe) recipe,0, null, null, ButtonType.ChooseWorkbenchType);
+				RecipeEditorFurnace editorFurnace = new RecipeEditorFurnace((FurnaceRecipe) recipe,0, null, null, ButtonType.ChooseFurnaceType);
 				editorFurnace.menuOpen(p);
 				break;
 			case "blast":
 				recipe = new BlastRecipe(permission , null, new ItemStack[1]);
 				recipe.setKey(args[1]);
-				RecipeEditorBlast editorBlast = new RecipeEditorBlast((BlastRecipe)  recipe, 0, null, null, ButtonType.ChooseWorkbenchType,true);
+				RecipeEditorBlast editorBlast = new RecipeEditorBlast((BlastRecipe)  recipe, 0, null, null, ButtonType.ChooseBlastType,true);
 				editorBlast.menuOpen(p);
 				break;
 			case "smoker":
 				recipe = new SmokerRecipe(permission , null, new ItemStack[1]);
 				recipe.setKey(args[1]);
-				RecipeEditorSmoker editorSmoker = new RecipeEditorSmoker((SmokerRecipe)  recipe, 0, null, null, ButtonType.ChooseWorkbenchType,true);
+				RecipeEditorSmoker editorSmoker = new RecipeEditorSmoker((SmokerRecipe)  recipe, 0, null, null, ButtonType.ChooseSmokerType,true);
 				editorSmoker.menuOpen(p);
+				break;
+			case "brewing":
+				recipe = new BrewingRecipe(permission , null, new ItemStack[3]);
+				recipe.setKey(args[1]);
+				RecipeEditorBrewing brewingRecipe = new RecipeEditorBrewing((BrewingRecipe) recipe,0 , null, null, ButtonType.ChooseBrewingType, true);
+				brewingRecipe.menuOpen(p);
 				break;
 			default:
 				Messenger.MessageFromConfig("messages.commands.not-valid-recipe-option", p, (map) -> {
 					map.put("[recipe-edit]", recipeType);
-					map.put("[recipe-options]", "<workbench, furnace, blast, smoker>");
+					map.put("[recipe-options]", "<workbench, furnace, blast, smoker, brewing>");
 				});
 
 		}
@@ -117,6 +125,7 @@ public class CreateRecipeCmd implements ICommand {
 			tab.add("furnace");
 			tab.add("blast");
 			tab.add("smoker");
+			tab.add("brewing");
 		}
 		if (args.length == 3) {
 			tab.add("permission");

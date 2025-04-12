@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.crafthandling.recipes.utility;
 
+import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
@@ -14,7 +15,7 @@ import org.bukkit.inventory.ShapelessRecipe;
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public enum RecipeType {
-	WORKBENCH, FURNACE, BLAST, SMOKER;
+	WORKBENCH, FURNACE, BLAST, SMOKER, BREWING;
 
 	public static RecipeType getType(Recipe r) {
 		if (r instanceof ShapedRecipe) return WORKBENCH;
@@ -22,6 +23,7 @@ public enum RecipeType {
 		if (r instanceof FurnaceRecipe) return FURNACE;
 		if (r instanceof BlastRecipe) return BLAST;
 		if (r instanceof SmokerRecipe) return SMOKER;
+		if (r instanceof BrewingRecipe) return BREWING;
 		return null;
 	}
 
@@ -43,6 +45,8 @@ public enum RecipeType {
 				return BLAST;
 			case SMOKER:
 				return SMOKER;
+			case BREWING_STAND:
+				return BREWING;
 			default:
 				return null;
 		}

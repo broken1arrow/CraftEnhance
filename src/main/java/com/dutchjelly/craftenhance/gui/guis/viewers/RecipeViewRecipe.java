@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.gui.guis.viewers;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
@@ -11,6 +12,7 @@ import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.RecipesViewer;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorBlast;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorBrewing;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorFurnace;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorSmoker;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
@@ -86,6 +88,11 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 						put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(((FurnaceRecipe) recipe).getExp()));
 						put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(((FurnaceRecipe) recipe).getDuration()));
 					}
+					if (recipe instanceof BrewingRecipe) {
+						put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(0));
+						put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(((BrewingRecipe) recipe).getDuration()));
+					}
+
 					put(InfoItemPlaceHolders.Recipe_type.getPlaceHolder(), recipe.getType().name().toLowerCase());
 					put(InfoItemPlaceHolders.Config_permission.getPlaceHolder(), PermissionTypes.Edit.getPerm());
 					put(InfoItemPlaceHolders.Key.getPlaceHolder(), recipe.getKey() == null ? "null" : recipe.getKey());
@@ -129,6 +136,9 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 				}
 				if (recipe instanceof SmokerRecipe) {
 					new RecipeEditorSmoker((SmokerRecipe) recipe, this.page,categoryData, null, ButtonType.ChooseSmokerType, true).menuOpen(player);
+				}
+				if (recipe instanceof BrewingRecipe) {
+					new RecipeEditorBrewing((BrewingRecipe) recipe, this.page,categoryData, null, ButtonType.ChooseBrewingType, true).menuOpen(player);
 				}
 			}
 			return false;

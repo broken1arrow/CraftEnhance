@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.gui.guis.settings;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
@@ -65,6 +66,9 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		String menu = "RecipeSettingsCrafting";
 		if (recipe instanceof FurnaceRecipe) {
 			menu = "RecipeSettingsFurnace";
+		}
+		if (recipe instanceof BrewingRecipe) {
+			menu = "RecipeSettingsBrewing";
 		}
 		this.setUseColorConversion(true);
 		this.setIgnoreItemCheck(true);

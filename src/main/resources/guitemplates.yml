@@ -240,6 +240,19 @@ Menus:
           - "&fto type the first three/four"
           - "&fletters."
         glow: true
+      "50":
+        action_type: ChangeCategory
+        material: WRITTEN_BOOK
+        name: "&aChange or create category"
+        lore:
+          - "&fMove this recipe to a new category where it"
+          - "&fwill copy properties from the old one, or"
+          - "&fcreate a new one and add the recipe there."
+          - "&fIf the category already exists, it will just"
+          - "&fadd the recipe to that category."
+          - " "
+          - "&fCurrently set category:&3 [category]"
+        glow: true
       "49":
         action_type: Back
         material: GLOWSTONE_DUST
@@ -261,8 +274,7 @@ Menus:
         name: "&aCategory:&3 [display_name]"
         lore:
           - " "
-          - "&fLeftclick to open this Category"
-          - "&fRightclick to edit this Category"
+          - "&fClick to select this Category"
         glow: true
   WBRecipeViewer:
     menu_settings:
@@ -534,6 +546,205 @@ Menus:
         lore:
           - ""
         glow: false
+  BrewingRecipeEditor:
+    menu_settings:
+      name: "[Recipe_type] editor"
+      fill-space: "2,19-21,13-15"
+      sound: BLOCK_NOTE_BLOCK_BASEDRUM
+    buttons:
+      "8":
+        action_type: DeleteRecipe
+        material: REDSTONE
+        name: "&cDelete &fthe recipe"
+        lore:
+          - "&7&oNote that there's no going back"
+          - "&7&oonce you delete your recipe."
+        glow: true
+      "11":
+        material: BREWING_STAND
+        name: "&aEnhanced [Recipe_type] recipe"
+        lore:
+          - "&fThe ingredients need &3[match meta]"
+          - "&fThe key of the recipe is &3[key]"
+          - "&fThe permission of the recipe is &3[permission]"
+        glow: true
+      "5":
+        material: BREWING_STAND
+        name: "&aThe output ingredients"
+        lore:
+          - "&fHere is the output result"
+          - "&fof the brewing recipe.It will"
+          - "&freplace the ingredients added in"
+          - "&fthe brewing stands output."
+        glow: false
+      "17":
+        action_type: ResetRecipe
+        material: STONE
+        name: "&7Reset &fthe recipe"
+        lore:
+          - ""
+        glow: true
+      "24":
+        action_type: RecipeSettings
+        material: GOLD_INGOT
+        name: "&aSettings for recipe"
+        lore:
+          - ""
+          - "&fSet the settings for recipe."
+        glow: true
+      "25":
+        action_type: SaveRecipe
+        material: EMERALD
+        name: "&aSave &fthe recipe"
+        lore:
+          - ""
+        glow: true
+      "26":
+        action_type: Back
+        material: GLOWSTONE_DUST
+        name: "&aBack"
+        lore:
+          - "&fGo back to the previous GUI"
+        glow: true
+      "0-1,3-4,6-7,9-10,12,16-18,22-25":
+        extra: GRAY
+        material: STAINED_GLASS_PANE
+        name: ""
+        lore:
+          - ""
+        glow: false
+  BrewerRecipeViewer:
+    menu_settings:
+      name: "[Recipe_type] view"
+      fill-space: "2,19-21,13-15"
+      sound: BLOCK_NOTE_BLOCK_BASEDRUM
+    buttons:
+      "11":
+        material: BREWING_STAND
+        name: "&aEnhanced [Recipe_type] recipe"
+        lore:
+          - "&fThe ingredients need &3[match meta]"
+          - "&fThe key of the recipe is &3[key]"
+          - "&fThe brewing time is &3[duration] &fsec"
+          - "&fThe permission of the recipe is &3[permission]"
+        glow: true
+      "5":
+        material: BREWING_STAND
+        name: "&aThe output ingredients"
+        lore:
+          - "&fHere is the output result"
+          - "&fof the brewing recipe.It will"
+          - "&freplace the ingredients added in"
+          - "&fthe brewing stands output."
+        glow: false
+      "25":
+        action_type: edit_recipe
+        passive:
+          extra: GRAY
+          material: STAINED_GLASS_PANE
+          name: "&6"
+          lore:
+            - "&a"
+          glow: false
+        active:
+          material: DIAMOND_AXE
+          name: "&aEdit recipe"
+          lore:
+            - "&fYou can edit the recipe, if"
+            - "&fyou have this permission:"
+            - "&a[config_permission]"
+          glow: true
+      "26":
+        action_type: Back
+        material: GLOWSTONE_DUST
+        name: "&aBack"
+        lore:
+          - "&fGo back to the previous GUI"
+        glow: true
+      "0-1,3-4,6-10,12,16-18,22-24":
+        extra: GRAY
+        material: STAINED_GLASS_PANE
+        name: ""
+        lore:
+          - ""
+        glow: false
+  RecipeSettingsBrewing:
+    menu_settings:
+      name: "[Recipe_type] settings"
+      fill-space: "10,12"
+      sound: BLOCK_NOTE_BLOCK_BASEDRUM
+    buttons:
+      "10":
+        action_type: changeCategoryList
+        material: WRITABLE_BOOK
+        name: "&aChose categories from list"
+        lore:
+          - "&fChose categories  you have"
+          - "&fcreated. All categories"
+          - "&fis listed here."
+        glow: true
+      "14":
+        action_type: SetPermission
+        material: PAPER
+        name: "&fClick to set permission"
+        lore:
+          - "&fcurrent:&3 [permission]"
+        glow: true
+      "16":
+        action_type: SetBrewingTime
+        material: CLOCK
+        name: "&fClick to set the brewing duration."
+        lore:
+          - "&fcurrent:&3 [duration]"
+        glow: true
+      "20":
+        action_type: SwitchHidden
+        material: DIAMOND
+        name: "&fClick to change: &e[hidden]"
+        glow: true
+      "22":
+        action_type: SwitchMatchMeta
+        material: ENCHANTED_BOOK
+        name: "&fClick to change: &e[match meta]"
+        lore:
+          - ""
+        glow: true
+      "24":
+        action_type: SetPosition
+        material: PAPER
+        name: "&fClick to set the position"
+        lore:
+          - "&fCurrent position"
+          - "&fSlot &3[slot]"
+          - "&fPage &3[page]"
+        glow: true
+      "26":
+        action_type: AllowedWorldsCraft
+        material: IRON_INGOT
+        name: "&aChange or set worlds"
+        lore:
+          - "&fChange or set world."
+          - ""
+          - "&fRight-click to remove world"
+          - "&fLeft-click to add world"
+          - ""
+          - "&fCurrently set worlds:"
+          - "&3 [worlds]"
+        glow: true
+      "35":
+        action_type: Back
+        material: GLOWSTONE_DUST
+        name: "&aBack"
+        lore:
+          - "&fGo back to the previous GUI"
+        glow: true
+      "0-8,27,28-34":
+        extra: GRAY
+        material: STAINED_GLASS_PANE
+        name: " "
+        lore:
+          - ""
+        glow: false
   EditorTypeSelector:
     menu_settings:
       name: Select recipe type
@@ -567,6 +778,13 @@ Menus:
         lore:
           - ""
         glow: true
+      "14":
+        action_type: ChooseBrewingType
+        material: BREWING_STAND
+        name: "&fClick to create a brewing recipe"
+        lore:
+          - ""
+        glow: true
       "0-1,3-5,7-9,11,13-26":
         extra: GRAY
         material: STAINED_GLASS_PANE
@@ -579,16 +797,6 @@ Menus:
       name: Recipe settings
       sound: BLOCK_NOTE_BLOCK_BASEDRUM
     buttons:
-      "10":
-        action_type: changeCategory
-        material: WRITTEN_BOOK
-        name: "&aChange category"
-        lore:
-          - "&fChange category, if it not exist"
-          - "&fcreate new one."
-          - ""
-          - "&fCurrently set category:&3 [category]"
-        glow: true
       "12":
         action_type: AllowedWorldsCraft
         material: IRON_INGOT
@@ -609,10 +817,10 @@ Menus:
       "14":
         action_type: changeCategoryList
         material: WRITABLE_BOOK
-        name: "&aChose categorys from list"
+        name: "&aChose categories from list"
         lore:
-          - "&fChose categorys you have"
-          - "&fcreated.All categorys"
+          - "&fChose categories you have"
+          - "&fcreated. All categories"
           - "&fis listed here."
           - ""
           - "&fCurrently set category:&3 [category]"
@@ -684,22 +892,12 @@ Menus:
       sound: BLOCK_NOTE_BLOCK_BASEDRUM
     buttons:
       "10":
-        action_type: changeCategory
-        material: WRITTEN_BOOK
-        name: "&aChange category"
-        lore:
-          - "&fChange category, if it not exist"
-          - "&fcreate new one."
-          - ""
-          - "&fCurrently set category:&3 [category]"
-        glow: true
-      "12":
         action_type: changeCategoryList
         material: WRITABLE_BOOK
-        name: "&aChose categorys from list"
+        name: "&aChose categories from list"
         lore:
-          - "&fChose categorys you have"
-          - "&fcreated.All categorys"
+          - "&fChose categories you have"
+          - "&fcreated.All categories"
           - "&fis listed here."
         glow: true
       "14":

@@ -18,6 +18,7 @@ public class RecipeSettingsFurnace extends RecipeSettings<FurnaceRecipe> {
 		super(recipe, 0, categoryData, permission, editorType);
 	}
 
+	@Override
 	protected boolean onPlayerClick(final FurnaceRecipe furnaceRecipe, final String buttonAction, final Player player) {
 		if (player.isConversing()) return true;
 

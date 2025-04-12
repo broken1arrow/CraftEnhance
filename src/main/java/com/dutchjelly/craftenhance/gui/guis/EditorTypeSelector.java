@@ -1,6 +1,8 @@
 package com.dutchjelly.craftenhance.gui.guis;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.cache.CacheRecipes;
+import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
@@ -9,6 +11,7 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorBlast;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorBrewing;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorFurnace;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorSmoker;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
@@ -47,11 +50,12 @@ public class EditorTypeSelector extends MenuHolder {
 	}
 
 	private String getFreshKey(String keySeed) {
-		if (keySeed == null || !self().getCacheRecipes().isUniqueRecipeKey(keySeed)) {
+		final CacheRecipes cacheRecipes = self().getCacheRecipes();
+		if (keySeed == null || !cacheRecipes.isUniqueRecipeKey(keySeed)) {
 			int uniqueKeyIndex = 1;
 			keySeed = "recipe";
 
-			while (!self().getCacheRecipes().isUniqueRecipeKey(keySeed + uniqueKeyIndex)) uniqueKeyIndex++;
+			while (!cacheRecipes.isUniqueRecipeKey(keySeed + uniqueKeyIndex)) uniqueKeyIndex++;
 			keySeed += uniqueKeyIndex;
 		}
 		return keySeed;
@@ -87,8 +91,7 @@ public class EditorTypeSelector extends MenuHolder {
 		if (value.isActionTypeEqual( ButtonType.ChooseWorkbenchType.name())){
 			EnhancedRecipe	newRecipe = new WBRecipe(permission, null, new ItemStack[9]);
 			newRecipe.setKey(getFreshKey(recipeKey));
-			final RecipeEditor<EnhancedRecipe> recipeEditor = new RecipeEditor<>(newRecipe,0, null,permission,
-					value.isActionTypeEqual(ButtonType.ChooseFurnaceType.name()) ? ButtonType.ChooseFurnaceType: ButtonType.ChooseWorkbenchType);
+			final RecipeEditor<EnhancedRecipe> recipeEditor = new RecipeEditor<>(newRecipe,0, null,permission, ButtonType.ChooseWorkbenchType);
 			recipeEditor.menuOpen(player);
 			return;
 		}
@@ -108,6 +111,11 @@ public class EditorTypeSelector extends MenuHolder {
 			SmokerRecipe blastRecipe = new SmokerRecipe(permission, null, new ItemStack[1]);
 			blastRecipe.setKey(getFreshKey(recipeKey));
 			new RecipeEditorSmoker(blastRecipe,0,null,permission,ButtonType.ChooseSmokerType,true).menuOpen(player);
+		}
+		if (value.isActionTypeEqual( ButtonType.ChooseBrewingType.name())){
+			BrewingRecipe brewingRecipe = new BrewingRecipe(permission, null, new ItemStack[3]);
+			brewingRecipe.setKey(getFreshKey(recipeKey));
+			new RecipeEditorBrewing(brewingRecipe,0,null,permission,ButtonType.ChooseBrewingType, true).menuOpen(player);
 		}
 	}
 }

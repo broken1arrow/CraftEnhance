@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.database;
 
+import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
@@ -37,7 +38,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 
 	public RecipeDatabase() {
 		File checkFile = self().getDataFolder();
-		if(!checkFile.exists())
+		if (!checkFile.exists())
 			checkFile.mkdirs();
 		try (Connection connection = connect()) {
 			createTables(connection);
@@ -297,24 +298,35 @@ public class RecipeDatabase implements RecipeSQLQueries {
 	}
 
 	private void updateFurnaces(final Connection conn, final EnhancedRecipe recipe) throws SQLException {
-		if (!(recipe instanceof FurnaceRecipe)) return;
+		if (recipe instanceof WBRecipe) return;
 
-		FurnaceRecipe furnaceRecipe = ((FurnaceRecipe) recipe);
+		int duration = 0;
+		float exp = 0;
+		if (recipe instanceof FurnaceRecipe) {
+			FurnaceRecipe furnaceRecipe = (FurnaceRecipe) recipe;
+			duration = furnaceRecipe.getDuration();
+			exp = furnaceRecipe.getExp();
+		}
+		if (recipe instanceof BrewingRecipe) {
+			BrewingRecipe brewingRecipe = (BrewingRecipe) recipe;
+			duration = brewingRecipe.getDuration();
+		}
+
 		try (PreparedStatement furnPreparedStatement = conn.prepareStatement(SELECT_FURNACE_DATA_SQL)) {
 			furnPreparedStatement.setString(1, recipe.getKey());
 			ResultSet set = furnPreparedStatement.executeQuery();
 			if (set.next()) {
 				try (PreparedStatement updateFurn = conn.prepareStatement(UPDATE_FURNACE_DATA_SQL)) {
-					updateFurn.setInt(1, furnaceRecipe.getDuration());
-					updateFurn.setFloat(2, furnaceRecipe.getExp());
+					updateFurn.setInt(1, duration);
+					updateFurn.setFloat(2, exp);
 					updateFurn.setString(3, recipe.getKey());
 					this.updateSQL(updateFurn);
 				}
 			} else {
 				try (PreparedStatement insertFurn = conn.prepareStatement(INSERT_FURNACE_DATA_SQL)) {
 					insertFurn.setString(1, recipe.getKey());
-					insertFurn.setInt(2, furnaceRecipe.getDuration());
-					insertFurn.setFloat(3, furnaceRecipe.getExp());
+					insertFurn.setInt(2, duration);
+					insertFurn.setFloat(3, exp);
 					this.updateSQL(insertFurn);
 				}
 			}
@@ -327,7 +339,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 			try {
 				List<EnhancedRecipe> tempList = new ArrayList<>(self().getCacheRecipes().getRecipes());
 				for (EnhancedRecipe recipe : tempList) {
-					if(recipe.isRemove()) {
+					if (recipe.isRemove()) {
 						this.deleteRecipe(connection, recipe);
 						continue;
 					}
@@ -386,7 +398,6 @@ public class RecipeDatabase implements RecipeSQLQueries {
 			final ItemStack[] itemStacks = deserializeItemStack((byte[]) resultNbt);
 			if (itemStacks != null && itemStacks.length > 0) resultItem = itemStacks[0];
 		}
-
 		Map<String, Object> map = new HashMap<>();
 		map.put("page", rs.getInt("page"));
 		map.put("slot", rs.getInt("slot"));
@@ -417,6 +428,11 @@ public class RecipeDatabase implements RecipeSQLQueries {
 					map.put("exp", rs.getDouble("exp"));
 					recipe = SmokerRecipe.deserialize(map);
 					break;
+				case BREWING:
+					map.put("duration", rs.getInt("duration"));
+					map.put("exp", rs.getDouble("exp"));
+					recipe = BrewingRecipe.deserialize(map);
+					break;
 				default:
 					recipe = WBRecipe.deserialize(map);
 			}
@@ -439,6 +455,9 @@ public class RecipeDatabase implements RecipeSQLQueries {
 		int maxAmount = 9;
 		if (type != RecipeType.WORKBENCH)
 			maxAmount = 1;
+		if (type == RecipeType.BREWING)
+			maxAmount = 0;
+
 		List<ItemStack> ingredients = new ArrayList<>(Collections.nCopies(maxAmount, null));
 
 		try (PreparedStatement pstmt = conn.prepareStatement(SELECT_INGREDIENTS_SQL)) {
@@ -448,9 +467,17 @@ public class RecipeDatabase implements RecipeSQLQueries {
 			while (rs.next()) {
 				byte[] nbtData = rs.getBytes("item_nbt");
 				ItemStack[] items = deserializeItemStack(nbtData);
-				int slot = rs.getInt("slot");
-				if (slot >= 0 && slot < maxAmount && items != null && items.length > 0) {
-					ingredients.set(slot, items[0]);
+				if (type == RecipeType.BREWING) {
+					if (items != null) {
+						ingredients.add(items[0]);
+					} else {
+						ingredients.add(null);
+					}
+				} else {
+					int slot = rs.getInt("slot");
+					if (slot >= 0 && slot < maxAmount && items != null && items.length > 0) {
+						ingredients.set(slot, items[0]);
+					}
 				}
 			}
 		}
@@ -471,7 +498,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 		return worlds;
 	}
 
-	private void deleteRecipe(@NonNull Connection connection,@NonNull EnhancedRecipe enhancedRecipe) throws SQLException {
+	private void deleteRecipe(@NonNull Connection connection, @NonNull EnhancedRecipe enhancedRecipe) throws SQLException {
 		String sql = "DELETE FROM recipes WHERE id = ?;";
 		this.deleteAllIngredients(connection, enhancedRecipe);
 		final String recipeName = enhancedRecipe.getKey();
@@ -549,7 +576,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 	// Example usage
 
 	private String getItemKey(final ItemStack item) {
-		if (item == null) return null;
+		if (item == null) return "not_set";
 		String base = item.getItemMeta() != null && item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : item.getType().name();
 		base = base.replaceAll("\\.", "_");
 		return base;
@@ -571,7 +598,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 				insertOrUpdateItem(connection, ingredients -> {
 					ingredients.setSlot(recipe.getResultSlot());
 					ingredients.setRecipeName(recipe.getKey());
-					final ItemStack result = recipe.getResult();
+					final ItemStack result = recipe.getResult().clone();
 					ingredients.setItemData(serializeItemStack(new ItemStack[]{result}));
 					ingredients.setItemName(this.getItemKey(result));
 					ingredients.setRecipeType(RecipeIngredientType.RESULT);
@@ -579,14 +606,24 @@ public class RecipeDatabase implements RecipeSQLQueries {
 			}
 			this.updateFurnaces(connection, recipe);
 
-			ItemStack[] itemStacks = recipe.getContent();
-			for (int i = 0; i < itemStacks.length; i++) {
-				ItemStack item = itemStacks[i];
+			ItemStack[] itemStacks = recipe instanceof BrewingRecipe ? ((BrewingRecipe) recipe).getCombinedContent() : recipe.getContent();
+			int slot = 0;
+			for (final ItemStack itemStack : itemStacks) {
+				ItemStack item = itemStack;
+				if (item != null)
+					item = item.clone();
+
 				String itemName = getItemKey(item);
-				final int slot = i;
+				slot++;
+				if (recipe instanceof BrewingRecipe && recipe.getResultSlot() == slot) {
+					slot += 1;
+				}
+
+				final int finalSlot = slot;
+				final ItemStack finalItem = item;
 				insertOrUpdateItem(connection, ingredients -> {
-					ingredients.setSlot(slot);
-					ingredients.setItemData(serializeItemStack(new ItemStack[]{item}));
+					ingredients.setSlot(finalSlot);
+					ingredients.setItemData(serializeItemStack(new ItemStack[]{finalItem}));
 					ingredients.setRecipeName(recipeName);
 					ingredients.setItemName(itemName);
 				});
@@ -605,7 +642,6 @@ public class RecipeDatabase implements RecipeSQLQueries {
 	private void updateRecipe(final Connection connection, final EnhancedRecipe recipe, final ResultSet recipeResultSet) throws SQLException {
 
 		String resultItemType = recipeResultSet.getString("result_item_type");
-
 		try (PreparedStatement pstmt = connection.prepareStatement(UPDATE_RECIPE_SQL)) {
 			pstmt.setInt(1, recipe.getPage());
 			pstmt.setString(2, recipe.getType().name());
@@ -657,8 +693,9 @@ public class RecipeDatabase implements RecipeSQLQueries {
 			if (rs.next()) {
 				try (PreparedStatement updateStmt = conn.prepareStatement(UPDATE_ITEM_SQL)) {
 					updateStmt.setBytes(1, nbtData);
-					updateStmt.setString(2, recipeName);
-					updateStmt.setInt(3, slot);
+					updateStmt.setString(2, itemName);
+					updateStmt.setString(3, recipeName);
+					updateStmt.setInt(4, slot);
 					updateSQL(updateStmt);
 					rs.getInt(1);
 				}
@@ -704,7 +741,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 
 	private List<Integer> getAllIngredientSlots(final EnhancedRecipe recipe) {
 		List<Integer> slots = new ArrayList<>();
-		final ItemStack[] content = recipe.getContent();
+		final ItemStack[] content = recipe instanceof BrewingRecipe ? ((BrewingRecipe) recipe).getCombinedContent() : recipe.getContent();
 		for (int i = 0; i < content.length; i++) {
 			ItemStack item = content[i];
 			if (item != null) {

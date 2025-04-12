@@ -96,6 +96,9 @@ public class ServerRecipeTranslator {
     //Gets the shape of the recipe 'content'.
     private static String[] GetShape(final ItemStack[] content) {
         final String[] recipeShape = {"", "", ""};
+        if(content.length < 9)
+            return new String[0];
+
         for (int i = 0; i < 9; i++) {
             if (content[i] != null)
                 recipeShape[i / 3] += (char) ('A' + i);

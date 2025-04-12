@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.crafthandling;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
@@ -35,18 +36,8 @@ public class RecipeLoader {
 
 	//Ensure one instance
 	private static RecipeLoader instance = null;
-
-	public static RecipeLoader getInstance() {
-		return instance == null ? instance = new RecipeLoader(Bukkit.getServer(),self().getCategoryDataCache()) : instance;
-	}
-
-	public static void clearInstance() {
-		for (final EnhancedRecipe loaded : RecipeLoader.getInstance().getLoadedRecipes()){
-			instance.unloadRecipe( loaded.getServerRecipe());
-		}
-		instance = null;
-	}
-
+	private final CategoryDataCache categoryDataCache;
+	private final Server server;
 	@Getter
 	private List<Recipe> serverRecipes = new ArrayList<>();
 	@Getter
@@ -54,20 +45,17 @@ public class RecipeLoader {
 	@Getter
 	private List<EnhancedRecipe> loadedRecipes = new ArrayList<>();
 	@Getter
-	private  Map<ItemStack,ItemStack> similarVanillaRecipe = new HashMap<>();
+	private Map<ItemStack, ItemStack> similarVanillaRecipe = new HashMap<>();
 	private Map<String, Recipe> loaded = new HashMap<>();
 	@Getter
 	private Map<RecipeType, List<RecipeGroup>> mappedGroupedRecipes = new HashMap<>();
-
-	private final CategoryDataCache categoryDataCache;
-	private final Server server;
 
 	private RecipeLoader(final Server server, final CategoryDataCache categoryDataCache) {
 		this.server = server;
 		try {
 			server.recipeIterator().forEachRemaining(serverRecipes::add);
 		} catch (IllegalArgumentException e) {
-			self().getLogger().log(Level.SEVERE, "This server recipe contains air, will not be loaded.",e);
+			self().getLogger().log(Level.SEVERE, "This server recipe contains air, will not be loaded.", e);
 		}
 
 /*		for (final Iterator<Recipe> it = server.recipeIterator(); it.hasNext(); ) {
@@ -80,9 +68,20 @@ public class RecipeLoader {
 		this.categoryDataCache = categoryDataCache;
 	}
 
+	public static RecipeLoader getInstance() {
+		return instance == null ? instance = new RecipeLoader(Bukkit.getServer(), self().getCategoryDataCache()) : instance;
+	}
+
+	public static void clearInstance() {
+		for (final EnhancedRecipe loaded : RecipeLoader.getInstance().getLoadedRecipes()) {
+			instance.unloadRecipe(loaded.getServerRecipe());
+		}
+		instance = null;
+	}
+
 	//Adds or merges group with existing group.
 	private RecipeGroup addGroup(final List<Recipe> serverRecipes, final EnhancedRecipe enhancedRecipe) {
-		Debug.Send("[AddGroup] is now add recipe group.");
+		Debug.Send("[AddGroup] is does now add recipe to a group.");
 		List<RecipeGroup> groupedRecipes = mappedGroupedRecipes.get(enhancedRecipe.getType());
 		//            Debug.Send("Looking if two enhanced recipes are similar for merge.");
 		if (groupedRecipes == null)
@@ -93,7 +92,7 @@ public class RecipeLoader {
 			return group.addIfNotExist(enhancedRecipe);
 		}
 		final RecipeGroup newGroup = new RecipeGroup();
-		if (groupedRecipes.isEmpty()){
+		if (groupedRecipes.isEmpty()) {
 			newGroup.addIfNotExist(enhancedRecipe);
 			newGroup.setServerRecipes(serverRecipes);
 			groupedRecipes.add(newGroup);
@@ -112,6 +111,17 @@ public class RecipeLoader {
 			if (group.getEnhancedRecipes().stream().anyMatch(x -> result.equals(x.getResult())))
 				originGroups.add(group);
 			else if (group.getServerRecipes().stream().anyMatch(x -> result.equals(x.getResult())))
+				originGroups.add(group);
+		}
+		return originGroups;
+	}
+
+	public List<RecipeGroup> findGroupsBySimilarResultMatch(final ItemStack result, final RecipeType type) {
+		final List<RecipeGroup> originGroups = new ArrayList<>();
+		for (final RecipeGroup group : mappedGroupedRecipes.get(type)) {
+			if (group.getEnhancedRecipes().stream().anyMatch(x -> result.isSimilar(x.getResult())))
+				originGroups.add(group);
+			else if (group.getServerRecipes().stream().anyMatch(x -> result.isSimilar(x.getResult())))
 				originGroups.add(group);
 		}
 		return originGroups;
@@ -214,9 +224,11 @@ public class RecipeLoader {
 		Debug.Send("Unloaded a recipe");
 		printGroupsDebugInfo();
 	}
+
 	public void loadRecipe(@NonNull final EnhancedRecipe recipe) {
-		loadRecipe(recipe,false);
+		loadRecipe(recipe, false);
 	}
+
 	public void loadRecipe(@NonNull final EnhancedRecipe recipe, final boolean isReloading) {
 		if (recipe.validate() != null) {
 			Messenger.Error("There's an issue with recipe " + recipe.getKey() + ": " + recipe.validate());
@@ -250,20 +262,21 @@ public class RecipeLoader {
 			}
 		}
 		//cache orginal recipe if user make furnace recipe and give right item as output.
-		cacheSimilarVanilliaRecipe( recipe);
+		cacheSimilarVanilliaRecipe(recipe);
 		//Only load the recipe if there is not a server recipe that's always similar.
 		if (alwaysSimilar == null) {
 			final Recipe serverRecipe = recipe.getServerRecipe();
-			if (serverRecipe == null) {
-				Debug.Send("Added server recipe is null for " + recipe.getKey());
-				self().getLogger().log(Level.WARNING, "Recipe " + recipe.getKey() + " will not be cached becuse the result is null or invalid material type.");
-				return;
+			if (!(recipe instanceof BrewingRecipe)) {
+				if (serverRecipe == null) {
+					Debug.Send("Added server recipe is null for " + recipe.getKey());
+					self().getLogger().log(Level.WARNING, "Recipe " + recipe.getKey() + " will not be cached because the result is null or invalid material type.");
+					return;
+				}
+				if (!containsRecipe && !isReloading)
+					server.addRecipe(serverRecipe);
+				Debug.Send("Added server recipe for " + serverRecipe.getResult());
+				loaded.put(recipe.getKey(), serverRecipe);
 			}
-		if (!containsRecipe && !isReloading)
-				server.addRecipe(serverRecipe);
-			Debug.Send("Added server recipe for " + serverRecipe.getResult());
-
-			loaded.put(recipe.getKey(), serverRecipe);
 		} else {
 			Debug.Send("Didn't add server recipe for " + recipe.getKey() + " because a similar one was already loaded: " + alwaysSimilar.toString() + " with the result " + alwaysSimilar.getResult().toString());
 		}
@@ -277,29 +290,35 @@ public class RecipeLoader {
 		String category = recipe.getRecipeCategory();
 		if (recipe instanceof FurnaceRecipe)
 			category = category == null || category.isEmpty() ? "furnace" : category;
+		else if (recipe instanceof BrewingRecipe)
+			category = category == null || category.isEmpty() ? "brewing" : category;
 		else
 			category = category == null || category.isEmpty() ? "default" : category;
+
 		if (recipe.getRecipeCategory() == null)
 			recipe.setRecipeCategory(category);
 		CategoryData recipeCategory = this.categoryDataCache.get(category);
 
 		final List<EnhancedRecipe> enhancedRecipeList;
-		if (recipeCategory != null){
+		if (recipeCategory != null) {
 			enhancedRecipeList = recipeCategory.getEnhancedRecipes();
 			if (enhancedRecipeList.stream().noneMatch(cachedRecipe -> cachedRecipe.getKey().equals(recipe.getKey())))
-			//if (!enhancedRecipeList.contains(recipe))
+				//if (!enhancedRecipeList.contains(recipe))
 				enhancedRecipeList.add(recipe);
 		} else {
 			final ItemStack itemStack;
 			if (recipe instanceof FurnaceRecipe)
 				itemStack = new ItemStack(Adapter.getMaterial("FURNACE"));
+			else if (recipe instanceof BrewingRecipe)
+				itemStack = new ItemStack(Adapter.getMaterial("BREWING_STAND"));
 			else
-				itemStack = new ItemStack(Adapter.getMaterial("CRAFTING_TABLE") );
-			recipeCategory = this.categoryDataCache.of(category,itemStack,null);
+				itemStack = new ItemStack(Adapter.getMaterial("CRAFTING_TABLE"));
+			recipeCategory = this.categoryDataCache.of(category, itemStack, null);
 			recipeCategory.addEnhancedRecipes(recipe);
 		}
 		this.categoryDataCache.put(category, recipeCategory);
 	}
+
 	public void cacheSimilarVanilliaRecipe(final EnhancedRecipe recipe) {
 		if (!(recipe instanceof FurnaceRecipe)) return;
 		Debug.Send("Start to add Furnace recipe");
@@ -312,7 +331,7 @@ public class RecipeLoader {
 			Debug.Send("Added Furnace recipe for " + serverRecipe.getResult());
 
 			if (recipe.getContent()[0].getType() == itemStack.getType()) {
-				this.similarVanillaRecipe.put( serverRecipe.getInput() ,serverRecipe.getResult());
+				this.similarVanillaRecipe.put(serverRecipe.getInput(), serverRecipe.getResult());
 				//Adapter.GetFurnaceRecipe(CraftEnhance.self(), ServerRecipeTranslator.GetFreeKey(itemStack.getType().name().toLowerCase()), itemStack, serverRecipe.getResult().getType(), serverRecipe.getCookingTime(), getExp(itemStack.getType()));
 			}
 		}
@@ -387,9 +406,11 @@ public class RecipeLoader {
 		}
 		return false;
 	}
-	public EnhancedRecipe getLoadedRecipes(final Predicate<? super EnhancedRecipe>  predicate){
+
+	public EnhancedRecipe getLoadedRecipes(final Predicate<? super EnhancedRecipe> predicate) {
 		return this.getLoadedRecipes().stream().filter(predicate).findFirst().orElse(null);
 	}
+
 	public void disableServerRecipes(final List<Recipe> disabledServerRecipes) {
 		//No need to be efficient here, this'll only run once.
 		disabledServerRecipes.forEach(x -> disableServerRecipe(x));
