@@ -74,7 +74,7 @@ public class RecipeDisabler extends MenuHolderPage<Recipe> {
 
 			@Override
 			public ItemStack getItem() {
-				final Map<String, String> placeHolders = new HashMap<String,String>(){{
+				final Map<String, Object> placeHolders = new HashMap<String,Object>(){{
 					put(InfoItemPlaceHolders.DisableMode.getPlaceHolder(), enableMode ? "enable recipes by clicking them" : "disable recipes by clicking them");
 				}};
 				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = null;

@@ -137,7 +137,7 @@ public class RecipeLoader {
 
 	public RecipeGroup findSimilarGroup(final EnhancedRecipe recipe) {
 		return mappedGroupedRecipes.get(recipe.getType()).stream().filter(x ->
-				x.getEnhancedRecipes().stream().anyMatch(y -> y.isSimilar(recipe)) ||
+				x.getEnhancedRecipes().stream().anyMatch(enhancedRecipe -> enhancedRecipe.isSimilar(recipe)) ||
 						x.getServerRecipes().stream().anyMatch(recipe::isSimilar)
 		).findFirst().orElse(null);
 	}
@@ -262,7 +262,7 @@ public class RecipeLoader {
 			}
 		}
 		//cache orginal recipe if user make furnace recipe and give right item as output.
-		cacheSimilarVanilliaRecipe(recipe);
+		cacheSimilarVanillaRecipe(recipe);
 		//Only load the recipe if there is not a server recipe that's always similar.
 		if (alwaysSimilar == null) {
 			final Recipe serverRecipe = recipe.getServerRecipe();
@@ -319,7 +319,7 @@ public class RecipeLoader {
 		this.categoryDataCache.put(category, recipeCategory);
 	}
 
-	public void cacheSimilarVanilliaRecipe(final EnhancedRecipe recipe) {
+	public void cacheSimilarVanillaRecipe(final EnhancedRecipe recipe) {
 		if (!(recipe instanceof FurnaceRecipe)) return;
 		Debug.Send("Start to add Furnace recipe");
 		for (final Recipe r : serverRecipes) {

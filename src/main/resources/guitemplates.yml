@@ -36,8 +36,8 @@ Menus:
             - "&fPage:&6 [page]"
             - "&fExperience:&6 [exp]"
             - "&fDuration:&6 [duration]"
-            - "&fMatch description:"
-            - "&6[match meta]"
+            - "&fMatch type:"
+            - "&6[matcher]"
           glow: true
       "46":
         action_type: PrvPage
@@ -292,7 +292,7 @@ Menus:
           - "&fin exact same patern."
           - "&f"
           - "&fThe recipe is &3[shaped]&f"
-          - "&fThe ingredients need &3[match meta]"
+          - "&fThe ingredients need &3[matcher]"
           - "&fYou can craft this recipe in this worlds:"
           - "&3[worlds]"
         glow: true
@@ -346,7 +346,7 @@ Menus:
         name: "&3Enhanced crafting table recipe"
         lore:
           - "&fThe recipe is &3[shaped]&f"
-          - "&fThe ingredients need &3[match meta]"
+          - "&fThe ingredients need &3[matcher]"
           - "&fThe key of the recipe is &3[key]"
           - "&fThe permission of the recipe is &3[permission]"
         glow: true
@@ -453,7 +453,7 @@ Menus:
         lore:
           - "&fThe recipe rewards &3[exp] &fexp"
           - "&fThe cooking time is &3[duration] &fticks"
-          - "&fThe ingredients need &3[match meta]"
+          - "&fThe ingredients need &3[matcher]"
           - "&fYou can use this recipe in this worlds:"
           - "&3[worlds]"
         glow: true
@@ -506,7 +506,7 @@ Menus:
         material: FURNACE
         name: "&aEnhanced [Recipe_type] recipe"
         lore:
-          - "&fThe ingredients need &3[match meta]"
+          - "&fThe ingredients need &3[matcher]"
           - "&fThe key of the recipe is &3[key]"
           - "&fThe permission of the recipe is &3[permission]"
         glow: true
@@ -564,7 +564,7 @@ Menus:
         material: BREWING_STAND
         name: "&aEnhanced [Recipe_type] recipe"
         lore:
-          - "&fThe ingredients need &3[match meta]"
+          - "&fThe ingredients need &3[matcher]"
           - "&fThe key of the recipe is &3[key]"
           - "&fThe permission of the recipe is &3[permission]"
         glow: true
@@ -623,7 +623,7 @@ Menus:
         material: BREWING_STAND
         name: "&aEnhanced [Recipe_type] recipe"
         lore:
-          - "&fThe ingredients need &3[match meta]"
+          - "&fThe ingredients need &3[matcher]"
           - "&fThe key of the recipe is &3[key]"
           - "&fThe brewing time is &3[duration] &fsec"
           - "&fThe permission of the recipe is &3[permission]"
@@ -705,9 +705,10 @@ Menus:
       "22":
         action_type: SwitchMatchMeta
         material: ENCHANTED_BOOK
-        name: "&fClick to change: &e[match meta]"
+        name: "&fClick to change: &e[matcher]"
         lore:
-          - ""
+          - "&fDescription:"
+          - "&f[match_description]"
         glow: true
       "24":
         action_type: SetPosition
@@ -840,9 +841,10 @@ Menus:
       "21":
         action_type: SwitchMatchMeta
         material: ENCHANTED_BOOK
-        name: "&aClick to change: &3[match meta]"
+        name: "&aClick to change: &3[matcher]"
         lore:
-          - ""
+          - "&fDescription:"
+          - "&f[match_description]"
         glow: true
       "23":
         action_type: SwitchShaped
@@ -929,9 +931,10 @@ Menus:
       "22":
         action_type: SwitchMatchMeta
         material: ENCHANTED_BOOK
-        name: "&fClick to change: &e[match meta]"
+        name: "&fClick to change: &e[matcher]"
         lore:
-          - ""
+          - "&fDescription:"
+          - "&f[match_description]"
         glow: true
       "24":
         action_type: SetPosition

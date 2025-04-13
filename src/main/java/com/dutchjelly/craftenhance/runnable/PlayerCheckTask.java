@@ -19,7 +19,7 @@ import java.util.Map;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
-public class PlayerMovementTask implements Runnable {
+public class PlayerCheckTask implements Runnable {
 	private final CraftEnhance plugin = self();
 	private final Map<Location, BrewingLogic> map = new HashMap<>();
 	private BukkitTask task;
@@ -39,7 +39,7 @@ public class PlayerMovementTask implements Runnable {
 		}
 
 		for (Player player : Bukkit.getOnlinePlayers()) {
-			final Block block = player.getTargetBlock(null, 20);
+			final Block block = player.getTargetBlock(null, 10);
 			if (block.getType() == Material.BREWING_STAND) {
 				Map<Location, BrewingLogic> brewCache = self().getBrewingTask().getMap();
 				BrewingLogic brewing = brewCache.get(block.getLocation());

@@ -1,8 +1,8 @@
 package com.dutchjelly.craftenhance.gui.util;
 
 public enum InfoItemPlaceHolders {
-    MatchMeta("[match meta]"),
-    MatchType("[match type]"),
+    MatchMeta("[matcher]"),
+    MatchDescription("[match_description]"),
     Shaped("[shaped]"),
     Hidden("[hidden]"),
     Permission("[permission]"),

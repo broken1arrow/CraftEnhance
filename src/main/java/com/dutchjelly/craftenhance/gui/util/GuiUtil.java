@@ -4,7 +4,9 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.exceptions.ConfigError;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.messaging.Messenger;
+import com.dutchjelly.craftenhance.util.TranslatePlaceholders;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -83,19 +85,20 @@ public class GuiUtil {
         return lores;
     }
 
-    public static ItemStack ReplaceAllPlaceHolders(final ItemStack item, final Map<String, String> placeholders) {
+    public static ItemStack ReplaceAllPlaceHolders(final ItemStack item, final Map<String, Object> placeholders) {
         if (item == null) return null;
-        placeholders.forEach((key, value) -> ReplacePlaceHolder(item, key, value));
-        return item;
+        return TranslatePlaceholders.replacePlaceHolders(item,placeholders, text -> ChatColor.translateAlternateColorCodes ('&', text));
+  /*      placeholders.forEach((key, value) -> ReplacePlaceHolder(item, key, value));
+        return item;*/
     }
 
-    public static ItemStack ReplacePlaceHolder(final ItemStack item, final String placeHolder, final String value) {
+    public static ItemStack ReplacePlaceHolder(final ItemStack item, final String placeHolder, final Object value) {
         if (item == null) return null;
         if (value == null) return null;
 
         final ItemMeta meta = item.getItemMeta();
         if (meta.getDisplayName().contains(placeHolder)) {
-            meta.setDisplayName(meta.getDisplayName().replace(placeHolder, value));
+            meta.setDisplayName(meta.getDisplayName().replace(placeHolder, value+""));
             item.setItemMeta(meta);
         }
 
@@ -104,7 +107,7 @@ public class GuiUtil {
         if (lore == null)
             return item;
 
-        lore = lore.stream().map(x -> (x == null ? null : x.replace(placeHolder, value))).collect(Collectors.toList());
+        lore = lore.stream().map(x -> (x == null ? null : x.replace(placeHolder, value+""))).collect(Collectors.toList());
         meta.setLore(lore);
         item.setItemMeta(meta);
         return item;

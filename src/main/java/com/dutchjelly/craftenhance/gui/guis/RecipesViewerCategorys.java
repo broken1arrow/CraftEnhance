@@ -157,7 +157,7 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 			if (categoryData != null) {
 				String displayName = " ";
 				List<String> lore = new ArrayList<>();
-				final Map<String, String> placeHolders = new HashMap<>();
+				final Map<String, Object> placeHolders = new HashMap<>();
 				if (menuTemplate != null) {
 					final MenuButtonData menuButton = menuTemplate.getMenuButton(-1);
 					if (menuButton != null) {

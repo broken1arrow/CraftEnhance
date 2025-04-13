@@ -38,6 +38,7 @@ import java.util.Map.Entry;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 import static com.dutchjelly.craftenhance.gui.util.FormatListContents.formatRecipes;
+import static com.dutchjelly.craftenhance.util.StringUtil.capitalizeFully;
 
 public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolderPage<ItemStack> {
 	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
@@ -81,7 +82,7 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 
 			@Override
 			public ItemStack getItem() {
-				final Map<String, String> placeHolders = new HashMap<String, String>() {{
+				final Map<String, Object> placeHolders = new HashMap<String, Object>() {{
 					if (recipe instanceof WBRecipe)
 						put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), ((WBRecipe) recipe).isShapeless() ? "shapeless" : "shaped");
 					if (recipe instanceof FurnaceRecipe) {
@@ -96,8 +97,8 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 					put(InfoItemPlaceHolders.Recipe_type.getPlaceHolder(), recipe.getType().name().toLowerCase());
 					put(InfoItemPlaceHolders.Config_permission.getPlaceHolder(), PermissionTypes.Edit.getPerm());
 					put(InfoItemPlaceHolders.Key.getPlaceHolder(), recipe.getKey() == null ? "null" : recipe.getKey());
-					put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), recipe.getMatchType().getDescription());
-					put(InfoItemPlaceHolders.MatchType.getPlaceHolder(), recipe.getMatchType().getDescription());
+					put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), capitalizeFully(recipe.getMatchType().name()));
+					put(InfoItemPlaceHolders.MatchDescription.getPlaceHolder(), recipe.getMatchType().getDescription());
 					put(InfoItemPlaceHolders.Permission.getPlaceHolder(), recipe.getPermission() == null ? "not set" : recipe.getPermission());
 					put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), recipe.getAllowedWorlds() == null || recipe.getAllowedWorlds().isEmpty() ? "all worlds" : recipe.getAllowedWorldsFormatted());
 				}};

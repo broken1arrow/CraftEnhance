@@ -44,6 +44,7 @@ import java.util.Map.Entry;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 import static com.dutchjelly.craftenhance.gui.util.FormatListContents.formatRecipes;
+import static com.dutchjelly.craftenhance.util.StringUtil.capitalizeFully;
 
 public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage<ItemStack> {
 
@@ -130,7 +131,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 
 			@Override
 			public ItemStack getItem() {
-				final Map<String, String> placeHolders = getPlaceholders();
+				final Map<String, Object> placeHolders = getPlaceholders();
 
 				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = value.getPassiveButton();
 				ItemStack itemStack = Adapter.getItemStack(button.getMaterial(), button.getDisplayName(), button.getLore(), button.getExtra(), button.isGlow());
@@ -293,7 +294,6 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 			index++;
 
 		}
-		System.out.println("stackList " + stackList);
 		this.result = map.remove(resultSlot);
 		if (!stackList.stream().anyMatch(x -> x != null)) {
 			return null;
@@ -317,15 +317,15 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 		return itemstacks;
 	}
 
-	private Map<String, String> getPlaceholders() {
-		final Map<String, String> placeHolders = new HashMap<String, String>() {{
+	private Map<String, Object> getPlaceholders() {
+		final Map<String, Object> placeHolders = new HashMap<String, Object>() {{
 			put(InfoItemPlaceHolders.Key.getPlaceHolder(), brewRecipe.getKey() == null ? "null" : brewRecipe.getKey());
 			if (brewRecipe instanceof WBRecipe)
 				put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), shapeless ? "shapeless" : "shaped");
 
 			put(InfoItemPlaceHolders.Recipe_type.getPlaceHolder(), brewRecipe.getType().name().toLowerCase());
-			put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), matchType.getDescription());
-			put(InfoItemPlaceHolders.MatchType.getPlaceHolder(), matchType.getDescription());
+			put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), capitalizeFully(matchType.name()));
+			put(InfoItemPlaceHolders.MatchDescription.getPlaceHolder(), matchType.getDescription());
 			put(InfoItemPlaceHolders.Hidden.getPlaceHolder(), hidden ? "hide recipe in menu" : "show recipe in menu");
 			put(InfoItemPlaceHolders.Permission.getPlaceHolder(), permission == null || permission.trim().equals("") ? "none" : permission);
 			put(InfoItemPlaceHolders.Slot.getPlaceHolder(), String.valueOf(brewRecipe.getSlot()));

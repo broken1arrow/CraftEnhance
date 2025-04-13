@@ -42,6 +42,7 @@ import java.util.Map.Entry;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 import static com.dutchjelly.craftenhance.gui.util.GuiUtil.setcolorLore;
+import static com.dutchjelly.craftenhance.util.StringUtil.capitalizeFully;
 
 public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
@@ -191,15 +192,15 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 		});
 	}
 
-	private Map<String, String> getPlaceholders(final EnhancedRecipe enhancedRecipe) {
+	private Map<String, Object> getPlaceholders(final EnhancedRecipe enhancedRecipe) {
 		final Player player = getViewer();
 		final boolean viewAll = player.hasPermission(PermissionTypes.View_ALL.getPerm()) || player.hasPermission(PermissionTypes.Edit.getPerm());
-		final String description = enhancedRecipe.getMatchType().getDescription();
+		final List<String> description = enhancedRecipe.getMatchType().getDescription();
 		final String permission = enhancedRecipe.getPermission();
 		final boolean permissionSet = permission == null || permission.trim().equals("");
 		final String permissionText = permissionSet ? "none" : permission;
 		final String hidden = enhancedRecipe.isHidden() ? "this recipe is hidden" : "this recipe can all players see";
-		final Map<String, String> placeHolders = new HashMap<String, String>() {{
+		final Map<String, Object> placeHolders = new HashMap<String, Object>() {{
 			put(InfoItemPlaceHolders.Key.getPlaceHolder(), enhancedRecipe.getKey() == null ? "null" : enhancedRecipe.getKey());
 			if (enhancedRecipe instanceof WBRecipe)
 				put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), ((WBRecipe) enhancedRecipe).isShapeless() ? "shapeless" : "shaped");
@@ -208,8 +209,8 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 
 
 			put(InfoItemPlaceHolders.Recipe_type.getPlaceHolder(), enhancedRecipe.getType().capitalize());
-			put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), viewAll ? description : "");
-			put(InfoItemPlaceHolders.MatchType.getPlaceHolder(), viewAll ? description : "");
+			put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), viewAll ? capitalizeFully(enhancedRecipe.getMatchType().name()) : "");
+			put(InfoItemPlaceHolders.MatchDescription.getPlaceHolder(), viewAll ? description : "");
 			put(InfoItemPlaceHolders.Hidden.getPlaceHolder(), viewAll ? hidden : "");
 			put(InfoItemPlaceHolders.Permission.getPlaceHolder(), viewAll ? permissionText : permissionSet ? "Non set" : "You need permission to craft this");
 			put(InfoItemPlaceHolders.Slot.getPlaceHolder(), viewAll ? String.valueOf(enhancedRecipe.getSlot()) : "");

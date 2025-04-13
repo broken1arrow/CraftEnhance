@@ -42,6 +42,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
+import static com.dutchjelly.craftenhance.util.StringUtil.capitalizeFully;
 
 public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
@@ -109,7 +110,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 			@Override
 			public ItemStack getItem() {
-				final Map<String, String> placeHolders = setPlaceholders();
+				final Map<String, Object> placeHolders = setPlaceholders();
 
 				ItemStack itemStack = getConversingItem(ButtonType.valueOfType(value.getActionType()));
 				if (itemStack != null) return itemStack;
@@ -340,18 +341,17 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		return null;
 	}
 
-	public Map<String, String> setPlaceholders() {
-		Map<String, String> placeholders = new HashMap<String, String>() {{
+	public Map<String, Object> setPlaceholders() {
+		Map<String, Object> placeholders = new HashMap<String, Object>() {{
 			put(InfoItemPlaceHolders.Key.getPlaceHolder(), recipe.getKey() == null ? "null" : recipe.getKey());
 			if (recipe instanceof WBRecipe)
 				put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), ((WBRecipe) recipe).isShapeless() ? "shapeless" : "shaped");
-			if (recipe instanceof FurnaceRecipe) {
-				put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(((FurnaceRecipe) recipe).getExp()));
-				put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(((FurnaceRecipe) recipe).getDuration()));
-			}
+
+
 			final String permission = recipe.getPermission();
-			put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), recipe.getMatchType().getDescription());
-			put(InfoItemPlaceHolders.MatchType.getPlaceHolder(), recipe.getMatchType().getDescription());
+			put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), capitalizeFully(recipe.getMatchType().name()));
+			put(InfoItemPlaceHolders.MatchDescription.getPlaceHolder(), recipe.getMatchType().getDescription());
+
 			put(InfoItemPlaceHolders.Hidden.getPlaceHolder(), recipe.isHidden() ? "hide recipe in menu" : "show recipe in menu");
 			put(InfoItemPlaceHolders.Permission.getPlaceHolder(), permission == null || permission.trim().equals("") ? "none" : permission);
 			put(InfoItemPlaceHolders.Slot.getPlaceHolder(), String.valueOf(recipe.getSlot()));

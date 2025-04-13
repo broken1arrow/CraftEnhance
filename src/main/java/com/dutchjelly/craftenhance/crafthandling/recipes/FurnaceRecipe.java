@@ -85,7 +85,9 @@ public class FurnaceRecipe extends EnhancedRecipe {
 	public boolean matchesType(final ItemStack[] content) {
 		return content.length == 1 && ItemMatchers.matchType(content[0], getContent()[0]);
 	}
-
+	public boolean matchesPartially(final ItemStack[] content) {
+		return content.length == 1 && ItemMatchers.matchCoreMeta(content[0], getContent()[0]);
+	}
 	@Override
 	public Recipe getServerRecipe() {
 		int duration = self().getVersionChecker().olderThan(ServerVersion.v1_17) ? this.duration : 200;

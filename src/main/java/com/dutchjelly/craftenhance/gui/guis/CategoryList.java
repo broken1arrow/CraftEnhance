@@ -191,7 +191,7 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 			if (containerData != null) {
 				String displayName = " ";
 				List<String> lore = new ArrayList<>();
-				final Map<String, String> placeHolders = new HashMap<>();
+				final Map<String, Object> placeHolders = new HashMap<>();
 				if (menuTemplate != null) {
 					final MenuButtonData menuButton = menuTemplate.getMenuButton(-1);
 					if (menuButton != null) {
@@ -206,6 +206,7 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 				if (categoryName == null || categoryName.equals(""))
 					categoryName = containerData.getRecipeCategory();
 				placeHolders.put(InfoItemPlaceHolders.DisplayName.getPlaceHolder(), categoryName);
+
 				return GuiUtil.ReplaceAllPlaceHolders(itemStack.clone(), placeHolders);
 			}
 			return null;
@@ -216,9 +217,9 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 		Bukkit.getScheduler().runTaskLater(self(), runnable, 1);
 	}
 
-	private Map<String, String> getPlaceholders(final EnhancedRecipe enhancedRecipe) {
+	private Map<String, Object> getPlaceholders(final EnhancedRecipe enhancedRecipe) {
 		final Player player = getViewer();
-		final Map<String, String> placeHolders = new HashMap<String, String>() {{
+		final Map<String, Object> placeHolders = new HashMap<String, Object>() {{
 			put(InfoItemPlaceHolders.Category.getPlaceHolder(), enhancedRecipe.getRecipeCategory());
 		}};
 
