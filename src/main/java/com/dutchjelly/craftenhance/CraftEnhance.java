@@ -63,11 +63,8 @@ import java.util.stream.Collectors;
 public class CraftEnhance extends JavaPlugin {
 
 	private static CraftEnhance plugin;
-	public static CraftEnhance self() {
-		return plugin;
-	}
-
-
+	@Getter
+	VersionChecker versionChecker;
 	@Getter
 	private SaveScheduler saveScheduler;
 	@Getter
@@ -86,8 +83,6 @@ public class CraftEnhance extends JavaPlugin {
 	private CustomCmdHandler commandHandler;
 	private RecipeInjector injector;
 	@Getter
-	VersionChecker versionChecker;
-	@Getter
 	private boolean usingItemsAdder;
 	private boolean isReloading;
 	@Getter
@@ -99,6 +94,10 @@ public class CraftEnhance extends JavaPlugin {
 	@Getter
 	private BrewingTask brewingTask;
 
+	public static CraftEnhance self() {
+		return plugin;
+	}
+
 	@Override
 	public void onEnable() {
 		plugin = this;
@@ -109,7 +108,7 @@ public class CraftEnhance extends JavaPlugin {
 		this.database = new RecipeDatabase();
 		this.saveScheduler = new SaveScheduler();
 		this.cacheRecipes = new CacheRecipes(this);
-         new PlayerMovementTask().start();
+		new PlayerMovementTask().start();
 		//The file manager needs serialization, so firstly register the classes.
 		registerSerialization();
 		versionChecker = VersionChecker.init(this);
@@ -172,7 +171,7 @@ public class CraftEnhance extends JavaPlugin {
 		Debug.Send("Saving disabled recipes...");
 		fm.saveDisabledServerRecipes(RecipeLoader.getInstance().getDisabledServerRecipes().stream().map(x -> Adapter.GetRecipeIdentifier(x)).collect(Collectors.toList()));
 		categoryDataCache.save();
-		CompletableFuture<Void> saveTask = CompletableFuture.runAsync(()-> this.cacheRecipes.save());
+		CompletableFuture<Void> saveTask = CompletableFuture.runAsync(() -> this.cacheRecipes.save());
 		saveTask.join();
 	}
 
@@ -274,10 +273,10 @@ public class CraftEnhance extends JavaPlugin {
 		setupFileManager();
 		Debug.Send("Loading recipes");
 		final RecipeLoader loader = RecipeLoader.getInstance();
-		Bukkit.getScheduler().runTaskAsynchronously(this, ()->  {
+		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
 			@NonNull List<EnhancedRecipe> recipes = this.database.loadRecipes();
 			this.cacheRecipes.addAll(recipes);
-			Bukkit.getScheduler().runTask(this, ()->loadingRecipes(loader));
+			Bukkit.getScheduler().runTask(this, () -> loadingRecipes(loader));
 		});
 		isReloading = false;
 	}

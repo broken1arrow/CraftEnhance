@@ -41,7 +41,6 @@ public class CreateRecipeCmd implements ICommand {
 
 	@Override
 	public void handlePlayerCommand(Player p, String[] args) {
-
 		//Fill in a unique key and empty permission for the user.
 		if (args.length == 0) {
 			int uniqueKeyIndex = 1;

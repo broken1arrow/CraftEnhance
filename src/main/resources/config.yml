@@ -9,6 +9,8 @@ enable_brewing-debug: false
 enable-recipes: true
 # this is just beta right now, so it will be off as default.
 enable-brewing-recipes: false
+# if it shall show a progressbar when the player looking att the brewing stand. Will only work when the brewing is enabled.
+enable-brewing-progressbar: false
 
 # This update checker checks for new versions on the github page.
 enable-updatechecker: true
