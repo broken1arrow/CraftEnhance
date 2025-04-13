@@ -1,7 +1,6 @@
 package com.dutchjelly.craftenhance;
 
 import com.dutchjelly.bukkitadapter.Adapter;
-import com.dutchjelly.craftenhance.runnable.BrewingTask;
 import com.dutchjelly.craftenhance.api.CraftEnhanceAPI;
 import com.dutchjelly.craftenhance.cache.CacheRecipes;
 import com.dutchjelly.craftenhance.commandhandling.CustomCmdHandler;
@@ -40,6 +39,8 @@ import com.dutchjelly.craftenhance.gui.customcrafting.CustomCraftingTable;
 import com.dutchjelly.craftenhance.gui.guis.editors.IngredientsCache;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
+import com.dutchjelly.craftenhance.runnable.BrewingTask;
+import com.dutchjelly.craftenhance.runnable.PlayerMovementTask;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import com.dutchjelly.craftenhance.util.Metrics;
 import lombok.Getter;
@@ -108,7 +109,7 @@ public class CraftEnhance extends JavaPlugin {
 		this.database = new RecipeDatabase();
 		this.saveScheduler = new SaveScheduler();
 		this.cacheRecipes = new CacheRecipes(this);
-
+         new PlayerMovementTask().start();
 		//The file manager needs serialization, so firstly register the classes.
 		registerSerialization();
 		versionChecker = VersionChecker.init(this);

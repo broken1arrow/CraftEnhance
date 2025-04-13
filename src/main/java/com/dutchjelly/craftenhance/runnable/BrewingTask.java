@@ -115,6 +115,10 @@ public class BrewingTask implements Runnable {
 			remove.forEach(map::remove);
 	}
 
+	public Map<Location, BrewingLogic> getMap() {
+		return map;
+	}
+
 	public void addTask(final Location location, final BrewingRecipe brewingRecipe) {
 		this.addTask(location, brewingRecipe, (brewingLogic) -> {
 		});
