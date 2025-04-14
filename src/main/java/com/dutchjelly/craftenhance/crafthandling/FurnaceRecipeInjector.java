@@ -100,9 +100,7 @@ public class FurnaceRecipeInjector {
 		final RecipeGroup recipe = this.recipeInjector.getMatchingRecipeGroup(burnEvent.getBlock(), furnace.getInventory().getSmelting());
 		final Optional<ItemStack> result = this.getFurnaceResult(recipe, furnace.getInventory().getSmelting(), furnace);
 		ItemStack itemInResulSlot = furnace.getInventory().getResult();
-		System.out.println("itemInResulSlot " + itemInResulSlot);
 		if (result != null && result.isPresent() && itemInResulSlot != null && itemInResulSlot.getType() != Material.AIR && !result.get().isSimilar(itemInResulSlot)) {
-			System.out.println("result is not same");
 			burnEvent.setCancelled(true);
 			return;
 		}
