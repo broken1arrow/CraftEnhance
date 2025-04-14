@@ -187,7 +187,7 @@ public class FurnaceRecipeInjector {
 			if (fRecipe.matches(srcMatrix)) {
 				if (this.recipeInjector.entityCanCraft(player, fRecipe)) {
 					Debug.Send(Type.Smelting, () -> "Found enhanced recipe " + fRecipe.getResult() + " for furnace");
-					Debug.Send(Type.Smelting, () -> "Matching ingridens are " + source + " .");
+					Debug.Send(Type.Smelting, () -> "Matching ingredients are " + source + " .");
 					return fRecipe;
 				} else {
 					Debug.Send(Type.Smelting, () -> "found this recipe " + fRecipe.getResult().toString() + " match but, player has not this permission " + fRecipe.getPermission());
