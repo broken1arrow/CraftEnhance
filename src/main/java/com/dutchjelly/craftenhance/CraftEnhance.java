@@ -167,7 +167,7 @@ public class CraftEnhance extends JavaPlugin {
 		if (!this.isReloading)
 			getServer().resetRecipes();
 		Debug.Send("Saving container owners...");
-		fm.saveContainerOwners(injector.getContainerOwners());
+		fm.saveContainerOwners(injector.getFurnaceRecipeInjector().getContainerOwners());
 		Debug.Send("Saving disabled recipes...");
 		fm.saveDisabledServerRecipes(RecipeLoader.getInstance().getDisabledServerRecipes().stream().map(x -> Adapter.GetRecipeIdentifier(x)).collect(Collectors.toList()));
 		categoryDataCache.save();
@@ -289,7 +289,7 @@ public class CraftEnhance extends JavaPlugin {
 						Adapter.FilterRecipes(loader.getServerRecipes(), x)
 				).collect(Collectors.toList())
 		);
-		injector.registerContainerOwners(fm.getContainerOwners());
+		injector.getFurnaceRecipeInjector().registerContainerOwners(fm.getContainerOwners());
 		injector.setLoader(loader);
 		injector.reload();
 		//todo learn recipes are little broken. when you reload it.
