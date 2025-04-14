@@ -3,7 +3,6 @@ package com.dutchjelly.craftenhance.crafthandling;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
-import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers.MatchType;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
@@ -187,7 +186,7 @@ public class FurnaceRecipeInjector {
 			Debug.Send(Type.Smelting, () -> "Checking if enhanced recipe for " + fRecipe.getResult().toString() + " matches.");
 			Debug.Send(Type.Smelting, () -> "The srcMatrix " + Arrays.toString(srcMatrix) + ".");
 
-			if (fRecipe.matches(srcMatrix) || (fRecipe.getMatchType() == MatchType.MATCH_META && fRecipe.matchesPartially(srcMatrix))) {
+			if (fRecipe.matches(srcMatrix)) {
 				if (this.recipeInjector.entityCanCraft(player, fRecipe)) {
 					Debug.Send(Type.Smelting, () -> "Found enhanced recipe " + fRecipe.getResult() + " for furnace");
 					Debug.Send(Type.Smelting, () -> "Matching ingridens are " + source + " .");

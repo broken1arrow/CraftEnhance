@@ -5,6 +5,7 @@ import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
+import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers.MatchType;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import lombok.Getter;
@@ -22,15 +23,13 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 public class FurnaceRecipe extends EnhancedRecipe {
 
 	@Getter
+	private final RecipeType type = RecipeType.FURNACE;
+	@Getter
 	@Setter
 	private int duration = 160;
-
 	@Getter
 	@Setter
 	private float exp = 0;
-
-	@Getter
-	private final RecipeType type = RecipeType.FURNACE;
 
 	protected FurnaceRecipe(final Map<String, Object> args) {
 		super(args);
@@ -66,12 +65,26 @@ public class FurnaceRecipe extends EnhancedRecipe {
 
 	@Override
 	public boolean matches(final ItemStack[] content) {
-		return content.length == 1 && getMatchType().getMatcher().match(content[0], getContent()[0]);
+		return this.matches(content, this.getMatchType().getMatcher());
 	}
 
 	@Override
 	public boolean matches(final ItemStack[] content, final IMatcher<ItemStack> matcher) {
-		return content.length == 1 && getMatchType().getMatcher().match(content[0], getContent()[0]);
+		if (content.length == 1) {
+			if (matcher.match(content[0], this.getContent()[0])) {
+				return true;
+			}
+			return this.getMatchType() == MatchType.MATCH_META && this.matchesPartially(content);
+		}
+		return false;
+	}
+
+	public boolean matchesType(final ItemStack[] content) {
+		return this.matches(content, MatchType.MATCH_TYPE.getMatcher());
+	}
+
+	public boolean matchesPartially(final ItemStack[] content) {
+		return content.length == 1 && MatchType.MATCH_BASIC_META.getMatcher().match(content[0], this.getContent()[0]);
 	}
 
 	@Override
@@ -82,12 +95,7 @@ public class FurnaceRecipe extends EnhancedRecipe {
 		return blockSmelting == Material.FURNACE;
 	}
 
-	public boolean matchesType(final ItemStack[] content) {
-		return content.length == 1 && ItemMatchers.matchType(content[0], getContent()[0]);
-	}
-	public boolean matchesPartially(final ItemStack[] content) {
-		return content.length == 1 && ItemMatchers.matchCoreMeta(content[0], getContent()[0]);
-	}
+
 	@Override
 	public Recipe getServerRecipe() {
 		int duration = self().getVersionChecker().olderThan(ServerVersion.v1_17) ? this.duration : 200;
