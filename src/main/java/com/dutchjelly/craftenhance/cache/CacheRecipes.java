@@ -35,7 +35,7 @@ public class CacheRecipes {
 	}
 
 	public void add(final EnhancedRecipe enhancedRecipe) {
-		if (enhancedRecipe == null) return;
+		if (enhancedRecipe == null ||  getRecipe( enhancedRecipe.getKey()) != null) return;
 		recipes.add(enhancedRecipe);
 	}
 
