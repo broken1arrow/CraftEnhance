@@ -29,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 
 public abstract class EnhancedRecipe extends GuiPlacable implements ConfigurationSerializable, ServerLoadable {
 
@@ -250,11 +251,11 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 	}
 
 	public String getAllowedWorldsFormatted() {
-		final StringBuilder stringBuilder = new StringBuilder();
+		final StringJoiner stringBuilder = new StringJoiner(", ");
 		if (allowedWorlds != null)
 			for (final String worlds : allowedWorlds)
-				stringBuilder.append(StringUtil.capitalizeFully(worlds.toLowerCase())).append(", ");
-		stringBuilder.setLength(stringBuilder.length() - 2);
+				stringBuilder.add(StringUtil.capitalizeFully(worlds.toLowerCase()));
+
 		return stringBuilder.toString();
 	}
 
