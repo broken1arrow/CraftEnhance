@@ -88,7 +88,6 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 	}
 
 
-
 	public boolean containsModelData(final ItemStack[] matrix) {
 		return Arrays.stream(matrix).anyMatch(x -> x != null && x.hasItemMeta() && x.getItemMeta().hasCustomModelData());
 	}
@@ -156,6 +155,9 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 		if (e.getClickedInventory().getType() == InventoryType.FURNACE) {
 			final Furnace f = (Furnace) e.getClickedInventory().getHolder();
 			this.furnaceRecipeInjector.furnaceClick(e);
+		}
+		if (e.getClickedInventory().getType() == InventoryType.WORKBENCH) {
+			this.workBenchRecipeInjector.craftingClick(e);
 		}
 	}
 

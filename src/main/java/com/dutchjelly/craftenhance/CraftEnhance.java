@@ -1,7 +1,6 @@
 package com.dutchjelly.craftenhance;
 
 import com.dutchjelly.bukkitadapter.Adapter;
-import com.dutchjelly.craftenhance.api.CraftEnhanceAPI;
 import com.dutchjelly.craftenhance.cache.CacheRecipes;
 import com.dutchjelly.craftenhance.commandhandling.CustomCmdHandler;
 import com.dutchjelly.craftenhance.commands.ceh.ChangeKeyCmd;
@@ -21,7 +20,6 @@ import com.dutchjelly.craftenhance.commands.edititem.LocalizedNameCmd;
 import com.dutchjelly.craftenhance.commands.edititem.LoreCmd;
 import com.dutchjelly.craftenhance.crafthandling.RecipeInjector;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
-import com.dutchjelly.craftenhance.crafthandling.customcraftevents.ExecuteCommand;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
@@ -144,7 +142,7 @@ public class CraftEnhance extends JavaPlugin {
 			final int metricsId = 9023;
 			metrics = new Metrics(this, metricsId);
 		}
-		CraftEnhanceAPI.registerListener(new ExecuteCommand());
+		//CraftEnhanceAPI.registerListener(new ExecuteCommand());
 		saveScheduler.start();
 	}
 
