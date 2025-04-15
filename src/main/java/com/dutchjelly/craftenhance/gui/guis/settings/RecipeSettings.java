@@ -13,8 +13,10 @@ import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
+import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
+import com.dutchjelly.craftenhance.util.PermissionTypes;
 import lombok.Getter;
 import lombok.NonNull;
 import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
@@ -181,9 +183,38 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			}).setMessages("Set your own permission on a recipe or type 'non' or 'null' to unset permission. Only players some has this permission can craft the item.", " Type q,exit,cancel to turn it off").start(getViewer());
 			return true;
 		}
+
+		if (value.isActionTypeEqual(ButtonType.SetCommand.name())) {
+			if (!player.hasPermission(PermissionTypes.Edit.getPerm())){
+				Debug.error("A player attempting to modify the command without correct permissions. The player:" + player.getName());
+				return false;
+			}
+			if (player.isOp()){
+				Debug.error("OP mode introduces serious security risks by bypassing safety checks. Its use is strongly discouraged, " +
+						"and future versions of this plugin will restrict it to prevent abuse — especially regarding set command in menu." );
+			}
+
+			if (click.isRightClick()) {
+				recipe.setOnCraftCommand(null);
+				return true;
+			}
+
+
+			if (player.isConversing()) return true;
+			new HandleChatInput(this, msg -> {
+				if (!handleCommand(msg)) {
+					this.runTask(() -> this.menuOpen(player));
+					return false;
+				}
+				return true;
+			}).setMessages("Set a custom command to run when the player picks up the recipe result. Type 'none' or 'null' to clear the command. Type q, exit, or cancel to exit.").start(getViewer());
+			return false;
+		}
+
 		if (value.isActionTypeEqual(ButtonType.ChangeCategoryList.name())) {
 			new CategoryList<>(this.recipe, this.categoryData, this.permission, this.editorType, "").menuOpen(player);
 		}
+
 		if (value.isActionTypeEqual(ButtonType.ChangeCategory.name())) {
 			if (player.isConversing()) return true;
 			new HandleChatInput(this, msg -> {
@@ -232,6 +263,25 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		}
 		final String permission = message;
 		this.recipe.setPermission(permission);
+		return false;
+	}
+
+	private boolean handleCommand(String message) {
+		if (message == null || message.trim().isEmpty()) return false;
+
+		message = message.trim();
+
+		final String messageLowerCase = message.toLowerCase();
+		if (messageLowerCase.equals("q") || messageLowerCase.equals("cancel") || messageLowerCase.equals("quit") || messageLowerCase.equals("exit"))
+			return false;
+
+		if (messageLowerCase.equals("non") || messageLowerCase.equals("null")) {
+			this.recipe.setOnCraftCommand(null);
+			return false;
+		}
+
+		final String permission = message;
+		this.recipe.setOnCraftCommand(permission);
 		return false;
 	}
 
@@ -347,13 +397,17 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			if (recipe instanceof WBRecipe)
 				put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), ((WBRecipe) recipe).isShapeless() ? "shapeless" : "shaped");
 
-
 			final String permission = recipe.getPermission();
+			final String recipeCraftCommand = recipe.getOnCraftCommand();
+
 			put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), capitalizeFully(recipe.getMatchType().name()));
 			put(InfoItemPlaceHolders.MatchDescription.getPlaceHolder(), recipe.getMatchType().getDescription());
 
 			put(InfoItemPlaceHolders.Hidden.getPlaceHolder(), recipe.isHidden() ? "hide recipe in menu" : "show recipe in menu");
+
 			put(InfoItemPlaceHolders.Permission.getPlaceHolder(), permission == null || permission.trim().equals("") ? "none" : permission);
+			put(InfoItemPlaceHolders.RecipeCommand.getPlaceHolder(), recipeCraftCommand== null || recipeCraftCommand.trim().isEmpty() ? "none" : recipeCraftCommand);
+
 			put(InfoItemPlaceHolders.Slot.getPlaceHolder(), String.valueOf(recipe.getSlot()));
 			put(InfoItemPlaceHolders.Page.getPlaceHolder(), String.valueOf(recipe.getPage()));
 			put(InfoItemPlaceHolders.Partial_match.getPlaceHolder(), recipe.isCheckPartialMatch() ? "checks for partial match" : "doesn't check for partial match");

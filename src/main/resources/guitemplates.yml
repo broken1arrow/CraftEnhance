@@ -683,12 +683,29 @@ Menus:
           - "&fcreated. All categories"
           - "&fis listed here."
         glow: true
-      "14":
+      "12":
         action_type: SetPermission
         material: PAPER
         name: "&fClick to set permission"
         lore:
           - "&fcurrent:&3 [permission]"
+        glow: true
+      "14":
+        action_type: SetCommand
+        material: REDSTONE_TORCH
+        name: "&aClick to set command"
+        lore:
+          - "&4Use this option carefully. When the command is"
+          - "&4executed, no permission checks will be done."
+          - "&6"
+          - "&fUse the placeholder %playername% to insert"
+          - "&fthe player's name into the command. It will"
+          - "&fbe executed after the player takes the item."
+          - "&4"
+          - "&fCurrent:&3 [recipe_command]"
+          - "&f"
+          - "&fLeft click to set command and"
+          - "&fright click to unset."
         glow: true
       "16":
         action_type: SetBrewingTime
@@ -798,6 +815,22 @@ Menus:
       name: Recipe settings
       sound: BLOCK_NOTE_BLOCK_BASEDRUM
     buttons:
+      "10":
+        action_type: SetCommand
+        material: REDSTONE_TORCH
+        name: "&aClick to set command"
+        lore:
+          - "&4Use this option carefully. When the command is"
+          - "&4executed, no permission checks will be done."
+          - "&6"
+          - "&fUse the placeholder %playername% to insert"
+          - "&fthe player's name into the command. It will"
+          - "&fbe executed after the player takes the item."
+          - "&4"
+          - "&fCurrent:&3 [recipe_command]"
+          - "&f"
+          - "&fLeft click to set command and"
+          - "&fright click to unset."
       "12":
         action_type: AllowedWorldsCraft
         material: IRON_INGOT
@@ -902,13 +935,29 @@ Menus:
           - "&fcreated.All categories"
           - "&fis listed here."
         glow: true
-      "14":
+      "12":
         action_type: SetPermission
         material: PAPER
         name: "&fClick to set permission"
         lore:
           - "&fcurrent:&3 [permission]"
         glow: true
+      "14":
+        action_type: SetCommand
+        material: REDSTONE_TORCH
+        name: "&aClick to set command"
+        lore:
+          - "&4Use this option carefully. When the command is"
+          - "&4executed, no permission checks will be done."
+          - "&6"
+          - "&fUse the placeholder %playername% to insert"
+          - "&fthe player's name into the command. It will"
+          - "&fbe executed after the player takes the item."
+          - "&4"
+          - "&fCurrent:&3 [recipe_command]"
+          - "&f"
+          - "&fLeft click to set command and"
+          - "&fright click to unset."
       "16":
         action_type: SetCookTime
         material: CLOCK

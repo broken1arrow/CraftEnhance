@@ -6,6 +6,7 @@ public enum InfoItemPlaceHolders {
     Shaped("[shaped]"),
     Hidden("[hidden]"),
     Permission("[permission]"),
+    RecipeCommand("[recipe_command]"),
     Config_permission("[config_permission]"),
     Key("[key]"),
     Slot("[slot]"),

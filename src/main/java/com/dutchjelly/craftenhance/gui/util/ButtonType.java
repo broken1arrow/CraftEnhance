@@ -34,6 +34,7 @@ public enum ButtonType {
 	SetPartialMatch(""),
     edit_recipe(""),
     Save(""),
+    SetCommand(""),
     ;
 
     private final String type;
