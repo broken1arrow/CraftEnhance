@@ -48,15 +48,15 @@ import static com.dutchjelly.craftenhance.util.StringUtil.capitalizeFully;
 
 public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
-	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
 	protected final int page;
-	private String permission;
+	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
 	private final MenuTemplate menuTemplate;
 	@Getter
 	private final RecipeT recipe;
-	private ItemMatchers.MatchType recipeMatchType;
 	private final ButtonType editorType;
 	private final CategoryData categoryData;
+	private String permission;
+	private ItemMatchers.MatchType recipeMatchType;
 
 	public RecipeSettings(final RecipeT recipe, int pageNumber, final CategoryData categoryData, final String permission, final ButtonType editorType) {
 		page = pageNumber;
@@ -185,20 +185,19 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		}
 
 		if (value.isActionTypeEqual(ButtonType.SetCommand.name())) {
-			if (!player.hasPermission(PermissionTypes.Edit.getPerm())){
+			if (!player.hasPermission(PermissionTypes.Edit.getPerm())) {
 				Debug.error("A player attempting to modify the command without correct permissions. The player:" + player.getName());
 				return false;
 			}
-			if (player.isOp()){
+			if (player.isOp()) {
 				Debug.error("OP mode introduces serious security risks by bypassing safety checks. Its use is strongly discouraged, " +
-						"and future versions of this plugin will restrict it to prevent abuse — especially regarding set command in menu." );
+						"and future versions of this plugin will restrict it to prevent abuse — especially regarding set command in menu.");
 			}
 
 			if (click.isRightClick()) {
 				recipe.setOnCraftCommand(null);
 				return true;
 			}
-
 
 			if (player.isConversing()) return true;
 			new HandleChatInput(this, msg -> {
@@ -406,7 +405,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			put(InfoItemPlaceHolders.Hidden.getPlaceHolder(), recipe.isHidden() ? "hide recipe in menu" : "show recipe in menu");
 
 			put(InfoItemPlaceHolders.Permission.getPlaceHolder(), permission == null || permission.trim().equals("") ? "none" : permission);
-			put(InfoItemPlaceHolders.RecipeCommand.getPlaceHolder(), recipeCraftCommand== null || recipeCraftCommand.trim().isEmpty() ? "none" : recipeCraftCommand);
+			put(InfoItemPlaceHolders.RecipeCommand.getPlaceHolder(), recipeCraftCommand == null || recipeCraftCommand.trim().isEmpty() ? "none" : recipeCraftCommand);
 
 			put(InfoItemPlaceHolders.Slot.getPlaceHolder(), String.valueOf(recipe.getSlot()));
 			put(InfoItemPlaceHolders.Page.getPlaceHolder(), String.valueOf(recipe.getPage()));

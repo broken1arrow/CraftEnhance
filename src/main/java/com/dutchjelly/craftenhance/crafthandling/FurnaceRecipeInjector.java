@@ -4,6 +4,7 @@ import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.messaging.Debug;
+import com.dutchjelly.craftenhance.messaging.Debug.DebugType;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import lombok.Getter;
@@ -143,6 +144,7 @@ public class FurnaceRecipeInjector {
 				this.containerOwners.put(key, value);
 		});
 	}
+
 	public Optional<ItemStack> getFurnaceResult(final RecipeGroup group, final ItemStack source, final Furnace furnace) {
 		//FurnaceRecipe recipe = new FurnaceRecipe(null, null, srcMatrix);
 		//RecipeGroup group = RecipeLoader.getInstance().findSimilarGroup(recipe);
@@ -153,11 +155,13 @@ public class FurnaceRecipeInjector {
 		}
 		final UUID playerId = this.containerOwners.get(furnace.getLocation());
 		final Player player = playerId == null ? null : plugin.getServer().getPlayer(playerId);
-		Debug.Send(Type.Smelting, () -> "Furnace belongs to player: " + player + " the id " + playerId);
-		Debug.Send(Type.Smelting, () -> "Furnace group: " + group);
-		Debug.Send(Type.Smelting, () -> "Furnace source item: " + source);
 		//Check if any grouped enhanced recipe is a match.
 		FurnaceRecipe furnaceRecipe = getFurnaceRecipe(furnace.getType(), group, source, player);
+
+		Debug.Send(DebugType.of(Type.Smelting, furnaceRecipe), () -> "Furnace belongs to player: " + player + " the id " + playerId);
+		Debug.Send(DebugType.of(Type.Smelting, furnaceRecipe), () -> "Furnace group: " + group);
+		Debug.Send(DebugType.of(Type.Smelting, furnaceRecipe), () -> "Furnace source item: " + source);
+
 		if (furnaceRecipe != null) return Optional.of(furnaceRecipe.getResult());
 		//Check for similar server recipes if no enhanced ones match.
 		for (final Recipe sRecipe : group.getServerRecipes()) {
@@ -181,20 +185,20 @@ public class FurnaceRecipeInjector {
 				continue;
 			}
 			final FurnaceRecipe fRecipe = (FurnaceRecipe) eRecipe;
-			Debug.Send(Type.Smelting, () -> "Checking if enhanced recipe for " + fRecipe.getResult().toString() + " matches.");
-			Debug.Send(Type.Smelting, () -> "The srcMatrix " + Arrays.toString(srcMatrix) + ".");
+			Debug.Send(fRecipe, () -> "Checking if enhanced recipe for " + fRecipe.getResult().toString() + " matches.");
+			Debug.Send(fRecipe, () -> "The srcMatrix " + Arrays.toString(srcMatrix) + ".");
 
 			if (fRecipe.matches(srcMatrix)) {
 				if (this.recipeInjector.entityCanCraft(player, fRecipe)) {
-					Debug.Send(Type.Smelting, () -> "Found enhanced recipe " + fRecipe.getResult() + " for furnace");
-					Debug.Send(Type.Smelting, () -> "Matching ingredients are " + source + " .");
+					Debug.Send(fRecipe, () -> "Found enhanced recipe " + fRecipe.getResult() + " for furnace");
+					Debug.Send(fRecipe, () -> "Matching ingredients are " + source + " .");
 					return fRecipe;
 				} else {
-					Debug.Send(Type.Smelting, () -> "found this recipe " + fRecipe.getResult().toString() + " match but, player has not this permission " + fRecipe.getPermission());
+					Debug.Send(fRecipe, () -> "found this recipe " + fRecipe.getResult().toString() + " match but, player has not this permission " + fRecipe.getPermission());
 					break;
 				}
 			} else {
-				Debug.Send(Type.Smelting, () -> "found recipe doesn't match '" + source.getType() + (this.recipeInjector.entityCanCraft(player, fRecipe) ? "'." : "and no perms.") + " Check next recipe if it exist.");
+				Debug.Send(fRecipe, () -> "found recipe doesn't match '" + source.getType() + (this.recipeInjector.entityCanCraft(player, fRecipe) ? "'." : "and no perms.") + " Check next custom recipe if it exist.");
 				//TODO should this code be removed?
 			/*	if (fRecipe.matcheType(srcMatrix)) {
 					Debug.Send("Found similar match itemtype for furnace");
