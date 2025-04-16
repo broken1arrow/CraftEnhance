@@ -52,8 +52,8 @@ public class FurnaceRecipeInjector {
 		final Furnace furnace = (Furnace) event.getBlock().getState();
 		final RecipeResult result = this.getFurnaceResult(group, event.getSource(), furnace);
 
-		Debug.Send(Type.Smelting, () -> "Custom result " + result);
 		if (result.isEnhancedRecipe()) {
+			Debug.Send(Type.Smelting, () -> "Custom item smelted, the result item: " + result);
 			ItemStack itemInResulSlot = furnace.getInventory().getResult();
 		/*	if(!result.get().isSimilar(itemInResulSlot)) {
 				System.out.println("result is not same");

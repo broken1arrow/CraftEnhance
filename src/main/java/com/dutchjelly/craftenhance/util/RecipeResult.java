@@ -48,4 +48,12 @@ public class RecipeResult {
 	public enum Type {
 		CUSTOM, VANILLA, NONE
 	}
+
+	@Override
+	public String toString() {
+		return "RecipeResult{" +
+				"type=" + type +
+				", item=" + item +
+				'}';
+	}
 }

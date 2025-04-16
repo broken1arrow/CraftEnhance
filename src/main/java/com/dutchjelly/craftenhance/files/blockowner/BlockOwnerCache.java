@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.files.blockowner;
 
 import com.dutchjelly.craftenhance.files.util.SimpleYamlHelper;
+import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.util.LocationWrapper;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -13,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -81,6 +83,11 @@ public class BlockOwnerCache extends SimpleYamlHelper {
 		if (fileConfiguration == null)
 			fileConfiguration = YamlConfiguration.loadConfiguration(file);
 		fileConfiguration.set("Containers", null);
+		try {
+			fileConfiguration.save(file);
+		} catch (IOException e) {
+			Debug.error("could not save the owners.");
+		}
 		for (final Entry<String, BlockOwnerData> entry : containerOwners.entrySet())
 			this.setData(file, "Containers." + entry.getKey(), entry.getValue());
 	}
