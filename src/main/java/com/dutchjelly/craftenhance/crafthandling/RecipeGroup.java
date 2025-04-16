@@ -70,6 +70,10 @@ public class RecipeGroup {
 		return this;
 	}
 
+	@Override
+	public String toString() {
+		return "RecipeGroup{" + formatGroup() + '}';
+	}
 
 	public String formatGroup() {
 		final StringBuilder recipes = new StringBuilder();
@@ -123,9 +127,9 @@ public class RecipeGroup {
 			enhancedRecipes.append(enhancedRecipe.getType()).append("| worlds='");
 			enhancedRecipes.append(enhancedRecipe.getAllowedWorldsFormatted()).append("'| perm='");
 			enhancedRecipes.append(enhancedRecipe.getPermission()).append("'");
-			if(!(enhancedRecipe instanceof com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe))
+			if (!(enhancedRecipe instanceof com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe))
 				enhancedRecipes.append("| command='").append(enhancedRecipe.getOnCraftCommand()).append("'");
-			
+
 			enhancedJoiner.add(enhancedRecipes);
 		});
 		recipes.append(enhancedJoiner);
@@ -133,8 +137,4 @@ public class RecipeGroup {
 		return recipes + "";
 	}
 
-	@Override
-	public String toString() {
-		return "RecipeGroup{" + formatGroup() + '}';
-	}
 }

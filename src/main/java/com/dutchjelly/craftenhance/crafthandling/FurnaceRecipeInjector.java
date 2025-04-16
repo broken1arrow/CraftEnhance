@@ -3,12 +3,13 @@ package com.dutchjelly.craftenhance.crafthandling;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerCache;
+import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerData;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Debug.DebugType;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import lombok.Getter;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Furnace;
 import org.bukkit.entity.Player;
@@ -25,7 +26,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 public class FurnaceRecipeInjector {
 	private final CraftEnhance plugin;
@@ -33,13 +33,14 @@ public class FurnaceRecipeInjector {
 	private final Map<Furnace, LocalDateTime> pausedFurnaces = new HashMap<>();
 	//Keep track of the id's of the owners of containers.
 	@Getter
-	private final Map<Location, UUID> containerOwners = new HashMap<>();
+	private final BlockOwnerCache blockOwnerCache;
 	private final RecipeInjector recipeInjector;
 	private final boolean newerThanThirteen;
 
 	public FurnaceRecipeInjector(RecipeInjector recipeInjector) {
 		this.recipeInjector = recipeInjector;
 		this.plugin = this.recipeInjector.getPlugin();
+		this.blockOwnerCache = plugin.getBlockOwnerCache();
 		this.newerThanThirteen = this.recipeInjector.getPlugin().getVersionChecker().newerThan(ServerVersion.v1_13);
 	}
 
@@ -116,6 +117,11 @@ public class FurnaceRecipeInjector {
 
 	public void furnaceClick(final InventoryClickEvent furnaceClick) {
 		if (furnaceClick.isCancelled() || furnaceClick.getClickedInventory() == null) return;
+		System.out.println("blockOwnerCache. " + blockOwnerCache.getContainerOwners());
+		blockOwnerCache.getContainerOwner(furnaceClick.getClickedInventory().getLocation(), blockOwnerData -> {
+			System.out.println("blockdata Owner " + blockOwnerData.getCurrentOwner());
+			System.out.println("blockdata loc " + blockOwnerData.getLocation());
+		});
 
 		final Furnace f = (Furnace) furnaceClick.getClickedInventory().getHolder();
 		pausedFurnaces.remove(f);
@@ -125,24 +131,28 @@ public class FurnaceRecipeInjector {
 	public void furnacePlace(final BlockPlaceEvent furnacePlaced) {
 		if (furnacePlaced.isCancelled()) return;
 
-		containerOwners.put(furnacePlaced.getBlock().getLocation(), furnacePlaced.getPlayer().getUniqueId());
+		blockOwnerCache.putContainerOwner(furnacePlaced.getBlock().getLocation(), blockOwnerData -> blockOwnerData.setCurrentOwner(furnacePlaced.getPlayer().getUniqueId()));
 	}
 
 	public void furnaceBreak(final BlockBreakEvent furnaceRemoved) {
 		if (furnaceRemoved.isCancelled()) return;
 		if (furnaceRemoved.getBlock().getType().equals(Material.FURNACE)) {
-			containerOwners.remove(furnaceRemoved.getBlock().getLocation());
+			blockOwnerCache.remove(furnaceRemoved.getBlock().getLocation());
 			pausedFurnaces.remove((Furnace) furnaceRemoved.getBlock().getState());
 		}
 	}
 
 	//Add registrations of owners of containers.
-	public void registerContainerOwners(final Map<Location, UUID> containerOwners) {
+	public void registerContainerOwners(final Map<String, BlockOwnerData> containerOwners) {
 		//Make sure to only register containers, in case some are non existent anymore.
-		containerOwners.forEach((key, value) -> {
-			if (key != null && key.getWorld() != null)
+	/*	containerOwners.forEach((key, value) -> {
+			if (key != null && value.getLocation() != null && value.getLocation().getWorld() != null)
 				this.containerOwners.put(key, value);
-		});
+		});*/
+	}
+
+	public BlockOwnerCache getBlockOwnerCache() {
+		return blockOwnerCache;
 	}
 
 	public Optional<ItemStack> getFurnaceResult(final RecipeGroup group, final ItemStack source, final Furnace furnace) {
@@ -153,12 +163,12 @@ public class FurnaceRecipeInjector {
 			Debug.Send(Type.Smelting, () -> "furnace recipe does not match any recipe group.");
 			return null;
 		}
-		final UUID playerId = this.containerOwners.get(furnace.getLocation());
-		final Player player = playerId == null ? null : plugin.getServer().getPlayer(playerId);
+		final BlockOwnerData containerOwner = this.blockOwnerCache.getContainerOwner(furnace.getLocation());
+		final Player player = containerOwner == null ? null : plugin.getServer().getPlayer(containerOwner.getCurrentOwner());
 		//Check if any grouped enhanced recipe is a match.
 		FurnaceRecipe furnaceRecipe = getFurnaceRecipe(furnace.getType(), group, source, player);
 
-		Debug.Send(DebugType.of(Type.Smelting, furnaceRecipe), () -> "Furnace belongs to player: " + player + " the id " + playerId);
+		Debug.Send(DebugType.of(Type.Smelting, furnaceRecipe), () -> "Furnace belongs to player: " + player + " the id " + (containerOwner != null ? containerOwner.getCurrentOwner() : "ID not found."));
 		Debug.Send(DebugType.of(Type.Smelting, furnaceRecipe), () -> "Furnace group: " + group);
 		Debug.Send(DebugType.of(Type.Smelting, furnaceRecipe), () -> "Furnace source item: " + source);
 

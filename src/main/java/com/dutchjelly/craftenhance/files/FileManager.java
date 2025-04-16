@@ -1,10 +1,13 @@
 package com.dutchjelly.craftenhance.files;
 
-import com.dutchjelly.craftenhance.cache.CacheRecipes;
 import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.cache.CacheRecipes;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
+import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerCache;
+import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerData;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
+import com.dutchjelly.craftenhance.util.LocationWrapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import lombok.SneakyThrows;
@@ -30,6 +33,8 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.UUID;
 import java.util.logging.Logger;
+
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class FileManager {
 
@@ -62,11 +67,11 @@ public class FileManager {
 		fm.items = new HashMap<>();
 		fm.recipes = new ArrayList<>();
 		fm.logger = main.getLogger();
-		fm.cacheRecipes =  main.getCacheRecipes();
+		fm.cacheRecipes = main.getCacheRecipes();
 		fm.dataFolder = main.getDataFolder();
 		fm.dataFolder.mkdir();
 		fm.itemsFile = new File(fm.dataFolder, fm.useJson ? "items.json" : "items.yml");
-		fm.recipesFile = new File(fm.dataFolder,"recipes.yml");
+		fm.recipesFile = new File(fm.dataFolder, "recipes.yml");
 		fm.serverRecipeFile = fm.getFile("server-recipes.yml");
 		fm.containerOwnerFile = fm.getFile("container-owners.yml");
 		return fm;
@@ -129,7 +134,7 @@ public class FileManager {
 	public void cacheRecipes() {
 		Debug.Send("The file manager is caching recipes...");
 		EnhancedRecipe keyValue;
-		if(!recipesFile.exists())
+		if (!recipesFile.exists())
 			return;
 
 		recipesConfig = getYamlConfig(recipesFile);
@@ -154,7 +159,7 @@ public class FileManager {
 
 	@SneakyThrows
 	public void cacheItems() {
-		if(!itemsFile.exists())
+		if (!itemsFile.exists())
 			return;
 
 		if (useJson) {
@@ -279,23 +284,44 @@ public class FileManager {
 		return true;
 	}
 
-	public Map<Location, UUID> getContainerOwners() {
+	public Map<String, BlockOwnerData> getContainerOwners() {
 		containerOwnerConfig = getYamlConfig(containerOwnerFile);
-		final Map<Location, UUID> blockOwners = new HashMap<>();
+		final Map<String, UUID> blockOwners = new HashMap<>();
+		final BlockOwnerCache blockOwnerCache = self().getBlockOwnerCache();
+		if(containerOwnerConfig.contains("Containers")){
+			for (final String key : containerOwnerConfig.getKeys(false)) {
+				if (key == null) continue;
+				if(!key.startsWith("Containers"))
+				containerOwnerConfig.set(key,null);
+			}
+			try {
+				containerOwnerConfig.save(containerOwnerFile);
+			} catch (IOException e) {
+				Debug.error("could not remove the old ententes");
+			}
+			return blockOwnerCache.getContainerOwnersRaw();
+		}
 		for (final String key : containerOwnerConfig.getKeys(false)) {
 			if (key == null) continue;
 			final String[] parsedKey = key.split(",");
+			if(parsedKey.length < 3) continue;
+
 			final World world = Bukkit.getServer().getWorld(UUID.fromString(parsedKey[3]));
+
 			if (world != null) {
 				final Location loc = new Location(
 						world,
 						Integer.parseInt(parsedKey[0]),
 						Integer.parseInt(parsedKey[1]),
 						Integer.parseInt(parsedKey[2]));
-				blockOwners.put(loc, UUID.fromString(containerOwnerConfig.getString(key)));
+				LocationWrapper locationWrapper = new LocationWrapper(loc, UUID.fromString(parsedKey[3]));
+				blockOwnerCache.putContainerOwner(locationWrapper, blockOwnerData ->
+						blockOwnerData.setCurrentOwner(UUID.fromString(containerOwnerConfig.getString(key)))
+				);
+				//blockOwners.put(locationWrapper.toString(), UUID.fromString(containerOwnerConfig.getString(key)));
 			}
 		}
-		return blockOwners;
+		return blockOwnerCache.getContainerOwnersRaw();
 	}
 
 	public boolean saveContainerOwners(final Map<Location, UUID> blockOwners) {

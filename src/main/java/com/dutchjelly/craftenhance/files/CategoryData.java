@@ -14,9 +14,9 @@ import java.util.stream.Collectors;
 
 public class CategoryData implements ConfigurationSerializeUtility {
 
+	private final ItemStack recipeCategoryItem;
 	private String recipeCategory;
 	private String displayName;
-	private final ItemStack recipeCategoryItem;
 	private List<EnhancedRecipe> enhancedRecipes = new ArrayList<>();
 
 	private CategoryData(final ItemStack recipeCategoryItem, final String recipeCategory, final String displayName) {
@@ -24,9 +24,26 @@ public class CategoryData implements ConfigurationSerializeUtility {
 		this.recipeCategory = recipeCategory;
 		this.displayName = displayName;
 	}
+
 	public static CategoryData of(final ItemStack recipeCategoryItem, final String recipeCategory, final String displayName) {
-		return new CategoryData(recipeCategoryItem,recipeCategory,displayName);
+		return new CategoryData(recipeCategoryItem, recipeCategory, displayName);
 	}
+
+	public static CategoryData deserialize(final Map<String, Object> map) {
+		final String recipeCategory = (String) map.getOrDefault("category.name", null);
+		ItemStack itemStack = (ItemStack) map.getOrDefault("category.category_item", null);
+		final String displayName = (String) map.getOrDefault("category.display_name", null);
+		if (itemStack == null || itemStack.getType() == Material.AIR || itemStack.getType() == Material.getMaterial("END_PORTAL")) {
+			Material material = Adapter.getMaterial("CRAFTING_TABLE");
+			if (material == null)
+				material = Material.CRAFTING_TABLE;
+			itemStack = new ItemStack(material);
+		}
+		final CategoryData categoryData = new CategoryData(itemStack, recipeCategory, displayName);
+		categoryData.setDisplayName(displayName);
+		return categoryData;
+	}
+
 	public String getDisplayName() {
 		return displayName;
 	}
@@ -50,17 +67,19 @@ public class CategoryData implements ConfigurationSerializeUtility {
 	public List<EnhancedRecipe> getEnhancedRecipes() {
 		return enhancedRecipes;
 	}
-	public List<EnhancedRecipe> getEnhancedRecipes(final String recipeSearchFor) {
-		if (recipeSearchFor == null || recipeSearchFor.equals(""))
-		return enhancedRecipes;
-		return enhancedRecipes.stream().filter(x -> x.getKey().contains(recipeSearchFor)).collect(Collectors.toList());
-	}
-	public void addEnhancedRecipes(final EnhancedRecipe enhancedRecipes) {
-		this.enhancedRecipes.add(enhancedRecipes);
-	}
 
 	public void setEnhancedRecipes(final List<EnhancedRecipe> enhancedRecipes) {
 		this.enhancedRecipes = enhancedRecipes;
+	}
+
+	public List<EnhancedRecipe> getEnhancedRecipes(final String recipeSearchFor) {
+		if (recipeSearchFor == null || recipeSearchFor.equals(""))
+			return enhancedRecipes;
+		return enhancedRecipes.stream().filter(x -> x.getKey().contains(recipeSearchFor)).collect(Collectors.toList());
+	}
+
+	public void addEnhancedRecipes(final EnhancedRecipe enhancedRecipes) {
+		this.enhancedRecipes.add(enhancedRecipes);
 	}
 
 	@Override
@@ -70,20 +89,6 @@ public class CategoryData implements ConfigurationSerializeUtility {
 			put("category.category_item", recipeCategoryItem);
 			put("category.display_name", displayName);
 		}};
-	}
-	public static CategoryData deserialize(final Map< String, Object> map) {
-		final String recipeCategory = (String) map.getOrDefault("category.name", null);
-		ItemStack itemStack = (ItemStack) map.getOrDefault("category.category_item", null);
-		final String displayName = (String) map.getOrDefault("category.display_name", null);
-		if (itemStack == null || itemStack.getType() == Material.AIR || itemStack.getType() == Material.getMaterial("END_PORTAL")) {
-			Material material = Adapter.getMaterial("CRAFTING_TABLE");
-			if (material == null)
-				material = Material.CRAFTING_TABLE;
-			itemStack = new ItemStack(material);
-		}
-		final CategoryData categoryData =  new CategoryData(itemStack,recipeCategory,displayName);
-		categoryData.setDisplayName(displayName);
-		return categoryData;
 	}
 
 	@Override

@@ -32,6 +32,7 @@ import com.dutchjelly.craftenhance.files.ConfigFormatter;
 import com.dutchjelly.craftenhance.files.FileManager;
 import com.dutchjelly.craftenhance.files.GuiTemplatesFile;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
+import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerCache;
 import com.dutchjelly.craftenhance.gui.GuiManager;
 import com.dutchjelly.craftenhance.gui.customcrafting.CustomCraftingTable;
 import com.dutchjelly.craftenhance.gui.guis.editors.IngredientsCache;
@@ -91,6 +92,8 @@ public class CraftEnhance extends JavaPlugin {
 	private IngredientsCache ingredientsCache;
 	@Getter
 	private BrewingTask brewingTask;
+	@Getter
+	private BlockOwnerCache blockOwnerCache;
 
 	public static CraftEnhance self() {
 		return plugin;
@@ -113,6 +116,9 @@ public class CraftEnhance extends JavaPlugin {
 		if (registerMenuAPI == null)
 			registerMenuAPI = new RegisterMenuAPI(this);
 		this.ingredientsCache = new IngredientsCache();
+		if (this.blockOwnerCache == null)
+			this.blockOwnerCache = new BlockOwnerCache();
+
 		saveDefaultConfig();
 
 		if (isReloading)
@@ -155,7 +161,8 @@ public class CraftEnhance extends JavaPlugin {
 				RecipeLoader.clearInstance();
 				reloadConfig();
 				this.onEnable();
-				menuSettingsCache.reload();
+				this.menuSettingsCache.reload();
+				this.blockOwnerCache.reload();
 			});
 		});
 	}
@@ -165,7 +172,8 @@ public class CraftEnhance extends JavaPlugin {
 		if (!this.isReloading)
 			getServer().resetRecipes();
 		Debug.Send("Saving container owners...");
-		fm.saveContainerOwners(injector.getFurnaceRecipeInjector().getContainerOwners());
+		this.getBlockOwnerCache().save();
+		//fm.saveContainerOwners(injector.getFurnaceRecipeInjector().getContainerOwners());
 		Debug.Send("Saving disabled recipes...");
 		fm.saveDisabledServerRecipes(RecipeLoader.getInstance().getDisabledServerRecipes().stream().map(x -> Adapter.GetRecipeIdentifier(x)).collect(Collectors.toList()));
 		categoryDataCache.save();
@@ -247,6 +255,7 @@ public class CraftEnhance extends JavaPlugin {
 		if (categoryDataCache == null)
 			categoryDataCache = new CategoryDataCache();
 		categoryDataCache.reload();
+		this.blockOwnerCache.reload();
 
 		Debug.Send("Checking for config updates.");
 		final File configFile = new File(getDataFolder(), "config.yml");
