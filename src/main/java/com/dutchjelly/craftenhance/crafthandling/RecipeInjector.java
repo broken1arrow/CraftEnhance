@@ -171,7 +171,7 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 	}
 
 	@EventHandler
-	public void furnaceBreak(final BlockBreakEvent e) {
+	public void containerBreak(final BlockBreakEvent e) {
 		if (e.isCancelled()) return;
 		if (e.getBlock().getType().equals(Material.FURNACE)) {
 			this.furnaceRecipeInjector.furnaceBreak(e);

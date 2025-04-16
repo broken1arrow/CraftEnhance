@@ -70,9 +70,9 @@ public class BlockOwnerCache extends SimpleYamlHelper {
 		this.containerOwners.put(locationWrapper.toString(), blockOwnerData);
 	}
 
-	public void remove(final Location location) {
+	public BlockOwnerData remove(final Location location) {
 		final LocationWrapper locationWrapper = new LocationWrapper(location, location.getWorld().getUID());
-		this.containerOwners.remove(locationWrapper.toString());
+	return	this.containerOwners.remove(locationWrapper.toString());
 	}
 
 	@Override

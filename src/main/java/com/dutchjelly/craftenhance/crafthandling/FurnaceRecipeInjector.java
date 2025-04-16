@@ -9,6 +9,7 @@ import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Debug.DebugType;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
+import com.dutchjelly.craftenhance.util.RecipeResult;
 import lombok.Getter;
 import org.bukkit.Material;
 import org.bukkit.block.Furnace;
@@ -25,7 +26,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public class FurnaceRecipeInjector {
 	private final CraftEnhance plugin;
@@ -50,17 +50,17 @@ public class FurnaceRecipeInjector {
 
 		final RecipeGroup group = this.recipeInjector.getMatchingRecipeGroup(event.getBlock(), event.getSource());
 		final Furnace furnace = (Furnace) event.getBlock().getState();
-		final Optional<ItemStack> result = this.getFurnaceResult(group, event.getSource(), furnace);
+		final RecipeResult result = this.getFurnaceResult(group, event.getSource(), furnace);
 
 		Debug.Send(Type.Smelting, () -> "Custom result " + result);
-		if (result != null && result.isPresent()) {
+		if (result.isEnhancedRecipe()) {
 			ItemStack itemInResulSlot = furnace.getInventory().getResult();
 		/*	if(!result.get().isSimilar(itemInResulSlot)) {
 				System.out.println("result is not same");
 				event.setCancelled(true);
 				return;
 			}*/
-			event.setResult(result.get());
+			event.setResult(result.getItem());
 		} else {
 			final ItemStack itemStack = RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(event.getSource().getType()));
 			if (itemStack != null) {
@@ -100,15 +100,17 @@ public class FurnaceRecipeInjector {
 			return;
 		}
 		final RecipeGroup recipe = this.recipeInjector.getMatchingRecipeGroup(burnEvent.getBlock(), furnace.getInventory().getSmelting());
-		final Optional<ItemStack> result = this.getFurnaceResult(recipe, furnace.getInventory().getSmelting(), furnace);
+		final RecipeResult result = this.getFurnaceResult(recipe, furnace.getInventory().getSmelting(), furnace);
 		ItemStack itemInResulSlot = furnace.getInventory().getResult();
-		if (result != null && result.isPresent() && itemInResulSlot != null && itemInResulSlot.getType() != Material.AIR && !result.get().isSimilar(itemInResulSlot)) {
+		if (result.isEnhancedRecipe() && itemInResulSlot != null && itemInResulSlot.getType() != Material.AIR && !result.getItem().isSimilar(itemInResulSlot)) {
 			burnEvent.setCancelled(true);
 			return;
 		}
 
-		if (result != null && !result.isPresent()) {
+		if (!result.isEnhancedRecipe()) {
 			if (furnace.getInventory().getSmelting() != null && RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(furnace.getInventory().getSmelting().getType())) != null)
+				return;
+			if (result.isVanilla())
 				return;
 			burnEvent.setCancelled(true);
 			pausedFurnaces.put(furnace, LocalDateTime.now().plusSeconds(10L));
@@ -137,7 +139,7 @@ public class FurnaceRecipeInjector {
 	public void furnaceBreak(final BlockBreakEvent furnaceRemoved) {
 		if (furnaceRemoved.isCancelled()) return;
 		if (furnaceRemoved.getBlock().getType().equals(Material.FURNACE)) {
-			blockOwnerCache.remove(furnaceRemoved.getBlock().getLocation());
+			final BlockOwnerData block = blockOwnerCache.remove(furnaceRemoved.getBlock().getLocation());
 			pausedFurnaces.remove((Furnace) furnaceRemoved.getBlock().getState());
 		}
 	}
@@ -155,13 +157,13 @@ public class FurnaceRecipeInjector {
 		return blockOwnerCache;
 	}
 
-	public Optional<ItemStack> getFurnaceResult(final RecipeGroup group, final ItemStack source, final Furnace furnace) {
+	public RecipeResult getFurnaceResult(final RecipeGroup group, final ItemStack source, final Furnace furnace) {
 		//FurnaceRecipe recipe = new FurnaceRecipe(null, null, srcMatrix);
 		//RecipeGroup group = RecipeLoader.getInstance().findSimilarGroup(recipe);
 
 		if (group == null) {
 			Debug.Send(Type.Smelting, () -> "furnace recipe does not match any recipe group.");
-			return null;
+			return RecipeResult.setVanilla();
 		}
 		final BlockOwnerData containerOwner = this.blockOwnerCache.getContainerOwner(furnace.getLocation());
 		final Player player = containerOwner == null ? null : plugin.getServer().getPlayer(containerOwner.getCurrentOwner());
@@ -172,18 +174,18 @@ public class FurnaceRecipeInjector {
 		Debug.Send(DebugType.of(Type.Smelting, furnaceRecipe), () -> "Furnace group: " + group);
 		Debug.Send(DebugType.of(Type.Smelting, furnaceRecipe), () -> "Furnace source item: " + source);
 
-		if (furnaceRecipe != null) return Optional.of(furnaceRecipe.getResult());
+		if (furnaceRecipe != null) return RecipeResult.setResult(furnaceRecipe.getResult());
 		//Check for similar server recipes if no enhanced ones match.
 		for (final Recipe sRecipe : group.getServerRecipes()) {
 			final org.bukkit.inventory.FurnaceRecipe fRecipe = (org.bukkit.inventory.FurnaceRecipe) sRecipe;
 			if (this.recipeInjector.getTypeMatcher().match(fRecipe.getInput(), source)) {
-				Debug.Send(Type.Smelting, () -> "found similar server recipe for furnace");
+				Debug.Send(Type.Smelting, () -> "Found similar server recipe for furnace, will prevent the recipe to be burnt.");
 				Debug.Send(Type.Smelting, () -> "Source " + source);
 				Debug.Send(Type.Smelting, () -> "Input: " + fRecipe.getInput());
-				return null;
+				return RecipeResult.setVanilla();
 			}
 		}
-		return Optional.empty();
+		return RecipeResult.setNone();
 	}
 
 	public FurnaceRecipe getFurnaceRecipe(final Material blockSmelting, final RecipeGroup group, final ItemStack source, final Player player) {
