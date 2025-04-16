@@ -288,23 +288,23 @@ public class FileManager {
 		containerOwnerConfig = getYamlConfig(containerOwnerFile);
 		final Map<String, UUID> blockOwners = new HashMap<>();
 		final BlockOwnerCache blockOwnerCache = self().getBlockOwnerCache();
-		if(containerOwnerConfig.contains("Containers")){
+		if (containerOwnerConfig.contains("Containers")) {
 			for (final String key : containerOwnerConfig.getKeys(false)) {
 				if (key == null) continue;
-				if(!key.startsWith("Containers"))
-				containerOwnerConfig.set(key,null);
+				if (!key.startsWith("Containers"))
+					containerOwnerConfig.set(key, null);
 			}
 			try {
 				containerOwnerConfig.save(containerOwnerFile);
 			} catch (IOException e) {
-				Debug.error("could not remove the old ententes");
+				Debug.error("could not remove the old container owners.");
 			}
 			return blockOwnerCache.getContainerOwnersRaw();
 		}
 		for (final String key : containerOwnerConfig.getKeys(false)) {
 			if (key == null) continue;
 			final String[] parsedKey = key.split(",");
-			if(parsedKey.length < 3) continue;
+			if (parsedKey.length < 3) continue;
 
 			final World world = Bukkit.getServer().getWorld(UUID.fromString(parsedKey[3]));
 
