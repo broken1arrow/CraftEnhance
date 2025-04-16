@@ -158,9 +158,19 @@ public class ItemMatchers {
 
 	private static boolean checkMetaIsSame(final ItemMeta metaA, final ItemMeta metaB) {
 		if (metaA != null && metaB != null) {
+			if (metaA.hasAttributeModifiers() != metaB.hasAttributeModifiers())
+				return false;
+
+			if (metaA.hasEnchants() != metaB.hasEnchants())
+				return false;
+
+			if (metaA.hasDisplayName() != metaB.hasDisplayName())
+				return false;
+
+			if (metaA.hasLore() != metaB.hasLore())
+				return false;
 
 			boolean sameLore = Objects.equals(metaA.getLore(), metaB.getLore());
-
 			if (metaA.hasLore() && !metaB.hasLore()) {
 				sameLore = false;
 			} else if (!sameLore) {
