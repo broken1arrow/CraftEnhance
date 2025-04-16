@@ -117,11 +117,11 @@ public class FurnaceRecipeInjector {
 
 	public void furnaceClick(final InventoryClickEvent furnaceClick) {
 		if (furnaceClick.isCancelled() || furnaceClick.getClickedInventory() == null) return;
-		System.out.println("blockOwnerCache. " + blockOwnerCache.getContainerOwners());
+/*		System.out.println("blockOwnerCache. " + blockOwnerCache.getContainerOwners());
 		blockOwnerCache.getContainerOwner(furnaceClick.getClickedInventory().getLocation(), blockOwnerData -> {
 			System.out.println("blockdata Owner " + blockOwnerData.getCurrentOwner());
 			System.out.println("blockdata loc " + blockOwnerData.getLocation());
-		});
+		});*/
 
 		final Furnace f = (Furnace) furnaceClick.getClickedInventory().getHolder();
 		pausedFurnaces.remove(f);
