@@ -172,8 +172,6 @@ public class RecipeLoader {
 
 
 		if (group != null) {
-			System.out.println("group " + group.getEnhancedRecipes().size());
-			System.out.println("result " + result);
 			if (recipe instanceof CookingRecipe) {
 				if (group.getEnhancedRecipes().stream().anyMatch(x -> result.isSimilar(x.getContent()[0])))
 					originGroups.add(group);

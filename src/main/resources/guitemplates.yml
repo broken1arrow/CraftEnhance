@@ -348,7 +348,8 @@ Menus:
           - "&fThe recipe is &3[shaped]&f"
           - "&fThe ingredients need &3[matcher]"
           - "&fThe key of the recipe is &3[key]"
-          - "&fThe permission of the recipe is &3[permission]"
+          - "&fThe permission: &3[permission]"
+          - "&fThe group: &3[recipe_group]"
         glow: true
       "17":
         action_type: ResetRecipe
@@ -508,7 +509,9 @@ Menus:
         lore:
           - "&fThe ingredients need &3[matcher]"
           - "&fThe key of the recipe is &3[key]"
-          - "&fThe permission of the recipe is &3[permission]"
+          - "&fThe permission: &3[permission]"
+          - "&fThe group: &3[recipe_group]"
+          - "&fThe time: &3[duration]"
         glow: true
       "17":
         action_type: ResetRecipe
@@ -566,7 +569,9 @@ Menus:
         lore:
           - "&fThe ingredients need &3[matcher]"
           - "&fThe key of the recipe is &3[key]"
-          - "&fThe permission of the recipe is &3[permission]"
+          - "&fThe permission: &3[permission]"
+          - "&fThe group: &3[recipe_group]"
+          - "&fThe time: &3[duration]"
         glow: true
       "5":
         material: BREWING_STAND
@@ -627,6 +632,7 @@ Menus:
           - "&fThe key of the recipe is &3[key]"
           - "&fThe brewing time is &3[duration] &fsec"
           - "&fThe permission of the recipe is &3[permission]"
+          - "&fThe group &3[recipe_group]"
         glow: true
       "5":
         material: BREWING_STAND
