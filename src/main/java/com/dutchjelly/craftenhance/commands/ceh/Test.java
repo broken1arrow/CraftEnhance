@@ -4,7 +4,6 @@ import com.dutchjelly.craftenhance.commandhandling.CommandRoute;
 import com.dutchjelly.craftenhance.commandhandling.ICommand;
 import com.dutchjelly.craftenhance.crafthandling.RecipeGroup;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
-import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
@@ -240,8 +239,8 @@ public class Test implements ICommand{
         Assert(RecipeLoader.getInstance().findGroup(recipe) != null);
         RecipeGroup group = RecipeLoader.getInstance().findGroup(recipe);
         Assert(group.getServerRecipes().size() == 1); //there's only one similar server recipe
-        Assert(RecipeLoader.getInstance().findGroupsByResult(supahDiamondChestplate, RecipeType.WORKBENCH).contains(group));
-        Assert(RecipeLoader.getInstance().findGroupsByResult(new ItemStack(Material.DIAMOND_CHESTPLATE), RecipeType.WORKBENCH).contains(group));
+        Assert(RecipeLoader.getInstance().findGroupsByResult(supahDiamondChestplate, recipe.getServerRecipe()).contains(group));
+        Assert(RecipeLoader.getInstance().findGroupsByResult(new ItemStack(Material.DIAMOND_CHESTPLATE), recipe.getServerRecipe()).contains(group));
         p.sendMessage("showing loaded groups...");
         showLoadedRecipeGroups(p);
         Assert(group.getServerRecipes().stream().anyMatch(x -> x.getResult().getType().equals(Material.DIAMOND_CHESTPLATE)));
@@ -258,8 +257,8 @@ public class Test implements ICommand{
         Assert(RecipeLoader.getInstance().findGroup(recipe) != null);
         group = RecipeLoader.getInstance().findGroup(recipe);
         Assert(group.getServerRecipes().size() == 1); //there's only one similar server recipe
-        Assert(RecipeLoader.getInstance().findGroupsByResult(supahDiamond, RecipeType.WORKBENCH).contains(group));
-        Assert(RecipeLoader.getInstance().findGroupsByResult(new ItemStack(Material.DIAMOND_BOOTS), RecipeType.WORKBENCH).contains(group));
+        Assert(RecipeLoader.getInstance().findGroupsByResult(supahDiamond, recipe.getServerRecipe()).contains(group));
+        Assert(RecipeLoader.getInstance().findGroupsByResult(new ItemStack(Material.DIAMOND_BOOTS), recipe.getServerRecipe()).contains(group));
         Assert(group.getServerRecipes().stream().anyMatch(x -> x.getResult().getType().equals(Material.DIAMOND_BOOTS)));
 
 
@@ -271,7 +270,7 @@ public class Test implements ICommand{
 
         RecipeLoader.getInstance().loadRecipe(recipe2);
         Assert(RecipeLoader.getInstance().findGroup(recipe2).getEnhancedRecipes().size() == 2);
-        Assert(RecipeLoader.getInstance().findGroupsByResult(new ItemStack(Material.EMERALD), RecipeType.WORKBENCH).size() == 1);
+        Assert(RecipeLoader.getInstance().findGroupsByResult(new ItemStack(Material.EMERALD), recipe.getServerRecipe()).size() == 1);
         Assert(RecipeLoader.getInstance().findGroup(recipe2).getServerRecipes().size() == 1);
 
         RecipeLoader.getInstance().unloadRecipe(recipe2);
@@ -289,8 +288,8 @@ public class Test implements ICommand{
         Assert(RecipeLoader.getInstance().findGroup(recipe) != null);
         group = RecipeLoader.getInstance().findGroup(recipe);
         Assert(group.getServerRecipes().size() == 0); //there's no similar server recipe
-        Assert(RecipeLoader.getInstance().findGroupsByResult(supahDiamond, RecipeType.WORKBENCH).contains(group));
-        Assert(RecipeLoader.getInstance().findGroupsByResult(new ItemStack(supahDiamond), RecipeType.WORKBENCH).contains(group));
+        Assert(RecipeLoader.getInstance().findGroupsByResult(supahDiamond, recipe.getServerRecipe()).contains(group));
+        Assert(RecipeLoader.getInstance().findGroupsByResult(new ItemStack(supahDiamond), recipe.getServerRecipe()).contains(group));
         Assert(!group.getServerRecipes().stream().anyMatch(x -> x.getResult().getType().equals(Material.DIAMOND)));
 
         RecipeLoader.getInstance().unloadRecipe(recipe);

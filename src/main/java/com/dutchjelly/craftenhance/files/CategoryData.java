@@ -1,10 +1,12 @@
 package com.dutchjelly.craftenhance.files;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.cache.RecipeCoreData;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.util.ConfigurationSerializeUtility;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,12 +14,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
+
 public class CategoryData implements ConfigurationSerializeUtility {
 
 	private final ItemStack recipeCategoryItem;
 	private String recipeCategory;
 	private String displayName;
-	private List<EnhancedRecipe> enhancedRecipes = new ArrayList<>();
+	private List<RecipeCoreData> enhancedRecipes = new ArrayList<>();
 
 	private CategoryData(final ItemStack recipeCategoryItem, final String recipeCategory, final String displayName) {
 		this.recipeCategoryItem = recipeCategoryItem;
@@ -65,21 +69,23 @@ public class CategoryData implements ConfigurationSerializeUtility {
 	}
 
 	public List<EnhancedRecipe> getEnhancedRecipes() {
+		return enhancedRecipes.stream().map(this::getEnhancedRecipe).collect(Collectors.toList());
+	}
+	public List<RecipeCoreData> getRecipeCoreData() {
 		return enhancedRecipes;
 	}
-
 	public void setEnhancedRecipes(final List<EnhancedRecipe> enhancedRecipes) {
-		this.enhancedRecipes = enhancedRecipes;
+		this.enhancedRecipes = new ArrayList<>();
+		enhancedRecipes.forEach(enhancedRecipe -> this.enhancedRecipes.add(new RecipeCoreData(enhancedRecipe)));
 	}
 
-	public List<EnhancedRecipe> getEnhancedRecipes(final String recipeSearchFor) {
-		if (recipeSearchFor == null || recipeSearchFor.equals(""))
-			return enhancedRecipes;
-		return enhancedRecipes.stream().filter(x -> x.getKey().contains(recipeSearchFor)).collect(Collectors.toList());
+	@Nullable
+	private EnhancedRecipe getEnhancedRecipe(final RecipeCoreData recipeCoreData) {
+		return self().getCacheRecipes().getRecipe(recipeCoreData.getKey());
 	}
 
-	public void addEnhancedRecipes(final EnhancedRecipe enhancedRecipes) {
-		this.enhancedRecipes.add(enhancedRecipes);
+	public void addEnhancedRecipes(final EnhancedRecipe enhancedRecipe) {
+		this.enhancedRecipes.add(new RecipeCoreData(enhancedRecipe));
 	}
 
 	@Override

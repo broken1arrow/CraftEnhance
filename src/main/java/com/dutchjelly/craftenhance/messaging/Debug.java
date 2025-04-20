@@ -32,10 +32,13 @@ public class Debug {
 	public static void Send(final Object obj) {
 		Send(Type.Other, obj);
 	}
+	public static void Send(final String typeOfAction,final Object obj) {
+		Send(Type.Other, typeOfAction, obj);
+	}
 
-	public static void Send(@NonNull final DebugType recipe, final Supplier<Object> obj) {
-		final EnhancedRecipe enhancedRecipe = recipe.enhancedRecipe;
-		final Type type = recipe.type;
+	public static void Send(@NonNull final DebugType debugType, final Supplier<Object> obj) {
+		final EnhancedRecipe enhancedRecipe = debugType.enhancedRecipe;
+		final Type type = debugType.type;
 
 		if (enhancedRecipe != null)
 			Send(enhancedRecipe, obj);
@@ -52,7 +55,7 @@ public class Debug {
 		boolean debugEnable = (enable_crafting_debug && type == Crafting) || (enable_smelting__debug && type == Smelting) || (enable_brewing_debug && type == Brewing) || enable;
 		if (!debugEnable) return;
 
-		Send(type, recipe.getKey(), obj.get());
+		Send(type,  recipe.getKey(), obj.get());
 	}
 
 	public static void Send(final Type type, final Supplier<Object> obj) {
@@ -73,7 +76,7 @@ public class Debug {
 	public static void Send(final Type type, final String name, final Object obj) {
 		String debugHowName = "";
 		if (name != null)
-			debugHowName = " key: (" + name + ") ";
+			debugHowName = " (" + name + ") ";
 
 		if (enable_crafting_debug && type == Crafting) {
 			System.out.println(prefix + " [crafting]" + debugHowName + (obj != null ? obj.toString() : "null"));
@@ -139,7 +142,10 @@ public class Debug {
 	public enum Type {
 		Crafting,
 		Smelting,
-		Other, Brewing;
+		Other,
+		Brewing,
+		Non
+		;
 	}
 
 	public static class DebugType {

@@ -47,7 +47,7 @@ public class WorkBenchRecipeInjector {
 		Debug.Send(Type.Crafting, () -> "The server wants to inject " + serverRecipe.getResult() + " ceh will check or modify this.");
 		RecipeInjector recipeManger = this.recipeInjector;
 
-		final List<RecipeGroup> possibleRecipeGroups = recipeManger.getLoader().findGroupsByResult(serverRecipe.getResult(), RecipeType.WORKBENCH);
+		final List<RecipeGroup> possibleRecipeGroups = recipeManger.getLoader().findGroupsByResult(serverRecipe.getResult(), serverRecipe, RecipeType.WORKBENCH);
 		final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
 
 		if (possibleRecipeGroups == null || possibleRecipeGroups.isEmpty()) {

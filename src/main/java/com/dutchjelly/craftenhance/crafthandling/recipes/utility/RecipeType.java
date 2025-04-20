@@ -15,7 +15,7 @@ import org.bukkit.inventory.ShapelessRecipe;
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public enum RecipeType {
-	WORKBENCH, FURNACE, BLAST, SMOKER, BREWING;
+	WORKBENCH, FURNACE, BLAST, SMOKER, BREWING,NON;
 
 	public static RecipeType getType(Recipe r) {
 		if (r instanceof ShapedRecipe) return WORKBENCH;

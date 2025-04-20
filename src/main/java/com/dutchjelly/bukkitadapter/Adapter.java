@@ -1,6 +1,7 @@
 package com.dutchjelly.bukkitadapter;
 
 
+import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.exceptions.ConfigError;
 import com.dutchjelly.craftenhance.gui.util.SkullCreator;
@@ -9,6 +10,7 @@ import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
+import lombok.NonNull;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
@@ -17,6 +19,8 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.CookingRecipe;
+import org.bukkit.inventory.CraftingRecipe;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -41,12 +45,13 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class Adapter {
 
+	public final static String GUI_SKULL_MATERIAL_NAME = "GUI_SKULL_ITEM";
+	private final static CraftEnhance plugin = self();
+	private static Optional<Boolean> canUseModeldata = Optional.empty();
 
 	public static List<String> CompatibleVersions() {
-		return Arrays.asList("1.9", "1.10", "1.11", "1.12", "1.13", "1.14", "1.15", "1.16", "1.17", "1.18", "1.19", "1.20","1.21");
+		return Arrays.asList("1.9", "1.10", "1.11", "1.12", "1.13", "1.14", "1.15", "1.16", "1.17", "1.18", "1.19", "1.20", "1.21");
 	}
-
-	public final static String GUI_SKULL_MATERIAL_NAME = "GUI_SKULL_ITEM";
 
 	@Nullable
 	public static ItemStack getItemStack(final String material, String displayName, List<String> lore, final String color, final boolean glow) {
@@ -96,8 +101,7 @@ public class Adapter {
 					self().getLogger().warning("The AttributeModifier is no longer supported and the tooltip will probably be visible again.");
 				}
 				meta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
-			}
-			else
+			} else
 				meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 			if (glow) {
 				if (self().getVersionChecker().newerThan(ServerVersion.v1_20)) {
@@ -114,7 +118,6 @@ public class Adapter {
 		}
 		return item;
 	}
-
 
 	private static ItemStack getItemStack(final String material) {
 		final Material mat = Adapter.getMaterial(material);
@@ -161,7 +164,7 @@ public class Adapter {
 				case "BOOK_AND_QUILL":
 					return Material.valueOf("WRITABLE_BOOK");
 				default:
-					Messenger.Error("Could not find " + name + " try load legacy suport");
+					Messenger.Error("Could not find " + name + " try load legacy support");
 					return Material.matchMaterial("LEGACY_" + name);
 			}
 		} else {
@@ -198,8 +201,6 @@ public class Adapter {
 		}
 		return null;
 	}
-
-	private static Optional<Boolean> canUseModeldata = Optional.empty();
 
 	public static boolean canUseModeldata() {
 		if (canUseModeldata.isPresent()) {
@@ -246,6 +247,8 @@ public class Adapter {
 	}
 
 	public static void SetIngredient(final ShapedRecipe recipe, final char key, final ItemStack ingredient) {
+		if (ingredient.getType() == Material.AIR) return;
+
 		if (!self().getConfig().getBoolean("learn-recipes")) {
 			if (self().getVersionChecker().newerThan(VersionChecker.ServerVersion.v1_14)) {
 				if (ingredient == null) return;
@@ -267,15 +270,26 @@ public class Adapter {
 			return;
 		}
 		try {
-			recipe.getClass().getMethod("setIngredient", char.class, Class.forName("org.bukkit.inventory.RecipeChoice.ExactChoice")).invoke(recipe,
-					key, Class.forName("org.bukkit.inventory.RecipeChoice.ExactChoice").getConstructor(ItemStack.class).newInstance(ingredient)
-			);
+			if (ingredient.getType() == Material.AIR) return;
+
+			final Class<?> recipeClass = recipe.getClass();
+			final Class<?> recipeChoiceClass = Class.forName("org.bukkit.inventory.RecipeChoice");
+			final Class<?> exactChoiceClass = Class.forName("org.bukkit.inventory.RecipeChoice$ExactChoice");
+
+			Object choice = exactChoiceClass
+					.getConstructor(ItemStack.class)
+					.newInstance(ingredient);
+
+			Method setIngredient = recipeClass.getMethod("setIngredient", char.class, recipeChoiceClass);
+			setIngredient.invoke(recipe, key, choice);
 		} catch (final Exception e) {
 			recipe.setIngredient(key, ingredient.getType());
 		}
 	}
 
 	public static void AddIngredient(final ShapelessRecipe recipe, final ItemStack ingredient) {
+		if (ingredient.getType() == Material.AIR) return;
+
 		if (!self().getConfig().getBoolean("learn-recipes")) {
 			if (self().getVersionChecker().olderThan(ServerVersion.v1_16)) {
 				final MaterialData md = ingredient.getData();
@@ -290,9 +304,16 @@ public class Adapter {
 			return;
 		}
 		try {
-			recipe.getClass().getMethod("addIngredient", Class.forName("org.bukkit.inventory.RecipeChoice.ExactChoice")).invoke(recipe,
-					Class.forName("org.bukkit.inventory.RecipeChoice.ExactChoice").getConstructor(ItemStack.class).newInstance(ingredient)
-			);
+			final Class<?> recipeClass = recipe.getClass();
+			final Class<?> recipeChoiceClass = Class.forName("org.bukkit.inventory.RecipeChoice");
+			final Class<?> exactChoiceClass = Class.forName("org.bukkit.inventory.RecipeChoice$ExactChoice");
+
+			Object choice = exactChoiceClass
+					.getConstructor(ItemStack.class)
+					.newInstance(ingredient);
+
+			Method setIngredient = recipeClass.getMethod("setIngredient", recipeChoiceClass);
+			setIngredient.invoke(recipe, choice);
 		} catch (final Exception e) {
 			recipe.addIngredient(ingredient.getType());
 		}
@@ -357,10 +378,14 @@ public class Adapter {
 
 	public static void DiscoverRecipes(final Player player, final List<Recipe> recipes) {
 		try {
+			boolean serverIsNewer = self().getVersionChecker().newerThan(ServerVersion.v1_12);
+			if (!serverIsNewer)
+				return;
+
 			for (final Recipe recipe : recipes) {
 				if (recipe instanceof ShapedRecipe) {
 					final ShapedRecipe shaped = (ShapedRecipe) recipe;
-					;
+
 					if (shaped.getKey().getNamespace().contains("craftenhance")) {
 						player.discoverRecipe(shaped.getKey());
 					}
@@ -372,6 +397,7 @@ public class Adapter {
 				}
 			}
 		} catch (final Exception e) {
+			Messenger.Error("Could not discover the recipe at the player.");
 		}
 	}
 
@@ -411,4 +437,13 @@ public class Adapter {
 		return r.getResult().getType().name();
 	}
 
+	public static <T extends CookingRecipe<?>> void setGroup(@NonNull final CookingRecipe<T> furnaceRecipe, @NonNull final String groupName) {
+		if (self().getVersionChecker().newerThan(ServerVersion.v1_12))
+			furnaceRecipe.setGroup(groupName);
+	}
+
+	public static void setGroup(final CraftingRecipe recipe, final String groupName) {
+		if (self().getVersionChecker().newerThan(ServerVersion.v1_12))
+			recipe.setGroup(groupName);
+	}
 }

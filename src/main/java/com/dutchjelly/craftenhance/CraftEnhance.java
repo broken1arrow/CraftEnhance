@@ -22,6 +22,7 @@ import com.dutchjelly.craftenhance.crafthandling.RecipeInjector;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.ServerLoadable;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
@@ -296,6 +297,7 @@ public class CraftEnhance extends JavaPlugin {
 						Adapter.FilterRecipes(loader.getServerRecipes(), x)
 				).collect(Collectors.toList())
 		);
+		System.out.println("Groups and type= " + loader.getRecipes());
 		injector.getFurnaceRecipeInjector().registerContainerOwners(fm.getContainerOwners());
 		injector.setLoader(loader);
 		injector.reload();
@@ -303,7 +305,9 @@ public class CraftEnhance extends JavaPlugin {
 		if (isReloading && Bukkit.getOnlinePlayers().size() > 0)
 			if (self().getConfig().getBoolean("learn-recipes"))
 				for (final Player player : Bukkit.getOnlinePlayers())
-					Adapter.DiscoverRecipes(player, getCategoryDataCache().getServerRecipes());
+					Adapter.DiscoverRecipes(player, getCacheRecipes().getRecipes().stream()
+							.map(ServerLoadable::getServerRecipe)
+							.collect(Collectors.toList()));
 	}
 
 	public void openEnhancedCraftingTable(final Player p) {

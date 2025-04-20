@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.util;
 
+import com.dutchjelly.craftenhance.cache.CacheRecipes;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
 import static com.dutchjelly.craftenhance.gui.util.FormatListContents.canSeeRecipes;
 
 public class PaginatedItems {
@@ -24,7 +26,7 @@ public class PaginatedItems {
 	}
 
 	public List<EnhancedRecipe> retrieveList(final Player player, final String recipeSearchFor) {
-		List<EnhancedRecipe> enhancedRecipes = canSeeRecipes(categoryData.getEnhancedRecipes(recipeSearchFor), player);
+		List<EnhancedRecipe> enhancedRecipes = canSeeRecipes(getEnhancedRecipes(recipeSearchFor), player);
 		for (EnhancedRecipe recipe : enhancedRecipes) {
 			addItem(new Item(recipe));
 		}
@@ -34,6 +36,15 @@ public class PaginatedItems {
 		return itemList.stream()
 				.map(item -> (item != null) ? item.getEnhancedRecipe() : null)
 				.collect(Collectors.toList());
+	}
+
+	public List<EnhancedRecipe> getEnhancedRecipes(final String recipeSearchFor) {
+		CacheRecipes cacheRecipes = self().getCacheRecipes();
+		if (recipeSearchFor == null || recipeSearchFor.equals(""))
+			return cacheRecipes.getRecipesFiltered(enhancedRecipe -> enhancedRecipe.getRecipeCategory().equals(this.categoryData.getRecipeCategory()));
+		return cacheRecipes.getRecipesFiltered(enhancedRecipe ->
+				enhancedRecipe.getRecipeCategory().equals(this.categoryData.getRecipeCategory()) &&
+						enhancedRecipe.getKey().contains(recipeSearchFor));
 	}
 
 	private void addDuplicates(final Item item) {

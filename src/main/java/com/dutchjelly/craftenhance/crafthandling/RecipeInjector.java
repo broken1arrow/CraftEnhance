@@ -6,8 +6,6 @@ import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
@@ -27,6 +25,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.CrafterCraftEvent;
@@ -40,7 +39,9 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.CookingRecipe;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -221,29 +222,22 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 	}
 
 	@Nullable
-	public RecipeGroup getMatchingRecipeGroup(final Block typeOfFurnace, final ItemStack source) {
-		final ItemStack[] srcMatrix = new ItemStack[]{source};
+	public List<RecipeGroup> getMatchingRecipeGroup(final CookingRecipe<?> cookingRecipe, final Block typeOfFurnace, final ItemStack source) {
 		RecipeType recipeType = RecipeType.getType(typeOfFurnace);
 		if (recipeType == null) return null;
-
-		FurnaceRecipe recipe = null;
+		if (cookingRecipe != null) {
+			return RecipeLoader.getInstance().findGroupsByResult(source, cookingRecipe);
+		}
 		switch (recipeType) {
 			case WORKBENCH:
 				//recipe = new WBRecipe(null, null, srcMatrix);
 				break;
 			case FURNACE:
-				recipe = new FurnaceRecipe(null, null, srcMatrix);
-				break;
 			case BLAST:
-				recipe = new BlastRecipe(null, null, srcMatrix);
-				break;
 			case SMOKER:
-				recipe = new SmokerRecipe(null, null, srcMatrix);
-				break;
+				return RecipeLoader.getInstance().findGroupsByResult(source, null, recipeType);
 		}
-		if (recipe == null) return null;
-
-		return RecipeLoader.getInstance().findSimilarGroup(recipe);
+		return null;
 	}
 
 
@@ -307,16 +301,33 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 
 
 	private class SmeltListener implements Listener {
+		@EventHandler
+		public void startSmet( PlayerInteractEvent event) {
+			isLeftClick(event.getAction());
+		}
+
+		public boolean isLeftClick(Action action) {
+			return action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK;
+		}
+
+		public boolean isRightClick(Action action) {
+			return action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK;
+		}
 
 		@EventHandler
 		public void startSmelt(FurnaceStartSmeltEvent event) {
-			final RecipeGroup group = getMatchingRecipeGroup(event.getBlock(), event.getSource());
-			FurnaceRecipe furnaceRecipe = getFurnaceRecipeInjector().getFurnaceRecipe(event.getBlock().getType(), group, event.getSource(), null);
-			if (furnaceRecipe == null) {
-				/*todo need to fix so you can stop it from progress if not allow to burn the item  */
+			final List<RecipeGroup> groups = getMatchingRecipeGroup(event.getRecipe(), event.getBlock(), event.getSource());
+			if (groups == null) return;
+
+			for (RecipeGroup group : groups) {
+				FurnaceRecipe furnaceRecipe = getFurnaceRecipeInjector().getFurnaceRecipe(event.getBlock().getType(), group, event.getSource(), null);
+				if (furnaceRecipe == null) {
+					/*todo need to fix so you can stop it from progress if not allow to burn the item  */
+					return;
+				}
+				event.setTotalCookTime(furnaceRecipe.getDuration());
 				return;
 			}
-			event.setTotalCookTime(furnaceRecipe.getDuration());
 		}
 	}
 

@@ -155,6 +155,10 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 	@Getter
 	@Setter
 	private boolean remove;
+	@Getter
+	@Setter
+	private String group;
+
 	public EnhancedRecipe copy() {
 		switch (this.getType()) {
 			case FURNACE:

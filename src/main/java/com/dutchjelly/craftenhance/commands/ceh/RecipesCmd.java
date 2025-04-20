@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.commands.ceh;
 
+import com.dutchjelly.craftenhance.cache.CacheRecipes;
 import com.dutchjelly.craftenhance.commandhandling.CommandRoute;
 import com.dutchjelly.craftenhance.commandhandling.CustomCmdHandler;
 import com.dutchjelly.craftenhance.commandhandling.ICommand;
@@ -116,7 +117,9 @@ public class RecipesCmd implements ICommand {
 	}
 
 	public List<String> recipeStringList(final CategoryData categoryData, final Player player) {
-		return canSeeRecipes(categoryData.getEnhancedRecipes(""), player).stream().map(EnhancedRecipe::getKey).collect(Collectors.toList());
+		CacheRecipes cacheRecipes = self().getCacheRecipes();
+		return canSeeRecipes(cacheRecipes.getRecipesFiltered(enhancedRecipe -> enhancedRecipe.getRecipeCategory().equals(categoryData.getRecipeCategory())), player)
+				.stream().map(EnhancedRecipe::getKey).collect(Collectors.toList());
 	}
 
 	@Override

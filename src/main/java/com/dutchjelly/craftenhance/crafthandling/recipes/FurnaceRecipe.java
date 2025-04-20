@@ -1,7 +1,6 @@
 package com.dutchjelly.craftenhance.crafthandling.recipes;
 
 import com.dutchjelly.bukkitadapter.Adapter;
-import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
@@ -98,8 +97,18 @@ public class FurnaceRecipe extends EnhancedRecipe {
 
 	@Override
 	public Recipe getServerRecipe() {
+		return this.getServerRecipe(this.getGroup());
+	}
+
+	@Override
+	public Recipe getServerRecipe(final String groupName) {
 		int duration = self().getVersionChecker().olderThan(ServerVersion.v1_17) ? this.duration : 200;
-		return Adapter.GetFurnaceRecipe(CraftEnhance.self(), ServerRecipeTranslator.GetFreeKey(getKey()), getResult(), getContent()[0], duration, getExp());
+		final org.bukkit.inventory.FurnaceRecipe furnaceRecipe = Adapter.GetFurnaceRecipe(self(), ServerRecipeTranslator.GetFreeKey(getKey()), getResult(), getContent()[0], duration, getExp());
+		if (groupName != null) {
+			Adapter.setGroup(furnaceRecipe,groupName);
+			this.setGroup(groupName);
+		}
+		return furnaceRecipe;
 	}
 
 	@Override
