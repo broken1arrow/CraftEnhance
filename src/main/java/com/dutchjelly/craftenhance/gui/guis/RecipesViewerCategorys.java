@@ -102,7 +102,7 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 					Debug.info("To disable debugging messages when executing commands via the menu, set 'show_command_menu: false' in the config.yml file");
 				}
 				for (String command : value.getExtra()) {
-					if(command == null || command.equals("null"))
+					if (command == null || command.equals("null"))
 						continue;
 					if (!containsKey || self().getConfig().getBoolean("show_command_menu")) {
 						Debug.info("Player: " + player.getName() + " run this command: " + command);
@@ -161,8 +161,14 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 				if (menuTemplate != null) {
 					final MenuButtonData menuButton = menuTemplate.getMenuButton(-1);
 					if (menuButton != null) {
-						displayName = menuButton.getPassiveButton().getDisplayName();
-						lore = menuButton.getPassiveButton().getLore();
+						final org.broken.arrow.menu.button.manager.library.utility.MenuButton activeButton = menuButton.getActiveButton();
+						if (player.hasPermission(PermissionTypes.Categorys_editor.getPerm()) && activeButton != null) {
+							displayName = activeButton.getDisplayName();
+							lore = activeButton.getLore();
+						} else {
+							displayName = menuButton.getPassiveButton().getDisplayName();
+							lore = menuButton.getPassiveButton().getLore();
+						}
 					}
 				}
 				final ItemStack itemStack = categoryData.getRecipeCategoryItem();

@@ -127,12 +127,19 @@ Menus:
         glow: true
       "-1":
         action_type: FillItems
-        material: STONE
-        name: "&aCategory:&3 [display_name]"
-        lore:
-          - "&fLeftclick to open"
-          - "&fRightclick to edit Category"
-        glow: true
+        passive:
+          material: STONE
+          name: "&aCategory:&3 [display_name]"
+          lore:
+            - "&fLeftclick to open"
+          glow: false
+        active:
+          material: STONE
+          name: "&aCategory:&3 [display_name]"
+          lore:
+            - "&fLeftclick to open"
+            - "&fRightclick to edit Category"
+          glow: true
   CategorysSettings:
     menu_settings:
       name: Category settings
