@@ -19,6 +19,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.FurnaceBurnEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.CraftingRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
@@ -101,6 +102,7 @@ public class FurnaceRecipeInjector {
 		//Reduce computing time by pausing furnaces. This can be removed if we also check for hoppers
 		//instead of only clicks to unpause.
 		if (pausedFurnaces.getOrDefault(furnace, LocalDateTime.now()).isAfter(LocalDateTime.now())) {
+			Debug.Send(Type.Smelting, () -> "Furnace is on pause for couple of seconds.");
 			burnEvent.setCancelled(true);
 			return;
 		}
@@ -108,6 +110,7 @@ public class FurnaceRecipeInjector {
 		final RecipeResult result = this.getFurnaceResult(group, furnace.getInventory().getSmelting(), furnace);
 		ItemStack itemInResulSlot = furnace.getInventory().getResult();
 		if (result.isEnhancedRecipe() && itemInResulSlot != null && itemInResulSlot.getType() != Material.AIR && !result.getItem().isSimilar(itemInResulSlot)) {
+			Debug.Send(Type.Smelting, () -> "It is already an item inside the furnace, that is not similar. Can't smelt the item");
 			burnEvent.setCancelled(true);
 			return;
 		}
@@ -117,7 +120,10 @@ public class FurnaceRecipeInjector {
 				return;
 			if (result.isVanilla())
 				return;
-			burnEvent.setCancelled(true);
+			if(result.isNone()) {
+				Debug.Send(Type.Smelting, () -> "The recipe is not an enhanced recipe or vanilla recipe it will abort the burn event.");
+				burnEvent.setCancelled(true);
+			}
 			pausedFurnaces.put(furnace, LocalDateTime.now().plusSeconds(10L));
 		}
 	}
@@ -182,6 +188,8 @@ public class FurnaceRecipeInjector {
 			if (furnaceRecipe != null) return RecipeResult.setResult(furnaceRecipe.getResult());
 			//Check for similar server recipes if no enhanced ones match.
 			for (final Recipe sRecipe : group.getServerRecipes()) {
+				if(sRecipe instanceof CraftingRecipe) continue;
+
 				final org.bukkit.inventory.FurnaceRecipe fRecipe = (org.bukkit.inventory.FurnaceRecipe) sRecipe;
 				if (this.recipeInjector.getTypeMatcher().match(fRecipe.getInput(), source)) {
 					Debug.Send(Type.Smelting, () -> "Found similar server recipe for furnace, will prevent the recipe to be burnt.");
@@ -199,6 +207,7 @@ public class FurnaceRecipeInjector {
 
 		final ItemStack[] srcMatrix = new ItemStack[]{source};
 		for (final EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
+			if(!(eRecipe instanceof FurnaceRecipe)) continue;
 			if (!eRecipe.matchesBlockType(blockSmelting)) {
 				continue;
 			}
