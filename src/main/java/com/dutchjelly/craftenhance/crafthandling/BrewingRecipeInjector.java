@@ -178,11 +178,8 @@ public class BrewingRecipeInjector {
 						if (eventCursor.getType() != Material.AIR) {
 							for (int slot : event.getRawSlots()) {
 								if (slot < clickedInventory.getSize()) {
-									// This is a top inventory slot
-									// You can now check the type, cancel, or handle logic
-									System.out.println("Dragged into top inventory at slot: " + slot);
 
-									// Example: Cancel if it's a brewing stand
+									Debug.Send(Type.Brewing, () ->"Dragged into top inventory at slot: " + slot);
 									if (clickedInventory.getType() == InventoryType.BREWING) {
 										event.setCancelled(true);
 										break;
