@@ -29,6 +29,10 @@ public class CacheRecipesGroup {
 				.collect(Collectors.toSet()));
 	}
 
+	public void setGroupCacheDirty(final boolean groupCacheDirty) {
+		this.groupCacheDirty = groupCacheDirty;
+	}
+
 	public void rebuildGroupCache() {
 		groups.clear();
 		for (RecipeType type : RecipeType.values()) {

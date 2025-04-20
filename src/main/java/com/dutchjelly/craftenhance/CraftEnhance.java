@@ -297,7 +297,7 @@ public class CraftEnhance extends JavaPlugin {
 						Adapter.FilterRecipes(loader.getServerRecipes(), x)
 				).collect(Collectors.toList())
 		);
-		System.out.println("Groups and type= " + loader.getRecipes());
+		this.cacheRecipes.setGroupCacheDirty(true);
 		injector.getFurnaceRecipeInjector().registerContainerOwners(fm.getContainerOwners());
 		injector.setLoader(loader);
 		injector.reload();
