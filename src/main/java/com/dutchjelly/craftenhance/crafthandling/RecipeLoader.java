@@ -193,7 +193,6 @@ public class RecipeLoader {
 		CacheRecipes cacheRecipes = self().getCacheRecipes();
 		for (String groupKey : cacheRecipes.getGroupsForType(type)) {
 			if (!seenGroups.add(groupKey)) continue;
-
 			final RecipeGroup group = mappedGroupedRecipes.get(groupKey);
 			if (group == null) continue;
 

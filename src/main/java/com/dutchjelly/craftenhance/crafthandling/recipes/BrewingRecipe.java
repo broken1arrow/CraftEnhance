@@ -91,6 +91,7 @@ public class BrewingRecipe extends EnhancedRecipe{
 
 	@Override
 	public Recipe getServerRecipe(final String groupName) {
+		this.setGroup(groupName);
 		return null;
 	}
 
