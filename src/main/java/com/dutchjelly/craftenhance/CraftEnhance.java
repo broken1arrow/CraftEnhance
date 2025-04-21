@@ -44,7 +44,6 @@ import com.dutchjelly.craftenhance.runnable.PlayerCheckTask;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import com.dutchjelly.craftenhance.util.Metrics;
 import lombok.Getter;
-import lombok.NonNull;
 import org.broken.arrow.menu.library.RegisterMenuAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -54,6 +53,7 @@ import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -84,7 +84,7 @@ public class CraftEnhance extends JavaPlugin {
 	private RecipeInjector injector;
 	@Getter
 	private boolean usingItemsAdder;
-	private boolean isReloading;
+	private volatile boolean isReloading;
 	@Getter
 	private MenuSettingsCache menuSettingsCache;
 	@Getter
@@ -104,6 +104,7 @@ public class CraftEnhance extends JavaPlugin {
 	public void onEnable() {
 		plugin = this;
 		Debug.init(this);
+		Messenger.Init(this);
 		this.brewingTask = new BrewingTask();
 		this.brewingTask.start();
 
@@ -122,23 +123,22 @@ public class CraftEnhance extends JavaPlugin {
 
 		saveDefaultConfig();
 
-		if (isReloading)
-			Bukkit.getScheduler().runTaskAsynchronously(this, () -> loadPluginData(isReloading));
-		else {
-			this.loadPluginData(false);
+
+		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+			loadPluginData();
 			loadRecipes();
-		}
+		});
+
 		if (injector == null)
 			injector = new RecipeInjector(this);
 		guiManager = new GuiManager(this);
 
 		Debug.Send("Setting up listeners and commands");
-		if (!isReloading)
-			setupListeners();
+		setupListeners();
 		setupCommands();
 
-		Messenger.Message("CraftEnhance is managed and developed by DutchJelly.");
-		Messenger.Message("If you find a bug in the plugin, please report it to https://github.com/DutchJelly/CraftEnhance/issues .");
+		Messenger.Message("CraftEnhance is managed and developed by DutchJelly and BrokenArrow.");
+		Messenger.Message("If you find a bug in the plugin, please report it to https://github.com/broken1arrow/CraftEnhance/issues.");
 		if (!versionChecker.runVersionCheck()) {
 			for (int i = 0; i < 4; i++)
 				Messenger.Message("WARN: The installed version isn't tested to work with this version of the server.");
@@ -156,34 +156,49 @@ public class CraftEnhance extends JavaPlugin {
 
 	public void reload() {
 		isReloading = true;
-		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
-			this.onDisable();
-			Bukkit.getScheduler().runTask(this, () -> {
-				RecipeLoader.clearInstance();
-				reloadConfig();
-				this.onEnable();
-				this.menuSettingsCache.reload();
-				this.blockOwnerCache.reload();
-			});
+		Bukkit.getScheduler().runTask(this, () -> {
+			this.reloadServerRecipes();
+			reloadConfig();
+			this.menuSettingsCache.reload();
+			this.blockOwnerCache.reload();
+			isReloading = false;
+			injector.reload();
 		});
+	}
+
+	public void reloadServerRecipes() {
+		RecipeLoader.clearInstance();
+		RecipeLoader loader = RecipeLoader.getInstance();
+		this.cacheRecipes.getRecipes().stream().filter(x -> x.validate() == null).forEach((recipe) -> loader.loadRecipe(recipe, isReloading));
+		loader.printGroupsDebugInfo();
+		loader.disableServerRecipes(
+				fm.readDisabledServerRecipes().stream().map(x ->
+						Adapter.FilterRecipes(loader.getServerRecipes(), x)
+				).collect(Collectors.toList())
+		);
 	}
 
 	@Override
 	public void onDisable() {
 		if (!this.isReloading)
 			getServer().resetRecipes();
-		Debug.Send("Saving container owners...");
+		this.saveAllData();
+	}
+
+	private void saveAllData() {
+		Debug.Send("Saving all data...");
+		System.out.println("Saving all data...");
 		this.getBlockOwnerCache().save();
-		//fm.saveContainerOwners(injector.getFurnaceRecipeInjector().getContainerOwners());
-		Debug.Send("Saving disabled recipes...");
 		fm.saveDisabledServerRecipes(RecipeLoader.getInstance().getDisabledServerRecipes().stream().map(x -> Adapter.GetRecipeIdentifier(x)).collect(Collectors.toList()));
 		categoryDataCache.save();
 		CompletableFuture<Void> saveTask = CompletableFuture.runAsync(() -> this.cacheRecipes.save());
 		saveTask.join();
+		Debug.Send("Finish saving.");
+		System.out.println("Finish saving.");
 	}
 
 	@Override
-	public boolean onCommand(final CommandSender sender, final Command cmd, final String label, final String[] args) {
+	public boolean onCommand(@Nonnull final CommandSender sender, @Nonnull final Command cmd, @Nonnull final String label, @Nonnull final String[] args) {
 
 		//Make sure that the user doesn't get a whole stacktrace when using an unsupported server jar.
 		//Note that this error could only get caused by onEnable() not being called.
@@ -252,7 +267,7 @@ public class CraftEnhance extends JavaPlugin {
 		fm.cacheRecipes();
 	}
 
-	private void loadPluginData(final Boolean isReloading) {
+	private void loadPluginData() {
 		if (categoryDataCache == null)
 			categoryDataCache = new CategoryDataCache();
 		categoryDataCache.reload();
@@ -263,15 +278,11 @@ public class CraftEnhance extends JavaPlugin {
 		FileManager.EnsureResourceUpdate("config.yml", configFile, YamlConfiguration.loadConfiguration(configFile), this);
 		Debug.Send("Coloring config messages.");
 		ConfigFormatter.init(this).formatConfigMessages();
-		Messenger.Init(this);
 		ItemMatchers.init(getConfig().getBoolean("enable-backwards-compatible-item-matching"));
 		Debug.Send("Loading gui templates");
 
 		if (menuSettingsCache == null)
 			menuSettingsCache = new MenuSettingsCache(this);
-
-		if (isReloading)
-			Bukkit.getScheduler().runTask(this, this::loadRecipes);
 	}
 
 	private void loadRecipes() {
@@ -281,12 +292,11 @@ public class CraftEnhance extends JavaPlugin {
 		setupFileManager();
 		Debug.Send("Loading recipes");
 		final RecipeLoader loader = RecipeLoader.getInstance();
-		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
-			@NonNull List<EnhancedRecipe> recipes = this.database.loadRecipes();
-			this.cacheRecipes.addAll(recipes);
-			Bukkit.getScheduler().runTask(this, () -> loadingRecipes(loader));
-		});
-		isReloading = false;
+		final List<EnhancedRecipe> recipes = this.database.loadRecipes();
+		this.cacheRecipes.addAll(recipes);
+		Bukkit.getScheduler().runTask(this, () -> this.loadingRecipes(loader));
+		injector.setLoader(loader);
+		injector.reload();
 	}
 
 	private void loadingRecipes(final RecipeLoader loader) {
@@ -298,9 +308,7 @@ public class CraftEnhance extends JavaPlugin {
 				).collect(Collectors.toList())
 		);
 		this.cacheRecipes.setGroupCacheDirty(true);
-		injector.getFurnaceRecipeInjector().registerContainerOwners(fm.getContainerOwners());
-		injector.setLoader(loader);
-		injector.reload();
+
 		//todo learn recipes are little broken. when you reload it.
 		if (isReloading && Bukkit.getOnlinePlayers().size() > 0)
 			if (self().getConfig().getBoolean("learn-recipes"))

@@ -93,6 +93,7 @@ public class RecipeLoader {
 		instance = null;
 	}
 
+
 	public Map<String, Integer> getRecipes() {
 		server.recipeIterator().forEachRemaining(recipe1 -> {
 			if (recipe1 instanceof CraftingRecipe && (((CraftingRecipe) recipe1).getKey().getNamespace().contains("craftenhance") || ((CraftingRecipe) recipe1).getKey().getNamespace().contains("cehrecipe"))) {
@@ -118,7 +119,7 @@ public class RecipeLoader {
 		if (recipeGroup == null) {
 			recipeGroup = new RecipeGroup();
 		}
-		recipeGroup.addIfNotExist( RecipeCoreData.of(enhancedRecipe));
+		recipeGroup.addIfNotExist(RecipeCoreData.of(enhancedRecipe));
 		recipeGroup.setServerRecipes(serverRecipes);
 
 		mappedGroupedRecipes.put(recipeGroupPair.getFirst(), recipeGroup);
@@ -447,9 +448,9 @@ public class RecipeLoader {
 					//If there's a recipe that's always similar, we have to load it again.
 					if (recipeCoreData != null) {
 						final EnhancedRecipe enhancedRecipe = recipeCoreData.getEnhancedRecipe();
-						if ( enhancedRecipe != null) {
-						loaded.put(recipeCoreData.getKey(), enhancedRecipe.getServerRecipe());
-						server.addRecipe(enhancedRecipe.getServerRecipe());
+						if (enhancedRecipe != null) {
+							loaded.put(recipeCoreData.getKey(), enhancedRecipe.getServerRecipe());
+							server.addRecipe(enhancedRecipe.getServerRecipe());
 						}
 					}
 				}
