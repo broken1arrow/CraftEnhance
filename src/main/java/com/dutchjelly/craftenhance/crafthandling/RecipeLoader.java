@@ -375,12 +375,12 @@ public class RecipeLoader {
 			recipe.setRecipeCategory(categoryName);
 		CategoryData recipeCategory = this.categoryDataCache.get(categoryName);
 
-		final List<RecipeCoreData> enhancedRecipeList;
+		final List<RecipeCoreData> recipeCoreDataList;
 		if (recipeCategory != null) {
-			enhancedRecipeList = recipeCategory.getRecipeCoreData();
-			if (enhancedRecipeList.stream().noneMatch(cachedRecipe -> cachedRecipe.getKey().equals(recipe.getKey())))
+			recipeCoreDataList = recipeCategory.getRecipeCoreData();
+			if (recipeCoreDataList.stream().noneMatch(cachedRecipe -> cachedRecipe.getKey().equals(recipe.getKey())))
 				//if (!enhancedRecipeList.contains(recipe))
-				enhancedRecipeList.add(new RecipeCoreData(recipe));
+				recipeCoreDataList.add(new RecipeCoreData(recipe));
 		} else {
 			final ItemStack itemStack;
 			if (recipe instanceof FurnaceRecipe)

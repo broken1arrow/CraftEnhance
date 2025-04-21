@@ -79,13 +79,13 @@ public class Debug {
 			debugHowName = " (" + name + ") ";
 
 		if (enable_crafting_debug && type == Crafting) {
-			System.out.println(prefix + " [crafting]" + debugHowName + (obj != null ? obj.toString() : "null"));
+			System.out.println(prefix + "[crafting] " + debugHowName + (obj != null ? obj.toString() : "null"));
 		}
 		if (enable_smelting__debug && type == Smelting) {
-			System.out.println(prefix + " [furnace]" + debugHowName + (obj != null ? obj.toString() : "null"));
+			System.out.println(prefix + "[furnace] " + debugHowName + (obj != null ? obj.toString() : "null"));
 		}
 		if (type == Brewing) {
-			System.out.println(prefix + " [brewing]" + debugHowName + (obj != null ? obj.toString() : "null"));
+			System.out.println(prefix + "[brewing] " + debugHowName + (obj != null ? obj.toString() : "null"));
 		}
 		if (!enable) return;
 
