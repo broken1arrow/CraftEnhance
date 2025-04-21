@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.crafthandling;
 
 
+import com.dutchjelly.craftenhance.cache.RecipeCoreData;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import lombok.Getter;
@@ -28,19 +29,19 @@ public class RecipeGroup {
 	private List<Recipe> serverRecipes = new ArrayList<>();
 	@Getter
 	@Setter
-	private List<EnhancedRecipe> enhancedRecipes = new ArrayList<>();
+	private List<RecipeCoreData> recipeCoreList = new ArrayList<>();
 
 	public RecipeGroup() {
 	}
 
-	public RecipeGroup(List<EnhancedRecipe> enhanced, List<Recipe> server) {
-		this.enhancedRecipes.addAll(enhanced);
+	public RecipeGroup(List<RecipeCoreData> enhanced, List<Recipe> server) {
+		this.recipeCoreList.addAll(enhanced);
 		this.serverRecipes.addAll(server);
 	}
 
-	public RecipeGroup addIfNotExist(EnhancedRecipe enhancedRecipe) {
-		if (!enhancedRecipes.contains(enhancedRecipe))
-			enhancedRecipes.add(enhancedRecipe);
+	public RecipeGroup addIfNotExist(RecipeCoreData enhancedRecipe) {
+		if (!recipeCoreList.contains(enhancedRecipe))
+			recipeCoreList.add(enhancedRecipe);
 		return this;
 	}
 
@@ -63,10 +64,10 @@ public class RecipeGroup {
 		mergedServerRecipes.addAll(serverRecipes);
 		mergedServerRecipes.addAll(othergroup.serverRecipes);
 		serverRecipes = mergedServerRecipes.stream().distinct().collect(Collectors.toList());
-		List<EnhancedRecipe> mergedEnhancedRecipes = new ArrayList<>();
-		mergedEnhancedRecipes.addAll(enhancedRecipes);
-		mergedEnhancedRecipes.addAll(othergroup.enhancedRecipes);
-		enhancedRecipes = mergedEnhancedRecipes.stream().distinct().collect(Collectors.toList());
+		List<RecipeCoreData> mergedEnhancedRecipes = new ArrayList<>();
+		mergedEnhancedRecipes.addAll(recipeCoreList);
+		mergedEnhancedRecipes.addAll(othergroup.recipeCoreList);
+		recipeCoreList = mergedEnhancedRecipes.stream().distinct().collect(Collectors.toList());
 		return this;
 	}
 
@@ -120,17 +121,21 @@ public class RecipeGroup {
 		recipes.append("enhancedRecipes= {");
 
 		final StringJoiner enhancedJoiner = new StringJoiner(",");
-		this.enhancedRecipes.forEach(enhancedRecipe -> {
-			final StringBuilder enhancedRecipes = new StringBuilder();
-			enhancedRecipes.append(" key='");
-			enhancedRecipes.append(enhancedRecipe.getKey()).append("'| type:");
-			enhancedRecipes.append(enhancedRecipe.getType()).append("| worlds='");
-			enhancedRecipes.append(enhancedRecipe.getAllowedWorldsFormatted()).append("'| perm='");
-			enhancedRecipes.append(enhancedRecipe.getPermission()).append("'");
-			if (!(enhancedRecipe instanceof com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe))
-				enhancedRecipes.append("| command='").append(enhancedRecipe.getOnCraftCommand()).append("'");
+		this.recipeCoreList.forEach(recipeCoreData -> {
+			final StringBuilder recipesBuilder = new StringBuilder();
+			recipesBuilder.append(" key='");
+			recipesBuilder.append(recipeCoreData.getKey()).append("'| category=");
+			recipesBuilder.append(recipeCoreData.getCategory());
 
-			enhancedJoiner.add(enhancedRecipes);
+			final EnhancedRecipe enhancedRecipe = recipeCoreData.getEnhancedRecipe();
+			if (enhancedRecipe != null) {
+				recipesBuilder.append("'| type=").append(enhancedRecipe.getType()).append("| worlds='");
+				recipesBuilder.append(enhancedRecipe.getAllowedWorldsFormatted()).append("'| perm='");
+				recipesBuilder.append(enhancedRecipe.getPermission()).append("'");
+				if (!(enhancedRecipe instanceof com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe))
+					recipesBuilder.append("| command='").append(enhancedRecipe.getOnCraftCommand()).append("'");
+			}
+			enhancedJoiner.add(recipesBuilder);
 		});
 		recipes.append(enhancedJoiner);
 		recipes.append("}");

@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.crafthandling;
 
 import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.cache.RecipeCoreData;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerCache;
@@ -68,14 +69,17 @@ public class FurnaceRecipeInjector {
 			if (itemStack != null && groups != null) {
 				Debug.Send(Type.Smelting, () -> "Found similar vanilla recipe " + itemStack);
 				for (RecipeGroup group : groups) {
-					if (group == null || group.getEnhancedRecipes() == null || group.getEnhancedRecipes().isEmpty()) {
+					if (group == null || group.getRecipeCoreList() == null || group.getRecipeCoreList().isEmpty()) {
 						event.setResult(itemStack);
 						return;
 					}
-					for (final EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
-						final FurnaceRecipe fRecipe = (FurnaceRecipe) eRecipe;
+					for (final RecipeCoreData eRecipe : group.getRecipeCoreList()) {
+						final EnhancedRecipe enhancedRecipe = eRecipe.getEnhancedRecipe();
+						if (!(enhancedRecipe  instanceof FurnaceRecipe)) continue;
+						final FurnaceRecipe fRecipe = (FurnaceRecipe) enhancedRecipe;
+
 						final boolean isVanillaRecipe = fRecipe.matchesType(new ItemStack[]{event.getSource()}) && !fRecipe.getResult().isSimilar(itemStack);
-						if (eRecipe.isCheckPartialMatch() && isVanillaRecipe) {
+						if (fRecipe.isCheckPartialMatch() && isVanillaRecipe) {
 							event.setCancelled(true);
 							break;
 						}
@@ -206,12 +210,13 @@ public class FurnaceRecipeInjector {
 		if (group == null) return null;
 
 		final ItemStack[] srcMatrix = new ItemStack[]{source};
-		for (final EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
-			if(!(eRecipe instanceof FurnaceRecipe)) continue;
-			if (!eRecipe.matchesBlockType(blockSmelting)) {
+		for (final RecipeCoreData eRecipe : group.getRecipeCoreList()) {
+			final EnhancedRecipe enhancedRecipe = eRecipe.getEnhancedRecipe();
+			if(!(enhancedRecipe instanceof FurnaceRecipe)) continue;
+			if (!enhancedRecipe.matchesBlockType(blockSmelting)) {
 				continue;
 			}
-			final FurnaceRecipe fRecipe = (FurnaceRecipe) eRecipe;
+			final FurnaceRecipe fRecipe = (FurnaceRecipe) enhancedRecipe;
 			Debug.Send(fRecipe, () -> "Checking if enhanced recipe for " + fRecipe.getResult().toString() + " matches.");
 			Debug.Send(fRecipe, () -> "The srcMatrix " + Arrays.toString(srcMatrix) + ".");
 

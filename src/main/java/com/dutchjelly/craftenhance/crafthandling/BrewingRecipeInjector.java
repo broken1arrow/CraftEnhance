@@ -2,6 +2,7 @@ package com.dutchjelly.craftenhance.crafthandling;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.cache.RecipeCoreData;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
@@ -137,15 +138,17 @@ public class BrewingRecipeInjector {
 			}
 			for (final RecipeGroup group : possibleRecipeGroups) {
 				//Check if any grouped enhanced recipe is a match.
-				for (final EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
-					if (!(eRecipe instanceof BrewingRecipe)) continue;
-					final BrewingRecipe wbRecipe = (BrewingRecipe) eRecipe;
+				for (final RecipeCoreData eRecipe : group.getRecipeCoreList()) {
+					EnhancedRecipe enhancedRecipe = eRecipe.getEnhancedRecipe();
+					if (!(enhancedRecipe  instanceof BrewingRecipe)) continue;
+					final BrewingRecipe brewingRecipe = (BrewingRecipe) enhancedRecipe;
+
 					ItemStack[] itemStacks = inv.getContents();
 					ItemStack firstItem = itemStacks[0];
 					ItemStack secondItem = itemStacks[1];
 					ItemStack thirdItem = itemStacks[2];
 					ItemStack[] outputItems = new ItemStack[]{firstItem, secondItem, thirdItem};
-					if (wbRecipe.getResult().isSimilar(itemStackCursor)) {
+					if (brewingRecipe.getResult().isSimilar(itemStackCursor)) {
 						ItemStack eventCursor = event.getCursor();
 						if (eventCursor == null)
 							eventCursor = event.getOldCursor();
@@ -230,17 +233,19 @@ public class BrewingRecipeInjector {
 
 		for (final RecipeGroup group : possibleRecipeGroups) {
 			//Check if any grouped enhanced recipe is a match.
-			for (final EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
-				if (!(eRecipe instanceof BrewingRecipe)) continue;
-				final BrewingRecipe wbRecipe = (BrewingRecipe) eRecipe;
+			for (final RecipeCoreData eRecipe : group.getRecipeCoreList()) {
+				final EnhancedRecipe enhancedRecipe = eRecipe.getEnhancedRecipe();
+				if (!(enhancedRecipe  instanceof BrewingRecipe)) continue;
 
-				boolean notAllowedToBrew = recipeInjector.isCraftingAllowedInWorld(location, eRecipe);
+				final BrewingRecipe brewingRecipe = (BrewingRecipe) enhancedRecipe;
+
+				boolean notAllowedToBrew = recipeInjector.isCraftingAllowedInWorld(location, brewingRecipe);
 				if (notAllowedToBrew) {
-					Debug.Send(Type.Brewing, () -> "You are not allowed to brew potions in this world: " + location.getWorld() + " with this recipe key: " + eRecipe.getKey());
+					Debug.Send(Type.Brewing, () -> "You are not allowed to brew potions in this world: " + location.getWorld() + " with this recipe key: " + brewingRecipe.getKey());
 					continue;
 				}
 
-				if (wbRecipe.getResult().isSimilar(itemStackCursor)) {
+				if (brewingRecipe.getResult().isSimilar(itemStackCursor)) {
 
 					if (checkBrewingClick(event))
 						event.setCancelled(true);
@@ -250,13 +255,13 @@ public class BrewingRecipeInjector {
 					Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
 						ItemStack[] itemStacks = brewingInv.getContents();
 						ItemStack[] outputItems = Arrays.copyOfRange(itemStacks, 0, 3);
-						if (wbRecipe.matches(outputItems)) {
-							Debug.Send(Type.Brewing, () -> "Found matching brewing recipe and will start to make the recipe: " + eRecipe.getKey());
-							this.plugin.getBrewingTask().addTask(location, wbRecipe);
+						if (brewingRecipe.matches(outputItems)) {
+							Debug.Send(Type.Brewing, () -> "Found matching brewing recipe and will start to make the recipe: " + brewingRecipe.getKey());
+							this.plugin.getBrewingTask().addTask(location, brewingRecipe);
 						} else {
-							Debug.Send(Type.Brewing, () -> "Failed to find a matching brewing ingredients recipe for recipe: " + eRecipe.getKey());
-							Debug.Send(Type.Brewing, () -> "Result item: " + eRecipe.getResult());
-							Debug.Send(Type.Brewing, () -> "The items to match: " + Arrays.toString(eRecipe.getContent()));
+							Debug.Send(Type.Brewing, () -> "Failed to find a matching brewing ingredients recipe for recipe: " + brewingRecipe.getKey());
+							Debug.Send(Type.Brewing, () -> "Result item: " + brewingRecipe.getResult());
+							Debug.Send(Type.Brewing, () -> "The items to match: " + Arrays.toString(brewingRecipe.getContent()));
 							Debug.Send(Type.Brewing, () -> "The items inside inventory: " + Arrays.toString(outputItems));
 						}
 					}, 1);

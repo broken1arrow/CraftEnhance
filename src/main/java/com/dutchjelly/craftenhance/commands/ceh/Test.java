@@ -269,7 +269,7 @@ public class Test implements ICommand{
         recipe2.setResult(new ItemStack(Material.EMERALD));
 
         RecipeLoader.getInstance().loadRecipe(recipe2);
-        Assert(RecipeLoader.getInstance().findGroup(recipe2).getEnhancedRecipes().size() == 2);
+        Assert(RecipeLoader.getInstance().findGroup(recipe2).getRecipeCoreList().size() == 2);
         Assert(RecipeLoader.getInstance().findGroupsByResult(new ItemStack(Material.EMERALD), recipe.getServerRecipe()).size() == 1);
         Assert(RecipeLoader.getInstance().findGroup(recipe2).getServerRecipes().size() == 1);
 
