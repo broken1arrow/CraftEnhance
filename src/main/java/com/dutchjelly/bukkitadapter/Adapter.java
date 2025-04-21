@@ -394,6 +394,11 @@ public class Adapter {
 					if (shapeless.getKey().getNamespace().contains("craftenhance")) {
 						player.discoverRecipe(shapeless.getKey());
 					}
+				} else if (recipe instanceof CookingRecipe) {
+					final CookingRecipe<?> cookingRecipe = (CookingRecipe<?>) recipe;
+					if (cookingRecipe.getKey().getNamespace().contains("craftenhance")) {
+						player.discoverRecipe(cookingRecipe.getKey());
+					}
 				}
 			}
 		} catch (final Exception e) {
