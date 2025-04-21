@@ -151,17 +151,25 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 	}
 
 	@EventHandler
-	public void furnaceClick(final InventoryClickEvent e) {
-		if (e.isCancelled() || e.getClickedInventory() == null) return;
-		if (e.getClickedInventory().getType() == InventoryType.FURNACE) {
-			final Furnace f = (Furnace) e.getClickedInventory().getHolder();
-			this.furnaceRecipeInjector.furnaceClick(e);
+	public void onInventoryClick(final InventoryClickEvent event) {
+		if (event.isCancelled() || event.getClickedInventory() == null) return;
+		if (event.getClickedInventory().getType() == InventoryType.FURNACE) {
+			final Furnace f = (Furnace) event.getClickedInventory().getHolder();
+			this.furnaceRecipeInjector.furnaceClick(event);
 		}
-		if (e.getClickedInventory().getType() == InventoryType.WORKBENCH) {
-			this.workBenchRecipeInjector.craftingClick(e);
+		if (event.getClickedInventory().getType() == InventoryType.WORKBENCH) {
+			this.workBenchRecipeInjector.craftingClick(event);
+		}
+		if (event.getInventory().getType() == InventoryType.BREWING) {
+			brewingRecipeInjector.onBrewClick(event);
 		}
 	}
 
+	@EventHandler
+	public void onInventoryDrag(InventoryDragEvent event) {
+		if (event.getInventory().getType() != InventoryType.BREWING) return;
+		brewingRecipeInjector.onBrewDrag(event);
+	}
 	@EventHandler
 	public void furnacePlace(final BlockPlaceEvent e) {
 		if (e.isCancelled()) return;
@@ -177,18 +185,6 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 		if (e.getBlock().getType().equals(Material.FURNACE)) {
 			this.furnaceRecipeInjector.furnaceBreak(e);
 		}
-	}
-
-	@EventHandler
-	public void onBrewClick(InventoryClickEvent event) {
-		if (event.getInventory().getType() != InventoryType.BREWING) return;
-		brewingRecipeInjector.onBrewClick(event);
-	}
-
-	@EventHandler
-	public void onBrewDrag(InventoryDragEvent event) {
-		if (event.getInventory().getType() != InventoryType.BREWING) return;
-		brewingRecipeInjector.onBrewDrag(event);
 	}
 
 	@EventHandler
@@ -302,7 +298,7 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 
 	private class SmeltListener implements Listener {
 		@EventHandler
-		public void startSmet( PlayerInteractEvent event) {
+		public void startSmet(PlayerInteractEvent event) {
 			isLeftClick(event.getAction());
 		}
 

@@ -22,6 +22,7 @@ import org.bukkit.inventory.Recipe;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
@@ -35,12 +36,13 @@ public class BrewingRecipeInjector {
 	public BrewingRecipeInjector(final RecipeInjector recipeInjector) {
 		this.recipeInjector = recipeInjector;
 	}
+
 	public void reloadSettings() {
 		enableBrewing = plugin.getConfig().getBoolean("enable-brewing-recipes");
-		 enableCraft = plugin.getConfig().getBoolean("enable-recipes");
+		enableCraft = plugin.getConfig().getBoolean("enable-recipes");
 	}
 
-	public void onBrewClick(InventoryClickEvent event) {
+	public void onBrewClick(final InventoryClickEvent event) {
 		if (!enableBrewing || !enableCraft) return;
 
 		if (event.getInventory().getType() != InventoryType.BREWING) return;
@@ -51,15 +53,15 @@ public class BrewingRecipeInjector {
 
 		BrewingStand stand = (BrewingStand) location.getBlock().getState();
 
-		BrewerInventory inv = stand.getInventory();
+		BrewerInventory brewerInventory = stand.getInventory();
 		final Inventory clickedInventory = event.getClickedInventory();
 		if (clickedInventory == null || clickedInventory.getType() != InventoryType.BREWING) return;
 
 		Debug.Send(Type.Brewing, () -> "Player clicked inside Brewing stand, will start to check after matching recipe.");
 
 		ItemStack itemStackCursor = event.getCursor();
-		if (inv.getIngredient() != null)
-			itemStackCursor = inv.getIngredient();
+		if (brewerInventory.getIngredient() != null)
+			itemStackCursor = brewerInventory.getIngredient();
 
 		final int slot = event.getSlot();
 		if (slot == 4) {
@@ -72,10 +74,10 @@ public class BrewingRecipeInjector {
 			final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
 
 			if (possibleRecipeGroups == null || possibleRecipeGroups.isEmpty()) {
-				if (this.recipeInjector.isDisableDefaultModeldataCrafts() && Adapter.canUseModeldata() && this.recipeInjector.containsModelData(inv.getContents())) {
+				if (this.recipeInjector.isDisableDefaultModeldataCrafts() && Adapter.canUseModeldata() && this.recipeInjector.containsModelData(brewerInventory.getContents())) {
 					return;
 				}
-				if (this.recipeInjector.checkForDisabledRecipe(disabledServerRecipes, itemStackCursor)) {
+				if (this.recipeInjector.checkForDisabledRecipe(disabledServerRecipes, itemStackCheck)) {
 					return;
 				}
 
@@ -83,47 +85,20 @@ public class BrewingRecipeInjector {
 				return;
 			}
 			Debug.Send(Type.Brewing, () -> "Found a matching group of brewing recipes. Now checking for a matching recipe based on your provided items.");
-
-			for (final RecipeGroup group : possibleRecipeGroups) {
-				//Check if any grouped enhanced recipe is a match.
-				for (final EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
-					if (!(eRecipe instanceof BrewingRecipe)) continue;
-					final BrewingRecipe wbRecipe = (BrewingRecipe) eRecipe;
-
-					boolean notAllowedToBrew = recipeInjector.isCraftingAllowedInWorld(location, eRecipe);
-					if (notAllowedToBrew) {
-						Debug.Send(Type.Brewing, () -> "You are not allowed to brew potions in this world: " + location.getWorld() + " with this recipe: " + eRecipe.getKey());
-						continue;
-					}
-
-
-					if (wbRecipe.getResult().isSimilar(itemStackCursor)) {
-
-						if (checkBrewingClick(event))
-							event.setCancelled(true);
-
-						this.handleInventoryClick(event, clickedInventory, slot);
-
-						Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
-							ItemStack[] itemStacks = inv.getContents();
-							ItemStack[] outputItems = Arrays.copyOfRange(itemStacks, 0, 3);
-							if (wbRecipe.matches(outputItems)) {
-								Debug.Send(Type.Brewing, () -> "Found matching brewing recipe and will start to make the recipe: " + eRecipe.getKey());
-								this.plugin.getBrewingTask().addTask(location, wbRecipe);
-							} else {
-								Debug.Send(Type.Brewing, () -> "Failed to find a matching brewing recipe for recipe: " + eRecipe.getKey());
-								Debug.Send(Type.Brewing, () -> "Result item: " + eRecipe.getResult());
-								Debug.Send(Type.Brewing, () -> "The items to match: " + Arrays.toString(eRecipe.getContent()));
-							}
-						}, 1);
-						break;
-					}
-				}
-			}
+			WrapBrewingClick wrapBrewingClick = WrapBrewingClick.wrapBrewingClick(wrapBrewing -> wrapBrewing
+					.setEvent(event)
+					.setBrewingInv(brewerInventory)
+					.setLocation(location)
+					.setItemStackCursor(itemStackCheck)
+					.setSlot(slot)
+					.setPossibleRecipeGroups(possibleRecipeGroups)
+			);
+			this.brewingCheck(wrapBrewingClick);
 		}
 	}
 
-	public void onBrewDrag(InventoryDragEvent event) {
+
+	public void onBrewDrag(final InventoryDragEvent event) {
 		if (!enableBrewing || !enableCraft) return;
 
 		if (event.getInventory().getType() != InventoryType.BREWING) return;
@@ -157,7 +132,7 @@ public class BrewingRecipeInjector {
 					return;
 				}
 
-				Debug.Send(Type.Brewing, () -> "No matching groups");
+				Debug.Send(Type.Brewing, () -> "No matching group or groups for the recipe.");
 				return;
 			}
 			for (final RecipeGroup group : possibleRecipeGroups) {
@@ -179,7 +154,7 @@ public class BrewingRecipeInjector {
 							for (int slot : event.getRawSlots()) {
 								if (slot < clickedInventory.getSize()) {
 
-									Debug.Send(Type.Brewing, () ->"Dragged into top inventory at slot: " + slot);
+									Debug.Send(Type.Brewing, () -> "Dragged into top inventory at slot: " + slot);
 									if (clickedInventory.getType() == InventoryType.BREWING) {
 										event.setCancelled(true);
 										break;
@@ -245,9 +220,56 @@ public class BrewingRecipeInjector {
 		if (inv.getIngredient() != null)
 			self().getBrewingTask().getTask(location, stand);
 	}*/
+	private void brewingCheck(final WrapBrewingClick wrapBrewingClick) {
+		final InventoryClickEvent event = wrapBrewingClick.getEvent();
+		final List<RecipeGroup> possibleRecipeGroups = wrapBrewingClick.getPossibleRecipeGroups();
+		final Location location = wrapBrewingClick.getLocation();
+		final ItemStack itemStackCursor = wrapBrewingClick.getItemStackCursor();
+		final BrewerInventory brewingInv = wrapBrewingClick.getBrewingInv();
+		final int slot = wrapBrewingClick.getSlot();
 
+		for (final RecipeGroup group : possibleRecipeGroups) {
+			//Check if any grouped enhanced recipe is a match.
+			for (final EnhancedRecipe eRecipe : group.getEnhancedRecipes()) {
+				if (!(eRecipe instanceof BrewingRecipe)) continue;
+				final BrewingRecipe wbRecipe = (BrewingRecipe) eRecipe;
 
-	public void handleInventoryClick(InventoryClickEvent event, Inventory clickedInventory, int slot) {
+				boolean notAllowedToBrew = recipeInjector.isCraftingAllowedInWorld(location, eRecipe);
+				if (notAllowedToBrew) {
+					Debug.Send(Type.Brewing, () -> "You are not allowed to brew potions in this world: " + location.getWorld() + " with this recipe key: " + eRecipe.getKey());
+					continue;
+				}
+
+				if (wbRecipe.getResult().isSimilar(itemStackCursor)) {
+
+					if (checkBrewingClick(event))
+						event.setCancelled(true);
+
+					this.handleInventoryClick(event, brewingInv, slot);
+
+					Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
+						ItemStack[] itemStacks = brewingInv.getContents();
+						ItemStack[] outputItems = Arrays.copyOfRange(itemStacks, 0, 3);
+						if (wbRecipe.matches(outputItems)) {
+							Debug.Send(Type.Brewing, () -> "Found matching brewing recipe and will start to make the recipe: " + eRecipe.getKey());
+							this.plugin.getBrewingTask().addTask(location, wbRecipe);
+						} else {
+							Debug.Send(Type.Brewing, () -> "Failed to find a matching brewing ingredients recipe for recipe: " + eRecipe.getKey());
+							Debug.Send(Type.Brewing, () -> "Result item: " + eRecipe.getResult());
+							Debug.Send(Type.Brewing, () -> "The items to match: " + Arrays.toString(eRecipe.getContent()));
+							Debug.Send(Type.Brewing, () -> "The items inside inventory: " + Arrays.toString(outputItems));
+						}
+					}, 1);
+					break;
+				} else {
+					Debug.Send(Type.Brewing, () -> "No match for this recipe " + eRecipe + " with this recipe key: " + eRecipe.getKey() +
+							" will continue with next recipe if either the group have more recipes or has not loop trough all recipes. ");
+				}
+			}
+		}
+	}
+
+	public void handleInventoryClick(final InventoryClickEvent event, final Inventory clickedInventory, final int slot) {
 		ItemStack item = clickedInventory.getItem(slot);
 
 		if (item == null) {
@@ -259,7 +281,7 @@ public class BrewingRecipeInjector {
 		}
 	}
 
-	private void handleNullItemInSlot(InventoryClickEvent event, Inventory clickedInventory, int slot) {
+	private void handleNullItemInSlot(final InventoryClickEvent event, final Inventory clickedInventory, final int slot) {
 		ItemStack itemCursorType = event.getCursor().clone();
 		ItemStack copy = copyItemStack(itemCursorType, slot != 3 || event.getClick() == ClickType.RIGHT ? 1 : -1);
 
@@ -273,7 +295,7 @@ public class BrewingRecipeInjector {
 		event.setCursor(new ItemStack(copy));
 	}
 
-	private void handleCursorStacking(InventoryClickEvent event, Inventory clickedInventory, int slot, ItemStack item) {
+	private void handleCursorStacking(final InventoryClickEvent event, final Inventory clickedInventory, final int slot, final ItemStack item) {
 		ItemStack cursorCopy = copyItemStack(event.getCursor(), event.getCursor().getAmount());
 
 		if (event.getClick() == ClickType.LEFT && item != null && item.getAmount() + cursorCopy.getAmount() <= cursorCopy.getMaxStackSize()) {
@@ -301,16 +323,84 @@ public class BrewingRecipeInjector {
 		event.setCursor(new ItemStack(cursorCopy));
 	}
 
-	private ItemStack copyItemStack(ItemStack itemStack, int amount) {
+	private ItemStack copyItemStack(final ItemStack itemStack, final int amount) {
 		ItemStack copy = itemStack.clone();
 		if (amount >= 0)
 			copy.setAmount(amount);
 		return copy;
 	}
 
-	public boolean checkBrewingClick(InventoryClickEvent event) {
+	public boolean checkBrewingClick(final InventoryClickEvent event) {
 		return event.getSlot() != 4 && event.getCursor().getType() != Material.AIR;
 	}
 
+	private static class WrapBrewingClick {
+		InventoryClickEvent event;
+		List<RecipeGroup> possibleRecipeGroups;
+		Location location;
+		ItemStack itemStackCursor;
+		BrewerInventory brewingInv;
+		int slot;
+
+		public static WrapBrewingClick wrapBrewingClick(final Consumer<WrapBrewingClick> callback) {
+			final WrapBrewingClick wrapBrewingClick = new WrapBrewingClick();
+			callback.accept(wrapBrewingClick);
+			return wrapBrewingClick;
+		}
+
+		public InventoryClickEvent getEvent() {
+			return event;
+		}
+
+		public WrapBrewingClick setEvent(final InventoryClickEvent event) {
+			this.event = event;
+			return this;
+		}
+
+		public List<RecipeGroup> getPossibleRecipeGroups() {
+			return possibleRecipeGroups;
+		}
+
+		public WrapBrewingClick setPossibleRecipeGroups(final List<RecipeGroup> possibleRecipeGroups) {
+			this.possibleRecipeGroups = possibleRecipeGroups;
+			return this;
+		}
+
+		public Location getLocation() {
+			return location;
+		}
+
+		public WrapBrewingClick setLocation(final Location location) {
+			this.location = location;
+			return this;
+		}
+
+		public ItemStack getItemStackCursor() {
+			return itemStackCursor;
+		}
+
+		public WrapBrewingClick setItemStackCursor(final ItemStack itemStackCursor) {
+			this.itemStackCursor = itemStackCursor;
+			return this;
+		}
+
+		public BrewerInventory getBrewingInv() {
+			return brewingInv;
+		}
+
+		public WrapBrewingClick setBrewingInv(final BrewerInventory brewingInv) {
+			this.brewingInv = brewingInv;
+			return this;
+		}
+
+		public int getSlot() {
+			return slot;
+		}
+
+		public WrapBrewingClick setSlot(final int slot) {
+			this.slot = slot;
+			return this;
+		}
+	}
 
 }

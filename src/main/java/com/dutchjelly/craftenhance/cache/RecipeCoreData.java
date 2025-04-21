@@ -4,9 +4,14 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nullable;
+
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
+
 public class RecipeCoreData {
 	private final String key;
 	private final String category;
+
 	private final ItemStack result;
 	private final RecipeType recipeType;
 
@@ -21,18 +26,26 @@ public class RecipeCoreData {
 	public String getKey() {
 		return key;
 	}
+
 	public String getCategory() {
 		return category;
 	}
 
+	@Nullable
 	public ItemStack getResult() {
-		return result;
+		if (this.result == null)
+			return null;
+		return new ItemStack(result);
+	}
+
+	@Nullable
+	public EnhancedRecipe getEnhancedRecipe() {
+		return self().getCacheRecipes().getRecipe(this.getKey());
 	}
 
 	public RecipeType getRecipeType() {
 		return recipeType;
 	}
-
 
 	@Override
 	public String toString() {
