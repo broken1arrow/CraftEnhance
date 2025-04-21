@@ -186,15 +186,13 @@ public class CraftEnhance extends JavaPlugin {
 	}
 
 	private void saveAllData() {
-		Debug.Send("Saving all data...");
-		System.out.println("Saving all data...");
+		Debug.info("Saving all data...");
 		this.getBlockOwnerCache().save();
 		fm.saveDisabledServerRecipes(RecipeLoader.getInstance().getDisabledServerRecipes().stream().map(x -> Adapter.GetRecipeIdentifier(x)).collect(Collectors.toList()));
 		categoryDataCache.save();
 		CompletableFuture<Void> saveTask = CompletableFuture.runAsync(() -> this.cacheRecipes.save());
 		saveTask.join();
-		Debug.Send("Finish saving.");
-		System.out.println("Finish saving.");
+		Debug.info("Finish saving.");
 	}
 
 	@Override
