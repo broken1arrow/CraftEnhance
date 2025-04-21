@@ -64,7 +64,7 @@ public class FormatListContents {
 				.collect(Collectors.toList());
 	}
 
-	private static boolean canViewRecipe(final EnhancedRecipe recipe, final Player p) {
+	public static boolean canViewRecipe(final EnhancedRecipe recipe, final Player p) {
 		final boolean showAvailable = !self().getConfig().getBoolean("only-show-available");
 		final boolean hasPermission = recipe.getPermission() == null ||
 				"".equals(recipe.getPermission()) ||

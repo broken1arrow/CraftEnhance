@@ -37,6 +37,7 @@ import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerCache;
 import com.dutchjelly.craftenhance.gui.GuiManager;
 import com.dutchjelly.craftenhance.gui.customcrafting.CustomCraftingTable;
 import com.dutchjelly.craftenhance.gui.guis.editors.IngredientsCache;
+import com.dutchjelly.craftenhance.gui.util.FormatListContents;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.runnable.BrewingTask;
@@ -163,6 +164,7 @@ public class CraftEnhance extends JavaPlugin {
 			this.blockOwnerCache.reload();
 			isReloading = false;
 			injector.reload();
+			reLearnRecipes();
 		});
 	}
 
@@ -176,6 +178,16 @@ public class CraftEnhance extends JavaPlugin {
 						Adapter.FilterRecipes(loader.getServerRecipes(), x)
 				).collect(Collectors.toList())
 		);
+	}
+
+	public void reLearnRecipes() {
+		//todo learn recipes are little broken. when you reload it. This is an attempt to force learn recipes too all players.
+		if (!Bukkit.getOnlinePlayers().isEmpty() && self().getConfig().getBoolean("learn-recipes"))
+			for (final Player player : Bukkit.getOnlinePlayers())
+				Adapter.DiscoverRecipes(player, getCacheRecipes().getRecipes().stream()
+								.filter(enhancedRecipe -> FormatListContents.canViewRecipe(enhancedRecipe,player))
+						.map(ServerLoadable::getServerRecipe)
+						.collect(Collectors.toList()));
 	}
 
 	@Override
@@ -307,13 +319,7 @@ public class CraftEnhance extends JavaPlugin {
 		);
 		this.cacheRecipes.setGroupCacheDirty(true);
 
-		//todo learn recipes are little broken. when you reload it.
-		if (isReloading && Bukkit.getOnlinePlayers().size() > 0)
-			if (self().getConfig().getBoolean("learn-recipes"))
-				for (final Player player : Bukkit.getOnlinePlayers())
-					Adapter.DiscoverRecipes(player, getCacheRecipes().getRecipes().stream()
-							.map(ServerLoadable::getServerRecipe)
-							.collect(Collectors.toList()));
+
 	}
 
 	public void openEnhancedCraftingTable(final Player p) {
