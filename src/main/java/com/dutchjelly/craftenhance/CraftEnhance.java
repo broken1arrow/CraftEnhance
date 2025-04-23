@@ -168,6 +168,25 @@ public class CraftEnhance extends JavaPlugin {
 		});
 	}
 
+
+	@Override
+	public void onDisable() {
+		if (!this.isReloading)
+			getServer().resetRecipes();
+		this.saveAllData();
+	}
+
+	private void saveAllData() {
+		Debug.info("Saving all data...");
+		this.getBlockOwnerCache().save();
+		fm.saveDisabledServerRecipes(RecipeLoader.getInstance().getDisabledServerRecipes().stream().map(x -> Adapter.GetRecipeIdentifier(x)).collect(Collectors.toList()));
+		categoryDataCache.save();
+		CompletableFuture<Void> saveTask = CompletableFuture.runAsync(() -> this.database.saveRecipes());
+		saveTask.join();
+		Debug.info("Finish saving.");
+	}
+
+
 	public void reloadServerRecipes() {
 		RecipeLoader.clearInstance();
 		RecipeLoader loader = RecipeLoader.getInstance();
@@ -185,26 +204,9 @@ public class CraftEnhance extends JavaPlugin {
 		if (!Bukkit.getOnlinePlayers().isEmpty() && self().getConfig().getBoolean("learn-recipes"))
 			for (final Player player : Bukkit.getOnlinePlayers())
 				Adapter.DiscoverRecipes(player, getCacheRecipes().getRecipes().stream()
-								.filter(enhancedRecipe -> FormatListContents.canViewRecipe(enhancedRecipe,player))
+						.filter(enhancedRecipe -> FormatListContents.canViewRecipe(enhancedRecipe, player))
 						.map(ServerLoadable::getServerRecipe)
 						.collect(Collectors.toList()));
-	}
-
-	@Override
-	public void onDisable() {
-		if (!this.isReloading)
-			getServer().resetRecipes();
-		this.saveAllData();
-	}
-
-	private void saveAllData() {
-		Debug.info("Saving all data...");
-		this.getBlockOwnerCache().save();
-		fm.saveDisabledServerRecipes(RecipeLoader.getInstance().getDisabledServerRecipes().stream().map(x -> Adapter.GetRecipeIdentifier(x)).collect(Collectors.toList()));
-		categoryDataCache.save();
-		CompletableFuture<Void> saveTask = CompletableFuture.runAsync(() -> this.cacheRecipes.save());
-		saveTask.join();
-		Debug.info("Finish saving.");
 	}
 
 	@Override
