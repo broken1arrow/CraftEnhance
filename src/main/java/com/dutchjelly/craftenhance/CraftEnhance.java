@@ -173,6 +173,7 @@ public class CraftEnhance extends JavaPlugin {
 	public void onDisable() {
 		if (!this.isReloading)
 			getServer().resetRecipes();
+		Bukkit.getScheduler().cancelTasks(this);
 		this.saveAllData();
 	}
 
