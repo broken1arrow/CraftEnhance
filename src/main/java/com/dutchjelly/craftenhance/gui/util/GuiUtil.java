@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.gui.util;
 
+import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.exceptions.ConfigError;
 import com.dutchjelly.craftenhance.files.CategoryData;
@@ -205,7 +206,7 @@ public class GuiUtil {
             final CategoryData newCategoryData = self().getCategoryDataCache().of(currentCatogory, categoryData.getRecipeCategoryItem(), msg);
             newCategoryData.setEnhancedRecipes(categoryData.getEnhancedRecipes());
             self().getCategoryDataCache().put(currentCatogory, newCategoryData);
-            Bukkit.getScheduler().runTaskLaterAsynchronously( self(),()-> self().getCategoryDataCache().save(),1L);
+            CraftEnhance.runTaskLaterAsync( 1,()-> self().getCategoryDataCache().save());
             return false;
         }
         return true;
@@ -228,7 +229,7 @@ public class GuiUtil {
             final CategoryData newCategoryData = self().getCategoryDataCache().of(currentCatogory, new ItemStack(material), categoryData.getDisplayName());
             newCategoryData.setEnhancedRecipes(categoryData.getEnhancedRecipes());
             self().getCategoryDataCache().put(currentCatogory, newCategoryData);
-            Bukkit.getScheduler().runTaskLaterAsynchronously( self(),()-> self().getCategoryDataCache().save(),1L);
+            CraftEnhance.runTaskLaterAsync( 1,()-> self().getCategoryDataCache().save());
             return false;
         }
         return true;
@@ -244,13 +245,13 @@ public class GuiUtil {
                 return true;
             }
             final CategoryData movedcategoryData = self().getCategoryDataCache().move(currentCatogory, msg);
-            Bukkit.getScheduler().runTaskLaterAsynchronously( self(),()-> {
+            CraftEnhance.runTaskLaterAsync( 1,()-> {
                 self().getCategoryDataCache().save();
                 if (movedcategoryData != null){
                     movedcategoryData.getEnhancedRecipes().forEach(EnhancedRecipe::save);
                 }
 
-            },1L);
+            });
             return false;
 
         }
@@ -272,7 +273,7 @@ public class GuiUtil {
                     Messenger.Message("Your category name alredy exist", player);
                     return true;
                 } else {
-                    Bukkit.getScheduler().runTaskLaterAsynchronously( self(),()-> self().getCategoryDataCache().save(),1L);
+                    CraftEnhance.runTaskLaterAsync(1,()-> self().getCategoryDataCache().save());
                     return false;
                 }
             }else {

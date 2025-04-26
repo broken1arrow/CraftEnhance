@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.gui.guis;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
@@ -27,7 +28,6 @@ import org.broken.arrow.menu.library.button.MenuButton;
 import org.broken.arrow.menu.library.button.logic.ButtonUpdateAction;
 import org.broken.arrow.menu.library.button.logic.FillMenuButton;
 import org.broken.arrow.menu.library.holder.MenuHolderPage;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -128,7 +128,7 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 			if (player.isConversing()) return true;
 			new HandleChatInput(this, msg -> {
 				if (!GuiUtil.changeOrCreateCategory(msg, player, this.recipe)) {
-					this.runTask(() -> this.menuOpen(player));
+					CraftEnhance.runTask(() -> this.menuOpen(player));
 					return false;
 				}
 				return true;
@@ -211,10 +211,6 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 			}
 			return null;
 		});
-	}
-
-	protected void runTask(final Runnable runnable) {
-		Bukkit.getScheduler().runTaskLater(self(), runnable, 1);
 	}
 
 	private Map<String, Object> getPlaceholders(final EnhancedRecipe enhancedRecipe) {

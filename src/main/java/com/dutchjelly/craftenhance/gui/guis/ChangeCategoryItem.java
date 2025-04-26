@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.gui.guis;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipesViewerCategorysSettings;
@@ -12,7 +13,6 @@ import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
 import org.broken.arrow.menu.library.button.MenuButton;
 import org.broken.arrow.menu.library.button.logic.FillMenuButton;
 import org.broken.arrow.menu.library.holder.MenuHolderPage;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -94,7 +94,7 @@ public class ChangeCategoryItem extends MenuHolderPage<ItemStack> {
 					final CategoryData newCategoryData = self().getCategoryDataCache().of(this.category, new ItemStack(itemStack), categoryData.getDisplayName());
 					newCategoryData.setEnhancedRecipes(categoryData.getEnhancedRecipes());
 					self().getCategoryDataCache().put(this.category, newCategoryData);
-					Bukkit.getScheduler().runTaskLaterAsynchronously( self(),()-> self().getCategoryDataCache().save(),1L);
+					CraftEnhance.runTaskLaterAsync( 1,()-> self().getCategoryDataCache().save());
 					new RecipesViewerCategorysSettings(this.category).menuOpen(player);
 					break;
 				}

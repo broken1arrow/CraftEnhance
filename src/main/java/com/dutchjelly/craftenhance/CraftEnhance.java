@@ -53,6 +53,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitScheduler;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -101,6 +103,31 @@ public class CraftEnhance extends JavaPlugin {
 		return plugin;
 	}
 
+	public static void runTask(@NotNull final Runnable runnable) {
+		getScheduler().runTask(self(), runnable);
+	}
+
+	public static void runTaskLater(final int delay, @NotNull final Runnable runnable) {
+		getScheduler().runTaskLater(self(), runnable, delay);
+	}
+
+	public static void runTaskAsync(@NotNull final Runnable runnable) {
+		getScheduler().runTaskAsynchronously(self(), runnable);
+	}
+
+	public static void runTaskLaterAsync(final int delay, @NotNull final Runnable runnable) {
+		getScheduler().runTaskLaterAsynchronously(self(), runnable, delay);
+	}
+
+	public static void stopAllTasks() {
+		getScheduler().cancelTasks(self());
+	}
+
+	@Nonnull
+	private static BukkitScheduler getScheduler() {
+		return Bukkit.getScheduler();
+	}
+
 	@Override
 	public void onEnable() {
 		plugin = this;
@@ -125,7 +152,7 @@ public class CraftEnhance extends JavaPlugin {
 		saveDefaultConfig();
 
 
-		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+		runTaskAsync(() -> {
 			loadPluginData();
 			loadRecipes();
 		});
@@ -144,7 +171,7 @@ public class CraftEnhance extends JavaPlugin {
 			for (int i = 0; i < 4; i++)
 				Messenger.Message("WARN: The installed version isn't tested to work with this version of the server.");
 		}
-		Bukkit.getScheduler().runTaskAsynchronously(this, versionChecker::runUpdateCheck);
+		runTaskAsync(versionChecker::runUpdateCheck);
 
 		if (metrics == null) {
 			final int metricsId = 9023;
@@ -154,10 +181,9 @@ public class CraftEnhance extends JavaPlugin {
 		saveScheduler.start();
 	}
 
-
 	public void reload() {
 		isReloading = true;
-		Bukkit.getScheduler().runTask(this, () -> {
+		runTask(() -> {
 			this.reloadServerRecipes();
 			reloadConfig();
 			this.menuSettingsCache.reload();
@@ -168,12 +194,11 @@ public class CraftEnhance extends JavaPlugin {
 		});
 	}
 
-
 	@Override
 	public void onDisable() {
 		if (!this.isReloading)
 			getServer().resetRecipes();
-		Bukkit.getScheduler().cancelTasks(this);
+		stopAllTasks();
 		this.saveAllData();
 	}
 
@@ -186,7 +211,6 @@ public class CraftEnhance extends JavaPlugin {
 		saveTask.join();
 		Debug.info("Finish saving.");
 	}
-
 
 	public void reloadServerRecipes() {
 		RecipeLoader.clearInstance();
@@ -307,7 +331,7 @@ public class CraftEnhance extends JavaPlugin {
 		final RecipeLoader loader = RecipeLoader.getInstance();
 		final List<EnhancedRecipe> recipes = this.database.loadRecipes();
 		this.cacheRecipes.addAll(recipes);
-		Bukkit.getScheduler().runTask(this, () -> this.loadingRecipes(loader));
+		runTask(() -> this.loadingRecipes(loader));
 		injector.setLoader(loader);
 		injector.reload();
 	}
@@ -333,5 +357,4 @@ public class CraftEnhance extends JavaPlugin {
 		);
 		getGuiManager().openGUI(p, table);
 	}
-
 }

@@ -92,7 +92,7 @@ public class WorkBenchRecipeInjector {
 					Debug.Send(wbRecipe, () -> "Recipe matches, injecting " + wbRecipe.getResult().toString());
 					if (recipeManger.isMakeItemsadderCompatible() && recipeManger.containsModelData(matrix)) {
 						Debug.Send(wbRecipe, () -> "This recipe contains Modeldata and will be crafted if the recipe is not cancelled.");
-						Bukkit.getScheduler().runTask(self(), () -> {
+						CraftEnhance.runTask(() -> {
 							if (wbRecipe.matches(matrix)) {
 								final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(enhancedRecipe, wbRecipe, wbRecipe.getResult().clone());
 								if (beforeCraftOutputEvent.isCancelled()) {
@@ -170,9 +170,9 @@ public class WorkBenchRecipeInjector {
 
 		this.finishRecipe.computeIfPresent(clickedInventory.getLocation(), (location, recipe) -> {
 			if (recipe.getOnCraftCommand() == null || recipe.getOnCraftCommand().trim().isEmpty()) return null;
-			Bukkit.getScheduler().runTaskLater(plugin, () ->
-							Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), recipe.getOnCraftCommand().replace("%playername%", craftingClick.getWhoClicked().getName())),
-					2L);
+			CraftEnhance.runTaskLater(2, () ->
+							Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), recipe.getOnCraftCommand().replace("%playername%", craftingClick.getWhoClicked().getName()))
+					);
 			return null;
 		});
 

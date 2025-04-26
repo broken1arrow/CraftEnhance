@@ -8,7 +8,6 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BrewingStand;
@@ -252,7 +251,7 @@ public class BrewingRecipeInjector {
 
 					this.handleInventoryClick(event, brewingInv, slot);
 
-					Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
+					CraftEnhance.runTaskLater(1, () -> {
 						ItemStack[] itemStacks = brewingInv.getContents();
 						ItemStack[] outputItems = Arrays.copyOfRange(itemStacks, 0, 3);
 						if (brewingRecipe.matches(outputItems)) {
@@ -264,7 +263,7 @@ public class BrewingRecipeInjector {
 							Debug.Send(Type.Brewing, () -> "The items to match: " + Arrays.toString(brewingRecipe.getContent()));
 							Debug.Send(Type.Brewing, () -> "The items inside inventory: " + Arrays.toString(outputItems));
 						}
-					}, 1);
+					});
 					break;
 				} else {
 					Debug.Send(Type.Brewing, () -> "No match for this recipe " + eRecipe + " with this recipe key: " + eRecipe.getKey() +

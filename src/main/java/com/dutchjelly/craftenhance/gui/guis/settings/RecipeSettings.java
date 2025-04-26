@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.gui.guis.settings;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
@@ -426,7 +427,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	}
 
 	protected void runTask(final Runnable runnable) {
-		Bukkit.getScheduler().runTaskLater(self(), runnable, 1);
+		CraftEnhance.runTaskLater(1, runnable);
 	}
 
 	protected boolean onPlayerClick(final RecipeT recipe, final String buttonAction, final Player player) {

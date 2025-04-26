@@ -7,7 +7,6 @@ import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.util.Pair;
 import org.broken.arrow.menu.library.holder.MenuHolder;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -95,7 +94,7 @@ public class GuiManager implements Listener {
 		final UUID id = e.getPlayer().getUniqueId();
 		if (!chatWaitingCopy.containsKey(id)) return false;
 
-		Bukkit.getScheduler().runTask(getMain(), () -> {
+		CraftEnhance.runTask( () -> {
 			final IChatInputHandler callback = chatWaitingCopy.get(id).getSecond();
 			if (callback.handle(e.getMessage())) return;
 			final MenuHolder gui = chatWaitingCopy.get(id).getFirst();
@@ -109,7 +108,7 @@ public class GuiManager implements Listener {
 		final UUID id = e.getPlayer().getUniqueId();
 		if (!chatWaiting.containsKey(id)) return false;
 
-		Bukkit.getScheduler().runTask(getMain(), () -> {
+		CraftEnhance.runTask( () -> {
 			final IChatInputHandler callback = chatWaiting.get(id).getSecond();
 			if (callback.handle(e.getMessage())) return;
 			final GUIElement gui = chatWaiting.get(id).getFirst();
