@@ -106,8 +106,9 @@ public class FurnaceRecipe extends EnhancedRecipe {
 		final org.bukkit.inventory.FurnaceRecipe furnaceRecipe = Adapter.GetFurnaceRecipe(self(), ServerRecipeTranslator.GetFreeKey(getKey()), getResult(), getContent()[0], duration, getExp());
 		if (groupName != null) {
 			Adapter.setGroup(furnaceRecipe,groupName);
-			this.setGroup(groupName);
 		}
+		System.out.println("furnaceRecipe getGroup " + furnaceRecipe.getGroup());
+		this.setGroup(groupName);
 		return furnaceRecipe;
 	}
 

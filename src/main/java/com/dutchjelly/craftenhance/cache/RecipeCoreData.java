@@ -56,8 +56,8 @@ public class RecipeCoreData {
 		if (content == null || recipe == null)
 			return false;
 		final ItemStack[] recipeContent = recipe.getContent();
-		if (content.length == 1 && recipeContent.length > 0) {
-			return content[0].isSimilar(recipeContent[0]);
+		if (content.length == 1 && recipeContent.length > 0 && content[0].isSimilar(recipeContent[0])) {
+			return true;
 		}
 		return WBRecipeComparer.ingredientsMatch(content, recipe.getContent(), MatchType.MATCH_BASIC_META.getMatcher());
 	}

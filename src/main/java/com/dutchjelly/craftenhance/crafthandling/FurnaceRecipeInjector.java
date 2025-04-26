@@ -21,6 +21,7 @@ import org.bukkit.event.inventory.FurnaceBurnEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.CraftingRecipe;
+import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
@@ -49,7 +50,7 @@ public class FurnaceRecipeInjector {
 
 	public void smelt(final FurnaceSmeltEvent event) {
 
-		Debug.Send(Type.Smelting, () -> "Furnace has start to smelt item");
+		Debug.Send(Type.Smelting, () -> "Furnace has smelt item");
 
 		final List<RecipeGroup> groups = this.recipeInjector.getMatchingRecipeGroup(event.getRecipe(), event.getBlock(), event.getSource());
 		final Furnace furnace = (Furnace) event.getBlock().getState();
@@ -110,9 +111,11 @@ public class FurnaceRecipeInjector {
 			burnEvent.setCancelled(true);
 			return;
 		}
-		final List<RecipeGroup> group = this.recipeInjector.getMatchingRecipeGroup(null, burnEvent.getBlock(), furnace.getInventory().getSmelting());
-		final RecipeResult result = this.getFurnaceResult(group, furnace.getInventory().getSmelting(), furnace);
-		ItemStack itemInResulSlot = furnace.getInventory().getResult();
+		final FurnaceInventory furnaceInventory = furnace.getInventory();
+		final List<RecipeGroup> group = this.recipeInjector.getMatchingRecipeGroup(null, burnEvent.getBlock(), furnaceInventory.getSmelting());
+
+		final RecipeResult result = this.getFurnaceResult(group, furnaceInventory.getSmelting(), furnace);
+		ItemStack itemInResulSlot = furnaceInventory.getResult();
 		if (result.isEnhancedRecipe() && itemInResulSlot != null && itemInResulSlot.getType() != Material.AIR && !result.getItem().isSimilar(itemInResulSlot)) {
 			Debug.Send(Type.Smelting, () -> "It is already an item inside the furnace, that is not similar. Can't smelt the item");
 			burnEvent.setCancelled(true);
@@ -120,7 +123,7 @@ public class FurnaceRecipeInjector {
 		}
 
 		if (!result.isEnhancedRecipe()) {
-			if (furnace.getInventory().getSmelting() != null && RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(furnace.getInventory().getSmelting().getType())) != null)
+			if (furnaceInventory.getSmelting() != null && RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(furnaceInventory.getSmelting().getType())) != null)
 				return;
 			if (result.isVanilla())
 				return;
@@ -191,6 +194,7 @@ public class FurnaceRecipeInjector {
 
 			if (furnaceRecipe != null) return RecipeResult.setResult(furnaceRecipe.getResult());
 			//Check for similar server recipes if no enhanced ones match.
+
 			for (final Recipe sRecipe : group.getServerRecipes()) {
 				if(sRecipe instanceof CraftingRecipe) continue;
 
@@ -202,7 +206,26 @@ public class FurnaceRecipeInjector {
 					return RecipeResult.setNone();
 				}
 			}
+
 		}
+		/*todo does this part needed, if a recipe get detected wrong, as should be treated as normal vanilla recipe?
+*/
+/*	   		for (final Recipe sRecipe : RecipeLoader.getInstance().getServerFurnaceRecipes()) {
+				if(sRecipe instanceof CraftingRecipe) continue;
+
+				final org.bukkit.inventory.CookingRecipe<?> fRecipe = (org.bukkit.inventory.CookingRecipe<?>) sRecipe;
+			    final ItemStack inputStack = fRecipe.getInput();
+
+				if(self().getVersionChecker().newerThan(ServerVersion.v1_12) && fRecipe.getKey().getNamespace().contains("craftenhance")){
+					continue;
+				}
+				if (this.recipeInjector.getTypeMatcher().match(inputStack,source )) {
+					Debug.Send(Type.Smelting, () -> "Found similar server recipe for furnace, will allowed to next step.");
+					Debug.Send(Type.Smelting, () -> "Source " + source);
+					Debug.Send(Type.Smelting, () -> "Input: " + inputStack);
+					return RecipeResult.setVanilla();
+				}
+			}*/
 		return RecipeResult.setNone();
 	}
 

@@ -191,6 +191,7 @@ public class CraftEnhance extends JavaPlugin {
 			isReloading = false;
 			injector.reload();
 			reLearnRecipes();
+			Debug.init(this);
 		});
 	}
 

@@ -170,6 +170,7 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 		if (event.getInventory().getType() != InventoryType.BREWING) return;
 		brewingRecipeInjector.onBrewDrag(event);
 	}
+
 	@EventHandler
 	public void furnacePlace(final BlockPlaceEvent e) {
 		if (e.isCancelled()) return;
@@ -222,7 +223,7 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 		RecipeType recipeType = RecipeType.getType(typeOfFurnace);
 		if (recipeType == null) return null;
 		if (cookingRecipe != null) {
-			return RecipeLoader.getInstance().findGroupsByResult(source, cookingRecipe);
+			return RecipeLoader.getInstance().findGroupsByResult(source, cookingRecipe, recipeType);
 		}
 		switch (recipeType) {
 			case WORKBENCH:

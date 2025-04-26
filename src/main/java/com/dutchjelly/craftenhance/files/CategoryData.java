@@ -3,7 +3,7 @@ package com.dutchjelly.craftenhance.files;
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.cache.RecipeCoreData;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
-import com.dutchjelly.craftenhance.files.util.ConfigurationSerializeUtility;
+import org.broken.arrow.serialize.library.utility.serialize.ConfigurationSerializable;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
-public class CategoryData implements ConfigurationSerializeUtility {
+public class CategoryData implements ConfigurationSerializable {
 
 	private final ItemStack recipeCategoryItem;
 	private String recipeCategory;

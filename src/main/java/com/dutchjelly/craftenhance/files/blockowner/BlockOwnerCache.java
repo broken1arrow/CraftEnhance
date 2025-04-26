@@ -3,6 +3,7 @@ package com.dutchjelly.craftenhance.files.blockowner;
 import com.dutchjelly.craftenhance.files.util.SimpleYamlHelper;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.util.LocationWrapper;
+import org.broken.arrow.yaml.library.utillity.ConfigurationWrapper;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -78,23 +79,23 @@ public class BlockOwnerCache extends SimpleYamlHelper {
 	}
 
 	@Override
-	protected void saveDataToFile(final File file) {
-		FileConfiguration fileConfiguration = this.getCustomConfig();
-		if (fileConfiguration == null)
-			fileConfiguration = YamlConfiguration.loadConfiguration(file);
+	protected void saveDataToFile(@Nonnull final File file, @Nonnull final ConfigurationWrapper configurationWrapper) {
+		final FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
 		fileConfiguration.set("Containers", null);
 		try {
 			fileConfiguration.save(file);
 		} catch (IOException e) {
 			Debug.error("could not save the owners.");
 		}
-		for (final Entry<String, BlockOwnerData> entry : containerOwners.entrySet())
-			this.setData(file, "Containers." + entry.getKey(), entry.getValue());
+		for (final Entry<String, BlockOwnerData> entry : containerOwners.entrySet()) {
+			configurationWrapper.addSerializableData("Containers." + entry.getKey(), entry.getValue());
+			this.setData(configurationWrapper);
+		}
 	}
 
 	@Override
-	protected void loadSettingsFromYaml(final File file) {
-		final ConfigurationSection templateConfig = this.getCustomConfig().getConfigurationSection("Containers");
+	protected void loadSettingsFromYaml(final File file, final FileConfiguration loadedConfig) {
+		final ConfigurationSection templateConfig = loadedConfig.getConfigurationSection("Containers");
 		if (templateConfig == null) return;
 		for (final String category : templateConfig.getKeys(false)) {
 			final BlockOwnerData categoryData = this.getData("Containers." + category, BlockOwnerData.class);
@@ -119,5 +120,8 @@ public class BlockOwnerCache extends SimpleYamlHelper {
 
 		return loc;
 	}
+
+
+
 
 }

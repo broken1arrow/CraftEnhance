@@ -3,11 +3,13 @@ package com.dutchjelly.craftenhance.files;
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.util.SimpleYamlHelper;
+import org.broken.arrow.yaml.library.utillity.ConfigurationWrapper;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
@@ -99,7 +101,7 @@ public class CategoryDataCache extends SimpleYamlHelper {
 	}
 
 	@Override
-	protected void saveDataToFile(final File file) {
+	protected void saveDataToFile(@Nonnull final File file, @Nonnull final ConfigurationWrapper configurationWrapper) {
 		if (!file.exists()) {
 			try {
 				file.createNewFile();
@@ -107,17 +109,17 @@ public class CategoryDataCache extends SimpleYamlHelper {
 				e.printStackTrace();
 			}
 		}
-		FileConfiguration fileConfiguration = this.getCustomConfig();
-		if (fileConfiguration == null)
-			fileConfiguration = YamlConfiguration.loadConfiguration(file);
+		FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
 		fileConfiguration.set("Categorys",null);
-		for (final Entry<String, CategoryData> entry : recipeCategories.entrySet())
-			this.setData(file, "Categorys." + entry.getKey(), entry.getValue());
+		for (final Entry<String, CategoryData> entry : recipeCategories.entrySet()){
+			configurationWrapper.addSerializableData("Categorys." + entry.getKey(), entry.getValue());
+			this.setData(configurationWrapper);
+		}
 	}
-
 	@Override
-	protected void loadSettingsFromYaml(final File file) {
-		final ConfigurationSection templateConfig = this.getCustomConfig().getConfigurationSection("Categorys");
+	protected void loadSettingsFromYaml(final File file, final FileConfiguration fileConfiguration) {
+
+		final ConfigurationSection templateConfig = fileConfiguration.getConfigurationSection("Categorys");
 		if (templateConfig == null) return;
 		for (final String category : templateConfig.getKeys(false)) {
 			final CategoryData categoryData = this.getData( "Categorys." + category, CategoryData.class);
@@ -155,4 +157,6 @@ public class CategoryDataCache extends SimpleYamlHelper {
 		}
 		return categoryData;
 	}
+
+
 }

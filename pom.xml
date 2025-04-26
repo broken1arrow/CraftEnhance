@@ -146,6 +146,12 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>com.github.broken1arrow.Utility-Library</groupId>
+            <artifactId>yaml-utility</artifactId>
+            <version>${utility-library}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.10.1</version>

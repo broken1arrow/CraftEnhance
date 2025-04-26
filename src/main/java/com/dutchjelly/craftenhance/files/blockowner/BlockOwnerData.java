@@ -1,9 +1,9 @@
 package com.dutchjelly.craftenhance.files.blockowner;
 
-import com.dutchjelly.craftenhance.files.util.ConfigurationSerializeUtility;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.util.LocationWrapper;
 import lombok.NonNull;
+import org.broken.arrow.serialize.library.utility.serialize.ConfigurationSerializable;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class BlockOwnerData implements ConfigurationSerializeUtility {
+public class BlockOwnerData implements ConfigurationSerializable {
 
 	private UUID currentOwner;
 	private double experiences;

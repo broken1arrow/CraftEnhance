@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
+import org.bukkit.inventory.CampfireRecipe;
 import org.bukkit.inventory.CookingRecipe;
 import org.bukkit.inventory.CraftingRecipe;
 import org.bukkit.inventory.ItemStack;
@@ -53,6 +54,8 @@ public class RecipeLoader {
 	private final Map<String, Integer> recipes = new HashMap<>();
 	@Getter
 	private List<Recipe> serverRecipes = new ArrayList<>();
+	@Getter
+	private List<Recipe> serverFurnaceRecipes = new ArrayList<>();
 	@Getter
 	private List<Recipe> disabledServerRecipes = new ArrayList<>();
 	@Getter
@@ -153,6 +156,9 @@ public class RecipeLoader {
 				} else if (group.getServerRecipes().stream().anyMatch(x -> result.isSimilar(x.getResult()))) {
 					originGroups.add(group);
 				}
+				if (recipeType == RecipeType.FURNACE && group.getRecipeCoreList().stream().anyMatch(x -> x.getResult() != null && result.getType() == x.getResult().getType())) {
+					originGroups.add(group);
+				}
 			}
 			if (!originGroups.isEmpty()) {
 				return originGroups;
@@ -168,9 +174,9 @@ public class RecipeLoader {
 		RecipeGroup group = null;
 		if (recipe instanceof CraftingRecipe)
 			group = mappedGroupedRecipes.get(((CraftingRecipe) recipe).getGroup());
-		if (recipe instanceof CookingRecipe)
+		if (recipe instanceof CookingRecipe) {
 			group = mappedGroupedRecipes.get(((CookingRecipe<?>) recipe).getGroup());
-
+		}
 
 		if (group != null) {
 			if (recipe instanceof CookingRecipe) {
@@ -184,7 +190,33 @@ public class RecipeLoader {
 				else if (group.getServerRecipes().stream().anyMatch(x -> result.isSimilar(x.getResult())))
 					originGroups.add(group);
 			}
+		} else {
+			if (recipe instanceof CookingRecipe) {
+				String cokingGroup =  ((CookingRecipe<?>) recipe).getGroup();
+				if(cokingGroup.isEmpty()){
+					final Set<String> seenGroups = new HashSet<>();
+					CacheRecipes cacheRecipes = self().getCacheRecipes();
+					for (String groupKey : cacheRecipes.getGroupsForType(recipeType)) {
+						if (!seenGroups.add(groupKey)) continue;
+
+						final RecipeGroup recipeGroup = mappedGroupedRecipes.get(groupKey);
+						if (recipeGroup == null) continue;
+
+						if (recipeGroup.getRecipeCoreList().stream().anyMatch(x -> result.isSimilar(x.getResult()))) {
+							originGroups.add(recipeGroup);
+						} else if (recipeGroup.getServerRecipes().stream().anyMatch(x -> result.isSimilar(x.getResult()))) {
+							originGroups.add(recipeGroup);
+						}
+						if (recipeType == RecipeType.FURNACE && recipeGroup.getRecipeCoreList().stream().anyMatch(x -> x.getResult() != null && result.getType() == x.getResult().getType())) {
+							originGroups.add(recipeGroup);
+						}
+					}
+				}
+
+			}
 		}
+
+
 		return originGroups;
 	}
 
@@ -270,7 +302,8 @@ public class RecipeLoader {
 
 	public void unloadRecipe(final EnhancedRecipe recipe) {
 		final RecipeGroup group = findGroup(recipe);
-		loadedRecipes.remove(recipe);
+		this.loadedRecipes.remove(recipe);
+		this.serverFurnaceRecipes.remove(recipe.getServerRecipe());
 
 		final CategoryData categoryData = categoryDataCache.get(recipe.getRecipeCategory());
 		if (categoryData != null && categoryData.getEnhancedRecipes() != null)
@@ -361,6 +394,11 @@ public class RecipeLoader {
 		} else {
 			Debug.Send("Loading recipe", "Didn't add server recipe for " + recipe.getKey() + " because a similar one was already loaded: " + alwaysSimilar.toString() + " with the result " + alwaysSimilar.getResult().toString());
 		}
+
+		server.recipeIterator().forEachRemaining(cookingRecipe -> {
+			if ((cookingRecipe instanceof CookingRecipe && self().getVersionChecker().olderThan(ServerVersion.v1_14)) || (cookingRecipe instanceof CookingRecipe && self().getVersionChecker().newerThan(ServerVersion.v1_13) && !(cookingRecipe instanceof CampfireRecipe)))
+				this.serverFurnaceRecipes.add(cookingRecipe);
+		});
 	}
 
 	private String loadCategories(@NonNull final EnhancedRecipe recipe) {
