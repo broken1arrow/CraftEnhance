@@ -107,7 +107,6 @@ public class FurnaceRecipe extends EnhancedRecipe {
 		if (groupName != null) {
 			Adapter.setGroup(furnaceRecipe,groupName);
 		}
-		System.out.println("furnaceRecipe getGroup " + furnaceRecipe.getGroup());
 		this.setGroup(groupName);
 		return furnaceRecipe;
 	}
