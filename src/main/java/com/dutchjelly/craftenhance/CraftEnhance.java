@@ -148,7 +148,8 @@ public class CraftEnhance extends JavaPlugin {
 		this.ingredientsCache = new IngredientsCache();
 		if (this.blockOwnerCache == null)
 			this.blockOwnerCache = new BlockOwnerCache();
-
+		Debug.Send("Setting up the file manager for recipes.");
+		setupFileManager();
 		saveDefaultConfig();
 
 
@@ -187,6 +188,7 @@ public class CraftEnhance extends JavaPlugin {
 			this.reloadServerRecipes();
 			reloadConfig();
 			this.menuSettingsCache.reload();
+			this.blockOwnerCache.save();
 			this.blockOwnerCache.reload();
 			isReloading = false;
 			injector.reload();
@@ -326,8 +328,6 @@ public class CraftEnhance extends JavaPlugin {
 	private void loadRecipes() {
 		this.usingItemsAdder = this.getServer().getPluginManager().getPlugin("ItemsAdder") != null;
 		//Most other instances use the file manager, so setup before everything.
-		Debug.Send("Setting up the file manager for recipes.");
-		setupFileManager();
 		Debug.Send("Loading recipes");
 		final RecipeLoader loader = RecipeLoader.getInstance();
 		final List<EnhancedRecipe> recipes = this.database.loadRecipes();
