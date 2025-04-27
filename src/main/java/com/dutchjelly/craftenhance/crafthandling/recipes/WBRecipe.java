@@ -9,7 +9,6 @@ import com.dutchjelly.craftenhance.crafthandling.util.WBRecipeComparer;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Material;
-import org.bukkit.inventory.CraftingRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
@@ -79,7 +78,7 @@ public class WBRecipe extends EnhancedRecipe {
 				recipe = ServerRecipeTranslator.translateShapedEnhancedRecipe(this);
 		}
 		if (recipe != null && groupName != null) {
-			Adapter.setGroup(((CraftingRecipe) recipe), groupName);
+			Adapter.setGroup(recipe, groupName);
 		}
 		this.setGroup(groupName);
 		return recipe;

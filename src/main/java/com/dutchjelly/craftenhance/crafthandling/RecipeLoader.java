@@ -13,6 +13,7 @@ import com.dutchjelly.craftenhance.files.CategoryDataCache;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.messaging.Messenger;
+import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import com.dutchjelly.craftenhance.util.Pair;
 import lombok.Getter;
@@ -100,13 +101,29 @@ public class RecipeLoader {
 
 	public Map<String, Integer> getRecipes() {
 		server.recipeIterator().forEachRemaining(recipe1 -> {
-			if (recipe1 instanceof CraftingRecipe && (((CraftingRecipe) recipe1).getKey().getNamespace().contains("craftenhance") || ((CraftingRecipe) recipe1).getKey().getNamespace().contains("cehrecipe"))) {
-				Integer recipeCounter = recipes.getOrDefault(((CraftingRecipe) recipe1).getGroup(), 0);
-				recipes.put(((CraftingRecipe) recipe1).getGroup(), recipeCounter + 1);
+			if (Adapter.isCraftingRecipe(recipe1) && Adapter.recipeContainsNamespace(recipe1)) {
+				final VersionChecker versionChecker = self().getVersionChecker();
+				Integer recipeCounter = 0;
+				String group = "";
+				if (versionChecker.newerThan(ServerVersion.v1_19)) {
+					group = ((CraftingRecipe) recipe1).getGroup();
+					recipeCounter = recipes.getOrDefault(group, 0);
+				} else {
+					if (recipe1 instanceof ShapedRecipe) {
+						group = ((ShapedRecipe) recipe1).getGroup();
+						recipeCounter = recipes.getOrDefault(((ShapedRecipe) recipe1).getGroup(), 0);
+					}
+					if (recipe1 instanceof ShapelessRecipe) {
+						group = ((ShapelessRecipe) recipe1).getGroup();
+						recipeCounter = recipes.getOrDefault(((ShapelessRecipe) recipe1).getGroup(), 0);
+					}
+				}
+				recipes.put(group, recipeCounter + 1);
 			}
-			if (recipe1 instanceof CookingRecipe && (((CookingRecipe) recipe1).getKey().getNamespace().contains("craftenhance") || ((CookingRecipe) recipe1).getKey().getNamespace().contains("cehrecipe"))) {
-				Integer recipeCounter = recipes.getOrDefault(((CookingRecipe) recipe1).getGroup(), 0);
-				recipes.put(((CookingRecipe) recipe1).getGroup(), recipeCounter + 1);
+			if (recipe1 instanceof CookingRecipe && Adapter.recipeContainsNamespace(recipe1)) {
+				final String group = ((CookingRecipe<?>) recipe1).getGroup();
+				Integer recipeCounter = recipes.getOrDefault(group, 0);
+				recipes.put(group, recipeCounter + 1);
 			}
 		});
 
@@ -173,14 +190,10 @@ public class RecipeLoader {
 			return originGroups;
 		}
 		RecipeGroup group = null;
-		if (recipe instanceof CraftingRecipe) {
-			final String recipeGroup = ((CraftingRecipe) recipe).getGroup();
-			Debug.Send(Type.Crafting , ()-> "Attempt to find the group for crafting recipe. Group name: '" + (recipeGroup.isEmpty()? "No group set" : recipeGroup)+ "'");
-			group = mappedGroupedRecipes.get(((CraftingRecipe) recipe).getGroup());
-		}
+		group = getCraftingRecipeGroup(recipe);
 		if (recipe instanceof CookingRecipe) {
 			final String recipeGroup = ((CookingRecipe<?>) recipe).getGroup();
-			Debug.Send(Type.Smelting , ()-> "Attempt to find the group for smelting recipe. Group name: '" + (recipeGroup.isEmpty()? "No group set" : recipeGroup)+ "'");
+			Debug.Send(Type.Smelting, () -> "Attempt to find the group for smelting recipe. Group name: '" + (recipeGroup.isEmpty() ? "No group set" : recipeGroup) + "'");
 			group = mappedGroupedRecipes.get(recipeGroup);
 		}
 
@@ -198,9 +211,9 @@ public class RecipeLoader {
 			}
 		} else {
 			if (recipe instanceof CookingRecipe) {
-				Debug.Send(Type.Smelting , ()-> "No group found, will attempt to find group by looking trough cached recipes with recipe type: " + recipeType);
-				String cokingGroup =  ((CookingRecipe<?>) recipe).getGroup();
-				if(cokingGroup.isEmpty()){
+				Debug.Send(Type.Smelting, () -> "No group found, will attempt to find group by looking trough cached recipes with recipe type: " + recipeType);
+				String cokingGroup = ((CookingRecipe<?>) recipe).getGroup();
+				if (cokingGroup.isEmpty()) {
 					final Set<String> seenGroups = new HashSet<>();
 					CacheRecipes cacheRecipes = self().getCacheRecipes();
 					for (String groupKey : cacheRecipes.getGroupsForType(recipeType)) {
@@ -225,6 +238,28 @@ public class RecipeLoader {
 
 
 		return originGroups;
+	}
+
+	private RecipeGroup getCraftingRecipeGroup(final Recipe recipe) {
+		final VersionChecker versionChecker = self().getVersionChecker();
+		RecipeGroup group = null;
+		if (versionChecker.newerThan(ServerVersion.v1_19) && recipe instanceof CraftingRecipe) {
+			final String recipeGroup = ((CraftingRecipe) recipe).getGroup();
+			Debug.Send(Type.Crafting, () -> "Attempt to find the group for crafting recipe. Group name: '" + (recipeGroup.isEmpty() ? "No group set" : recipeGroup) + "'");
+			group = mappedGroupedRecipes.get(recipeGroup);
+		} else {
+			if (recipe instanceof ShapedRecipe) {
+				final String recipeGroup = ((ShapedRecipe) recipe).getGroup();
+				Debug.Send(Type.Crafting, () -> "Attempt to find the group for crafting recipe. Group name: '" + (recipeGroup.isEmpty() ? "No group set" : recipeGroup) + "'");
+				group = mappedGroupedRecipes.get(((ShapedRecipe) recipe).getGroup());
+			}
+			if (recipe instanceof ShapelessRecipe) {
+				final String recipeGroup = ((ShapelessRecipe) recipe).getGroup();
+				Debug.Send(Type.Crafting, () -> "Attempt to find the group for crafting recipe. Group name: '" + (recipeGroup.isEmpty() ? "No group set" : recipeGroup) + "'");
+				group = mappedGroupedRecipes.get(((ShapelessRecipe) recipe).getGroup());
+			}
+		}
+		return group;
 	}
 
 	public List<RecipeGroup> findGroupsBySimilarResultMatch(final ItemStack result, final RecipeType type) {

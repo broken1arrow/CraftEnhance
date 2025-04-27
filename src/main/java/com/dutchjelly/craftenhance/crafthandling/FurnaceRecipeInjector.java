@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.crafthandling;
 
+import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.cache.RecipeCoreData;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
@@ -20,7 +21,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.FurnaceBurnEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.CraftingRecipe;
 import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -196,7 +196,7 @@ public class FurnaceRecipeInjector {
 			//Check for similar server recipes if no enhanced ones match.
 
 			for (final Recipe sRecipe : group.getServerRecipes()) {
-				if(sRecipe instanceof CraftingRecipe) continue;
+				if(Adapter.isCraftingRecipe(sRecipe)) continue;
 
 				final org.bukkit.inventory.FurnaceRecipe fRecipe = (org.bukkit.inventory.FurnaceRecipe) sRecipe;
 				if (this.recipeInjector.getTypeMatcher().match(fRecipe.getInput(), source)) {

@@ -284,7 +284,8 @@ public class Adapter {
 			recipe.setIngredient(key, ingredient.getType());
 		}
 	}
-	public static <T extends CookingRecipe<?>> void setIngredient(final CookingRecipe<T> recipe,  final ItemStack ingredient) {
+
+	public static <T extends CookingRecipe<?>> void setIngredient(final CookingRecipe<T> recipe, final ItemStack ingredient) {
 		if (ingredient.getType() == Material.AIR) return;
 
 /*		if (!self().getConfig().getBoolean("learn-recipes")) {
@@ -317,12 +318,13 @@ public class Adapter {
 					.newInstance(ingredient);
 
 			Method setIngredient = recipeClass.getMethod("setInputChoice", recipeChoiceClass);
-			setIngredient.invoke(recipe,  choice);
+			setIngredient.invoke(recipe, choice);
 		} catch (final Exception e) {
 			e.printStackTrace();
 			recipe.setInput(ingredient.getType());
 		}
 	}
+
 	public static void AddIngredient(final ShapelessRecipe recipe, final ItemStack ingredient) {
 		if (ingredient.getType() == Material.AIR) return;
 
@@ -374,7 +376,7 @@ public class Adapter {
 					.newInstance(getNameSpacedKey(plugin, key), result, new RecipeChoice.ExactChoice(Collections.singletonList(source)), exp, duration);*/
 			org.bukkit.inventory.FurnaceRecipe furnaceRecipe = org.bukkit.inventory.FurnaceRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, Material.class, float.class, int.class)
 					.newInstance(getNameSpacedKey(plugin, key), result, source.getType(), exp, duration);
-			setIngredient(furnaceRecipe,source);
+			setIngredient(furnaceRecipe, source);
 			return furnaceRecipe;
 		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
 		               NoSuchMethodException | ClassNotFoundException e) {
@@ -486,8 +488,44 @@ public class Adapter {
 			furnaceRecipe.setGroup(groupName);
 	}
 
-	public static void setGroup(final CraftingRecipe recipe, final String groupName) {
-		if (self().getVersionChecker().newerThan(ServerVersion.v1_12))
-			recipe.setGroup(groupName);
+	public static void setGroup(final Recipe recipe, final String groupName) {
+		final VersionChecker versionChecker = self().getVersionChecker();
+		if (versionChecker.newerThan(ServerVersion.v1_12)) {
+			if (versionChecker.newerThan(ServerVersion.v1_19) && recipe instanceof CraftingRecipe) {
+				((CraftingRecipe) recipe).setGroup(groupName);
+			} else {
+				if (recipe instanceof ShapedRecipe) {
+					((ShapedRecipe) recipe).setGroup(groupName);
+				}
+				if (recipe instanceof ShapelessRecipe) {
+					((ShapelessRecipe) recipe).setGroup(groupName);
+				}
+			}
+		}
+	}
+
+	public static boolean isCraftingRecipe(final Recipe recipe) {
+		final VersionChecker versionChecker = self().getVersionChecker();
+		if (versionChecker.newerThan(ServerVersion.v1_19) && recipe instanceof CraftingRecipe) {
+			return true;
+		}
+		return recipe instanceof ShapedRecipe || recipe instanceof ShapelessRecipe;
+	}
+
+	public static boolean recipeContainsNamespace(final Recipe recipe) {
+		final VersionChecker versionChecker = self().getVersionChecker();
+		if (isCraftingRecipe(recipe)) {
+			if (versionChecker.newerThan(ServerVersion.v1_19))
+				return (((CraftingRecipe) recipe).getKey().getNamespace().contains("craftenhance") || ((CraftingRecipe) recipe).getKey().getNamespace().contains("cehrecipe"));
+
+			if (recipe instanceof ShapedRecipe) {
+				return (((ShapedRecipe) recipe).getKey().getNamespace().contains("craftenhance") || ((ShapedRecipe) recipe).getKey().getNamespace().contains("cehrecipe"));
+			}
+
+			if (recipe instanceof ShapelessRecipe) {
+				return (((ShapelessRecipe) recipe).getKey().getNamespace().contains("craftenhance") || ((ShapelessRecipe) recipe).getKey().getNamespace().contains("cehrecipe"));
+			}
+		}
+		return 	recipe instanceof CookingRecipe && (((CookingRecipe<?>) recipe).getKey().getNamespace().contains("craftenhance") || ((CookingRecipe<?>) recipe).getKey().getNamespace().contains("cehrecipe"));
 	}
 }
