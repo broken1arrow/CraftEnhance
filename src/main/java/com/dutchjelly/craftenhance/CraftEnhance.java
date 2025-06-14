@@ -98,6 +98,7 @@ public class CraftEnhance extends JavaPlugin {
 	private BrewingTask brewingTask;
 	@Getter
 	private BlockOwnerCache blockOwnerCache;
+	private PlayerCheckTask playerCheckTask;
 
 	public static CraftEnhance self() {
 		return plugin;
@@ -139,7 +140,8 @@ public class CraftEnhance extends JavaPlugin {
 		this.database = new RecipeDatabase();
 		this.saveScheduler = new SaveScheduler();
 		this.cacheRecipes = new CacheRecipes(this);
-		new PlayerCheckTask().start();
+		this.playerCheckTask = new PlayerCheckTask();
+		this.playerCheckTask.start();
 		//The file manager needs serialization, so firstly register the classes.
 		registerSerialization();
 		versionChecker = VersionChecker.init(this);
@@ -194,6 +196,10 @@ public class CraftEnhance extends JavaPlugin {
 			injector.reload();
 			reLearnRecipes();
 			Debug.init(this);
+			if (this.playerCheckTask != null)
+				this.playerCheckTask.cancel();
+			this.playerCheckTask = new PlayerCheckTask();
+			this.playerCheckTask.start();
 		});
 	}
 

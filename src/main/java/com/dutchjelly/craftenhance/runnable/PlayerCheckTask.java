@@ -31,6 +31,20 @@ public class PlayerCheckTask implements Runnable {
 		task = Bukkit.getScheduler().runTaskTimer(this.plugin, this, 20, 20 * 2);
 	}
 
+	public void cancel() {
+		if (this.isRunning()) {
+			Bukkit.getScheduler().cancelTask(task.getTaskId());
+		}
+	}
+
+	public boolean isRunning() {
+		if (task == null) return false;
+		final int taskId = task.getTaskId();
+		return taskId > 0 &&
+				(Bukkit.getScheduler().isCurrentlyRunning(taskId) ||
+						Bukkit.getScheduler().isQueued(taskId));
+	}
+
 	public void run() {
 		final FileConfiguration config = plugin.getConfig();
 		if(!config.getBoolean("enable-brewing-progressbar") || !config.getBoolean("enable-brewing-recipes")) {
@@ -117,4 +131,7 @@ public class PlayerCheckTask implements Runnable {
 	private String getServerVersion() {
 		return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 	}
+
+
+
 }
