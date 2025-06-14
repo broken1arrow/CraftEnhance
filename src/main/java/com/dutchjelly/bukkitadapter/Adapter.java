@@ -11,6 +11,9 @@ import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import lombok.NonNull;
+import org.broken.arrow.library.dependencies.nbt.NBT;
+import org.broken.arrow.library.dependencies.nbt.iface.ReadWriteNBT;
+import org.broken.arrow.library.dependencies.nbt.iface.ReadWriteNBTCompoundList;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
@@ -87,7 +90,7 @@ public class Adapter {
 		if (displayName != null)
 			displayName = ChatColor.translateAlternateColorCodes('&', displayName);
 
-		final ItemMeta meta = item.getItemMeta();
+		ItemMeta meta = item.getItemMeta();
 		if (meta != null) {
 			meta.setLore(lore == null ? new ArrayList<>() : lore); //avoid null lore
 
@@ -99,6 +102,9 @@ public class Adapter {
 					meta.addAttributeModifier(Attribute.MOVEMENT_SPEED, dummyModifier);
 				} catch (NoClassDefFoundError ex) {
 					self().getLogger().warning("The AttributeModifier is no longer supported and the tooltip will probably be visible again.");
+				} catch (NoSuchFieldError ex) {
+					meta = getItemMeta(item, meta);
+					//self().getLogger().warning("The AttributeModifier MOVEMENT_SPEED does not exist, the tooltip is probably not hidden.");
 				}
 				meta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
 			} else
@@ -526,6 +532,26 @@ public class Adapter {
 				return (((ShapelessRecipe) recipe).getKey().getNamespace().contains("craftenhance") || ((ShapelessRecipe) recipe).getKey().getNamespace().contains("cehrecipe"));
 			}
 		}
-		return 	recipe instanceof CookingRecipe && (((CookingRecipe<?>) recipe).getKey().getNamespace().contains("craftenhance") || ((CookingRecipe<?>) recipe).getKey().getNamespace().contains("cehrecipe"));
+		return recipe instanceof CookingRecipe && (((CookingRecipe<?>) recipe).getKey().getNamespace().contains("craftenhance") || ((CookingRecipe<?>) recipe).getKey().getNamespace().contains("cehrecipe"));
+	}
+
+	private static ItemMeta getItemMeta(final ItemStack item, ItemMeta meta) {
+		item.setItemMeta(meta);
+		addAttributeTooltip(item);
+		return item.getItemMeta();
+	}
+
+	public static void addAttributeTooltip(ItemStack item) {
+		final UUID uuid = UUID.randomUUID();
+
+		NBT.modifyComponents(item, root -> {
+			ReadWriteNBT attributeModifiers = root.getOrCreateCompound("minecraft:attribute_modifiers");
+			ReadWriteNBTCompoundList list = attributeModifiers.getCompoundList("modifiers");
+			ReadWriteNBT compound = list.addCompound();
+			compound.setString("type", "minecraft:generic.movement_speed");
+			compound.setDouble("amount", 5.0);
+			compound.setString("operation", "add_value");
+			compound.setString("id", uuid.toString());
+		});
 	}
 }

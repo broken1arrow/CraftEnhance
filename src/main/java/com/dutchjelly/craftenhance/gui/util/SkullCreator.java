@@ -287,10 +287,12 @@ public class SkullCreator {
         profile.setTextures(textures);
         return profile;
     }
+
     public static URL getUrlFromBase64(String base64) throws MalformedURLException {
         String decoded = new String(Base64.getDecoder().decode(base64));
         return new URL(decoded.substring("{\"textures\":{\"SKIN\":{\"url\":\"".length(), decoded.length() - "\"}}}".length()));
     }
+
     private static void mutateBlockState(Skull block, String b64) {
         try {
             if (blockProfileField == null) {
