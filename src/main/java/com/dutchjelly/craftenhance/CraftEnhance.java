@@ -45,6 +45,7 @@ import com.dutchjelly.craftenhance.runnable.PlayerCheckTask;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import com.dutchjelly.craftenhance.util.Metrics;
 import lombok.Getter;
+import org.broken.arrow.localization.library.LocalizationCache;
 import org.broken.arrow.menu.library.RegisterMenuAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -57,6 +58,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -98,7 +100,10 @@ public class CraftEnhance extends JavaPlugin {
 	private BrewingTask brewingTask;
 	@Getter
 	private BlockOwnerCache blockOwnerCache;
+	@Getter
+	private LocalizationCache localizationCache;
 	private PlayerCheckTask playerCheckTask;
+
 
 	public static CraftEnhance self() {
 		return plugin;
@@ -150,6 +155,8 @@ public class CraftEnhance extends JavaPlugin {
 		this.ingredientsCache = new IngredientsCache();
 		if (this.blockOwnerCache == null)
 			this.blockOwnerCache = new BlockOwnerCache();
+		this.localizationCache = new LocalizationCache(this,"localization.yml");
+		this.localizationCache.reload();
 		Debug.Send("Setting up the file manager for recipes.");
 		setupFileManager();
 		saveDefaultConfig();
@@ -200,6 +207,7 @@ public class CraftEnhance extends JavaPlugin {
 				this.playerCheckTask.cancel();
 			this.playerCheckTask = new PlayerCheckTask();
 			this.playerCheckTask.start();
+			this.localizationCache.reload();
 		});
 	}
 
@@ -219,6 +227,10 @@ public class CraftEnhance extends JavaPlugin {
 		CompletableFuture<Void> saveTask = CompletableFuture.runAsync(() -> this.database.saveRecipes());
 		saveTask.join();
 		Debug.info("Finish saving.");
+	}
+
+	public String getPlaceholderMsg(@Nonnull String key, @Nullable Object... placeholders) {
+		return this.localizationCache.getMessagesUtility().getPlaceholder(key,placeholders);
 	}
 
 	public void reloadServerRecipes() {

@@ -63,6 +63,14 @@ Menus:
         lore:
           - "&fGo back to the previous GUI"
         glow: true
+      "50":
+        action_type: Sort
+        material: REDSTONE
+        name: "&aSort the recipes"
+        lore:
+          - "&fSort the recipes,"
+          - "&f"
+          - "&fCurrent:&6 [sort]"
       "52":
         action_type: NxtPage
         extra: LIGHT_BLUE

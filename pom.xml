@@ -44,6 +44,7 @@
                                     <include>com.github.broken1arrow.Utility-Library:serialize-utility*</include>
                                     <include>com.github.broken1arrow.Utility-Library:color-conversion*</include>
                                     <include>com.github.broken1arrow.Utility-Library:log-and-validate*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:Localization*</include>
                                 </includes>
                             </artifactSet>
                             <relocations>
@@ -148,6 +149,12 @@
         <dependency>
             <groupId>com.github.broken1arrow.Utility-Library</groupId>
             <artifactId>yaml-utility</artifactId>
+            <version>${utility-library}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.broken1arrow.Utility-Library</groupId>
+            <artifactId>Localization</artifactId>
             <version>${utility-library}</version>
             <scope>compile</scope>
         </dependency>

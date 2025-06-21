@@ -1,0 +1,24 @@
+
+
+
+MessagesUtility:
+  shaped_recipe: "shaped"
+  shapeless_recipe: "shapeless"
+  not_shaped_recipe: "not shaped recipe"
+  recipe_hidden: "this recipe is hidden"
+  recipe_not_hidden: "this recipe can all players see"
+  recipe_category: "default"
+  allowed_worlds_not_set: "allowed everywhere"
+  permission_no_perm: "You need permission to craft this."
+  permission_non_set: "Non set"
+  match_type_match_type: "Match only the type of item."
+  match_type_match_meta:
+    - "Performs a full metadata match on the item."
+    - "However, due to hidden NBT data, this might not always detect items as equal."
+    - "For safer comparisons, consider using basic meta matching instead."
+    - "Note: Starting from Minecraft 1.20, the way items are translated to and from inventories"
+    - "has changed, making matchMeta less reliable in some cases."
+  match_type_match_name: "Match only on the item display name"
+  match_type_match_modeldata_and_type: "Match modeldata and type of item."
+  match_type_name_lore: "Match name, lore and type on the item."
+  match_type_basic_meta: "Similar to matching metadata, but less strict."

@@ -21,6 +21,8 @@ import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import com.dutchjelly.craftenhance.util.PaginatedItems;
 import com.dutchjelly.craftenhance.util.PermissionTypes;
+import com.dutchjelly.craftenhance.util.SortOrder;
+import org.broken.arrow.localization.library.builders.PluginMessages;
 import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
 import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
 import org.broken.arrow.menu.library.button.MenuButton;
@@ -48,12 +50,20 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
 	private final MenuTemplate menuTemplate;
 	private final CategoryData categoryData;
+	private final String recipeSearchFor;
+	private SortOrder sort;
 
 	public RecipesViewer(final CategoryData categoryData, final String recipeSearchFor, final Player player) {
+		this(categoryData, recipeSearchFor, null, player);
+	}
+
+	public RecipesViewer(final CategoryData categoryData, final String recipeSearchFor, final SortOrder sort, final Player player) {
 		//super(canSeeRecipes(categoryData.getEnhancedRecipes(recipeSearchFor), player));
-		super(new PaginatedItems(categoryData, self().getMenuSettingsCache().getTemplate("RecipesViewer")).retrieveList(player, recipeSearchFor));
+		super(new PaginatedItems(categoryData, self().getMenuSettingsCache().getTemplate("RecipesViewer")).retrieveList(player, sort, recipeSearchFor));
+		this.recipeSearchFor = recipeSearchFor;
 		this.menuTemplate = menuSettingsCache.getTemplate("RecipesViewer");
 		this.categoryData = categoryData;
+		this.sort = sort;
 		setFillSpace(this.menuTemplate.getFillSlots());
 		setTitle(() -> this.menuTemplate.getMenuTitle() +
 				(categoryData.getDisplayName() == null || categoryData.getDisplayName().isEmpty() ?
@@ -91,21 +101,36 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 					button = value.getActiveButton();
 				if (button == null)
 					button = value.getPassiveButton();
-				ItemStack itemStack = Adapter.getItemStack(button.getMaterial(), button.getDisplayName(), button.getLore(), button.getExtra(), button.isGlow());
-				return itemStack;
+				final ItemStack itemStack = Adapter.getItemStack(button.getMaterial(), button.getDisplayName(), button.getLore(), button.getExtra(), button.isGlow());
+				if (itemStack == null)
+					return null;
+
+				final Map<String, Object> placeHolders = new HashMap<>();
+				placeHolders.put(InfoItemPlaceHolders.Sort.getPlaceHolder(), capitalizeFully(sort == null ? "NON" : sort.name()));
+
+				return GuiUtil.ReplaceAllPlaceHolders(itemStack.clone(), placeHolders);
 			}
 		};
 	}
 
 	public boolean run(final MenuButtonData value, final Inventory menu, final Player player, final ClickType click) {
+
 		if (value.isActionTypeEqual(ButtonType.PrvPage.name())) {
 			previousPage();
 			return true;
 		}
+
 		if (value.isActionTypeEqual(ButtonType.NxtPage.name())) {
 			nextPage();
 			return true;
 		}
+
+		if (value.isActionTypeEqual(ButtonType.Sort.name())) {
+			this.sort = this.sort == null ? SortOrder.NAME : this.sort.nextValue();
+			new RecipesViewer(this.categoryData, this.recipeSearchFor, this.sort, this.getViewer()).menuOpen(player);
+			return false;
+		}
+
 		if (value.isActionTypeEqual(ButtonType.Search.name())) {
 			if (click == ClickType.RIGHT)
 				new HandleChatInput(this, msg -> {
@@ -195,34 +220,39 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 	private Map<String, Object> getPlaceholders(final EnhancedRecipe enhancedRecipe) {
 		final Player player = getViewer();
 		final boolean viewAll = player.hasPermission(PermissionTypes.View_ALL.getPerm()) || player.hasPermission(PermissionTypes.Edit.getPerm());
-		final List<String> description = enhancedRecipe.getMatchType().getDescription();
+
 		final String permission = enhancedRecipe.getPermission();
 		final boolean permissionSet = permission == null || permission.trim().equals("");
-		final String permissionText = permissionSet ? "none" : permission;
-		final String hidden = enhancedRecipe.isHidden() ? "this recipe is hidden" : "this recipe can all players see";
+		final String permissionText = permissionSet ?  "" : permission;
+		final Object hidden = enhancedRecipe.isHidden() ? getText("recipe_hidden") : getText("recipe_not_hidden");
+
 		final Map<String, Object> placeHolders = new HashMap<String, Object>() {{
+			Object description = getDescription(enhancedRecipe);
+			if (description == null)
+				description = enhancedRecipe.getMatchType().getDescription();
+
 			put(InfoItemPlaceHolders.Key.getPlaceHolder(), enhancedRecipe.getKey() == null ? "null" : enhancedRecipe.getKey());
 			if (enhancedRecipe instanceof WBRecipe)
-				put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), ((WBRecipe) enhancedRecipe).isShapeless() ? "shapeless" : "shaped");
+				put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), ((WBRecipe) enhancedRecipe).isShapeless() ? getText("shapeless_recipe") : getText("shaped_recipe"));
 			else
-				put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), "not shaped recipe");
+				put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), getText("not_shaped_recipe"));
 
 
 			put(InfoItemPlaceHolders.Recipe_type.getPlaceHolder(), enhancedRecipe.getType().capitalize());
 			put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), viewAll ? capitalizeFully(enhancedRecipe.getMatchType().name()) : "");
 			put(InfoItemPlaceHolders.MatchDescription.getPlaceHolder(), viewAll ? description : "");
 			put(InfoItemPlaceHolders.Hidden.getPlaceHolder(), viewAll ? hidden : "");
-			put(InfoItemPlaceHolders.Permission.getPlaceHolder(), viewAll ? permissionText : permissionSet ? "Non set" : "You need permission to craft this");
+			put(InfoItemPlaceHolders.Permission.getPlaceHolder(), getPermissionText(viewAll, permissionText, permissionSet));
 			put(InfoItemPlaceHolders.Slot.getPlaceHolder(), viewAll ? String.valueOf(enhancedRecipe.getSlot()) : "");
 			put(InfoItemPlaceHolders.Page.getPlaceHolder(), viewAll ? String.valueOf(enhancedRecipe.getPage()) : "");
 
 
 			put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), enhancedRecipe.getAllowedWorlds() != null && !enhancedRecipe.getAllowedWorlds().isEmpty() ?
-					enhancedRecipe.getAllowedWorldsFormatted() : "allowed everywhere");
+					enhancedRecipe.getAllowedWorldsFormatted() : getText("allowed_worlds_not_set"));
 			if (categoryData != null)
 				put(InfoItemPlaceHolders.Category.getPlaceHolder(), categoryData.getRecipeCategory());
 			else
-				put(InfoItemPlaceHolders.Category.getPlaceHolder(), enhancedRecipe.getRecipeCategory() != null ? enhancedRecipe.getRecipeCategory() : "default");
+				put(InfoItemPlaceHolders.Category.getPlaceHolder(), enhancedRecipe.getRecipeCategory() != null ? enhancedRecipe.getRecipeCategory() : getText("recipe_category"));
 		}};
 
 		if (enhancedRecipe instanceof FurnaceRecipe) {
@@ -231,7 +261,7 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 			placeHolders.put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(furnaceRecipe.getDuration()));
 		} else {
 			if (enhancedRecipe instanceof BrewingRecipe) {
-				placeHolders.put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(((BrewingRecipe) enhancedRecipe) .getDuration()));
+				placeHolders.put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(((BrewingRecipe) enhancedRecipe).getDuration()));
 				placeHolders.put(InfoItemPlaceHolders.Exp.getPlaceHolder(), "not in use");
 			} else {
 				placeHolders.put(InfoItemPlaceHolders.Exp.getPlaceHolder(), "not in use");
@@ -240,5 +270,37 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 		}
 
 		return placeHolders;
+	}
+
+	private Object getPermissionText(final boolean viewAll, final String permissionText, final boolean permissionSet) {
+		return viewAll && !permissionSet ? permissionText : permissionSet ? getText("permission_non_set") : getText("permission_no_perm");
+	}
+
+
+	private Object getDescription(final EnhancedRecipe enhancedRecipe) {
+		switch (enhancedRecipe.getMatchType()) {
+			case MATCH_TYPE:
+				return getText("match_type_match_type");
+			case MATCH_META:
+				return getText("match_type_match_meta");
+			case MATCH_NAME:
+				return getText(" match_type_match_name");
+			case MATCH_MODELDATA_AND_TYPE:
+				return getText("match_type_match_modeldata_and_type");
+			case MATCH_NAME_LORE:
+				return getText("match_type_name_lore");
+			case MATCH_BASIC_META:
+				return getText("match_type_basic_meta");
+			default:
+				return enhancedRecipe.getMatchType().getDescription();
+		}
+
+	}
+
+	public Object getText(String key) {
+		final PluginMessages pluginMessages = self().getLocalizationCache().getLocalization().getPluginMessages();
+		if (pluginMessages == null)
+			return "";
+		return pluginMessages.getMessage(key);
 	}
 }

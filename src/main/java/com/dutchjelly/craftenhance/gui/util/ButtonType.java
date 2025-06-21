@@ -35,9 +35,10 @@ public enum ButtonType {
     edit_recipe(""),
     Save(""),
     SetCommand(""),
+    Sort("")
     ;
 
-    private final String type;
+	private final String type;
 
     ButtonType(final String type) {
 
