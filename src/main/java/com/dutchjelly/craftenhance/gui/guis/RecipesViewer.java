@@ -1,12 +1,14 @@
 package com.dutchjelly.craftenhance.gui.guis;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
+import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers.MatchType;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
@@ -22,7 +24,6 @@ import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import com.dutchjelly.craftenhance.util.PaginatedItems;
 import com.dutchjelly.craftenhance.util.PermissionTypes;
 import com.dutchjelly.craftenhance.util.SortOrder;
-import org.broken.arrow.localization.library.builders.PluginMessages;
 import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
 import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
 import org.broken.arrow.menu.library.button.MenuButton;
@@ -220,26 +221,27 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 	private Map<String, Object> getPlaceholders(final EnhancedRecipe enhancedRecipe) {
 		final Player player = getViewer();
 		final boolean viewAll = player.hasPermission(PermissionTypes.View_ALL.getPerm()) || player.hasPermission(PermissionTypes.Edit.getPerm());
+		final CraftEnhance craftEnhance = self();
 
 		final String permission = enhancedRecipe.getPermission();
 		final boolean permissionSet = permission == null || permission.trim().equals("");
 		final String permissionText = permissionSet ?  "" : permission;
-		final Object hidden = enhancedRecipe.isHidden() ? getText("recipe_hidden") : getText("recipe_not_hidden");
+		final Object hidden = enhancedRecipe.isHidden() ? craftEnhance.getText("recipe_hidden") : craftEnhance.getText("recipe_not_hidden");
+		final MatchType matchType = enhancedRecipe.getMatchType();
+		final Object description = matchType.getMatchDescription() ;
+
 
 		final Map<String, Object> placeHolders = new HashMap<String, Object>() {{
-			Object description = getDescription(enhancedRecipe);
-			if (description == null)
-				description = enhancedRecipe.getMatchType().getDescription();
 
 			put(InfoItemPlaceHolders.Key.getPlaceHolder(), enhancedRecipe.getKey() == null ? "null" : enhancedRecipe.getKey());
 			if (enhancedRecipe instanceof WBRecipe)
-				put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), ((WBRecipe) enhancedRecipe).isShapeless() ? getText("shapeless_recipe") : getText("shaped_recipe"));
+				put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), ((WBRecipe) enhancedRecipe).isShapeless() ?  craftEnhance.getText("shapeless_recipe") : craftEnhance.getText("shaped_recipe"));
 			else
-				put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), getText("not_shaped_recipe"));
+				put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), craftEnhance.getText("not_shaped_recipe"));
 
 
 			put(InfoItemPlaceHolders.Recipe_type.getPlaceHolder(), enhancedRecipe.getType().capitalize());
-			put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), viewAll ? capitalizeFully(enhancedRecipe.getMatchType().name()) : "");
+			put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), viewAll ? matchType.getMatchName() : "");
 			put(InfoItemPlaceHolders.MatchDescription.getPlaceHolder(), viewAll ? description : "");
 			put(InfoItemPlaceHolders.Hidden.getPlaceHolder(), viewAll ? hidden : "");
 			put(InfoItemPlaceHolders.Permission.getPlaceHolder(), getPermissionText(viewAll, permissionText, permissionSet));
@@ -248,11 +250,11 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 
 
 			put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), enhancedRecipe.getAllowedWorlds() != null && !enhancedRecipe.getAllowedWorlds().isEmpty() ?
-					enhancedRecipe.getAllowedWorldsFormatted() : getText("allowed_worlds_not_set"));
+					enhancedRecipe.getAllowedWorldsFormatted() : craftEnhance.getText("allowed_worlds_not_set"));
 			if (categoryData != null)
 				put(InfoItemPlaceHolders.Category.getPlaceHolder(), categoryData.getRecipeCategory());
 			else
-				put(InfoItemPlaceHolders.Category.getPlaceHolder(), enhancedRecipe.getRecipeCategory() != null ? enhancedRecipe.getRecipeCategory() : getText("recipe_category"));
+				put(InfoItemPlaceHolders.Category.getPlaceHolder(), enhancedRecipe.getRecipeCategory() != null ? enhancedRecipe.getRecipeCategory() : craftEnhance.getText("recipe_category"));
 		}};
 
 		if (enhancedRecipe instanceof FurnaceRecipe) {
@@ -273,34 +275,8 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 	}
 
 	private Object getPermissionText(final boolean viewAll, final String permissionText, final boolean permissionSet) {
-		return viewAll && !permissionSet ? permissionText : permissionSet ? getText("permission_non_set") : getText("permission_no_perm");
+		final CraftEnhance self = self();
+		return viewAll && !permissionSet ? permissionText : permissionSet ? self.getText("permission_non_set") : self.getText("permission_no_perm");
 	}
 
-
-	private Object getDescription(final EnhancedRecipe enhancedRecipe) {
-		switch (enhancedRecipe.getMatchType()) {
-			case MATCH_TYPE:
-				return getText("match_type_match_type");
-			case MATCH_META:
-				return getText("match_type_match_meta");
-			case MATCH_NAME:
-				return getText(" match_type_match_name");
-			case MATCH_MODELDATA_AND_TYPE:
-				return getText("match_type_match_modeldata_and_type");
-			case MATCH_NAME_LORE:
-				return getText("match_type_name_lore");
-			case MATCH_BASIC_META:
-				return getText("match_type_basic_meta");
-			default:
-				return enhancedRecipe.getMatchType().getDescription();
-		}
-
-	}
-
-	public Object getText(String key) {
-		final PluginMessages pluginMessages = self().getLocalizationCache().getLocalization().getPluginMessages();
-		if (pluginMessages == null)
-			return "";
-		return pluginMessages.getMessage(key);
-	}
 }

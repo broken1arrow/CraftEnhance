@@ -1,12 +1,14 @@
 package com.dutchjelly.craftenhance.gui.guis.viewers;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
+import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers.MatchType;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.RecipesViewer;
@@ -19,7 +21,6 @@ import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.util.PermissionTypes;
-import org.broken.arrow.localization.library.builders.PluginMessages;
 import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
 import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
 import org.broken.arrow.menu.library.button.MenuButton;
@@ -85,8 +86,10 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 			public ItemStack getItem() {
 				final Map<String, Object> placeHolders = new HashMap<String, Object>() {{
 					final boolean viewAll = player.hasPermission(PermissionTypes.View_ALL.getPerm()) || player.hasPermission(PermissionTypes.Edit.getPerm());
+					final CraftEnhance self = self();
+
 					if (recipe instanceof WBRecipe)
-						put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), ((WBRecipe) recipe).isShapeless() ? "shapeless" : "shaped");
+						put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), ((WBRecipe) recipe).isShapeless() ? self.getText("shapeless_recipe") : self.getText("shaped_recipe"));
 					if (recipe instanceof FurnaceRecipe) {
 						put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(((FurnaceRecipe) recipe).getExp()));
 						put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(((FurnaceRecipe) recipe).getDuration()));
@@ -97,19 +100,18 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 					}
 					String permission = recipe.getPermission();
 					final boolean permissionSet = permission == null || permission.trim().equals("");
-					Object description = getDescription(recipe);
-					if (description == null)
-						description =recipe.getMatchType().getDescription();
+					final MatchType matchType = recipe.getMatchType();
+					final Object description = matchType.getMatchDescription();
 
 
-					put(InfoItemPlaceHolders.Recipe_type.getPlaceHolder(), recipe.getType().name().toLowerCase());
+					put(InfoItemPlaceHolders.Recipe_type.getPlaceHolder(), capitalizeFully(recipe.getType().name()));
 					put(InfoItemPlaceHolders.Config_permission.getPlaceHolder(), PermissionTypes.Edit.getPerm());
 					put(InfoItemPlaceHolders.Key.getPlaceHolder(), recipe.getKey() == null ? "null" : recipe.getKey());
-					put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), capitalizeFully(recipe.getMatchType().name()));
+					put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), matchType.getMatchName());
 
 					put(InfoItemPlaceHolders.MatchDescription.getPlaceHolder(), description);
 					put(InfoItemPlaceHolders.Permission.getPlaceHolder(), getPermissionText(viewAll, permission ,permissionSet));
-					put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), recipe.getAllowedWorlds() == null || recipe.getAllowedWorlds().isEmpty() ? getText("allowed_worlds_not_set"): recipe.getAllowedWorldsFormatted());
+					put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), recipe.getAllowedWorlds() == null || recipe.getAllowedWorlds().isEmpty() ? self.getText("allowed_worlds_not_set"): recipe.getAllowedWorldsFormatted());
 				}};
 
 				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = null;
@@ -163,33 +165,10 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 	}
 
 	private Object getPermissionText(final boolean viewAll, final String permissionText, final boolean permissionSet) {
-		return viewAll && !permissionSet ? permissionText : permissionSet ? getText("permission_non_set") : getText("permission_no_perm");
+		final CraftEnhance self = self();
+		return viewAll && !permissionSet ? permissionText : permissionSet ? self.getText("permission_non_set") : self.getText("permission_no_perm");
 	}
 
-	private Object getDescription(final EnhancedRecipe enhancedRecipe) {
-		switch (enhancedRecipe.getMatchType()) {
-			case MATCH_TYPE:
-				return getText("match_type_match_type");
-			case MATCH_META:
-				return getText("match_type_match_meta");
-			case MATCH_NAME:
-				return getText(" match_type_match_name");
-			case MATCH_MODELDATA_AND_TYPE:
-				return getText("match_type_match_modeldata_and_type");
-			case MATCH_NAME_LORE:
-				return getText("match_type_name_lore");
-			case MATCH_BASIC_META:
-				return getText("match_type_basic_meta");
-			default:
-				return enhancedRecipe.getMatchType().getDescription();
-		}
 
-	}
 
-	public Object getText(String key) {
-		final PluginMessages pluginMessages = self().getLocalizationCache().getLocalization().getPluginMessages();
-		if (pluginMessages == null)
-			return "";
-		return pluginMessages.getMessage(key);
-	}
 }

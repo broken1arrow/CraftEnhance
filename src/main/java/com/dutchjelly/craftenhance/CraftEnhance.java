@@ -46,6 +46,7 @@ import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import com.dutchjelly.craftenhance.util.Metrics;
 import lombok.Getter;
 import org.broken.arrow.localization.library.LocalizationCache;
+import org.broken.arrow.localization.library.builders.PluginMessages;
 import org.broken.arrow.menu.library.RegisterMenuAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -253,6 +254,13 @@ public class CraftEnhance extends JavaPlugin {
 						.filter(enhancedRecipe -> FormatListContents.canViewRecipe(enhancedRecipe, player))
 						.map(ServerLoadable::getServerRecipe)
 						.collect(Collectors.toList()));
+	}
+
+	public Object getText(String key) {
+		final PluginMessages pluginMessages = self().getLocalizationCache().getLocalization().getPluginMessages();
+		if (pluginMessages == null)
+			return "";
+		return pluginMessages.getMessage(key);
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.gui.guis.editors;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
@@ -319,15 +320,17 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 
 	private Map<String, Object> getPlaceholders() {
 		final Map<String, Object> placeHolders = new HashMap<String, Object>() {{
+			final CraftEnhance self = self();
+
 			put(InfoItemPlaceHolders.Key.getPlaceHolder(), enhancedRecipe.getKey() == null ? "null" : enhancedRecipe.getKey());
 			if (enhancedRecipe instanceof WBRecipe)
-				put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), shapeless ? "shapeless" : "shaped");
+				put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), shapeless ? self.getText("shapeless_recipe") :self. getText("shaped_recipe"));
 
-			put(InfoItemPlaceHolders.Recipe_type.getPlaceHolder(), enhancedRecipe.getType().name().toLowerCase());
-			put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), capitalizeFully(matchType.name()));
-			put(InfoItemPlaceHolders.MatchDescription.getPlaceHolder(), matchType.getDescription());
-			put(InfoItemPlaceHolders.Hidden.getPlaceHolder(), hidden ? "hide recipe in menu" : "show recipe in menu");
-			put(InfoItemPlaceHolders.Permission.getPlaceHolder(), permission == null || permission.trim().equals("") ? "none" : permission);
+			put(InfoItemPlaceHolders.Recipe_type.getPlaceHolder(), capitalizeFully(enhancedRecipe.getType().name()));
+			put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), matchType.getMatchName());
+			put(InfoItemPlaceHolders.MatchDescription.getPlaceHolder(), matchType.getMatchDescription());
+			put(InfoItemPlaceHolders.Hidden.getPlaceHolder(), hidden ? self.getText("recipe_hidden") :  self.getText("recipe_not_hidden"));
+			put(InfoItemPlaceHolders.Permission.getPlaceHolder(), permission == null || permission.trim().equals("") ? self.getText("craft_command_not_set") : permission);
 			put(InfoItemPlaceHolders.Slot.getPlaceHolder(), String.valueOf(enhancedRecipe.getSlot()));
 			put(InfoItemPlaceHolders.Page.getPlaceHolder(), String.valueOf(enhancedRecipe.getPage()));
 			put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), enhancedRecipe.getAllowedWorlds() != null && !enhancedRecipe.getAllowedWorlds().isEmpty() ?

@@ -4,6 +4,7 @@ import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import com.dutchjelly.craftenhance.util.StripColors;
 import lombok.Getter;
+import org.broken.arrow.localization.library.builders.PluginMessages;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
+import static com.dutchjelly.craftenhance.util.StringUtil.capitalizeFully;
 
 public class ItemMatchers {
 
@@ -218,6 +220,71 @@ public class ItemMatchers {
 		MatchType(final IMatcher<ItemStack> matcher, final String... description) {
 			this.matcher = matcher;
 			this.description = Arrays.asList(description);
+		}
+
+		public Object getMatchName() {
+			Object name;
+			switch (this) {
+				case MATCH_TYPE:
+					name = getText("match_type");
+					break;
+				case MATCH_META:
+					name = getText("match_meta");
+					break;
+				case MATCH_NAME:
+					name = getText("match_name");
+					break;
+				case MATCH_MODELDATA_AND_TYPE:
+					name = getText("match_modeldata_and_type");
+					break;
+				case MATCH_NAME_LORE:
+					name = getText("name_lore");
+					break;
+				case MATCH_BASIC_META:
+					name = getText("basic_meta");
+					break;
+				default:
+					name = capitalizeFully(this.name());
+			}
+			if (name == null || (name.equals("") || name instanceof List && ((List<?>) name).isEmpty()))
+				name = capitalizeFully(this.name());
+			return name;
+		}
+
+		public Object getMatchDescription() {
+			Object description;
+			switch (this) {
+				case MATCH_TYPE:
+					description = getText("match_type_match_type");
+					break;
+				case MATCH_META:
+					description = getText("match_type_match_meta");
+					break;
+				case MATCH_NAME:
+					description = getText("match_type_match_name");
+					break;
+				case MATCH_MODELDATA_AND_TYPE:
+					description = getText("match_type_match_modeldata_and_type");
+					break;
+				case MATCH_NAME_LORE:
+					description = getText("match_type_name_lore");
+					break;
+				case MATCH_BASIC_META:
+					description = getText("match_type_basic_meta");
+					break;
+				default:
+					description = this.getDescription();
+			}
+			if (description == null || (description.equals("") || description instanceof List && ((List<?>) description).isEmpty()))
+				description = this.getDescription();
+			return description;
+		}
+
+		public Object getText(String key) {
+			final PluginMessages pluginMessages = self().getLocalizationCache().getLocalization().getPluginMessages();
+			if (pluginMessages == null)
+				return "";
+			return pluginMessages.getMessage(key);
 		}
 	}
 //    public static boolean matchItemsadderItems(ItemStack a, ItemStack b) {
