@@ -30,10 +30,10 @@ public class StringUtil {
 	public static String capitalizeFully(final String str) {
 		try {
 			if (versionChecker.newerThan(ServerVersion.v1_20))
-				return org.apache.commons.lang3.text.WordUtils.capitalizeFully(str);
-			else return capitalizeFully(str, (char[]) null);
+				return org.apache.commons.lang3.text.WordUtils.capitalizeFully(str,'_').replace("_", " ");
+			else return capitalizeFully(str, '_').replace("_", " ");
 		} catch (NoClassDefFoundError error) {
-			return capitalizeFully(str, (char[]) null);
+			return capitalizeFully(str, '_').replace("_", " ");
 		}
 	}
 

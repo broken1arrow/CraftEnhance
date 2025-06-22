@@ -31,9 +31,15 @@ public class TranslatePlaceholders {
 		final ItemMeta meta = item.getItemMeta();
 		if (meta == null)
 			return;
-		final StringBuilder placeholderValue = new StringBuilder(value != null ? value.toString() : "");
+		final StringBuilder placeholderValue = new StringBuilder();
 
 		if (meta.getDisplayName().contains(placeHolder)) {
+			if (value instanceof List) {
+				((List<?>) value).forEach(o -> placeholderValue.append(o.toString()));
+			} else {
+				placeholderValue.append(value != null ? value.toString() : "");
+			}
+
 			meta.setDisplayName(meta.getDisplayName().replace(placeHolder, placeholderValue.toString()));
 			item.setItemMeta(meta);
 		}
@@ -58,20 +64,20 @@ public class TranslatePlaceholders {
 		final List<String> list = new ArrayList<>(lore.size());
 
 		int index = getIndexOf(placeHolder, lore);
-		final int size = lore.size() - index;
-		if (size > 0) {
-			list.add(null);
-			index += 1;
-		}
+
 		for (final String itemLore : lore) {
 			final int indexOfPlaceHolder = itemLore.indexOf(placeHolder);
 			if (index > 0 && indexOfPlaceHolder > 0) {
-				for (int i = 0; i < value.size(); i++)
+				if(index > list.size()){
+					final int expand = (index - list.size()) + 1;
+					for (int i = 0; i < expand; i++)
+						list.add(null);
+				}
+				for (int i = 0; i < value.size(); i++) {
 					list.add(i + index, callBackText.apply(itemLore.replace(placeHolder, value.get(i) + "")));
-			} else if (index > 0)
+				}
+			} else
 				list.add(itemLore.replace(placeHolder, ""));
-			else
-				list.add(itemLore);
 		}
 		return list;
 	}
