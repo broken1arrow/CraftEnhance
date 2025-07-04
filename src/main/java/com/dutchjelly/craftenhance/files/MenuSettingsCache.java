@@ -22,7 +22,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 public class MenuSettingsCache  {
 
 	private final Plugin plugin;
-	private static final int version = 18;
+	private static final int version = 19;
 	private final Map<String, MenuTemplate> templates = new HashMap<>();
 	private final MenusSettingsHandler menusSettingsHandler;
 

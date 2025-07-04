@@ -23,7 +23,6 @@ import com.dutchjelly.craftenhance.messaging.Messenger;
 import lombok.Getter;
 import lombok.NonNull;
 import org.broken.arrow.library.menu.CheckItemsInsideMenu;
-import org.broken.arrow.library.menu.MenuUtility;
 import org.broken.arrow.library.menu.button.MenuButton;
 import org.broken.arrow.library.menu.button.logic.ButtonUpdateAction;
 import org.broken.arrow.library.menu.button.logic.FillMenuButton;

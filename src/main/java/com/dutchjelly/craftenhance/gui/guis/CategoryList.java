@@ -92,7 +92,7 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 			public ItemStack getItem() {
 				org.broken.arrow.library.menu.button.manager.utility.MenuButton button = value.getPassiveButton();
 				ItemStack itemStack = Adapter.getItemStack(button.getMaterial(), button.getDisplayName(), button.getLore(), button.getExtra(), button.isGlow());
-				return  GuiUtil.ReplaceAllPlaceHolders(itemStack, getPlaceholders(recipe));
+				return  GuiUtil.ReplaceAllPlaceHolders(itemStack != null ?itemStack.clone(): null, getPlaceholders(recipe));
 			}
 		};
 	}

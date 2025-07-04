@@ -212,7 +212,8 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 					meta.setLore(itemLore);
 				}
 				displayItem.setItemMeta(meta);
-				return GuiUtil.ReplaceAllPlaceHolders(displayItem.clone(), getPlaceholders(enhancedRecipe));
+				final ItemStack itemStack = GuiUtil.ReplaceAllPlaceHolders(displayItem, getPlaceholders(enhancedRecipe));
+				return itemStack;
 			}
 			return null;
 		});

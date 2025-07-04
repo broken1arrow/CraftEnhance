@@ -123,7 +123,8 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 				ItemStack itemStack = Adapter.getItemStack(button.getMaterial(), button.getDisplayName(), button.getLore(), button.getExtra(), button.isGlow());
 				if (itemStack == null)
 					return null;
-				return GuiUtil.ReplaceAllPlaceHolders(itemStack.clone(), placeHolders);
+				final ItemStack holders = GuiUtil.ReplaceAllPlaceHolders(itemStack.clone(), placeHolders);
+				return holders;
 			}
 		};
 	}

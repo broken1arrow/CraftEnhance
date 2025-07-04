@@ -1,8 +1,10 @@
 package com.dutchjelly.craftenhance.util;
 
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +22,13 @@ public class TranslatePlaceholders {
 		if (placeholders != null)
 			placeholders
 					.forEach((key, value) -> replacePlaceHolder(item, key, value, callBackText));
+		ItemFlag flag = getItemFlag();
+		if (flag != null) {
+			final ItemMeta meta = item.getItemMeta();
+			if (meta != null)
+				meta.removeItemFlags(flag);
+			item.setItemMeta(meta);
+		}
 		return item;
 	}
 
@@ -39,23 +48,30 @@ public class TranslatePlaceholders {
 			} else {
 				placeholderValue.append(value != null ? value.toString() : "");
 			}
-
 			meta.setDisplayName(meta.getDisplayName().replace(placeHolder, placeholderValue.toString()));
-			item.setItemMeta(meta);
 		}
 
 		List<String> lore = meta.getLore();
-		if (lore == null)
-			return;
-		if (value instanceof List)
-			lore = getStringList(placeHolder, split((List<?>) value, 50), lore, callBackText);
-		else
-			lore = lore.stream()
-					.map(line -> (line == null ? null
-							: callBackText.apply(line.replace(placeHolder, value != null ? value.toString() : ""))))
-					.collect(Collectors.toList());
+		if (lore != null) {
+			if (value instanceof List)
+				lore = getStringList(placeHolder, split((List<?>) value, 50), lore, callBackText);
+			else
+				lore = lore.stream()
+						.map(line -> {
+							String string = getString(placeHolder, value, callBackText, line);
+							System.out.println("line string  " + string);
+							return string;
+						})
+						.collect(Collectors.toList());
+		}
 		meta.setLore(lore);
 		item.setItemMeta(meta);
+	}
+
+	private static @Nullable String getString(final String placeHolder, final Object value, final Function<String, String> callBackText, final String line) {
+		if (line == null)
+			return null;
+		return callBackText.apply(line.replace(placeHolder, value != null ? value.toString() : ""));
 	}
 
 	@NotNull
@@ -68,7 +84,7 @@ public class TranslatePlaceholders {
 		for (final String itemLore : lore) {
 			final int indexOfPlaceHolder = itemLore.indexOf(placeHolder);
 			if (index > 0 && indexOfPlaceHolder > 0) {
-				if(index > list.size()){
+				if (index > list.size()) {
 					final int expand = (index - list.size()) + 1;
 					for (int i = 0; i < expand; i++)
 						list.add(null);
@@ -119,5 +135,13 @@ public class TranslatePlaceholders {
 		return output;
 	}
 
+	private static @Nullable ItemFlag getItemFlag() {
+		for (ItemFlag itemFlag : ItemFlag.values()) {
+			if (itemFlag.name().equals("HIDE_LORE")) {
+				return itemFlag;
+			}
+		}
+		return null;
+	}
 
 }
