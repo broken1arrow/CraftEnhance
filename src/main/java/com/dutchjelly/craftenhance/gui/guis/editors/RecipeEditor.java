@@ -22,14 +22,14 @@ import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import lombok.Getter;
 import lombok.NonNull;
-import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
-import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
-import org.broken.arrow.menu.library.CheckItemsInsideMenu;
-import org.broken.arrow.menu.library.MenuUtility;
-import org.broken.arrow.menu.library.button.MenuButton;
-import org.broken.arrow.menu.library.button.logic.ButtonUpdateAction;
-import org.broken.arrow.menu.library.button.logic.FillMenuButton;
-import org.broken.arrow.menu.library.holder.MenuHolderPage;
+import org.broken.arrow.library.menu.CheckItemsInsideMenu;
+import org.broken.arrow.library.menu.MenuUtility;
+import org.broken.arrow.library.menu.button.MenuButton;
+import org.broken.arrow.library.menu.button.logic.ButtonUpdateAction;
+import org.broken.arrow.library.menu.button.logic.FillMenuButton;
+import org.broken.arrow.library.menu.button.manager.utility.MenuButtonData;
+import org.broken.arrow.library.menu.button.manager.utility.MenuTemplate;
+import org.broken.arrow.library.menu.holder.MenuHolderPage;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -134,7 +134,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 			public ItemStack getItem() {
 				final Map<String, Object> placeHolders = getPlaceholders();
 
-				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = value.getPassiveButton();
+				org.broken.arrow.library.menu.button.manager.utility.MenuButton button = value.getPassiveButton();
 				ItemStack itemStack = Adapter.getItemStack(button.getMaterial(), button.getDisplayName(), button.getLore(), button.getExtra(), button.isGlow());
 				if (itemStack == null)
 					return null;
@@ -205,7 +205,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 	}
 
 	@Override
-	public void menuClose(final InventoryCloseEvent event, final MenuUtility menu) {
+	public void menuClose(final InventoryCloseEvent event) {
 		final CheckItemsInsideMenu checkItemsInsideInventory = getCheckItemsInsideMenu();
 		checkItemsInsideInventory.setSlotsToCheck(menuTemplate.getFillSlots());
 		final Map<Integer, ItemStack> map = checkItemsInsideInventory.getItemsFromSetSlots(event.getInventory(), getViewer(), false);

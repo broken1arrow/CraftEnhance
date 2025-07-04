@@ -9,7 +9,7 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import lombok.NonNull;
-import org.broken.arrow.nbt.library.RegisterNbtAPI;
+import org.broken.arrow.library.nbt.RegisterNbtAPI;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;

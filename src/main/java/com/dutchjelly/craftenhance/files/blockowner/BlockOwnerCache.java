@@ -3,7 +3,7 @@ package com.dutchjelly.craftenhance.files.blockowner;
 import com.dutchjelly.craftenhance.files.util.SimpleYamlHelper;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.util.LocationWrapper;
-import org.broken.arrow.yaml.library.utillity.ConfigurationWrapper;
+import org.broken.arrow.library.yaml.utillity.ConfigurationWrapper;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;

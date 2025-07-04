@@ -1,7 +1,7 @@
 package com.dutchjelly.craftenhance.files;
 
 import com.dutchjelly.craftenhance.gui.templates.MenuTemplate;
-import org.broken.arrow.menu.button.manager.library.MenusSettingsHandler;
+import org.broken.arrow.library.menu.button.manager.MenusSettingsHandler;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -79,7 +79,7 @@ public class MenuSettingsCache  {
 			}
 		}
 	}
-	public org.broken.arrow.menu.button.manager.library.utility.MenuTemplate getTemplate(String menu) {
+	public org.broken.arrow.library.menu.button.manager.utility.MenuTemplate getTemplate(String menu) {
 		return menusSettingsHandler.getTemplate(menu);
 	}
 

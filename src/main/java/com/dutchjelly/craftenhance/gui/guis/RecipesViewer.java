@@ -24,12 +24,12 @@ import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import com.dutchjelly.craftenhance.util.PaginatedItems;
 import com.dutchjelly.craftenhance.util.PermissionTypes;
 import com.dutchjelly.craftenhance.util.SortOrder;
-import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
-import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
-import org.broken.arrow.menu.library.button.MenuButton;
-import org.broken.arrow.menu.library.button.logic.ButtonUpdateAction;
-import org.broken.arrow.menu.library.button.logic.FillMenuButton;
-import org.broken.arrow.menu.library.holder.MenuHolderPage;
+import org.broken.arrow.library.menu.button.MenuButton;
+import org.broken.arrow.library.menu.button.logic.ButtonUpdateAction;
+import org.broken.arrow.library.menu.button.logic.FillMenuButton;
+import org.broken.arrow.library.menu.button.manager.utility.MenuButtonData;
+import org.broken.arrow.library.menu.button.manager.utility.MenuTemplate;
+import org.broken.arrow.library.menu.holder.MenuHolderPage;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -97,7 +97,7 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 
 			@Override
 			public ItemStack getItem() {
-				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = null;
+				org.broken.arrow.library.menu.button.manager.utility.MenuButton button = null;
 				if (getViewer().hasPermission(PermissionTypes.Edit.getPerm()))
 					button = value.getActiveButton();
 				if (button == null)
@@ -197,7 +197,7 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 			return ButtonUpdateAction.NONE;
 		}, (slot, enhancedRecipe) -> {
 			if (enhancedRecipe != null) {
-				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = menuButton.getActiveButton();
+				org.broken.arrow.library.menu.button.manager.utility.MenuButton button = menuButton.getActiveButton();
 				if (!viewAll || button == null)
 					button = menuButton.getPassiveButton();
 				ItemStack displayItem = enhancedRecipe.getDisplayItem().clone();

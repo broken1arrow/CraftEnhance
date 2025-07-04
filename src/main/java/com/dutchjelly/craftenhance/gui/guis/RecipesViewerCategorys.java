@@ -12,12 +12,12 @@ import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import com.dutchjelly.craftenhance.util.PermissionTypes;
-import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
-import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
-import org.broken.arrow.menu.library.button.MenuButton;
-import org.broken.arrow.menu.library.button.logic.ButtonUpdateAction;
-import org.broken.arrow.menu.library.button.logic.FillMenuButton;
-import org.broken.arrow.menu.library.holder.MenuHolderPage;
+import org.broken.arrow.library.menu.button.MenuButton;
+import org.broken.arrow.library.menu.button.logic.ButtonUpdateAction;
+import org.broken.arrow.library.menu.button.logic.FillMenuButton;
+import org.broken.arrow.library.menu.button.manager.utility.MenuButtonData;
+import org.broken.arrow.library.menu.button.manager.utility.MenuTemplate;
+import org.broken.arrow.library.menu.holder.MenuHolderPage;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -74,7 +74,7 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 
 			@Override
 			public ItemStack getItem() {
-				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = null;
+				org.broken.arrow.library.menu.button.manager.utility.MenuButton button = null;
 				if (getViewer().hasPermission(PermissionTypes.Categorys_editor.getPerm()))
 					button = value.getActiveButton();
 				if (button == null)
@@ -161,7 +161,7 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 				if (menuTemplate != null) {
 					final MenuButtonData menuButton = menuTemplate.getMenuButton(-1);
 					if (menuButton != null) {
-						final org.broken.arrow.menu.button.manager.library.utility.MenuButton activeButton = menuButton.getActiveButton();
+						final org.broken.arrow.library.menu.button.manager.utility.MenuButton activeButton = menuButton.getActiveButton();
 						if (player.hasPermission(PermissionTypes.Categorys_editor.getPerm()) && activeButton != null) {
 							displayName = activeButton.getDisplayName();
 							lore = activeButton.getLore();

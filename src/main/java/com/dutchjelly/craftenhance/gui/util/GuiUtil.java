@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
-import static org.broken.arrow.color.library.TextTranslator.toSpigotFormat;
+import static org.broken.arrow.library.color.TextTranslator.toSpigotFormat;
 
 
 public class GuiUtil {

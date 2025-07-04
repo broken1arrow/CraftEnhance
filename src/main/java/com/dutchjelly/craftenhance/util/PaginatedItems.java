@@ -3,7 +3,7 @@ package com.dutchjelly.craftenhance.util;
 import com.dutchjelly.craftenhance.cache.CacheRecipes;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
-import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
+import org.broken.arrow.library.menu.button.manager.utility.MenuTemplate;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;

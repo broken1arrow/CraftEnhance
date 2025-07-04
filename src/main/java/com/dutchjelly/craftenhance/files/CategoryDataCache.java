@@ -3,7 +3,7 @@ package com.dutchjelly.craftenhance.files;
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.util.SimpleYamlHelper;
-import org.broken.arrow.yaml.library.utillity.ConfigurationWrapper;
+import org.broken.arrow.library.yaml.utillity.ConfigurationWrapper;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;

@@ -1,10 +1,10 @@
 package com.dutchjelly.craftenhance.prompt;
 
 import com.dutchjelly.craftenhance.gui.interfaces.IChatInputHandler;
-import org.broken.arrow.menu.library.holder.HolderUtility;
-import org.broken.arrow.prompt.library.SimpleConversation;
-import org.broken.arrow.prompt.library.SimplePrompt;
-import org.broken.arrow.prompt.library.utility.SimpleCanceller;
+import org.broken.arrow.library.menu.holder.HolderUtility;
+import org.broken.arrow.library.prompt.SimpleConversation;
+import org.broken.arrow.library.prompt.SimplePrompt;
+import org.broken.arrow.library.prompt.utility.SimpleCanceller;
 import org.bukkit.command.CommandSender;
 import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.conversations.ConversationCanceller;

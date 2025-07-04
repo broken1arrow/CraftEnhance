@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.files.util;
 
-import org.broken.arrow.yaml.library.YamlFileManager;
+
+import org.broken.arrow.library.yaml.YamlFileManager;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 

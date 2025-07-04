@@ -11,7 +11,7 @@ import com.dutchjelly.craftenhance.util.LocationWrapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import lombok.SneakyThrows;
-import org.broken.arrow.menu.library.utility.ServerVersion;
+import org.broken.arrow.library.menu.utility.ServerVersion;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;

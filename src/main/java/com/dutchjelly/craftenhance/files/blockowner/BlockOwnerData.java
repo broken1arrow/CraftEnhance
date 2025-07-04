@@ -3,7 +3,7 @@ package com.dutchjelly.craftenhance.files.blockowner;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.util.LocationWrapper;
 import lombok.NonNull;
-import org.broken.arrow.serialize.library.utility.serialize.ConfigurationSerializable;
+import org.broken.arrow.library.serialize.utility.serialize.ConfigurationSerializable;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;

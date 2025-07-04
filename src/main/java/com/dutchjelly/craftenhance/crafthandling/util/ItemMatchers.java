@@ -4,7 +4,7 @@ import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import com.dutchjelly.craftenhance.util.StripColors;
 import lombok.Getter;
-import org.broken.arrow.localization.library.builders.PluginMessages;
+import org.broken.arrow.library.localization.builders.PluginMessages;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;

@@ -21,11 +21,11 @@ import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import com.dutchjelly.craftenhance.util.PermissionTypes;
 import lombok.Getter;
 import lombok.NonNull;
-import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
-import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
-import org.broken.arrow.menu.library.MenuUtility;
-import org.broken.arrow.menu.library.button.MenuButton;
-import org.broken.arrow.menu.library.holder.MenuHolder;
+import org.broken.arrow.library.menu.MenuUtility;
+import org.broken.arrow.library.menu.button.MenuButton;
+import org.broken.arrow.library.menu.button.manager.utility.MenuButtonData;
+import org.broken.arrow.library.menu.button.manager.utility.MenuTemplate;
+import org.broken.arrow.library.menu.holder.MenuHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -118,7 +118,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 				ItemStack itemStack = getConversingItem(ButtonType.valueOfType(value.getActionType()));
 				if (itemStack != null) return itemStack;
 
-				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = value.getPassiveButton();
+				org.broken.arrow.library.menu.button.manager.utility.MenuButton button = value.getPassiveButton();
 				itemStack = Adapter.getItemStack(button.getMaterial(), button.getDisplayName(), button.getLore(), button.getExtra(), button.isGlow());
 				if (itemStack == null)
 					return null;

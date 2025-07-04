@@ -13,7 +13,7 @@
         <maven.compiler.target>21</maven.compiler.target>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.release>8</maven.compiler.release>
-        <utility-library>0.119</utility-library>
+        <utility-library>0.125</utility-library>
         <dependencys_path>com.dutchjelly.craftenhance.libs</dependencys_path>
     </properties>
     <build>
@@ -49,7 +49,7 @@
                             </artifactSet>
                             <relocations>
                                 <relocation>
-                                    <pattern>org.broken.arrow</pattern>
+                                    <pattern>org.broken.arrow.library</pattern>
                                     <shadedPattern>${dependencys_path}</shadedPattern>
                                 </relocation>
                             </relocations>
@@ -154,7 +154,7 @@
         </dependency>
         <dependency>
             <groupId>com.github.broken1arrow.Utility-Library</groupId>
-            <artifactId>Localization</artifactId>
+            <artifactId>localization</artifactId>
             <version>${utility-library}</version>
             <scope>compile</scope>
         </dependency>
