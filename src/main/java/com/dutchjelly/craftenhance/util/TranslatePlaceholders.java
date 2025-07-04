@@ -57,11 +57,7 @@ public class TranslatePlaceholders {
 				lore = getStringList(placeHolder, split((List<?>) value, 50), lore, callBackText);
 			else
 				lore = lore.stream()
-						.map(line -> {
-							String string = getString(placeHolder, value, callBackText, line);
-							System.out.println("line string  " + string);
-							return string;
-						})
+						.map(line -> getString(placeHolder, value, callBackText, line))
 						.collect(Collectors.toList());
 		}
 		meta.setLore(lore);
