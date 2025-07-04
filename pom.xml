@@ -44,7 +44,7 @@
                                     <include>com.github.broken1arrow.Utility-Library:serialize-utility*</include>
                                     <include>com.github.broken1arrow.Utility-Library:color-conversion*</include>
                                     <include>com.github.broken1arrow.Utility-Library:log-and-validate*</include>
-                                    <include>com.github.broken1arrow.Utility-Library:Localization*</include>
+                                    <include>com.github.broken1arrow.Utility-Library:localization*</include>
                                 </includes>
                             </artifactSet>
                             <relocations>
