@@ -34,7 +34,10 @@ public class ItemMatchers {
 		final ItemMeta bm = b.getItemMeta();
 		if (am == null) return bm == null || !bm.hasCustomModelData();
 		if (bm == null) return am == null || !am.hasCustomModelData();
-		return am.hasCustomModelData() == bm.hasCustomModelData() && (!am.hasCustomModelData() || am.getCustomModelData() == bm.getCustomModelData());
+		if(am.hasCustomModelData() != bm.hasCustomModelData()){
+			return false;
+		}
+		return bm.hasCustomModelData() && am.hasCustomModelData() && am.getCustomModelData() == bm.getCustomModelData();
 	}
 
 	public static boolean matchMeta(final ItemStack a, final ItemStack b) {
