@@ -16,6 +16,12 @@ Some examples of why I would use this plugin as an API in certain cases is to:
 
 ### Changelog
 
+
+##### 2.6.0
+```diff
++ Implemented support for some placeholder in the menu to be translated to any language.
+```
+
 ##### 2.5.0
 ```diff
 + redo the whole menu system.
