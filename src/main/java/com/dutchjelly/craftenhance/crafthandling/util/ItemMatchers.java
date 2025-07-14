@@ -32,12 +32,23 @@ public class ItemMatchers {
 	public static boolean matchModelData(final ItemStack a, final ItemStack b) {
 		final ItemMeta am = a.getItemMeta();
 		final ItemMeta bm = b.getItemMeta();
-		if (am == null) return bm == null || !bm.hasCustomModelData();
-		if (bm == null) return am == null || !am.hasCustomModelData();
-		if(am.hasCustomModelData() != bm.hasCustomModelData()){
-			return false;
+
+		if (backwardsCompatibleMatching) {
+			if (getDamage(am) != getDamage(bm)) return false;
+			if (a.hasItemMeta() != b.hasItemMeta()) return false;
 		}
-		return bm.hasCustomModelData() && am.hasCustomModelData() && am.getCustomModelData() == bm.getCustomModelData();
+
+		if (am == null || bm == null) {
+			return (am == null || !am.hasCustomModelData()) &&
+					(bm == null || !bm.hasCustomModelData());
+		}
+
+		if (am.hasCustomModelData() != bm.hasCustomModelData()) return false;
+
+		if (am.hasCustomModelData() && bm.hasCustomModelData()) {
+			return am.getCustomModelData() == bm.getCustomModelData();
+		}
+		return true;
 	}
 
 	public static boolean matchMeta(final ItemStack a, final ItemStack b) {
@@ -140,26 +151,16 @@ public class ItemMatchers {
 
 		final boolean hasMetaA = a.hasItemMeta();
 		final boolean hasMetaB = b.hasItemMeta();
+		final boolean checkModelData = matchModelData(a, b);
 
 		if (hasMetaA && hasMetaB) {
 			final ItemMeta metaA = a.getItemMeta();
 			final ItemMeta metaB = b.getItemMeta();
-			return checkMetaIsSame(metaA, metaB);
-		}
-		final boolean canUseModelData = Adapter.canUseModeldata();
-
-		if (backwardsCompatibleMatching) {
-			return a.getType().equals(b.getType()) && getDamage(a.getItemMeta()) == getDamage(b.getItemMeta()) &&
-					a.hasItemMeta() == b.hasItemMeta() && (!a.hasItemMeta() || (a.getItemMeta().toString().equals(b.getItemMeta().toString()))
-					&& (!canUseModelData || matchModelData(a, b)));
-		}
-		if (canUseModelData) {
-			return hasMetaA == hasMetaB && a.getType() == b.getType() && matchModelData(a, b);
+			return checkMetaIsSame(metaA , metaB) && checkModelData;
 		}
 
-		return hasMetaA == hasMetaB && a.getType() == b.getType() && getDamage(a.getItemMeta()) == getDamage(b.getItemMeta());
+		return checkModelData && hasMetaA == hasMetaB && a.getType() == b.getType() && getDamage(a.getItemMeta()) == getDamage(b.getItemMeta());
 	}
-
 
 	private static boolean checkMetaIsSame(final ItemMeta metaA, final ItemMeta metaB) {
 		if (metaA != null && metaB != null) {
@@ -185,9 +186,9 @@ public class ItemMatchers {
 			boolean sameEnchants = metaA.hasEnchants() && metaB.hasEnchants();
 			if (sameEnchants) {
 				sameEnchants = metaA.getEnchants().entrySet().stream().allMatch(entry -> Objects.equals(metaB.getEnchants().get(entry.getKey()), entry.getValue()));
+				return sameEnchants && Objects.equals(metaA.getDisplayName(), metaB.getDisplayName()) && sameLore && getDamage(metaA) == getDamage(metaB);
 			}
-
-			return sameEnchants && Objects.equals(metaA.getDisplayName(), metaB.getDisplayName()) && sameLore && getDamage(metaA) == getDamage(metaB);
+			return Objects.equals(metaA.getDisplayName(), metaB.getDisplayName()) && sameLore && getDamage(metaA) == getDamage(metaB);
 		}
 		return false;
 	}
