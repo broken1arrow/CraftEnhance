@@ -1,7 +1,9 @@
 package com.dutchjelly.craftenhance.files;
 
+import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.cache.CacheRecipes;
+import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerCache;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerData;
@@ -33,6 +35,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.UUID;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
@@ -276,6 +279,16 @@ public class FileManager {
 
 	public boolean saveDisabledServerRecipes(final List<String> keys) {
 		serverRecipeConfig.set("disabled", keys);
+		try {
+			serverRecipeConfig.save(serverRecipeFile);
+		} catch (final IOException e) {
+			return false;
+		}
+		return true;
+	}
+
+	public boolean saveAllDisabledServerRecipes() {
+		serverRecipeConfig.set("disabled",RecipeLoader.getInstance().getDisabledServerRecipes().stream().map(Adapter::GetRecipeIdentifier).collect(Collectors.toList()));
 		try {
 			serverRecipeConfig.save(serverRecipeFile);
 		} catch (final IOException e) {

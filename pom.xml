@@ -5,15 +5,15 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>CraftEnhance</groupId>
     <artifactId>CraftEnhance</artifactId>
-    <version>2.6.0.0</version>
+    <version>2.6.0.1</version>
     <name>CraftEnhance</name>
     <description>This is a minecraft plugin to enhance crafting.</description>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.target>8</maven.compiler.target>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.release>8</maven.compiler.release>
-        <utility-library>0.125</utility-library>
+        <utility-library>0.126</utility-library>
         <dependencys_path>com.dutchjelly.craftenhance.libs</dependencys_path>
     </properties>
     <build>

@@ -54,6 +54,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
@@ -239,11 +240,13 @@ public class CraftEnhance extends JavaPlugin {
 		RecipeLoader loader = RecipeLoader.getInstance();
 		this.cacheRecipes.getRecipes().stream().filter(x -> x.validate() == null).forEach((recipe) -> loader.loadRecipe(recipe, isReloading));
 		loader.printGroupsDebugInfo();
-		loader.disableServerRecipes(
-				fm.readDisabledServerRecipes().stream().map(x ->
-						Adapter.FilterRecipes(loader.getServerRecipes(), x)
-				).collect(Collectors.toList())
-		);
+		final List<Recipe> collect = fm.readDisabledServerRecipes().stream().map(x ->
+				Adapter.FilterRecipes(loader.getServerRecipes(), x)
+		).collect(Collectors.toList());
+		loader.disableServerRecipes(collect);
+/*		fm.readDisabledServerRecipes().stream().map(x ->
+				Adapter.FilterRecipes(loader.getServerRecipes(), x)
+		).collect(Collectors.toList()).forEach(loader::enableServerRecipe);*/
 	}
 
 	public void reLearnRecipes() {
