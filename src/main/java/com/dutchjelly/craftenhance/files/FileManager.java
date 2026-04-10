@@ -94,7 +94,7 @@ public class FileManager {
 		boolean unsavedChanges = false;
 
 		for (final String key : jarResourceConfig.getKeys(false)) {
-			if (ServerVersion.newerThan(ServerVersion.V1_8))
+			if (ServerVersion.newerThan(8.8))
 				if (!fileConfig.contains(key, false)) {
 					fileConfig.set(key, jarResourceConfig.get(key));
 					unsavedChanges = true;
