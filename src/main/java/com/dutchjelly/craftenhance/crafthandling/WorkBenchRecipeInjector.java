@@ -138,6 +138,7 @@ public class WorkBenchRecipeInjector {
 
 			Debug.Send(Type.Crafting, () -> "Check for similar server recipes if no enhanced ones match.");
 			//Check for similar server recipes if no enhanced ones match.
+			System.out.println(" group.getServerRecipes() " +  group.getServerRecipes());
 			for (final Recipe sRecipe : group.getServerRecipes()) {
 				if (sRecipe instanceof ShapedRecipe) {
 					final ItemStack[] content = ServerRecipeTranslator.translateShapedRecipe((ShapedRecipe) sRecipe);

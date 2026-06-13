@@ -235,16 +235,16 @@ public class GuiUtil {
 		return true;
 	}
 
-	public static boolean changeCategory(final String currentCatogory, final String msg, final Player player) {
+	public static boolean changeCategory(final String currentCategory, final String msg, final Player player) {
 		if (msg.equals("") || msg.equals("cancel") || msg.equals("quit") || msg.equals("exit"))
 			return false;
 		if (!msg.isEmpty()) {
-			final CategoryData categoryData = self().getCategoryDataCache().get(currentCatogory);
+			final CategoryData categoryData = self().getCategoryDataCache().get(currentCategory);
 			if (categoryData == null) {
 				Messenger.Message("Your category name not exist", player);
 				return true;
 			}
-			final CategoryData movedcategoryData = self().getCategoryDataCache().move(currentCatogory, msg);
+			final CategoryData movedcategoryData = self().getCategoryDataCache().move(currentCategory, msg);
 			CraftEnhance.runTaskLaterAsync(1, () -> {
 				self().getCategoryDataCache().save();
 				if (movedcategoryData != null) {

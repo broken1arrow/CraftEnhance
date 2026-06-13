@@ -14,9 +14,12 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.SmokingRecipe;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
@@ -31,6 +34,8 @@ public class RecipeGroup {
 	@Setter
 	private List<RecipeCoreData> recipeCoreList = new ArrayList<>();
 
+	private Map<String,RecipeCoreData> recipeGroupCache = new HashMap<>();
+
 	public RecipeGroup() {
 	}
 
@@ -43,6 +48,28 @@ public class RecipeGroup {
 		if (!recipeCoreList.contains(enhancedRecipe))
 			recipeCoreList.add(enhancedRecipe);
 		return this;
+	}
+
+
+	public void putCustomRecipe(@NonNull final RecipeCoreData enhancedRecipe) {
+		recipeGroupCache.put(enhancedRecipe.getKey(), enhancedRecipe);
+	}
+
+	@Nullable
+	public RecipeCoreData getCustomRecipe(@NonNull final RecipeCoreData enhancedRecipeWrapper) {
+		return recipeGroupCache.get(enhancedRecipeWrapper.getKey());
+	}
+
+	@Nullable
+	public RecipeCoreData getCustomRecipe(@NonNull final String enhancedRecipeKey) {
+		return recipeGroupCache.get(enhancedRecipeKey);
+	}
+	public void remove(@NonNull final EnhancedRecipe recipe) {
+		recipeGroupCache.get(recipe.getKey());
+	}
+
+	public int getRecipeGroupSize() {
+		return recipeGroupCache.size();
 	}
 
 	public RecipeGroup addIfNotExist(Recipe recipe) {
@@ -141,5 +168,6 @@ public class RecipeGroup {
 		recipes.append("}");
 		return recipes + "";
 	}
+
 
 }

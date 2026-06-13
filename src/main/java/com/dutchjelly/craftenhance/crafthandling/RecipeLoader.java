@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -92,8 +91,8 @@ public class RecipeLoader {
 	}
 
 	public static void clearInstance() {
-		for (final EnhancedRecipe loaded : RecipeLoader.getInstance().getLoadedRecipes()) {
-			instance.unloadRecipe(loaded.getServerRecipe());
+		for (final Entry<String, EnhancedRecipe> loaded : self().getCacheRecipes().getRecipesMap().entrySet()) {
+			instance.unloadRecipe(loaded.getValue().getServerRecipe());
 		}
 		instance = null;
 	}
@@ -140,7 +139,7 @@ public class RecipeLoader {
 		if (recipeGroup == null) {
 			recipeGroup = new RecipeGroup();
 		}
-		recipeGroup.addIfNotExist(RecipeCoreData.of(enhancedRecipe));
+		recipeGroup.putCustomRecipe(RecipeCoreData.of(enhancedRecipe));
 		recipeGroup.setServerRecipes(serverRecipes);
 
 		mappedGroupedRecipes.put(recipeGroupPair.getFirst(), recipeGroup);
@@ -251,12 +250,12 @@ public class RecipeLoader {
 			if (recipe instanceof ShapedRecipe) {
 				final String recipeGroup = ((ShapedRecipe) recipe).getGroup();
 				Debug.Send(Type.Crafting, () -> "Attempt to find the group for crafting recipe. Group name: '" + (recipeGroup.isEmpty() ? "No group set" : recipeGroup) + "'");
-				group = mappedGroupedRecipes.get(((ShapedRecipe) recipe).getGroup());
+				group = mappedGroupedRecipes.get(recipeGroup);
 			}
 			if (recipe instanceof ShapelessRecipe) {
 				final String recipeGroup = ((ShapelessRecipe) recipe).getGroup();
 				Debug.Send(Type.Crafting, () -> "Attempt to find the group for crafting recipe. Group name: '" + (recipeGroup.isEmpty() ? "No group set" : recipeGroup) + "'");
-				group = mappedGroupedRecipes.get(((ShapelessRecipe) recipe).getGroup());
+				group = mappedGroupedRecipes.get(recipeGroup);
 			}
 		}
 		return group;
@@ -369,9 +368,9 @@ public class RecipeLoader {
             similar anymore. So detect this and make sure they get split up. */
 
 		//Remove entire recipe group if it's the last enhanced recipe, or remove a single recipe from the group.
-		if (group.getRecipeCoreList().size() == 1)
+		if (group.getRecipeGroupSize() == 1)
 			mappedGroupedRecipes.remove(recipe.getGroup());
-		else group.getRecipeCoreList().remove(recipe);
+		else group.remove(recipe);
 		Debug.Send("Unloaded a recipe");
 		printGroupsDebugInfo();
 	}
@@ -386,9 +385,10 @@ public class RecipeLoader {
 			return;
 		}
 
-		final boolean containsRecipe = loaded.containsKey(recipe.getKey());
-		if (containsRecipe)
-			unloadRecipe(recipe);
+		//final boolean containsRecipe = loaded.containsKey(recipe.getKey());
+		final boolean containsRecipe = this.mappedGroupedRecipes.get(recipe.getGroup()) != null;
+		//if (containsRecipe)
+		//	unloadRecipe(recipe);
 
 		final List<Recipe> similarServerRecipes = new ArrayList<>();
 		for (final Recipe r : serverRecipes) {
@@ -583,8 +583,9 @@ public class RecipeLoader {
 	private String getGroupName(final String categoryName, final RecipeGroup groupedRecipes) {
 		String groupName = categoryName;
 
-		if (groupedRecipes.getRecipeCoreList().size() > recipeSize) {
-			Debug.Send("Recipe group", "Current group '" + groupName + "' have more than " + groupedRecipes.getRecipeCoreList().size() + ", creating new group to add recipes inside.");
+		final int recipeGroupSize = groupedRecipes.getRecipeGroupSize();
+		if (recipeGroupSize > recipeSize) {
+			Debug.Send("Recipe group", "Current group '" + groupName + "' have more than " + recipeGroupSize + ", creating new group to add recipes inside.");
 			int index = 0;
 			while (checkGroupWithSpace(categoryName, index)) {
 				index++;
@@ -592,21 +593,18 @@ public class RecipeLoader {
 			groupName += index;
 			return groupName;
 		}
-		Debug.Send("Recipe group", "Current group '" + groupName + "' have " + groupedRecipes.getRecipeCoreList().size() + ", it will add the recipe to the current group.");
+		Debug.Send("Recipe group", "Current group '" + groupName + "' have " + recipeGroupSize + ", it will add the recipe to the current group.");
 		return groupName;
 	}
 
 	private boolean checkGroupWithSpace(final String categoryName, final int index) {
 		final RecipeGroup recipeGroup = mappedGroupedRecipes.get(categoryName + index);
-		if (recipeGroup != null && recipeGroup.getRecipeCoreList().size() < recipeSize + 1) {
+		if (recipeGroup != null && recipeGroup.getRecipeGroupSize() < recipeSize + 1) {
 			return false;
 		}
 		return recipeGroup != null;
 	}
 
-	public EnhancedRecipe getLoadedRecipes(final Predicate<? super EnhancedRecipe> predicate) {
-		return this.getLoadedRecipes().stream().filter(predicate).findFirst().orElse(null);
-	}
 
 	public void disableServerRecipes(final List<Recipe> disabledServerRecipes) {
 		//No need to be efficient here, this'll only run once.

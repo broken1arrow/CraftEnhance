@@ -85,7 +85,7 @@ public class WBRecipe extends EnhancedRecipe {
 	}
 
 
-	//The recipe is similar to a server recipe if theyre both shaped and their shapes match, if at least one is shaped and the ingredients match
+	//The recipe is similar to a server recipe if they are both shaped and their shapes match, if at least one is shaped and the ingredients match
 	//Note that similar doesn't mean that the recipes are always equal. Shaped is always similar to shapeless, but not the other way around.
 	@Override
 	public boolean isSimilar(final Recipe r) {
