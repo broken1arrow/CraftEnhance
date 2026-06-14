@@ -6,7 +6,6 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import org.bukkit.Material;
 import org.bukkit.inventory.BlastingRecipe;
 import org.bukkit.inventory.FurnaceRecipe;
@@ -20,8 +19,10 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.function.Predicate;
 
@@ -30,8 +31,7 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 public class RecipeGroup {
 	private final String group;
 	@Getter
-	@Setter
-	private List<Recipe> serverRecipes = new ArrayList<>();
+	private final Set<Recipe> serverRecipes = new HashSet<>();
 	private final Map<String, EnhancedRecipeWrapper> recipeGroupCache = new HashMap<>();
 
 	public RecipeGroup(String group) {
@@ -66,6 +66,10 @@ public class RecipeGroup {
 
 	public void addServerRecipe(@NonNull final Recipe recipe) {
 		this.serverRecipes.add(recipe);
+	}
+
+	public void addAllServerRecipes(@NonNull final List<Recipe> recipes) {
+		this.serverRecipes.addAll(recipes);
 	}
 
 	public void removeServerRecipe(@NonNull final Recipe recipe) {
@@ -106,19 +110,6 @@ public class RecipeGroup {
 
 	public Map<String, EnhancedRecipeWrapper> getRecipeGroupCache() {
 		return recipeGroupCache;
-	}
-
-	public RecipeGroup addIfNotExist(Recipe recipe) {
-		if (!serverRecipes.contains(recipe))
-			serverRecipes.add(recipe);
-		return this;
-	}
-
-	public RecipeGroup addAllNotExist(List<Recipe> recipes) {
-		for (Recipe recipe : recipes)
-			if (!serverRecipes.contains(recipe))
-				serverRecipes.add(recipe);
-		return this;
 	}
 
 

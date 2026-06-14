@@ -113,21 +113,14 @@ public class WBRecipe extends EnhancedRecipe {
 		} else if (r instanceof ShapedRecipe) {
 			ingredients = ServerRecipeTranslator.translateShapedRecipe((ShapedRecipe) r);
 		}
-	   /*
-		if (r.getResult().getType() == Material.OAK_PLANKS) {
-		System.out.println("r.getResult().getType()  " + r.getResult().getType());
-		System.out.println("ingredients  " + Arrays.toString(ingredients));
-		System.out.println("getContent()  " + Arrays.toString(getContent()));
-		}*/
 
 		if (ingredients == null)
 			return false;
-
 		for (ItemStack stack : ingredients) {
 			if (stack == null || stack.getType() == Material.AIR)
 				continue;
 			for (ItemStack ingredient : getContent()) {
-				if (stack.getType() == ingredient.getType())
+				if (ingredient != null && stack.getType() == ingredient.getType())
 					return true;
 			}
 		}

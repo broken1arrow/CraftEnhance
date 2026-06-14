@@ -65,7 +65,7 @@ public class WorkBenchRecipeInjector {
 		for (final RecipeGroup group : possibleRecipeGroups) {
 			boolean notAllowedToCraft = false;
 
-			if(group.getRecipeGroupCache().isEmpty())
+			if (group.getRecipeGroupCache().isEmpty())
 				Debug.Send(Type.Crafting, () -> "No enchanted recipes found in this group: " + group.getGroup());
 			//Check if any grouped enhanced recipe is a match.
 			for (final EnhancedRecipeWrapper eRecipe : group.getRecipeGroupCache().values()) {
@@ -134,28 +134,33 @@ public class WorkBenchRecipeInjector {
 					Debug.Send(wbRecipe, () -> "Partial matched recipe fond and will prevent craft this recipe.");
 					result.accept(null);
 					return;
+				} else if (wbRecipe.isCheckPartialMatch()) {
+					Debug.Send(wbRecipe, () -> "Partial matched recipe not fund ingredients not match the type, will continue.");
 				}
 			}
 			if (notAllowedToCraft)
 				continue;
 
 			Debug.Send(Type.Crafting, () -> "Check for similar server recipes as no enhanced ones match.");
+			Debug.Send(Type.Crafting, () -> "Have similar vanilla matches in this group: " + group.getServerRecipes().size());
 			//Check for similar server recipes if no enhanced ones match.
-			System.out.println(" group.getServerRecipes() " +  group.getServerRecipes());
 			for (final Recipe sRecipe : group.getServerRecipes()) {
 				if (sRecipe instanceof ShapedRecipe) {
 					final ItemStack[] content = ServerRecipeTranslator.translateShapedRecipe((ShapedRecipe) sRecipe);
+
+					Debug.Send(Type.Crafting, () -> "[ShapedRecipe] matrix to match: " + recipeManger.convertItemStackArrayToString(matrix));
+					Debug.Send(Type.Crafting, () -> "[ShapedRecipe] ingredients" + recipeManger.convertItemStackArrayToString(content));
 					if (WBRecipeComparer.shapeMatches(content, matrix, recipeManger.getTypeMatcher())) {
-						Debug.Send(Type.Crafting, () -> "Match a ShapedRecipe.");
-						Debug.Send(Type.Crafting, () -> "The crafted recipe matrix: " + recipeManger.convertItemStackArrayToString(matrix));
+						Debug.Send(Type.Crafting, () -> "Matched a ShapedRecipe and will allow this server recipe.");
 						result.accept(sRecipe.getResult());
 						return;
 					}
 				} else if (sRecipe instanceof ShapelessRecipe) {
 					final ItemStack[] ingredients = ServerRecipeTranslator.translateShapelessRecipe((ShapelessRecipe) sRecipe);
+					Debug.Send(Type.Crafting, () -> "[ShapelessRecipe] matrix to match: " + recipeManger.convertItemStackArrayToString(matrix));
+					Debug.Send(Type.Crafting, () -> "[ShapelessRecipe] ingredients" + recipeManger.convertItemStackArrayToString(ingredients));
 					if (WBRecipeComparer.ingredientsMatch(ingredients, matrix, recipeManger.getTypeMatcher())) {
-						Debug.Send(Type.Crafting, () -> "Match a ShapelessRecipe.");
-						Debug.Send(Type.Crafting, () -> "The crafted recipe matrix: " + recipeManger.convertItemStackArrayToString(matrix));
+						Debug.Send(Type.Crafting, () -> "Matched a ShapelessRecipe and will allow this server recipe.");
 						result.accept(sRecipe.getResult());
 						return;
 					}
@@ -175,8 +180,8 @@ public class WorkBenchRecipeInjector {
 		this.finishRecipe.computeIfPresent(clickedInventory.getLocation(), (location, recipe) -> {
 			if (recipe.getOnCraftCommand() == null || recipe.getOnCraftCommand().trim().isEmpty()) return null;
 			CraftEnhance.runTaskLater(2, () ->
-							Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), recipe.getOnCraftCommand().replace("%playername%", craftingClick.getWhoClicked().getName()))
-					);
+					Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), recipe.getOnCraftCommand().replace("%playername%", craftingClick.getWhoClicked().getName()))
+			);
 			return null;
 		});
 

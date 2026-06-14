@@ -407,7 +407,7 @@ public class RecipeLoader {
 			recipeGroup = new RecipeGroup(first);
 		}
 		recipeGroup.putCustomRecipe(EnhancedRecipeWrapper.of(enhancedRecipe));
-		recipeGroup.setServerRecipes(serverRecipes);
+		recipeGroup.addAllServerRecipes(serverRecipes);
 
 		mappedGroupedRecipes.put(first, recipeGroup);
 
