@@ -61,11 +61,14 @@ public class WorkBenchRecipeInjector {
 			Debug.Send(Type.Crafting, () -> "No matching groups");
 			return;
 		}
+
 		for (final RecipeGroup group : possibleRecipeGroups) {
 			boolean notAllowedToCraft = false;
 
+			if(group.getRecipeGroupCache().isEmpty())
+				Debug.Send(Type.Crafting, () -> "No enchanted recipes found in this group: " + group.getGroup());
 			//Check if any grouped enhanced recipe is a match.
-			for (final EnhancedRecipeWrapper eRecipe : group.getRecipeCoreList()) {
+			for (final EnhancedRecipeWrapper eRecipe : group.getRecipeGroupCache().values()) {
 				final EnhancedRecipe enhancedRecipe = eRecipe.getEnhancedRecipe();
 				if (!(enhancedRecipe instanceof WBRecipe)) continue;
 				final WBRecipe wbRecipe = (WBRecipe) enhancedRecipe;
@@ -136,7 +139,7 @@ public class WorkBenchRecipeInjector {
 			if (notAllowedToCraft)
 				continue;
 
-			Debug.Send(Type.Crafting, () -> "Check for similar server recipes if no enhanced ones match.");
+			Debug.Send(Type.Crafting, () -> "Check for similar server recipes as no enhanced ones match.");
 			//Check for similar server recipes if no enhanced ones match.
 			System.out.println(" group.getServerRecipes() " +  group.getServerRecipes());
 			for (final Recipe sRecipe : group.getServerRecipes()) {

@@ -27,17 +27,21 @@ import java.util.StringJoiner;
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class RecipeGroup {
-
+	private final String group;
 	@Getter
 	@Setter
 	private List<Recipe> serverRecipes = new ArrayList<>();
 	@Getter
 	@Setter
 	private List<EnhancedRecipeWrapper> recipeCoreList = new ArrayList<>();
-
 	private final Map<String, EnhancedRecipeWrapper> recipeGroupCache = new HashMap<>();
 
-	public RecipeGroup() {
+	public RecipeGroup(String group) {
+		this.group = group;
+	}
+
+	public String getGroup() {
+		return group;
 	}
 
 	public void putCustomRecipe(@NonNull final EnhancedRecipeWrapper enhancedRecipeWrapper) {
