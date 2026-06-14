@@ -105,6 +105,35 @@ public class WBRecipe extends EnhancedRecipe {
 		return false;
 	}
 
+	@Override
+	public boolean sharesIngredientWith(final Recipe r) {
+		ItemStack[] ingredients = null;
+		if (r instanceof ShapelessRecipe) {
+			ingredients = ServerRecipeTranslator.translateShapelessRecipe((ShapelessRecipe) r);
+		} else if (r instanceof ShapedRecipe) {
+			ingredients = ServerRecipeTranslator.translateShapedRecipe((ShapedRecipe) r);
+		}
+	   /*
+		if (r.getResult().getType() == Material.OAK_PLANKS) {
+		System.out.println("r.getResult().getType()  " + r.getResult().getType());
+		System.out.println("ingredients  " + Arrays.toString(ingredients));
+		System.out.println("getContent()  " + Arrays.toString(getContent()));
+		}*/
+
+		if (ingredients == null)
+			return false;
+
+		for (ItemStack stack : ingredients) {
+			if (stack == null || stack.getType() == Material.AIR)
+				continue;
+			for (ItemStack ingredient : getContent()) {
+				if (stack.getType() == ingredient.getType())
+					return true;
+			}
+		}
+		return false;
+	}
+
 	//Looks if r is always similar to this (so we know it doesn't have to be loaded in again)
 	@Override
 	public boolean isAlwaysSimilar(final Recipe r) {

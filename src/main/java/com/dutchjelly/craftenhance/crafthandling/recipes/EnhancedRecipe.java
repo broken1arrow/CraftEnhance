@@ -20,6 +20,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -286,6 +287,8 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 		return type;
 	}
 
+
+	public abstract boolean sharesIngredientWith(Recipe r);
 
 	public abstract boolean matches(ItemStack[] content);
 

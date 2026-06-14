@@ -101,7 +101,7 @@ public class RecipeLoader {
 
 				if (group.isSimilarResult(result)) {
 					originGroups.add(group);
-				} else if (group.getServerRecipes().stream().anyMatch(x -> result.isSimilar(x.getResult()))) {
+				} else if (group.isServerRecipe(result)) {
 					originGroups.add(group);
 				}
 				if (recipeType == RecipeType.FURNACE && group.isSimilarResultType(result.getType())) {
@@ -114,7 +114,7 @@ public class RecipeLoader {
 			for (final RecipeGroup group : mappedGroupedRecipes.values()) {
 				if (group.isSimilarResult(result))
 					originGroups.add(group);
-				else if (group.getServerRecipes().stream().anyMatch(x -> result.equals(x.getResult())))
+				else if (group.isServerRecipe(result))
 					originGroups.add(group);
 			}
 			return originGroups;
@@ -124,12 +124,19 @@ public class RecipeLoader {
 			if (recipe instanceof CookingRecipe) {
 				if (group.isSimilarContent(result))
 					originGroups.add(group);
-				else if (group.getServerRecipes().stream().anyMatch(x -> result.isSimilar(((CookingRecipe<?>) x).getInput())))
+				else if (group.isServerRecipe(result))
 					originGroups.add(group);
+				else if (group.isServerRecipe(x -> {
+					if (x instanceof CookingRecipe<?>)
+						return result.isSimilar(((CookingRecipe<?>) x).getInput());
+					return false;
+				})) {
+					originGroups.add(group);
+				}
 			} else {
 				if (group.isSimilarResult(result))
 					originGroups.add(group);
-				else if (group.getServerRecipes().stream().anyMatch(x -> result.isSimilar(x.getResult())))
+				else if (group.isServerRecipe(result))
 					originGroups.add(group);
 			}
 		} else {
@@ -147,7 +154,7 @@ public class RecipeLoader {
 
 						if (recipeGroup.isSimilarResult(result)) {
 							originGroups.add(recipeGroup);
-						} else if (recipeGroup.getServerRecipes().stream().anyMatch(x -> result.isSimilar(x.getResult()))) {
+						} else if (recipeGroup.isServerRecipe(result)) {
 							originGroups.add(recipeGroup);
 						}
 						if (recipeType == RecipeType.FURNACE && recipeGroup.isSimilarResultType(result.getType())) {
@@ -211,7 +218,7 @@ public class RecipeLoader {
 
 		final List<Recipe> similarServerRecipes = new ArrayList<>();
 		for (final Recipe r : serverRecipes) {
-			if (recipe.isSimilar(r)) {
+			if (recipe.sharesIngredientWith(r)) {
 				similarServerRecipes.add(r);
 			}
 		}
@@ -335,7 +342,7 @@ public class RecipeLoader {
 			//final RecipeType type = RecipeType.getType(r);
 			for (final RecipeGroup recipeGroup : mappedGroupedRecipes.values()) {
 				if (recipeGroup.getServerRecipes().contains(r)) {
-					recipeGroup.getServerRecipes().remove(r);
+					recipeGroup.removeServerRecipe(r);
 					final EnhancedRecipeWrapper enhancedRecipeWrapper = recipeGroup.getRecipeGroupCache().values().stream().filter(x -> x.isAlwaysSimilar(r)).findFirst().orElse(null);
 					//If there's a recipe that's always similar, we have to load it again.
 					if (enhancedRecipeWrapper != null) {
@@ -364,7 +371,7 @@ public class RecipeLoader {
 				for (final RecipeGroup recipeGroup : mappedGroupedRecipes.values()) {
 					List<EnhancedRecipe> similarRecipes = recipeGroup.findSimilarRecipes(r);
 					if (!similarRecipes.isEmpty()) {
-						recipeGroup.getServerRecipes().add(r);
+						recipeGroup.addServerRecipe(r);
 						//If there's a recipe that's always similar, we have to unload it again.
 						recipeList.addAll(similarRecipes);
 					}

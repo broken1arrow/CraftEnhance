@@ -63,6 +63,11 @@ public class FurnaceRecipe extends EnhancedRecipe {
 	}
 
 	@Override
+	public boolean sharesIngredientWith(final Recipe r) {
+		return false;
+	}
+
+	@Override
 	public boolean matches(final ItemStack[] content) {
 		return this.matches(content, this.getMatchType().getMatcher());
 	}

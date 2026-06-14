@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.function.Predicate;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
@@ -31,9 +32,6 @@ public class RecipeGroup {
 	@Getter
 	@Setter
 	private List<Recipe> serverRecipes = new ArrayList<>();
-	@Getter
-	@Setter
-	private List<EnhancedRecipeWrapper> recipeCoreList = new ArrayList<>();
 	private final Map<String, EnhancedRecipeWrapper> recipeGroupCache = new HashMap<>();
 
 	public RecipeGroup(String group) {
@@ -66,8 +64,25 @@ public class RecipeGroup {
 		return recipeGroupCache.size();
 	}
 
+	public void addServerRecipe(@NonNull final Recipe recipe) {
+		this.serverRecipes.add(recipe);
+	}
+
+	public void removeServerRecipe(@NonNull final Recipe recipe) {
+		this.serverRecipes.remove(recipe);
+	}
+
+	public boolean isServerRecipe(@NonNull final ItemStack result) {
+		return getServerRecipes().stream().anyMatch(x -> result.isSimilar(x.getResult()));
+	}
+
+	public boolean isServerRecipe(@NonNull final Predicate<Recipe> predicate) {
+		return getServerRecipes().stream().anyMatch(predicate);
+	}
+
 	public List<EnhancedRecipe> findSimilarRecipes(@NonNull final Recipe recipe) {
-		final List<EnhancedRecipe> enhancedRecipe = new ArrayList<>();;
+		final List<EnhancedRecipe> enhancedRecipe = new ArrayList<>();
+		;
 		recipeGroupCache.values().stream()
 				.filter(recipeCoreData -> recipeCoreData.isAlwaysSimilar(recipe))
 				.forEach((recipeCoreData) ->

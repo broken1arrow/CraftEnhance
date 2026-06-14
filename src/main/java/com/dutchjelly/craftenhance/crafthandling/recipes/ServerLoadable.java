@@ -16,6 +16,8 @@ public interface ServerLoadable {
 
     boolean isSimilar(Recipe r);
 
+    boolean sharesIngredientWith(Recipe r);
+
     boolean isSimilar(EnhancedRecipe r);
 
     boolean isAlwaysSimilar(Recipe r);

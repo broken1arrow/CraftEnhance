@@ -111,9 +111,15 @@ public class BrewingRecipe extends EnhancedRecipe{
 	}
 
 	@Override
+	public boolean sharesIngredientWith(final Recipe r) {
+		return false;
+	}
+
+	@Override
 	public RecipeType getType() {
 		return RecipeType.BREWING;
 	}
+
 
 	public static BrewingRecipe deserialize(final Map<String, Object> args) {
 		BrewingRecipe brewingRecipe = new BrewingRecipe(args);
