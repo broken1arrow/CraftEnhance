@@ -134,7 +134,6 @@ public class RecipeDisabler extends MenuHolderPage<Recipe> {
 	public FillMenuButton<Recipe> createFillMenuButton() {
 		return new FillMenuButton<>((player1, itemStacks, clickType, itemStack, recipe) -> {
 			if (recipe != null) {
-				System.out.println("enableMode " + enableMode);
 				if (enableMode) {
 					RecipeLoader.getInstance().enableServerRecipe(recipe);
 					self().getFm().saveAllDisabledServerRecipes();

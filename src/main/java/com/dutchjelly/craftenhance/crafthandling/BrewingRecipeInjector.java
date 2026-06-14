@@ -2,7 +2,7 @@ package com.dutchjelly.craftenhance.crafthandling;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
-import com.dutchjelly.craftenhance.cache.RecipeCoreData;
+import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
@@ -137,7 +137,7 @@ public class BrewingRecipeInjector {
 			}
 			for (final RecipeGroup group : possibleRecipeGroups) {
 				//Check if any grouped enhanced recipe is a match.
-				for (final RecipeCoreData eRecipe : group.getRecipeCoreList()) {
+				for (final EnhancedRecipeWrapper eRecipe : group.getRecipeGroupCache().values()) {
 					EnhancedRecipe enhancedRecipe = eRecipe.getEnhancedRecipe();
 					if (!(enhancedRecipe  instanceof BrewingRecipe)) continue;
 					final BrewingRecipe brewingRecipe = (BrewingRecipe) enhancedRecipe;
@@ -232,7 +232,7 @@ public class BrewingRecipeInjector {
 
 		for (final RecipeGroup group : possibleRecipeGroups) {
 			//Check if any grouped enhanced recipe is a match.
-			for (final RecipeCoreData eRecipe : group.getRecipeCoreList()) {
+			for (final EnhancedRecipeWrapper eRecipe : group.getRecipeGroupCache().values()) {
 				final EnhancedRecipe enhancedRecipe = eRecipe.getEnhancedRecipe();
 				if (!(enhancedRecipe  instanceof BrewingRecipe)) continue;
 

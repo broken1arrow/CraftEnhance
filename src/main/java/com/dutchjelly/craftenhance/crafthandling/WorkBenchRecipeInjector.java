@@ -4,7 +4,7 @@ import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.api.CraftEnhanceAPI;
 import com.dutchjelly.craftenhance.api.event.crafting.BeforeCraftOutputEvent;
-import com.dutchjelly.craftenhance.cache.RecipeCoreData;
+import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
@@ -65,7 +65,7 @@ public class WorkBenchRecipeInjector {
 			boolean notAllowedToCraft = false;
 
 			//Check if any grouped enhanced recipe is a match.
-			for (final RecipeCoreData eRecipe : group.getRecipeCoreList()) {
+			for (final EnhancedRecipeWrapper eRecipe : group.getRecipeCoreList()) {
 				final EnhancedRecipe enhancedRecipe = eRecipe.getEnhancedRecipe();
 				if (!(enhancedRecipe instanceof WBRecipe)) continue;
 				final WBRecipe wbRecipe = (WBRecipe) enhancedRecipe;

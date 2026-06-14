@@ -1,14 +1,16 @@
 package com.dutchjelly.craftenhance.crafthandling;
 
 
-import com.dutchjelly.craftenhance.cache.RecipeCoreData;
+import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import org.bukkit.Material;
 import org.bukkit.inventory.BlastingRecipe;
 import org.bukkit.inventory.FurnaceRecipe;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
@@ -21,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
-import java.util.stream.Collectors;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
@@ -32,44 +33,60 @@ public class RecipeGroup {
 	private List<Recipe> serverRecipes = new ArrayList<>();
 	@Getter
 	@Setter
-	private List<RecipeCoreData> recipeCoreList = new ArrayList<>();
+	private List<EnhancedRecipeWrapper> recipeCoreList = new ArrayList<>();
 
-	private Map<String,RecipeCoreData> recipeGroupCache = new HashMap<>();
+	private final Map<String, EnhancedRecipeWrapper> recipeGroupCache = new HashMap<>();
 
 	public RecipeGroup() {
 	}
 
-	public RecipeGroup(List<RecipeCoreData> enhanced, List<Recipe> server) {
-		this.recipeCoreList.addAll(enhanced);
-		this.serverRecipes.addAll(server);
-	}
-
-	public RecipeGroup addIfNotExist(RecipeCoreData enhancedRecipe) {
-		if (!recipeCoreList.contains(enhancedRecipe))
-			recipeCoreList.add(enhancedRecipe);
-		return this;
-	}
-
-
-	public void putCustomRecipe(@NonNull final RecipeCoreData enhancedRecipe) {
-		recipeGroupCache.put(enhancedRecipe.getKey(), enhancedRecipe);
+	public void putCustomRecipe(@NonNull final EnhancedRecipeWrapper enhancedRecipeWrapper) {
+		recipeGroupCache.put(enhancedRecipeWrapper.getKey(), enhancedRecipeWrapper);
 	}
 
 	@Nullable
-	public RecipeCoreData getCustomRecipe(@NonNull final RecipeCoreData enhancedRecipeWrapper) {
+	public EnhancedRecipeWrapper getCustomRecipe(@NonNull final EnhancedRecipeWrapper enhancedRecipeWrapper) {
 		return recipeGroupCache.get(enhancedRecipeWrapper.getKey());
 	}
 
 	@Nullable
-	public RecipeCoreData getCustomRecipe(@NonNull final String enhancedRecipeKey) {
+	public EnhancedRecipeWrapper getCustomRecipe(@NonNull final String enhancedRecipeKey) {
 		return recipeGroupCache.get(enhancedRecipeKey);
 	}
+
 	public void remove(@NonNull final EnhancedRecipe recipe) {
 		recipeGroupCache.get(recipe.getKey());
 	}
 
 	public int getRecipeGroupSize() {
 		return recipeGroupCache.size();
+	}
+
+	public List<EnhancedRecipe> findSimilarRecipes(@NonNull final Recipe recipe) {
+		final List<EnhancedRecipe> enhancedRecipe = new ArrayList<>();;
+		recipeGroupCache.values().stream()
+				.filter(recipeCoreData -> recipeCoreData.isAlwaysSimilar(recipe))
+				.forEach((recipeCoreData) ->
+						enhancedRecipe.add(recipeCoreData.getEnhancedRecipe())
+				);
+		return enhancedRecipe;
+	}
+
+	public boolean isSimilarContent(@NonNull final ItemStack... content) {
+		return recipeGroupCache.values().stream()
+				.anyMatch(recipeCoreData -> recipeCoreData.isSimilarContent(content));
+	}
+
+	public boolean isSimilarResult(@NonNull final ItemStack result) {
+		return recipeGroupCache.values().stream().anyMatch(x -> result.isSimilar(x.getResult()));
+	}
+
+	public boolean isSimilarResultType(@NonNull final Material resultType) {
+		return recipeGroupCache.values().stream().anyMatch(x -> x.getResult() != null && resultType == x.getResult().getType());
+	}
+
+	public Map<String, EnhancedRecipeWrapper> getRecipeGroupCache() {
+		return recipeGroupCache;
 	}
 
 	public RecipeGroup addIfNotExist(Recipe recipe) {
@@ -85,18 +102,6 @@ public class RecipeGroup {
 		return this;
 	}
 
-	//Returns this for chaining purposes.
-	public RecipeGroup mergeWith(@NonNull RecipeGroup othergroup) {
-		List<Recipe> mergedServerRecipes = new ArrayList<>();
-		mergedServerRecipes.addAll(serverRecipes);
-		mergedServerRecipes.addAll(othergroup.serverRecipes);
-		serverRecipes = mergedServerRecipes.stream().distinct().collect(Collectors.toList());
-		List<RecipeCoreData> mergedEnhancedRecipes = new ArrayList<>();
-		mergedEnhancedRecipes.addAll(recipeCoreList);
-		mergedEnhancedRecipes.addAll(othergroup.recipeCoreList);
-		recipeCoreList = mergedEnhancedRecipes.stream().distinct().collect(Collectors.toList());
-		return this;
-	}
 
 	@Override
 	public String toString() {
@@ -148,7 +153,7 @@ public class RecipeGroup {
 		recipes.append("enhancedRecipes= {");
 
 		final StringJoiner enhancedJoiner = new StringJoiner(",");
-		this.recipeCoreList.forEach(recipeCoreData -> {
+		this.recipeGroupCache.values().forEach(recipeCoreData -> {
 			final StringBuilder recipesBuilder = new StringBuilder();
 			recipesBuilder.append(" key='");
 			recipesBuilder.append(recipeCoreData.getKey()).append("'| category=");

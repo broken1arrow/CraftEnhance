@@ -1,7 +1,7 @@
 package com.dutchjelly.craftenhance.files;
 
 import com.dutchjelly.bukkitadapter.Adapter;
-import com.dutchjelly.craftenhance.cache.RecipeCoreData;
+import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import org.broken.arrow.library.serialize.utility.serialize.ConfigurationSerializable;
 import org.bukkit.Material;
@@ -21,7 +21,7 @@ public class CategoryData implements ConfigurationSerializable {
 	private final ItemStack recipeCategoryItem;
 	private String recipeCategory;
 	private String displayName;
-	private List<RecipeCoreData> enhancedRecipes = new ArrayList<>();
+	private List<EnhancedRecipeWrapper> enhancedRecipes = new ArrayList<>();
 
 	private CategoryData(final ItemStack recipeCategoryItem, final String recipeCategory, final String displayName) {
 		this.recipeCategoryItem = recipeCategoryItem;
@@ -71,21 +71,21 @@ public class CategoryData implements ConfigurationSerializable {
 	public List<EnhancedRecipe> getEnhancedRecipes() {
 		return enhancedRecipes.stream().map(this::getEnhancedRecipe).collect(Collectors.toList());
 	}
-	public List<RecipeCoreData> getRecipeCoreData() {
+	public List<EnhancedRecipeWrapper> getRecipeCoreData() {
 		return enhancedRecipes;
 	}
 	public void setEnhancedRecipes(final List<EnhancedRecipe> enhancedRecipes) {
 		this.enhancedRecipes = new ArrayList<>();
-		enhancedRecipes.forEach(enhancedRecipe -> this.enhancedRecipes.add(new RecipeCoreData(enhancedRecipe)));
+		enhancedRecipes.forEach(enhancedRecipe -> this.enhancedRecipes.add(new EnhancedRecipeWrapper(enhancedRecipe)));
 	}
 
 	@Nullable
-	private EnhancedRecipe getEnhancedRecipe(final RecipeCoreData recipeCoreData) {
-		return self().getCacheRecipes().getRecipe(recipeCoreData.getKey());
+	private EnhancedRecipe getEnhancedRecipe(final EnhancedRecipeWrapper enhancedRecipeWrapper) {
+		return self().getCacheRecipes().getRecipe(enhancedRecipeWrapper.getKey());
 	}
 
 	public void addEnhancedRecipes(final EnhancedRecipe enhancedRecipe) {
-		this.enhancedRecipes.add(new RecipeCoreData(enhancedRecipe));
+		this.enhancedRecipes.add(new EnhancedRecipeWrapper(enhancedRecipe));
 	}
 
 	@Override

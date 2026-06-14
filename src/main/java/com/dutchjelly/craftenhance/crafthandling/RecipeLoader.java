@@ -2,7 +2,7 @@ package com.dutchjelly.craftenhance.crafthandling;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.cache.CacheRecipes;
-import com.dutchjelly.craftenhance.cache.RecipeCoreData;
+import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
@@ -13,16 +13,13 @@ import com.dutchjelly.craftenhance.files.CategoryDataCache;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.messaging.Messenger;
-import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import com.dutchjelly.craftenhance.util.Pair;
 import lombok.Getter;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
-import org.bukkit.inventory.CampfireRecipe;
 import org.bukkit.inventory.CookingRecipe;
-import org.bukkit.inventory.CraftingRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
@@ -52,18 +49,11 @@ public class RecipeLoader {
 	private final CategoryDataCache categoryDataCache;
 	private final Server server;
 	@Getter
-	private final Map<String, Integer> recipes = new HashMap<>();
-	@Getter
 	private List<Recipe> serverRecipes = new ArrayList<>();
-	@Getter
-	private List<Recipe> serverFurnaceRecipes = new ArrayList<>();
 	@Getter
 	private List<Recipe> disabledServerRecipes = new ArrayList<>();
 	@Getter
-	private List<EnhancedRecipe> loadedRecipes = new ArrayList<>();
-	@Getter
 	private Map<ItemStack, ItemStack> similarVanillaRecipe = new HashMap<>();
-	private Map<String, Recipe> loaded = new HashMap<>();
 	@Getter
 	private Map<String, RecipeGroup> mappedGroupedRecipes = new HashMap<>();
 
@@ -75,14 +65,6 @@ public class RecipeLoader {
 		} catch (IllegalArgumentException e) {
 			self().getLogger().log(Level.SEVERE, "This server recipe contains air, will not be loaded.", e);
 		}
-
-/*		for (final Iterator<Recipe> it = server.recipeIterator(); it.hasNext(); ) {
-			final Recipe data = it.next();
-
-		}*/
-	/*	for (final RecipeType type : RecipeType.values()) {
-			mappedGroupedRecipes.put(type, new ArrayList<>());
-		}*/
 		this.categoryDataCache = categoryDataCache;
 	}
 
@@ -96,57 +78,6 @@ public class RecipeLoader {
 		}
 		instance = null;
 	}
-
-
-	public Map<String, Integer> getRecipes() {
-		server.recipeIterator().forEachRemaining(recipe1 -> {
-			if (Adapter.isCraftingRecipe(recipe1) && Adapter.recipeContainsNamespace(recipe1)) {
-				final VersionChecker versionChecker = self().getVersionChecker();
-				Integer recipeCounter = 0;
-				String group = "";
-				if (versionChecker.newerThan(ServerVersion.v1_19)) {
-					group = ((CraftingRecipe) recipe1).getGroup();
-					recipeCounter = recipes.getOrDefault(group, 0);
-				} else {
-					if (recipe1 instanceof ShapedRecipe) {
-						group = ((ShapedRecipe) recipe1).getGroup();
-						recipeCounter = recipes.getOrDefault(((ShapedRecipe) recipe1).getGroup(), 0);
-					}
-					if (recipe1 instanceof ShapelessRecipe) {
-						group = ((ShapelessRecipe) recipe1).getGroup();
-						recipeCounter = recipes.getOrDefault(((ShapelessRecipe) recipe1).getGroup(), 0);
-					}
-				}
-				recipes.put(group, recipeCounter + 1);
-			}
-			if (recipe1 instanceof CookingRecipe && Adapter.recipeContainsNamespace(recipe1)) {
-				final String group = ((CookingRecipe<?>) recipe1).getGroup();
-				Integer recipeCounter = recipes.getOrDefault(group, 0);
-				recipes.put(group, recipeCounter + 1);
-			}
-		});
-
-		return recipes;
-	}
-
-	//Adds or merges group with existing group.
-	@Nullable
-	private String addToGroup(final List<Recipe> serverRecipes, final EnhancedRecipe enhancedRecipe, final String categoryName) {
-		final Pair<String, RecipeGroup> recipeGroupPair = getRecipeGroup(categoryName);
-		Debug.Send("Recipe group", "is does now add recipe to the group: " + recipeGroupPair.getFirst());
-
-		RecipeGroup recipeGroup = recipeGroupPair.getSecond();
-		if (recipeGroup == null) {
-			recipeGroup = new RecipeGroup();
-		}
-		recipeGroup.putCustomRecipe(RecipeCoreData.of(enhancedRecipe));
-		recipeGroup.setServerRecipes(serverRecipes);
-
-		mappedGroupedRecipes.put(recipeGroupPair.getFirst(), recipeGroup);
-
-		return recipeGroupPair.getFirst();
-	}
-
 
 	public RecipeGroup findGroup(final EnhancedRecipe recipe) {
 		return mappedGroupedRecipes.get(recipe.getGroup());
@@ -168,12 +99,12 @@ public class RecipeLoader {
 				final RecipeGroup group = mappedGroupedRecipes.get(groupKey);
 				if (group == null) continue;
 
-				if (group.getRecipeCoreList().stream().anyMatch(x -> result.isSimilar(x.getResult()))) {
+				if (group.isSimilarResult(result)) {
 					originGroups.add(group);
 				} else if (group.getServerRecipes().stream().anyMatch(x -> result.isSimilar(x.getResult()))) {
 					originGroups.add(group);
 				}
-				if (recipeType == RecipeType.FURNACE && group.getRecipeCoreList().stream().anyMatch(x -> x.getResult() != null && result.getType() == x.getResult().getType())) {
+				if (recipeType == RecipeType.FURNACE && group.isSimilarResultType(result.getType())) {
 					originGroups.add(group);
 				}
 			}
@@ -181,29 +112,22 @@ public class RecipeLoader {
 				return originGroups;
 			}
 			for (final RecipeGroup group : mappedGroupedRecipes.values()) {
-				if (group.getRecipeCoreList().stream().anyMatch(x -> result.equals(x.getResult())))
+				if (group.isSimilarResult(result))
 					originGroups.add(group);
 				else if (group.getServerRecipes().stream().anyMatch(x -> result.equals(x.getResult())))
 					originGroups.add(group);
 			}
 			return originGroups;
 		}
-		RecipeGroup group = null;
-		group = getCraftingRecipeGroup(recipe);
-		if (recipe instanceof CookingRecipe) {
-			final String recipeGroup = ((CookingRecipe<?>) recipe).getGroup();
-			Debug.Send(Type.Smelting, () -> "Attempt to find the group for smelting recipe. Group name: '" + (recipeGroup.isEmpty() ? "No group set" : recipeGroup) + "'");
-			group = mappedGroupedRecipes.get(recipeGroup);
-		}
-
+		RecipeGroup group = getCraftingRecipeGroup(recipe);
 		if (group != null) {
 			if (recipe instanceof CookingRecipe) {
-				if (group.getRecipeCoreList().stream().anyMatch(x -> x.isSimilarContent(result)))
+				if (group.isSimilarContent(result))
 					originGroups.add(group);
 				else if (group.getServerRecipes().stream().anyMatch(x -> result.isSimilar(((CookingRecipe<?>) x).getInput())))
 					originGroups.add(group);
 			} else {
-				if (group.getRecipeCoreList().stream().anyMatch(x -> result.isSimilar(x.getResult())))
+				if (group.isSimilarResult(result))
 					originGroups.add(group);
 				else if (group.getServerRecipes().stream().anyMatch(x -> result.isSimilar(x.getResult())))
 					originGroups.add(group);
@@ -231,34 +155,9 @@ public class RecipeLoader {
 						}
 					}
 				}
-
 			}
 		}
-
-
 		return originGroups;
-	}
-
-	private RecipeGroup getCraftingRecipeGroup(final Recipe recipe) {
-		final VersionChecker versionChecker = self().getVersionChecker();
-		RecipeGroup group = null;
-		if (versionChecker.newerThan(ServerVersion.v1_19) && recipe instanceof CraftingRecipe) {
-			final String recipeGroup = ((CraftingRecipe) recipe).getGroup();
-			Debug.Send(Type.Crafting, () -> "Attempt to find the group for crafting recipe. Group name: '" + (recipeGroup.isEmpty() ? "No group set" : recipeGroup) + "'");
-			group = mappedGroupedRecipes.get(recipeGroup);
-		} else {
-			if (recipe instanceof ShapedRecipe) {
-				final String recipeGroup = ((ShapedRecipe) recipe).getGroup();
-				Debug.Send(Type.Crafting, () -> "Attempt to find the group for crafting recipe. Group name: '" + (recipeGroup.isEmpty() ? "No group set" : recipeGroup) + "'");
-				group = mappedGroupedRecipes.get(recipeGroup);
-			}
-			if (recipe instanceof ShapelessRecipe) {
-				final String recipeGroup = ((ShapelessRecipe) recipe).getGroup();
-				Debug.Send(Type.Crafting, () -> "Attempt to find the group for crafting recipe. Group name: '" + (recipeGroup.isEmpty() ? "No group set" : recipeGroup) + "'");
-				group = mappedGroupedRecipes.get(recipeGroup);
-			}
-		}
-		return group;
 	}
 
 	public List<RecipeGroup> findGroupsBySimilarResultMatch(final ItemStack result, final RecipeType type) {
@@ -290,89 +189,9 @@ public class RecipeLoader {
 		return originGroups;
 	}
 
-	public RecipeGroup findSimilarGroup(final EnhancedRecipe recipe) {
-		return mappedGroupedRecipes.get(recipe.getGroup());
-	}
-
-	//There can only be one group that matches a matrix, because that's how they're grouped
-//    public List<RecipeGroup> findMatchingGroups(ItemStack[] matrix, RecipeType type){
-//        List<RecipeGroup> matchingGroups = new ArrayList<>();
-//        for(RecipeGroup group : mappedGroupedRecipes.get(type)){
-//            try{
-//                if(group.getEnhancedRecipes().stream().anyMatch(x -> x.matches(matrix)))
-//                    matchingGroups.add(group);
-//            } catch(ClassCastException e){}
-//        }
-//        return matchingGroups;
-//    }
 
 	public boolean isLoadedAsServerRecipe(final EnhancedRecipe recipe) {
-		return loaded.containsKey(recipe.getKey());
-	}
-
-	private void unloadCehRecipes() {
-		final Iterator<Recipe> it = server.recipeIterator();
-		while (it.hasNext()) {
-			final Recipe r = it.next();
-			if (Adapter.ContainsSubKey(r, ServerRecipeTranslator.KeyPrefix)) {
-				it.remove();
-			}
-		}
-	}
-
-	private void unloadRecipe(final Recipe r) {
-		final Iterator<Recipe> it = server.recipeIterator();
-		while (it.hasNext()) {
-			final Recipe currentRecipe = it.next();
-			if (currentRecipe.equals(r)) {
-				it.remove();
-				return;
-			}
-		}
-	}
-
-	public void unloadAll() {
-		disabledServerRecipes.forEach(x ->
-				enableServerRecipe(x)
-		);
-		mappedGroupedRecipes.clear();
-		serverRecipes.clear();
-		loaded.clear();
-		unloadCehRecipes();
-	}
-
-	public void unloadRecipe(final EnhancedRecipe recipe) {
-		final RecipeGroup group = findGroup(recipe);
-		this.loadedRecipes.remove(recipe);
-		this.serverFurnaceRecipes.remove(recipe.getServerRecipe());
-
-		final CategoryData categoryData = categoryDataCache.get(recipe.getRecipeCategory());
-		if (categoryData != null && categoryData.getEnhancedRecipes() != null)
-			categoryData.getEnhancedRecipes().remove(recipe);
-
-		final Recipe serverRecipe = loaded.get(recipe.getKey());
-
-		//Only unload from server if there are no similar server recipes.
-		if (serverRecipe != null) {
-			loaded.remove(recipe.getKey());
-			unloadRecipe(serverRecipe);
-		}
-
-		if (group == null) {
-			printGroupsDebugInfo();
-			Messenger.Error("Could not unload recipe from group, because the recipe doesn't have a group.");
-			return;
-		}
-
-        /* TODO (Optimization) When e.g. a shapeless recipe disappears from a recipe, not all recipes in that group are
-            similar anymore. So detect this and make sure they get split up. */
-
-		//Remove entire recipe group if it's the last enhanced recipe, or remove a single recipe from the group.
-		if (group.getRecipeGroupSize() == 1)
-			mappedGroupedRecipes.remove(recipe.getGroup());
-		else group.remove(recipe);
-		Debug.Send("Unloaded a recipe");
-		printGroupsDebugInfo();
+		return mappedGroupedRecipes.containsKey(recipe.getGroup());
 	}
 
 	public void loadRecipe(@NonNull final EnhancedRecipe recipe) {
@@ -417,7 +236,6 @@ public class RecipeLoader {
 
 		String categoryName = loadCategories(recipe);
 		String groupName = addToGroup(similarServerRecipes, recipe, categoryName);
-		loadedRecipes.add(recipe);
 		//Only load the recipe if there is not a server recipe that's always similar.
 		final Recipe serverRecipe = recipe.getServerRecipe(groupName);
 		if (alwaysSimilar == null) {
@@ -431,51 +249,43 @@ public class RecipeLoader {
 					server.addRecipe(serverRecipe);
 				}
 				Debug.Send("Loading recipe", "Added server recipe for " + serverRecipe.getResult());
-				loaded.put(recipe.getKey(), serverRecipe);
 			}
 		} else {
 			Debug.Send("Loading recipe", "Didn't add server recipe for " + recipe.getKey() + " because a similar one was already loaded: " + alwaysSimilar.toString() + " with the result " + alwaysSimilar.getResult().toString());
 		}
-
-		server.recipeIterator().forEachRemaining(cookingRecipe -> {
-			if ((cookingRecipe instanceof CookingRecipe && self().getVersionChecker().olderThan(ServerVersion.v1_14)) || (cookingRecipe instanceof CookingRecipe && self().getVersionChecker().newerThan(ServerVersion.v1_13) && !(cookingRecipe instanceof CampfireRecipe)))
-				this.serverFurnaceRecipes.add(cookingRecipe);
-		});
 	}
 
-	private String loadCategories(@NonNull final EnhancedRecipe recipe) {
-		String categoryName = recipe.getRecipeCategory();
-		if (recipe instanceof FurnaceRecipe)
-			categoryName = categoryName == null || categoryName.isEmpty() ? "furnace" : categoryName;
-		else if (recipe instanceof BrewingRecipe)
-			categoryName = categoryName == null || categoryName.isEmpty() ? "brewing" : categoryName;
-		else
-			categoryName = categoryName == null || categoryName.isEmpty() ? "default" : categoryName;
+	public void unloadAll() {
+		disabledServerRecipes.forEach(x ->
+				enableServerRecipe(x)
+		);
+		mappedGroupedRecipes.clear();
+		serverRecipes.clear();
+		unloadCehRecipes();
+	}
 
-		if (recipe.getRecipeCategory() == null)
-			recipe.setRecipeCategory(categoryName);
-		CategoryData recipeCategory = this.categoryDataCache.get(categoryName);
+	public void unloadRecipe(final EnhancedRecipe recipe) {
+		final RecipeGroup group = findGroup(recipe);
 
-		final List<RecipeCoreData> recipeCoreDataList;
-		if (recipeCategory != null) {
-			recipeCoreDataList = recipeCategory.getRecipeCoreData();
-			if (recipeCoreDataList.stream().noneMatch(cachedRecipe -> cachedRecipe.getKey().equals(recipe.getKey())))
-				//if (!enhancedRecipeList.contains(recipe))
-				recipeCoreDataList.add(new RecipeCoreData(recipe));
-		} else {
-			final ItemStack itemStack;
-			if (recipe instanceof FurnaceRecipe)
-				itemStack = new ItemStack(Adapter.getMaterial("FURNACE"));
-			else if (recipe instanceof BrewingRecipe)
-				itemStack = new ItemStack(Adapter.getMaterial("BREWING_STAND"));
-			else
-				itemStack = new ItemStack(Adapter.getMaterial("CRAFTING_TABLE"));
-			recipeCategory = this.categoryDataCache.of(categoryName, itemStack, null);
-			recipeCategory.addEnhancedRecipes(recipe);
+		final CategoryData categoryData = categoryDataCache.get(recipe.getRecipeCategory());
+		if (categoryData != null && categoryData.getEnhancedRecipes() != null)
+			categoryData.getEnhancedRecipes().remove(recipe);
+
+		if (group == null) {
+			Messenger.Error("Could not unload recipe from group, because the recipe doesn't have a group.");
+			printGroupsDebugInfo();
+			return;
 		}
-		this.categoryDataCache.put(categoryName, recipeCategory);
 
-		return categoryName;
+		//Remove entire recipe group if it's the last enhanced recipe, or remove a single recipe from the group.
+		if (group.getRecipeGroupSize() == 1)
+			mappedGroupedRecipes.remove(recipe.getGroup());
+		else {
+			group.remove(recipe);
+			unloadRecipe(recipe.getServerRecipe());
+		}
+		Debug.Send("Unloaded a recipe");
+		printGroupsDebugInfo();
 	}
 
 	public void cacheSimilarVanillaRecipe(final EnhancedRecipe recipe) {
@@ -497,7 +307,9 @@ public class RecipeLoader {
 	}
 
 	public List<Recipe> getLoadedServerRecipes() {
-		return new ArrayList<>(loaded.values());
+		List<Recipe> recipes = new ArrayList<>();
+		this.server.recipeIterator().forEachRemaining(recipes::add);
+		return recipes;
 	}
 
 	public void printGroupsDebugInfo() {
@@ -524,12 +336,11 @@ public class RecipeLoader {
 			for (final RecipeGroup recipeGroup : mappedGroupedRecipes.values()) {
 				if (recipeGroup.getServerRecipes().contains(r)) {
 					recipeGroup.getServerRecipes().remove(r);
-					final RecipeCoreData recipeCoreData = recipeGroup.getRecipeCoreList().stream().filter(x -> x.isAlwaysSimilar(r)).findFirst().orElse(null);
+					final EnhancedRecipeWrapper enhancedRecipeWrapper = recipeGroup.getRecipeCoreList().stream().filter(x -> x.isAlwaysSimilar(r)).findFirst().orElse(null);
 					//If there's a recipe that's always similar, we have to load it again.
-					if (recipeCoreData != null) {
-						final EnhancedRecipe enhancedRecipe = recipeCoreData.getEnhancedRecipe();
+					if (enhancedRecipeWrapper != null) {
+						final EnhancedRecipe enhancedRecipe = enhancedRecipeWrapper.getEnhancedRecipe();
 						if (enhancedRecipe != null) {
-							loaded.put(recipeCoreData.getKey(), enhancedRecipe.getServerRecipe());
 							server.addRecipe(enhancedRecipe.getServerRecipe());
 						}
 					}
@@ -549,21 +360,92 @@ public class RecipeLoader {
 
 			final RecipeType type = RecipeType.getType(r);
 			if (type != null) {
+				List<EnhancedRecipe> recipeList = new ArrayList<>();
 				for (final RecipeGroup recipeGroup : mappedGroupedRecipes.values()) {
 					if (recipeGroup.getRecipeCoreList().stream().anyMatch(x -> x.isSimilar(r))) {
 						recipeGroup.getServerRecipes().add(r);
-						final RecipeCoreData recipeCoreData = recipeGroup.getRecipeCoreList().stream().filter(x -> x.isAlwaysSimilar(r)).findFirst().orElse(null);
+						List<EnhancedRecipe> similarRecipes = recipeGroup.findSimilarRecipes(r);
 						//If there's a recipe that's always similar, we have to unload it again.
-						if (recipeCoreData != null)
-							loaded.remove(recipeCoreData.getKey());
+						recipeList.addAll(similarRecipes);
 					}
 				}
+				recipeList.forEach(this::unloadRecipe);
+				recipeList.forEach(this::loadRecipe);
 			}
 			return true;
 		}
 		return false;
 	}
 
+	public void disableServerRecipes(final List<Recipe> disabledServerRecipes) {
+		//No need to be efficient here, this'll only run once.
+		disabledServerRecipes.forEach(this::disableServerRecipe);
+	}
+
+	public void clearCache() {
+		this.serverRecipes = new ArrayList<>();
+		this.disabledServerRecipes = new ArrayList<>();
+		this.similarVanillaRecipe = new HashMap<>();
+		this.mappedGroupedRecipes = new HashMap<>();
+	}
+
+	@Nullable
+	private String addToGroup(final List<Recipe> serverRecipes, final EnhancedRecipe enhancedRecipe, final String categoryName) {
+		final Pair<String, RecipeGroup> recipeGroupPair = getRecipeGroup(categoryName);
+		Debug.Send("Recipe group", "is does now add recipe to the group: " + recipeGroupPair.getFirst());
+
+		RecipeGroup recipeGroup = recipeGroupPair.getSecond();
+		if (recipeGroup == null) {
+			recipeGroup = new RecipeGroup();
+		}
+		recipeGroup.putCustomRecipe(EnhancedRecipeWrapper.of(enhancedRecipe));
+		recipeGroup.setServerRecipes(serverRecipes);
+
+		mappedGroupedRecipes.put(recipeGroupPair.getFirst(), recipeGroup);
+
+		return recipeGroupPair.getFirst();
+	}
+
+	private String loadCategories(@NonNull final EnhancedRecipe recipe) {
+		String categoryName = recipe.getRecipeCategory();
+		if (recipe instanceof FurnaceRecipe)
+			categoryName = categoryName == null || categoryName.isEmpty() ? "furnace" : categoryName;
+		else if (recipe instanceof BrewingRecipe)
+			categoryName = categoryName == null || categoryName.isEmpty() ? "brewing" : categoryName;
+		else
+			categoryName = categoryName == null || categoryName.isEmpty() ? "default" : categoryName;
+
+		if (recipe.getRecipeCategory() == null)
+			recipe.setRecipeCategory(categoryName);
+		CategoryData recipeCategory = this.categoryDataCache.get(categoryName);
+
+		final List<EnhancedRecipeWrapper> enhancedRecipeWrapperList;
+		if (recipeCategory != null) {
+			enhancedRecipeWrapperList = recipeCategory.getRecipeCoreData();
+			if (enhancedRecipeWrapperList.stream().noneMatch(cachedRecipe -> cachedRecipe.getKey().equals(recipe.getKey())))
+				//if (!enhancedRecipeList.contains(recipe))
+				enhancedRecipeWrapperList.add(new EnhancedRecipeWrapper(recipe));
+		} else {
+			final ItemStack itemStack;
+			if (recipe instanceof FurnaceRecipe)
+				itemStack = new ItemStack(Adapter.getMaterial("FURNACE"));
+			else if (recipe instanceof BrewingRecipe)
+				itemStack = new ItemStack(Adapter.getMaterial("BREWING_STAND"));
+			else
+				itemStack = new ItemStack(Adapter.getMaterial("CRAFTING_TABLE"));
+			recipeCategory = this.categoryDataCache.of(categoryName, itemStack, null);
+			recipeCategory.addEnhancedRecipes(recipe);
+		}
+		this.categoryDataCache.put(categoryName, recipeCategory);
+
+		return categoryName;
+	}
+
+	private RecipeGroup getCraftingRecipeGroup(final Recipe recipe) {
+		String recipeGroup = Adapter.getGroup(recipe);
+		Debug.Send(Type.Crafting, () -> "Attempt to find the group for recipe. Group name: '" + (recipeGroup.isEmpty() ? "No group set" : recipeGroup) + "'");
+		return mappedGroupedRecipes.get(recipeGroup);
+	}
 
 	@Nonnull
 	private Pair<String, RecipeGroup> getRecipeGroup(final String categoryName) {
@@ -605,18 +487,25 @@ public class RecipeLoader {
 		return recipeGroup != null;
 	}
 
-
-	public void disableServerRecipes(final List<Recipe> disabledServerRecipes) {
-		//No need to be efficient here, this'll only run once.
-		disabledServerRecipes.forEach(this::disableServerRecipe);
+	private void unloadCehRecipes() {
+		final Iterator<Recipe> it = server.recipeIterator();
+		while (it.hasNext()) {
+			final Recipe r = it.next();
+			if (Adapter.ContainsSubKey(r, ServerRecipeTranslator.KeyPrefix)) {
+				it.remove();
+			}
+		}
 	}
 
-	public void clearCache() {
-		this.serverRecipes = new ArrayList<>();
-		this.disabledServerRecipes = new ArrayList<>();
-		this.similarVanillaRecipe = new HashMap<>();
-		this.loaded = new HashMap<>();
-		this.loadedRecipes = new ArrayList<>();
-		this.mappedGroupedRecipes = new HashMap<>();
+	private void unloadRecipe(final Recipe r) {
+		final Iterator<Recipe> it = server.recipeIterator();
+		while (it.hasNext()) {
+			final Recipe currentRecipe = it.next();
+			if (currentRecipe.equals(r)) {
+				it.remove();
+				return;
+			}
+		}
 	}
+
 }

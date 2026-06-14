@@ -489,6 +489,21 @@ public class Adapter {
 		return r.getResult().getType().name();
 	}
 
+	public static String getGroup(@NonNull final Recipe recipe) {
+		final VersionChecker versionChecker = self().getVersionChecker();
+		if (versionChecker.newerThan(ServerVersion.v1_12)) {
+			if (recipe instanceof CookingRecipe<?>)
+				return ((CookingRecipe<?>) recipe).getGroup();
+			if (versionChecker.newerThan(ServerVersion.v1_19) && recipe instanceof CraftingRecipe)
+				return ((CraftingRecipe) recipe).getGroup();
+			if (recipe instanceof ShapedRecipe)
+				return ((ShapedRecipe) recipe).getGroup();
+			if (recipe instanceof ShapelessRecipe)
+				return ((ShapelessRecipe) recipe).getGroup();
+		}
+		return "";
+	}
+
 	public static <T extends CookingRecipe<?>> void setGroup(@NonNull final CookingRecipe<T> furnaceRecipe, @NonNull final String groupName) {
 		if (self().getVersionChecker().newerThan(ServerVersion.v1_12))
 			furnaceRecipe.setGroup(groupName);

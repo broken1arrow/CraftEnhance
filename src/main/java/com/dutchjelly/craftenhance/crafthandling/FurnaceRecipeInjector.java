@@ -2,7 +2,7 @@ package com.dutchjelly.craftenhance.crafthandling;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
-import com.dutchjelly.craftenhance.cache.RecipeCoreData;
+import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerCache;
@@ -27,6 +27,7 @@ import org.bukkit.inventory.Recipe;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,11 +71,12 @@ public class FurnaceRecipeInjector {
 			if (itemStack != null && groups != null) {
 				Debug.Send(Type.Smelting, () -> "Found similar vanilla recipe " + itemStack);
 				for (RecipeGroup group : groups) {
-					if (group == null || group.getRecipeCoreList() == null || group.getRecipeCoreList().isEmpty()) {
+					final Collection<EnhancedRecipeWrapper> recipeCoreList = group == null ? null : group.getRecipeGroupCache().values();
+					if (group == null || recipeCoreList.isEmpty()) {
 						event.setResult(itemStack);
 						return;
 					}
-					for (final RecipeCoreData eRecipe : group.getRecipeCoreList()) {
+					for (final EnhancedRecipeWrapper eRecipe : recipeCoreList) {
 						final EnhancedRecipe enhancedRecipe = eRecipe.getEnhancedRecipe();
 						if (!(enhancedRecipe  instanceof FurnaceRecipe)) continue;
 						final FurnaceRecipe fRecipe = (FurnaceRecipe) enhancedRecipe;
@@ -233,7 +235,7 @@ public class FurnaceRecipeInjector {
 		if (group == null) return null;
 
 		final ItemStack[] srcMatrix = new ItemStack[]{source};
-		for (final RecipeCoreData eRecipe : group.getRecipeCoreList()) {
+		for (final EnhancedRecipeWrapper eRecipe : group.getRecipeGroupCache().values()) {
 			final EnhancedRecipe enhancedRecipe = eRecipe.getEnhancedRecipe();
 			if(!(enhancedRecipe instanceof FurnaceRecipe)) continue;
 			if (!enhancedRecipe.matchesBlockType(blockSmelting)) {

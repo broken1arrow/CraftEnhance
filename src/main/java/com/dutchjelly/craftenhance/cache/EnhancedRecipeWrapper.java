@@ -11,14 +11,14 @@ import javax.annotation.Nullable;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
-public class RecipeCoreData {
+public class EnhancedRecipeWrapper {
 	private final String key;
 	private final String category;
 
 	private final ItemStack result;
 	private final RecipeType recipeType;
 
-	public RecipeCoreData(final EnhancedRecipe enhancedRecipe) {
+	public EnhancedRecipeWrapper(final EnhancedRecipe enhancedRecipe) {
 		this.key = enhancedRecipe.getKey();
 		this.result = enhancedRecipe.getResult();
 		this.recipeType = enhancedRecipe.getType();
@@ -26,8 +26,8 @@ public class RecipeCoreData {
 
 	}
 
-	public static RecipeCoreData of(final EnhancedRecipe enhancedRecipe) {
-		return new RecipeCoreData(enhancedRecipe);
+	public static EnhancedRecipeWrapper of(final EnhancedRecipe enhancedRecipe) {
+		return new EnhancedRecipeWrapper(enhancedRecipe);
 	}
 
 
