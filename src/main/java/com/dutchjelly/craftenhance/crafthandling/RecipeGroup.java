@@ -3,6 +3,7 @@ package com.dutchjelly.craftenhance.crafthandling;
 
 import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import lombok.Getter;
 import lombok.NonNull;
@@ -100,12 +101,16 @@ public class RecipeGroup {
 				.anyMatch(recipeCoreData -> recipeCoreData.isSimilarContent(content));
 	}
 
-	public boolean isSimilarResult(@NonNull final ItemStack result) {
-		return recipeGroupCache.values().stream().anyMatch(x -> result.isSimilar(x.getResult()));
+	public boolean isSimilarResult(@NonNull final ItemStack result, final RecipeType recipeType) {
+		return recipeGroupCache.values().stream()
+				.filter(enhancedRecipeWrapper -> recipeType == enhancedRecipeWrapper.getRecipeType())
+				.anyMatch(x -> result.isSimilar(x.getResult()));
 	}
 
-	public boolean isSimilarResultType(@NonNull final Material resultType) {
-		return recipeGroupCache.values().stream().anyMatch(x -> x.getResult() != null && resultType == x.getResult().getType());
+	public boolean isSimilarResultType(@NonNull final Material resultType, final RecipeType recipeType) {
+		return recipeGroupCache.values().stream()
+				.filter(enhancedRecipeWrapper -> recipeType == enhancedRecipeWrapper.getRecipeType())
+				.anyMatch(x -> x.getResult() != null && resultType == x.getResult().getType());
 	}
 
 	public Map<String, EnhancedRecipeWrapper> getRecipeGroupCache() {
@@ -120,40 +125,40 @@ public class RecipeGroup {
 
 	public String formatGroup() {
 		final StringBuilder recipes = new StringBuilder();
-		final StringJoiner joiner = new StringJoiner(", ");
+		final StringJoiner joiner = new StringJoiner("\n ");
 
 		recipes.append("serverRecipes= {");
 		this.serverRecipes.forEach(serverRecipe -> {
 			final StringBuilder serverRecipesBuild = new StringBuilder();
 			if (serverRecipe instanceof ShapedRecipe) {
 				final ShapedRecipe shaped = (ShapedRecipe) serverRecipe;
-				serverRecipesBuild.append(shaped.getKey());
-				serverRecipesBuild.append(shaped.getResult());
-				serverRecipesBuild.append(Arrays.toString(shaped.getShape()));
+				serverRecipesBuild.append("<").append(shaped.getKey()).append(" | ");
+				serverRecipesBuild.append(shaped.getResult()).append(" | ");
+				serverRecipesBuild.append(Arrays.toString(shaped.getShape())).append("> ");
 			}
 			if (serverRecipe instanceof ShapelessRecipe) {
 				final ShapelessRecipe shapedLess = (ShapelessRecipe) serverRecipe;
-				serverRecipesBuild.append(shapedLess.getKey()).append(", ");
-				serverRecipesBuild.append(shapedLess.getResult());
+				serverRecipesBuild.append("<").append(shapedLess.getKey()).append(" | ");
+				serverRecipesBuild.append(shapedLess.getResult()).append("> ");
 			}
 			if (serverRecipe instanceof FurnaceRecipe) {
 				final FurnaceRecipe furnaceRecipe = (FurnaceRecipe) serverRecipe;
-				serverRecipesBuild.append(furnaceRecipe.getKey()).append(", ");
-				serverRecipesBuild.append(furnaceRecipe.getResult()).append(", ");
-				serverRecipesBuild.append(furnaceRecipe.getCookingTime());
+				serverRecipesBuild.append("<").append(furnaceRecipe.getKey()).append(" | ");
+				serverRecipesBuild.append(furnaceRecipe.getResult()).append(" | ");
+				serverRecipesBuild.append(furnaceRecipe.getCookingTime()).append("> ");
 			}
 			if (self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
 				if (serverRecipe instanceof BlastingRecipe) {
 					final BlastingRecipe blastRecipe = (BlastingRecipe) serverRecipe;
-					serverRecipesBuild.append(blastRecipe.getKey()).append(", ");
-					serverRecipesBuild.append(blastRecipe.getResult()).append(", ");
-					serverRecipesBuild.append(blastRecipe.getCookingTime());
+					serverRecipesBuild.append("<").append(blastRecipe.getKey()).append(" | ");
+					serverRecipesBuild.append(blastRecipe.getResult()).append(" | ");
+					serverRecipesBuild.append(blastRecipe.getCookingTime()).append("> ");
 				}
 				if (serverRecipe instanceof SmokingRecipe) {
 					final SmokingRecipe smokerRecipe = (SmokingRecipe) serverRecipe;
-					serverRecipesBuild.append(smokerRecipe.getKey()).append(", ");
-					serverRecipesBuild.append(smokerRecipe.getResult()).append(", ");
-					serverRecipesBuild.append(smokerRecipe.getCookingTime());
+					serverRecipesBuild.append("<").append(smokerRecipe.getKey()).append(" | ");
+					serverRecipesBuild.append(smokerRecipe.getResult()).append(" | ");
+					serverRecipesBuild.append(smokerRecipe.getCookingTime()).append("> ");
 				}
 			}
 			joiner.add(serverRecipesBuild);
@@ -172,7 +177,8 @@ public class RecipeGroup {
 			final EnhancedRecipe enhancedRecipe = recipeCoreData.getEnhancedRecipe();
 			if (enhancedRecipe != null) {
 				recipesBuilder.append("'| type=").append(enhancedRecipe.getType()).append("| worlds='");
-				recipesBuilder.append(enhancedRecipe.getAllowedWorldsFormatted()).append("'| perm='");
+				recipesBuilder.append(enhancedRecipe.getAllowedWorldsFormatted()).append("'| result='");
+				recipesBuilder.append(enhancedRecipe.getResult()).append("'| perm='");
 				recipesBuilder.append(enhancedRecipe.getPermission()).append("'");
 				if (!(enhancedRecipe instanceof com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe))
 					recipesBuilder.append("| command='").append(enhancedRecipe.getOnCraftCommand()).append("'");

@@ -99,12 +99,12 @@ public class RecipeLoader {
 				final RecipeGroup group = mappedGroupedRecipes.get(groupKey);
 				if (group == null) continue;
 
-				if (group.isSimilarResult(result)) {
+				if (group.isSimilarResult(result, recipeType)) {
 					originGroups.add(group);
 				} else if (group.isServerRecipe(result)) {
 					originGroups.add(group);
 				}
-				if (recipeType == RecipeType.FURNACE && group.isSimilarResultType(result.getType())) {
+				if (recipeType == RecipeType.FURNACE && group.isSimilarResultType(result.getType(), recipeType)) {
 					originGroups.add(group);
 				}
 			}
@@ -112,7 +112,7 @@ public class RecipeLoader {
 				return originGroups;
 			}
 			for (final RecipeGroup group : mappedGroupedRecipes.values()) {
-				if (group.isSimilarResult(result))
+				if (group.isSimilarResult(result, recipeType))
 					originGroups.add(group);
 				else if (group.isServerRecipe(result))
 					originGroups.add(group);
@@ -134,7 +134,7 @@ public class RecipeLoader {
 					originGroups.add(group);
 				}
 			} else {
-				if (group.isSimilarResult(result))
+				if (group.isSimilarResult(result, recipeType))
 					originGroups.add(group);
 				else if (group.isServerRecipe(result))
 					originGroups.add(group);
@@ -152,12 +152,12 @@ public class RecipeLoader {
 						final RecipeGroup recipeGroup = mappedGroupedRecipes.get(groupKey);
 						if (recipeGroup == null) continue;
 
-						if (recipeGroup.isSimilarResult(result)) {
+						if (recipeGroup.isSimilarResult(result, recipeType)) {
 							originGroups.add(recipeGroup);
 						} else if (recipeGroup.isServerRecipe(result)) {
 							originGroups.add(recipeGroup);
 						}
-						if (recipeType == RecipeType.FURNACE && recipeGroup.isSimilarResultType(result.getType())) {
+						if (recipeType == RecipeType.FURNACE && recipeGroup.isSimilarResultType(result.getType(), recipeType)) {
 							originGroups.add(recipeGroup);
 						}
 					}
@@ -176,7 +176,7 @@ public class RecipeLoader {
 			final RecipeGroup group = mappedGroupedRecipes.get(groupKey);
 			if (group == null) continue;
 
-			if (group.isSimilarResult(result)) {
+			if (group.isSimilarResult(result, type)) {
 				originGroups.add(group);
 			} else if (group.getServerRecipes().stream().anyMatch(x -> result.isSimilar(x.getResult()))) {
 				originGroups.add(group);
@@ -188,7 +188,7 @@ public class RecipeLoader {
 		}
 
 		for (final RecipeGroup group : mappedGroupedRecipes.values()) {
-			if (group.isSimilarResult(result))
+			if (group.isSimilarResult(result, type))
 				originGroups.add(group);
 			else if (group.getServerRecipes().stream().anyMatch(x -> result.isSimilar(x.getResult())))
 				originGroups.add(group);
@@ -218,7 +218,7 @@ public class RecipeLoader {
 
 		final List<Recipe> similarServerRecipes = new ArrayList<>();
 		for (final Recipe r : serverRecipes) {
-			if (recipe.sharesIngredientWith(r)) {
+			if (!Adapter.recipeContainsNamespace(r) && recipe.sharesIngredientWith(r)) {
 				similarServerRecipes.add(r);
 			}
 		}

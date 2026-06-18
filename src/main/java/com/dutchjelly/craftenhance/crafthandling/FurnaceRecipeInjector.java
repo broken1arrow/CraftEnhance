@@ -103,16 +103,16 @@ public class FurnaceRecipeInjector {
 	}
 
 	public void burn(final FurnaceBurnEvent burnEvent) {
-		Debug.Send(Type.Smelting, () -> "Furnace start to burn the item");
 		if (burnEvent.isCancelled()) return;
 		final Furnace furnace = (Furnace) burnEvent.getBlock().getState();
 		//Reduce computing time by pausing furnaces. This can be removed if we also check for hoppers
 		//instead of only clicks to unpause.
 		if (pausedFurnaces.getOrDefault(furnace, LocalDateTime.now()).isAfter(LocalDateTime.now())) {
-			Debug.Send(Type.Smelting, () -> "Furnace is on pause for couple of seconds.");
+			Debug.Send(Type.Smelting, () -> "Furnace burn event is on pause for couple of seconds.");
 			burnEvent.setCancelled(true);
 			return;
 		}
+		Debug.Send(Type.Smelting, () -> "Furnace start to burn event for the item");
 		final FurnaceInventory furnaceInventory = furnace.getInventory();
 		final List<RecipeGroup> group = this.recipeInjector.getMatchingRecipeGroup(null, burnEvent.getBlock(), furnaceInventory.getSmelting());
 

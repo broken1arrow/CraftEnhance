@@ -64,7 +64,10 @@ public class FurnaceRecipe extends EnhancedRecipe {
 
 	@Override
 	public boolean sharesIngredientWith(final Recipe r) {
-		return false;
+		if (!(r instanceof org.bukkit.inventory.FurnaceRecipe)) return false;
+		final org.bukkit.inventory.FurnaceRecipe serverRecipe = (org.bukkit.inventory.FurnaceRecipe) r;
+		final ItemStack itemStack = this.getContent().length > 0 ? this.getContent()[0] : null;
+		return itemStack != null && serverRecipe.getInput().getType() == itemStack.getType();
 	}
 
 	@Override
@@ -120,7 +123,6 @@ public class FurnaceRecipe extends EnhancedRecipe {
 	public boolean isSimilar(final Recipe r) {
 		if (!(r instanceof org.bukkit.inventory.FurnaceRecipe)) return false;
 		final org.bukkit.inventory.FurnaceRecipe serverRecipe = (org.bukkit.inventory.FurnaceRecipe) r;
-
 		return ItemMatchers.matchType(serverRecipe.getInput(), getContent()[0])
 				&& ItemMatchers.matchType(serverRecipe.getResult(), getResult());
 	}
