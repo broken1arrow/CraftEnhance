@@ -68,7 +68,7 @@ public class RecipeLoader {
 		try {
 			server.recipeIterator().forEachRemaining(serverRecipes -> {
 				this.serverRecipes.add(serverRecipes);
-				liveCacheRecipe(new VanillaCraftWrapper(serverRecipes),Adapter.getIngredients(serverRecipes));
+				liveCacheRecipe(new VanillaCraftWrapper(serverRecipes), Adapter.getIngredients(serverRecipes));
 			});
 		} catch (IllegalArgumentException e) {
 			self().getLogger().log(Level.SEVERE, "This server recipe contains air, will not be loaded.", e);
@@ -79,8 +79,6 @@ public class RecipeLoader {
 					((EnchantedCraftWrapper) recipeWrapper).getRecipe().getKey()
 			);
 		});
-
-
 	}
 
 	public static RecipeLoader getInstance() {
@@ -92,6 +90,24 @@ public class RecipeLoader {
 			instance.unloadRecipe(loaded.getValue().getServerRecipe());
 		}
 		instance = null;
+	}
+
+	public Set<RecipeWrapper<?>> findMatching(final ItemStack[] matrix) {
+		Set<RecipeWrapper<?>> wrappersMatch = null;
+
+		for (ItemStack itemStack : matrix) {
+			if (itemStack == null) continue;
+			Set<RecipeWrapper<?>> recipeCached = this.mappedRecipes.getOrDefault(itemStack.getType(), new HashSet<>());
+			if (wrappersMatch == null) {
+				wrappersMatch = new HashSet<>(recipeCached);
+			} else {
+				wrappersMatch.retainAll(recipeCached);
+			}
+			if (wrappersMatch.isEmpty())
+				return new HashSet<>();
+
+		}
+		return wrappersMatch != null ? wrappersMatch : new HashSet<>();
 	}
 
 	public RecipeGroup findGroup(final EnhancedRecipe recipe) {
@@ -282,7 +298,7 @@ public class RecipeLoader {
 	private void liveCacheRecipe(@Nonnull final RecipeWrapper<?> recipe, final ItemStack[] content) {
 		for (ItemStack stack : content) {
 			if (stack == null) continue;
-			this.mappedRecipes.computeIfAbsent(stack.getType(),material ->  new HashSet<>()).add(recipe);
+			this.mappedRecipes.computeIfAbsent(stack.getType(), material -> new HashSet<>()).add(recipe);
 		}
 	}
 
