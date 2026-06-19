@@ -28,12 +28,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
-public class EnchantedCraftWrapper implements RecipeWrapper<EnhancedRecipe> {
+public class EnchantedCraftWrapper implements RecipeWrapper {
 	private final EnhancedRecipe enhancedRecipe;
 	private final Map<Location, EnhancedRecipe> finishRecipe = new HashMap<>();
 
@@ -133,7 +134,6 @@ public class EnchantedCraftWrapper implements RecipeWrapper<EnhancedRecipe> {
 		craftContext.acceptResult(null);
 	}
 
-
 	public void craftingClick(@Nonnull final InventoryClickEvent craftingClick) {
 
 		if (craftingClick.getSlot() != 0) return;
@@ -150,8 +150,10 @@ public class EnchantedCraftWrapper implements RecipeWrapper<EnhancedRecipe> {
 	}
 
 	@Override
-	public EnhancedRecipe getRecipe() {
-		return this.enhancedRecipe;
+	public <T> Optional<T> getRecipe(final Class<T> type) {
+		if (type.isInstance(this.enhancedRecipe))
+			return Optional.of(type.cast(this.enhancedRecipe));
+		return Optional.empty();
 	}
 
 	private boolean isCraftingAllowedInWorld(final Location location, final EnhancedRecipe eRecipe) {
