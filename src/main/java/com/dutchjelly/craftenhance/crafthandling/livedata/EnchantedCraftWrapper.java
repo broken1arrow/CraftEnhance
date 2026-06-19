@@ -1,4 +1,4 @@
-package com.dutchjelly.craftenhance.crafthandling.util;
+package com.dutchjelly.craftenhance.crafthandling.livedata;
 
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.api.CraftEnhanceAPI;
@@ -17,7 +17,6 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -47,34 +46,32 @@ public class EnchantedCraftWrapper implements RecipeWrapper<EnhancedRecipe> {
 	}
 
 	@Override
-	public void matches(@Nonnull final RecipeInjector recipeInjector, @Nonnull final PrepareItemCraftEvent craftEvent, @Nonnull final Consumer<ItemStack> result) {
-		final CraftingInventory inventory = craftEvent.getInventory();
-		final ItemStack[] matrix = inventory.getMatrix();
-		final Recipe serverRecipe = craftEvent.getRecipe();
-		final List<HumanEntity> viewers = craftEvent.getViewers();
-		final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
-		this.finishRecipe.remove(inventory.getLocation());
+	public void matches(@Nonnull final RecipeInjector recipeInjector, @Nonnull final Recipe serverRecipe, @Nonnull final Consumer<PrepareItemCraftContext> contextConsumer) {
+		final PrepareItemCraftContext craftContext = new PrepareItemCraftContext();
+		contextConsumer.accept(craftContext);
+		final ItemStack[] matrix = craftContext.getRecipeMatrix();
+		final CraftingInventory inventory = craftContext.getInventory();
 
-		if (craftEvent.getRecipe() == null) {
-			Debug.Send(enhancedRecipe, () -> "The server recipe is null and not match a custom recipe: " + this.enhancedRecipe.getKey());
-			return;
-		}
+		final List<HumanEntity> viewers = craftContext.getViewers();
+		final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
+		final Location location = inventory.getLocation();
+		this.finishRecipe.remove(location);
 
 		Debug.Send(Type.Crafting, () -> "The server wants to inject " + serverRecipe.getResult() + " ceh will check or modify this.");
 
 		if (!(enhancedRecipe instanceof WBRecipe)) return;
 		final WBRecipe wbRecipe = (WBRecipe) enhancedRecipe;
 
-		boolean notAllowedToCraft = this.isCraftingAllowedInWorld(inventory.getLocation(), enhancedRecipe);
+		boolean notAllowedToCraft = this.isCraftingAllowedInWorld(location, enhancedRecipe);
 		if (notAllowedToCraft) {
 			Debug.Send(wbRecipe, () -> "You are not allowed to craft this recipe: " + this.enhancedRecipe.getKey());
-			result.accept(null);
+			craftContext.acceptResult(null);
 			return;
 		}
 
 		if (this.checkForDisabledRecipe(disabledServerRecipes, wbRecipe, serverRecipe.getResult())) {
 			Debug.Send(wbRecipe, () -> "This recipe is disabled: " + this.enhancedRecipe.getKey());
-			result.accept(null);
+			craftContext.acceptResult(null);
 			return;
 		}
 
@@ -98,7 +95,7 @@ public class EnchantedCraftWrapper implements RecipeWrapper<EnhancedRecipe> {
 						Debug.Send(wbRecipe, () -> "The recipe is now crafted and output item is " + beforeCraftOutputEvent.getResultItem());
 						Debug.Send(wbRecipe, () -> "The crafted recipe matrix: " + recipeInjector.convertItemStackArrayToString(matrix));
 
-						result.accept(beforeCraftOutputEvent.getResultItem());
+						craftContext.acceptResult(beforeCraftOutputEvent.getResultItem());
 					}
 				});
 				return;
@@ -112,13 +109,13 @@ public class EnchantedCraftWrapper implements RecipeWrapper<EnhancedRecipe> {
 				}
 				Debug.Send(wbRecipe, () -> "The recipe is now crafted and output item is " + beforeCraftOutputEvent.getResultItem());
 				Debug.Send(wbRecipe, () -> "The crafted recipe matrix: " + recipeInjector.convertItemStackArrayToString(matrix));
-				result.accept(beforeCraftOutputEvent.getResultItem());
+				craftContext.acceptResult(beforeCraftOutputEvent.getResultItem());
 			}
 			if (inventory.getType() != InventoryType.WORKBENCH && inventory.getType() != InventoryType.CRAFTING && self().getConfig().getBoolean("turn_of_crafter", true)) {
 				Debug.Send(wbRecipe, () -> "The crafting of this custom recipe is stopped.");
-				result.accept(null);
+				craftContext.acceptResult(null);
 			} else {
-				this.finishRecipe.put(inventory.getLocation(), wbRecipe);
+				this.finishRecipe.put(location, wbRecipe);
 				return;
 			}
 		}
@@ -127,12 +124,12 @@ public class EnchantedCraftWrapper implements RecipeWrapper<EnhancedRecipe> {
 
 		if (wbRecipe.isCheckPartialMatch() && wbRecipe.matches(matrix, MatchType.MATCH_TYPE.getMatcher())) {
 			Debug.Send(wbRecipe, () -> "Partial matched recipe fond and will prevent craft this recipe.");
-			result.accept(null);
+			craftContext.acceptResult(null);
 		} else if (wbRecipe.isCheckPartialMatch()) {
 			Debug.Send(wbRecipe, () -> "Partial matched recipe not fund ingredients not match the type, check next recipe if it exists.");
 		}
 		Debug.Send(Type.Crafting, () -> "The recipe did not match the pattern, will continue with next recipe if it exists.");
-		result.accept(null);
+		craftContext.acceptResult(null);
 	}
 
 

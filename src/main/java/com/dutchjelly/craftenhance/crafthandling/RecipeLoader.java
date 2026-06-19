@@ -7,7 +7,8 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
-import com.dutchjelly.craftenhance.crafthandling.util.RecipeWrapper;
+import com.dutchjelly.craftenhance.crafthandling.livedata.EnchantedCraftWrapper;
+import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.CategoryDataCache;
@@ -59,7 +60,7 @@ public class RecipeLoader {
 	@Getter
 	private Map<String, RecipeGroup> mappedGroupedRecipes = new HashMap<>();
 
-	private Map<Material, RecipeWrapper> mappedRecipes = new HashMap<>();
+	private Map<Material, HashSet<RecipeWrapper<?>>> mappedRecipes = new HashMap<>();
 
 	private RecipeLoader(final Server server, final CategoryDataCache categoryDataCache) {
 		this.server = server;
@@ -69,6 +70,13 @@ public class RecipeLoader {
 			self().getLogger().log(Level.SEVERE, "This server recipe contains air, will not be loaded.", e);
 		}
 		this.categoryDataCache = categoryDataCache;
+		mappedRecipes.forEach((material, hashSet) -> {
+			hashSet.forEach(recipeWrapper ->
+					((EnchantedCraftWrapper) recipeWrapper).getRecipe().getKey()
+			);
+		});
+
+
 	}
 
 	public static RecipeLoader getInstance() {
@@ -246,6 +254,11 @@ public class RecipeLoader {
 
 		String categoryName = loadCategories(recipe);
 		String groupName = addToGroup(similarServerRecipes, recipe, categoryName);
+		ItemStack[] content = recipe.getContent();
+		for (ItemStack stack : content) {
+			if (stack == null) continue;
+			this.mappedRecipes.computeIfAbsent(stack.getType(),material ->  new HashSet<>()).add(new EnchantedCraftWrapper(recipe));
+		}
 		//Only load the recipe if there is not a server recipe that's always similar.
 		final Recipe serverRecipe = recipe.getServerRecipe(groupName);
 		if (alwaysSimilar == null) {
