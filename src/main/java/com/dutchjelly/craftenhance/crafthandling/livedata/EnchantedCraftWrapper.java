@@ -27,6 +27,7 @@ import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -189,4 +190,20 @@ public class EnchantedCraftWrapper implements RecipeWrapper<EnhancedRecipe> {
 				|| (entity != null && entity.hasPermission(group.getPermission()));
 	}
 
+	@Override
+	public boolean equals(final Object o) {
+		if (o == null || getClass() != o.getClass()) return false;
+		final EnchantedCraftWrapper that = (EnchantedCraftWrapper) o;
+		return Objects.equals(enhancedRecipe, that.enhancedRecipe);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(enhancedRecipe);
+	}
+
+	@Override
+	public String toString() {
+		return this.enhancedRecipe.toString();
+	}
 }

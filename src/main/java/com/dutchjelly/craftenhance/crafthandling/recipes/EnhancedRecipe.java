@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -231,22 +232,17 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 		this.permission = (permission == null || permission.isEmpty() || permission.equals("null") || permission.equals("non") ? null : permission);
 	}
 
-	/*	@Override
-	public String toString() {
-		return "EnhancedRecipe{" +
-				"key='" + key + '\'' +
-				", result=" + (this.result == null ? "null" : result) +
-				"contents"+ Arrays.toString(this.getContent()) +
-				'}';
-	}*/
-/*
-    @Override
-    public String toString(){
-        String s = "";
-        s += "key = " + key + "\n";
-        s += "result = " + (this.result == null ? "null" : result) + "\n";
-        return s;
-    }*/
+	@Override
+	public boolean equals(final Object o) {
+		if (o == null || getClass() != o.getClass()) return false;
+		final EnhancedRecipe that = (EnhancedRecipe) o;
+		return id == that.id && hidden == that.hidden && checkPartialMatch == that.checkPartialMatch && remove == that.remove && Objects.equals(key, that.key) && Objects.equals(result, that.result) && Objects.deepEquals(content, that.content) && matchType == that.matchType && Objects.equals(permission, that.permission) && Objects.equals(onCraftCommand, that.onCraftCommand) && type == that.type && Objects.equals(allowedWorlds, that.allowedWorlds) && Objects.equals(group, that.group);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id, key, result, Arrays.hashCode(content), matchType, permission, hidden, onCraftCommand, type, allowedWorlds, checkPartialMatch, remove, group);
+	}
 
 	@NonNull
 	public Set<String> getAllowedWorlds() {

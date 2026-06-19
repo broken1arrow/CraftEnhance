@@ -52,6 +52,32 @@ public class VanillaCraftWrapper implements RecipeWrapper<Recipe> {
 		}
 	}
 
+	@Override
+	public boolean equals(final Object o) {
+		if (o == null || getClass() != o.getClass()) return false;
+		final VanillaCraftWrapper that = (VanillaCraftWrapper) o;
+		if (that.recipe.getResult().isSimilar(recipe.getResult())) {
+			org.bukkit.inventory.Recipe thatRecipe = that.getRecipe();
+			if (thatRecipe instanceof ShapelessRecipe && recipe instanceof ShapelessRecipe) {
+				return ((ShapelessRecipe) thatRecipe).getChoiceList().equals(((ShapelessRecipe) recipe).getChoiceList());
+			}
+			if (thatRecipe instanceof ShapedRecipe && recipe instanceof ShapedRecipe) {
+				return ((ShapedRecipe) thatRecipe).getChoiceMap().equals(((ShapedRecipe) recipe).getChoiceMap());
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		int hash = 0;
+		hash = 41 * hash + recipe.getResult().hashCode();
+		if (recipe instanceof ShapelessRecipe)
+			hash = 41 * hash + ((ShapelessRecipe) recipe).getChoiceList().hashCode();
+		if (recipe instanceof ShapedRecipe)
+			hash = 41 * hash + ((ShapedRecipe) recipe).getChoiceMap().hashCode();
+		return hash;
+	}
 
 	@Override
 	public Recipe getRecipe() {
