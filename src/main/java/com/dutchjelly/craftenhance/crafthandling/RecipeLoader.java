@@ -18,6 +18,7 @@ import com.dutchjelly.craftenhance.util.Pair;
 import lombok.Getter;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.inventory.CookingRecipe;
 import org.bukkit.inventory.ItemStack;
@@ -57,6 +58,7 @@ public class RecipeLoader {
 	@Getter
 	private Map<String, RecipeGroup> mappedGroupedRecipes = new HashMap<>();
 
+	private Map<Material, RecipeGroup> mappedRecipes = new HashMap<>();
 
 	private RecipeLoader(final Server server, final CategoryDataCache categoryDataCache) {
 		this.server = server;
