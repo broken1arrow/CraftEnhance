@@ -3,6 +3,7 @@ package com.dutchjelly.craftenhance.crafthandling;
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.cache.CacheRecipes;
 import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
+import com.dutchjelly.craftenhance.crafthandling.livedata.VanillaCraftWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
@@ -65,7 +66,10 @@ public class RecipeLoader {
 	private RecipeLoader(final Server server, final CategoryDataCache categoryDataCache) {
 		this.server = server;
 		try {
-			server.recipeIterator().forEachRemaining(serverRecipes::add);
+			server.recipeIterator().forEachRemaining(serverRecipes -> {
+				this.serverRecipes.add(serverRecipes);
+				liveCacheRecipe(new VanillaCraftWrapper(serverRecipes),Adapter.getIngredients(serverRecipes));
+			});
 		} catch (IllegalArgumentException e) {
 			self().getLogger().log(Level.SEVERE, "This server recipe contains air, will not be loaded.", e);
 		}
@@ -255,10 +259,7 @@ public class RecipeLoader {
 		String categoryName = loadCategories(recipe);
 		String groupName = addToGroup(similarServerRecipes, recipe, categoryName);
 		ItemStack[] content = recipe.getContent();
-		for (ItemStack stack : content) {
-			if (stack == null) continue;
-			this.mappedRecipes.computeIfAbsent(stack.getType(),material ->  new HashSet<>()).add(new EnchantedCraftWrapper(recipe));
-		}
+		liveCacheRecipe(new EnchantedCraftWrapper(recipe), content);
 		//Only load the recipe if there is not a server recipe that's always similar.
 		final Recipe serverRecipe = recipe.getServerRecipe(groupName);
 		if (alwaysSimilar == null) {
@@ -275,6 +276,13 @@ public class RecipeLoader {
 			}
 		} else {
 			Debug.Send("Loading recipe", "Didn't add server recipe for " + recipe.getKey() + " because a similar one was already loaded: " + alwaysSimilar.toString() + " with the result " + alwaysSimilar.getResult().toString());
+		}
+	}
+
+	private void liveCacheRecipe(@Nonnull final RecipeWrapper<?> recipe, final ItemStack[] content) {
+		for (ItemStack stack : content) {
+			if (stack == null) continue;
+			this.mappedRecipes.computeIfAbsent(stack.getType(),material ->  new HashSet<>()).add(recipe);
 		}
 	}
 

@@ -504,6 +504,19 @@ public class Adapter {
 		return "";
 	}
 
+	public static ItemStack[] getIngredients(@NonNull final Recipe recipe) {
+		final VersionChecker versionChecker = self().getVersionChecker();
+		if (versionChecker.newerThan(ServerVersion.v1_12)) {
+			if (recipe instanceof CookingRecipe<?>)
+				return new ItemStack[] {((CookingRecipe<?>) recipe).getInput()};
+			if (recipe instanceof ShapedRecipe)
+				return ((ShapedRecipe) recipe).getIngredientMap().values().toArray(new ItemStack[0]);
+			if (recipe instanceof ShapelessRecipe)
+				return ((ShapelessRecipe) recipe).getIngredientList().toArray(new ItemStack[0]);
+		}
+		return "";
+	}
+
 	public static <T extends CookingRecipe<?>> void setGroup(@NonNull final CookingRecipe<T> furnaceRecipe, @NonNull final String groupName) {
 		if (self().getVersionChecker().newerThan(ServerVersion.v1_12))
 			furnaceRecipe.setGroup(groupName);
