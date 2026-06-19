@@ -7,6 +7,7 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
+import com.dutchjelly.craftenhance.crafthandling.util.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.CategoryDataCache;
@@ -58,7 +59,7 @@ public class RecipeLoader {
 	@Getter
 	private Map<String, RecipeGroup> mappedGroupedRecipes = new HashMap<>();
 
-	private Map<Material, RecipeGroup> mappedRecipes = new HashMap<>();
+	private Map<Material, RecipeWrapper> mappedRecipes = new HashMap<>();
 
 	private RecipeLoader(final Server server, final CategoryDataCache categoryDataCache) {
 		this.server = server;

@@ -33,11 +33,11 @@ import java.util.function.Consumer;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
-public class EnchantedWrapper implements RecipeWrapper {
+public class EnchantedCraftWrapper implements RecipeWrapper {
 	private final EnhancedRecipe enhancedRecipe;
 	private final Map<Location, EnhancedRecipe> finishRecipe = new HashMap<>();
 
-	public EnchantedWrapper(final EnhancedRecipe enhancedRecipe) {
+	public EnchantedCraftWrapper(final EnhancedRecipe enhancedRecipe) {
 		this.enhancedRecipe = enhancedRecipe;
 	}
 
