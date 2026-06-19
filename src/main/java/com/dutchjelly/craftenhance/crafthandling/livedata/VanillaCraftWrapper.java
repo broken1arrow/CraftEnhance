@@ -12,9 +12,10 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 
 import javax.annotation.Nonnull;
+import java.util.Optional;
 import java.util.function.Consumer;
 
-public class VanillaCraftWrapper implements RecipeWrapper<Recipe> {
+public class VanillaCraftWrapper implements RecipeWrapper {
 	private final Recipe recipe;
 
 	public VanillaCraftWrapper(@NonNull final Recipe recipe) {
@@ -23,7 +24,7 @@ public class VanillaCraftWrapper implements RecipeWrapper<Recipe> {
 
 	@Override
 	public boolean isCustom() {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -53,11 +54,18 @@ public class VanillaCraftWrapper implements RecipeWrapper<Recipe> {
 	}
 
 	@Override
+	public <T> Optional<T> getRecipe(final Class<T> type) {
+		if (type.isInstance(this.recipe))
+			return Optional.of(type.cast(this.recipe));
+		return Optional.empty();
+	}
+
+	@Override
 	public boolean equals(final Object o) {
 		if (o == null || getClass() != o.getClass()) return false;
 		final VanillaCraftWrapper that = (VanillaCraftWrapper) o;
 		if (that.recipe.getResult().isSimilar(recipe.getResult())) {
-			org.bukkit.inventory.Recipe thatRecipe = that.getRecipe();
+			org.bukkit.inventory.Recipe thatRecipe = that.getRecipe(Recipe.class).orElse(null);
 			if (thatRecipe instanceof ShapelessRecipe && recipe instanceof ShapelessRecipe) {
 				return ((ShapelessRecipe) thatRecipe).getChoiceList().equals(((ShapelessRecipe) recipe).getChoiceList());
 			}
@@ -79,8 +87,4 @@ public class VanillaCraftWrapper implements RecipeWrapper<Recipe> {
 		return hash;
 	}
 
-	@Override
-	public Recipe getRecipe() {
-		return this.recipe;
-	}
 }

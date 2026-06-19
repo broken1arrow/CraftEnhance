@@ -61,7 +61,7 @@ public class RecipeLoader {
 	@Getter
 	private Map<String, RecipeGroup> mappedGroupedRecipes = new HashMap<>();
 
-	private Map<Material, HashSet<RecipeWrapper<?>>> mappedRecipes = new HashMap<>();
+	private Map<Material, HashSet<RecipeWrapper>> mappedRecipes = new HashMap<>();
 
 	private RecipeLoader(final Server server, final CategoryDataCache categoryDataCache) {
 		this.server = server;
@@ -76,8 +76,7 @@ public class RecipeLoader {
 		this.categoryDataCache = categoryDataCache;
 		mappedRecipes.forEach((material, hashSet) -> {
 			hashSet.forEach(recipeWrapper ->
-					((EnchantedCraftWrapper) recipeWrapper).getRecipe().getKey()
-			);
+					recipeWrapper.getRecipe(EnhancedRecipe.class).ifPresent(enhancedRecipe -> enhancedRecipe.getKey()));
 		});
 	}
 
@@ -92,12 +91,12 @@ public class RecipeLoader {
 		instance = null;
 	}
 
-	public Set<RecipeWrapper<?>> findMatching(final ItemStack[] matrix) {
-		Set<RecipeWrapper<?>> wrappersMatch = null;
+	public Set<RecipeWrapper> findMatching(final ItemStack[] matrix) {
+		Set<RecipeWrapper> wrappersMatch = null;
 
 		for (ItemStack itemStack : matrix) {
 			if (itemStack == null) continue;
-			Set<RecipeWrapper<?>> recipeCached = this.mappedRecipes.getOrDefault(itemStack.getType(), new HashSet<>());
+			Set<RecipeWrapper> recipeCached = this.mappedRecipes.getOrDefault(itemStack.getType(), new HashSet<>());
 			if (wrappersMatch == null) {
 				wrappersMatch = new HashSet<>(recipeCached);
 			} else {
