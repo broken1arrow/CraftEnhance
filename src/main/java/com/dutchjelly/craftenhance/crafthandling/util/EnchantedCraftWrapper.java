@@ -33,11 +33,11 @@ import java.util.function.Consumer;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
-public class EnchantedCraftWrapper implements RecipeWrapper {
+public class EnchantedCraftWrapper implements RecipeWrapper<EnhancedRecipe> {
 	private final EnhancedRecipe enhancedRecipe;
 	private final Map<Location, EnhancedRecipe> finishRecipe = new HashMap<>();
 
-	public EnchantedCraftWrapper(final EnhancedRecipe enhancedRecipe) {
+	public EnchantedCraftWrapper(@Nonnull final EnhancedRecipe enhancedRecipe) {
 		this.enhancedRecipe = enhancedRecipe;
 	}
 
@@ -135,10 +135,6 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 		result.accept(null);
 	}
 
-	@Override
-	public ItemStack getResult() {
-		return null;
-	}
 
 	public void craftingClick(@Nonnull final InventoryClickEvent craftingClick) {
 
@@ -153,7 +149,11 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 			);
 			return null;
 		});
+	}
 
+	@Override
+	public EnhancedRecipe getRecipe() {
+		return this.enhancedRecipe;
 	}
 
 	private boolean isCraftingAllowedInWorld(final Location location, final EnhancedRecipe eRecipe) {

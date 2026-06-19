@@ -7,10 +7,13 @@ import org.bukkit.inventory.ItemStack;
 import javax.annotation.Nonnull;
 import java.util.function.Consumer;
 
-public interface RecipeWrapper {
+public interface RecipeWrapper<T> {
+
 	boolean isCustom();
+
 	void matches(@Nonnull final RecipeInjector recipeInjector,@Nonnull final PrepareItemCraftEvent craftEvent,@Nonnull final Consumer<ItemStack> result);
-	ItemStack getResult();
+
+	T getRecipe();
 
 
 }
