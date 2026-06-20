@@ -27,6 +27,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -183,6 +184,12 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 
 	@Override
 	public String toString() {
-		return this.enhancedRecipe.toString();
+		StringBuilder builder = new StringBuilder();
+		builder.append("########## Enhanced recipe ################");
+		builder.append("Key: ").append(this.enhancedRecipe.getKey());
+		builder.append("Result: ").append(this.enhancedRecipe.getResult());
+		builder.append("Ingredients: ").append(Arrays.toString(this.enhancedRecipe.getContent()));
+		builder.append("########## Enhanced recipe ################\n");
+		return builder.toString();
 	}
 }

@@ -102,4 +102,18 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 		return hash;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("########## Recipe ################");
+		builder.append("Result: ").append(this.recipe.getResult());
+		if (recipe instanceof ShapelessRecipe)
+			builder.append("Ingredients: ").append(((ShapelessRecipe) recipe).getChoiceList());
+		if (recipe instanceof ShapedRecipe)
+			builder.append("Ingredients: ").append(((ShapedRecipe) recipe).getChoiceMap());
+		builder.append("########## Recipe ################\n");
+
+		return builder.toString();
+	}
+
 }

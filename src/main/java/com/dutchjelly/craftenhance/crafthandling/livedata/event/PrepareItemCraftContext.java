@@ -39,7 +39,7 @@ public class PrepareItemCraftContext implements PrepareRecipeContext {
 		if(result == null) return;
 		result.accept(itemStack);
 	}
-	
+
 	public void getResult(final Consumer<ItemStack> result) {
 		this.result = result;
 	}
