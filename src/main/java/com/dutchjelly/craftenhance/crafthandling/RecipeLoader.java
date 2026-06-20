@@ -3,13 +3,14 @@ package com.dutchjelly.craftenhance.crafthandling;
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.cache.CacheRecipes;
 import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
+import com.dutchjelly.craftenhance.crafthandling.livedata.EnchantedCraftWrapper;
+import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeRegistry;
+import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.VanillaCraftWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
-import com.dutchjelly.craftenhance.crafthandling.livedata.EnchantedCraftWrapper;
-import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.CategoryDataCache;
@@ -21,7 +22,6 @@ import com.dutchjelly.craftenhance.util.Pair;
 import lombok.Getter;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.inventory.CookingRecipe;
 import org.bukkit.inventory.ItemStack;
@@ -61,7 +61,7 @@ public class RecipeLoader {
 	@Getter
 	private Map<String, RecipeGroup> mappedGroupedRecipes = new HashMap<>();
 
-	private Map<Material, HashSet<RecipeWrapper>> mappedRecipes = new HashMap<>();
+	private final Map<RecipeType, RecipeRegistry> mappedRecipes = new HashMap<>();
 
 	private RecipeLoader(final Server server, final CategoryDataCache categoryDataCache) {
 		this.server = server;
@@ -74,10 +74,6 @@ public class RecipeLoader {
 			self().getLogger().log(Level.SEVERE, "This server recipe contains air, will not be loaded.", e);
 		}
 		this.categoryDataCache = categoryDataCache;
-		mappedRecipes.forEach((material, hashSet) -> {
-			hashSet.forEach(recipeWrapper ->
-					recipeWrapper.getRecipe(EnhancedRecipe.class).ifPresent(enhancedRecipe -> enhancedRecipe.getKey()));
-		});
 	}
 
 	public static RecipeLoader getInstance() {
@@ -91,22 +87,11 @@ public class RecipeLoader {
 		instance = null;
 	}
 
-	public Set<RecipeWrapper> findMatching(final ItemStack[] matrix) {
-		Set<RecipeWrapper> wrappersMatch = null;
+	@Nonnull
+	public List<RecipeWrapper> findMatchingRecipe(@Nonnull final RecipeType recipeType, final ItemStack[] matrix) {
+		final RecipeRegistry recipeCached = this.mappedRecipes.getOrDefault(recipeType, new RecipeRegistry());
 
-		for (ItemStack itemStack : matrix) {
-			if (itemStack == null) continue;
-			Set<RecipeWrapper> recipeCached = this.mappedRecipes.getOrDefault(itemStack.getType(), new HashSet<>());
-			if (wrappersMatch == null) {
-				wrappersMatch = new HashSet<>(recipeCached);
-			} else {
-				wrappersMatch.retainAll(recipeCached);
-			}
-			if (wrappersMatch.isEmpty())
-				return new HashSet<>();
-
-		}
-		return wrappersMatch != null ? wrappersMatch : new HashSet<>();
+		return recipeCached.findMatchingRecipes(matrix);
 	}
 
 	public RecipeGroup findGroup(final EnhancedRecipe recipe) {
@@ -294,11 +279,8 @@ public class RecipeLoader {
 		}
 	}
 
-	private void liveCacheRecipe(@Nonnull final RecipeWrapper<?> recipe, final ItemStack[] content) {
-		for (ItemStack stack : content) {
-			if (stack == null) continue;
-			this.mappedRecipes.computeIfAbsent(stack.getType(), material -> new HashSet<>()).add(recipe);
-		}
+	private void liveCacheRecipe(@Nonnull final RecipeWrapper recipe, @Nonnull final ItemStack[] content) {
+		this.mappedRecipes.computeIfAbsent(recipe.getRecipeType(), material -> new RecipeRegistry()).addRecipe(recipe, content);
 	}
 
 	public void unloadAll() {

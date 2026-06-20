@@ -5,10 +5,7 @@ import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
-import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
-import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
@@ -36,32 +33,29 @@ import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.FurnaceStartSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.inventory.InventoryEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.CookingRecipe;
 import org.bukkit.inventory.CraftingInventory;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.permissions.Permissible;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
-public class RecipeInjector extends RecipeDebug implements Listener {
+public class RecipeInjector implements Listener {
 
 	@Getter
 	private final CraftEnhance plugin;
 	private final boolean disableDefaultModeldataCrafts;
-	private final boolean makeItemsadderCompatible;
+
 	private final BrewingRecipeInjector brewingRecipeInjector;
 	private final WorkBenchRecipeInjector workBenchRecipeInjector;
 	@Getter
@@ -71,8 +65,7 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 	public RecipeInjector(final CraftEnhance plugin) {
 		this.plugin = plugin;
 		disableDefaultModeldataCrafts = plugin.getConfig().getBoolean("disable-default-custom-model-data-crafts");
-		makeItemsadderCompatible = plugin.getConfig().getBoolean("make-itemsadder-compatible");
-		this.brewingRecipeInjector = new BrewingRecipeInjector(this);
+		this.brewingRecipeInjector = new BrewingRecipeInjector();
 		this.workBenchRecipeInjector = new WorkBenchRecipeInjector(this);
 		this.furnaceRecipeInjector = new FurnaceRecipeInjector(this);
 		try {
@@ -86,17 +79,6 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 	public void reload() {
 		this.brewingRecipeInjector.reloadSettings();
 		//this.loader = RecipeLoader.getInstance();
-	}
-
-
-	public boolean containsModelData(final ItemStack[] matrix) {
-		return Arrays.stream(matrix).anyMatch(x -> x != null && x.hasItemMeta() && x.getItemMeta().hasCustomModelData());
-	}
-
-	public IMatcher<ItemStack> getTypeMatcher() {
-		return Adapter.canUseModeldata() && disableDefaultModeldataCrafts ?
-				ItemMatchers.constructIMatcher(ItemMatchers::matchType, ItemMatchers::matchModelData)
-				: ItemMatchers::matchType;
 	}
 
 	@EventHandler
@@ -192,11 +174,6 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 	public void onBrew(BrewEvent event) {
 	}
 
-	public boolean isViewersAllowedCraft(final List<HumanEntity> viewers, final WBRecipe wbRecipe) {
-		if (viewers.isEmpty())
-			return true;
-		return viewers.stream().allMatch(x -> entityCanCraft(x, wbRecipe));
-	}
 
 	public boolean checkForDisabledRecipe(final List<Recipe> disabledServerRecipes, final @NonNull ItemStack result) {
 		if (disabledServerRecipes != null && !disabledServerRecipes.isEmpty())
@@ -208,15 +185,6 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 		return false;
 	}
 
-	public boolean checkForDisabledRecipe(final List<Recipe> disabledServerRecipes, final @NonNull WBRecipe wbRecipe, final @NonNull ItemStack result) {
-		if (disabledServerRecipes != null && !disabledServerRecipes.isEmpty())
-			for (final Recipe disabledRecipe : disabledServerRecipes) {
-				if (disabledRecipe.getResult().isSimilar(result) && wbRecipe.isSimilar(disabledRecipe)) {
-					return true;
-				}
-			}
-		return false;
-	}
 
 	@Nullable
 	public List<RecipeGroup> getMatchingRecipeGroup(final CookingRecipe<?> cookingRecipe, final Block typeOfFurnace, final ItemStack source) {
@@ -258,35 +226,6 @@ public class RecipeInjector extends RecipeDebug implements Listener {
 				|| (entity != null && entity.hasPermission(group.getPermission()));
 	}
 
-	/**
-	 * Gets the top inventory from the InventoryView of an InventoryEvent,
-	 * using reflection to stay compatible with both old and new Spigot versions.
-	 *
-	 * @param event The InventoryEvent
-	 * @return The top inventory, or null if unavailable
-	 */
-	public Inventory getTopInventory(InventoryEvent event) {
-		if (self().getVersionChecker().newerThan(ServerVersion.v1_19)) {
-			try {
-				// Use reflection to avoid linking to InventoryView directly
-				Object view = InventoryEvent.class.getMethod("getView").invoke(event);
-				return (Inventory) view.getClass().getMethod("getTopInventory").invoke(view);
-			} catch (Exception e) {
-				e.printStackTrace(); // Optionally log better
-				return null;
-			}
-		} else {
-			return event.getView().getTopInventory();
-		}
-	}
-
-	public boolean isDisableDefaultModeldataCrafts() {
-		return disableDefaultModeldataCrafts;
-	}
-
-	public boolean isMakeItemsadderCompatible() {
-		return makeItemsadderCompatible;
-	}
 
 	public RecipeLoader getLoader() {
 		return loader;

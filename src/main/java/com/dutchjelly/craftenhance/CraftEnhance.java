@@ -83,7 +83,10 @@ public class CraftEnhance extends JavaPlugin {
 	private FileManager fm;
 	@Getter
 	private GuiManager guiManager;
-
+	@Getter
+	private boolean disableDefaultModeldataCrafts;
+	@Getter
+	private boolean makeItemsadderCompatible;
 	@Getter
 	private GuiTemplatesFile guiTemplatesFile;
 	private RegisterMenuAPI registerMenuAPI;
@@ -196,6 +199,8 @@ public class CraftEnhance extends JavaPlugin {
 	public void reload() {
 		isReloading = true;
 		runTask(() -> {
+			disableDefaultModeldataCrafts = plugin.getConfig().getBoolean("disable-default-custom-model-data-crafts");
+			makeItemsadderCompatible = plugin.getConfig().getBoolean("make-itemsadder-compatible");
 			this.reloadServerRecipes();
 			reloadConfig();
 			this.menuSettingsCache.reload();

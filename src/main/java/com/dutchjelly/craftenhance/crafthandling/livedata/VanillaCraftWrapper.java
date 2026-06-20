@@ -1,6 +1,8 @@
 package com.dutchjelly.craftenhance.crafthandling.livedata;
 
-import com.dutchjelly.craftenhance.crafthandling.RecipeInjector;
+import com.dutchjelly.craftenhance.RecipeAdapter;
+import com.dutchjelly.craftenhance.crafthandling.RecipeDebug;
+import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.crafthandling.util.WBRecipeComparer;
 import com.dutchjelly.craftenhance.messaging.Debug;
@@ -22,13 +24,24 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 		this.recipe = recipe;
 	}
 
+	@Nonnull
+	@Override
+	public RecipeType getRecipeType() {
+		return RecipeType.WORKBENCH;
+	}
+
+	@Override
+	public int priority() {
+		return 100;
+	}
+
 	@Override
 	public boolean isCustom() {
 		return true;
 	}
 
 	@Override
-	public void matches(@Nonnull final RecipeInjector recipeInjector, @Nonnull final Recipe serverRecipe, @Nonnull final Consumer<PrepareItemCraftContext> contextConsumer) {
+	public void matches(@Nonnull final Recipe serverRecipe, @Nonnull final Consumer<PrepareItemCraftContext> contextConsumer) {
 		final PrepareItemCraftContext prepareItemCraftContext = new PrepareItemCraftContext();
 		contextConsumer.accept(prepareItemCraftContext);
 		final ItemStack[] matrix = prepareItemCraftContext.getRecipeMatrix();
@@ -36,17 +49,17 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 		if (recipe instanceof ShapedRecipe) {
 			final ItemStack[] content = ServerRecipeTranslator.translateShapedRecipe((ShapedRecipe) recipe);
 
-			Debug.Send(Type.Crafting, () -> "[ShapedRecipe] matrix to match: " + recipeInjector.convertItemStackArrayToString(matrix));
-			Debug.Send(Type.Crafting, () -> "[ShapedRecipe] ingredients" + recipeInjector.convertItemStackArrayToString(content));
-			if (WBRecipeComparer.shapeMatches(content, matrix, recipeInjector.getTypeMatcher())) {
+			Debug.Send(Type.Crafting, () -> "[ShapedRecipe] matrix to match: " + RecipeDebug.convertItemStackArrayToString(matrix));
+			Debug.Send(Type.Crafting, () -> "[ShapedRecipe] ingredients" + RecipeDebug.convertItemStackArrayToString(content));
+			if (WBRecipeComparer.shapeMatches(content, matrix, RecipeAdapter.getTypeMatcher())) {
 				Debug.Send(Type.Crafting, () -> "Matched a ShapedRecipe and will allow this server recipe.");
 				prepareItemCraftContext.acceptResult(recipe.getResult());
 			}
 		} else if (recipe instanceof ShapelessRecipe) {
 			final ItemStack[] ingredients = ServerRecipeTranslator.translateShapelessRecipe((ShapelessRecipe) recipe);
-			Debug.Send(Type.Crafting, () -> "[ShapelessRecipe] matrix to match: " + recipeInjector.convertItemStackArrayToString(matrix));
-			Debug.Send(Type.Crafting, () -> "[ShapelessRecipe] ingredients" + recipeInjector.convertItemStackArrayToString(ingredients));
-			if (WBRecipeComparer.ingredientsMatch(ingredients, matrix, recipeInjector.getTypeMatcher())) {
+			Debug.Send(Type.Crafting, () -> "[ShapelessRecipe] matrix to match: " + RecipeDebug.convertItemStackArrayToString(matrix));
+			Debug.Send(Type.Crafting, () -> "[ShapelessRecipe] ingredients" + RecipeDebug.convertItemStackArrayToString(ingredients));
+			if (WBRecipeComparer.ingredientsMatch(ingredients, matrix, RecipeAdapter.getTypeMatcher())) {
 				Debug.Send(Type.Crafting, () -> "Matched a ShapelessRecipe and will allow this server recipe.");
 				prepareItemCraftContext.acceptResult(recipe.getResult());
 			}

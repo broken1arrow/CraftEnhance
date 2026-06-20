@@ -22,8 +22,10 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryEvent;
 import org.bukkit.inventory.CookingRecipe;
 import org.bukkit.inventory.CraftingRecipe;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -51,6 +53,17 @@ public class Adapter {
 	public final static String GUI_SKULL_MATERIAL_NAME = "GUI_SKULL_ITEM";
 	private final static CraftEnhance plugin = self();
 	private static Optional<Boolean> canUseModeldata = Optional.empty();
+	private static Method InventoryView;
+
+	static {
+		if (self().getVersionChecker().newerThan(ServerVersion.v1_19)) {
+			try {
+				InventoryView = InventoryEvent.class.getMethod("getView");
+			} catch (NoSuchMethodException e) {
+				Messenger.Error("Could not find the view for the inventory event:\n " + Arrays.toString(e.getStackTrace()));
+			}
+		}
+	}
 
 	public static List<String> CompatibleVersions() {
 		return Arrays.asList("1.9", "1.10", "1.11", "1.12", "1.13", "1.14", "1.15", "1.16", "1.17", "1.18", "1.19", "1.20", "1.21");
@@ -222,9 +235,38 @@ public class Adapter {
 		}
 	}
 
-	private static Object getNameSpacedKey(final JavaPlugin plugin, final String key) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-//        return new NamespacedKey(plugin, key);
-		return Class.forName("org.bukkit.NamespacedKey").getConstructor(org.bukkit.plugin.Plugin.class, String.class).newInstance(plugin, key);
+	public static boolean containsModelData(final ItemStack[] matrix) {
+		if (!Adapter.canUseModeldata())
+			return false;
+		if (self().getVersionChecker().olderThan(ServerVersion.v1_14)) {
+			return Arrays.stream(matrix).anyMatch(x -> x != null && x.hasItemMeta() && x.getDurability() > 0 && !hasDamageTag(x));
+		}
+		return Arrays.stream(matrix).anyMatch(x -> x != null && x.hasItemMeta() && x.getItemMeta().hasCustomModelData());
+	}
+
+	/**
+	 * Gets the top inventory from the InventoryView of an InventoryEvent,
+	 * using reflection to stay compatible with both old and new Spigot versions.
+	 *
+	 * @param event The InventoryEvent
+	 * @return The top inventory, or null if unavailable
+	 */
+	@Nullable
+	public static Inventory getTopInventory(InventoryEvent event) {
+		if (self().getVersionChecker().newerThan(ServerVersion.v1_19)) {
+			try {
+				if(InventoryView == null)
+					return null;
+				// Use reflection to avoid linking to InventoryView directly
+				Object view = InventoryView.invoke(event);
+				return (Inventory) view.getClass().getMethod("getTopInventory").invoke(view);
+			} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+				Messenger.Error("Could not retrive the view for the inventory event:\n " + Arrays.toString(e.getStackTrace()));
+				return null;
+			}
+		} else {
+			return event.getView().getTopInventory();
+		}
 	}
 
 	public static ShapedRecipe GetShapedRecipe(final JavaPlugin plugin, final String key, final ItemStack result) {
@@ -363,14 +405,29 @@ public class Adapter {
 		}
 	}
 
+	public static boolean hasDamageTag(ItemStack item) {
+		if (item == null || item.getType() == Material.AIR) return false;
+		Material mat = item.getType();
+		String name = mat.name();
 
-	private static <T> boolean callSingleParamMethod(final String methodName, final T param, final Class<T> paramType, final Object instance, final Class<?> instanceType) {
-		try {
-			final Method m = instanceType.getMethod(methodName, paramType);
-			m.invoke(instance, param);
+		if (name.endsWith("_SWORD") || name.endsWith("_AXE") || name.endsWith("_PICKAXE")
+				|| name.endsWith("_SPADE") || name.endsWith("_HOE") || name.endsWith("_SHOVEL")
+				|| name.endsWith("_HELMET") || name.endsWith("_CHESTPLATE")
+				|| name.endsWith("_LEGGINGS") || name.endsWith("_BOOTS")) {
 			return true;
-		} catch (final NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-			return false;
+		}
+		switch (name) {
+			case "BOW":
+			case "FISHING_ROD":
+			case "SHEARS":
+			case "FLINT_AND_STEEL":
+			case "CARROT_STICK":
+			case "CARROT_ON_A_STICK":
+			case "SHIELD":
+			case "ELYTRA":
+				return true;
+			default:
+				return false;
 		}
 	}
 
@@ -505,16 +562,13 @@ public class Adapter {
 	}
 
 	public static ItemStack[] getIngredients(@NonNull final Recipe recipe) {
-		final VersionChecker versionChecker = self().getVersionChecker();
-		if (versionChecker.newerThan(ServerVersion.v1_12)) {
-			if (recipe instanceof CookingRecipe<?>)
-				return new ItemStack[] {((CookingRecipe<?>) recipe).getInput()};
-			if (recipe instanceof ShapedRecipe)
-				return ((ShapedRecipe) recipe).getIngredientMap().values().toArray(new ItemStack[0]);
-			if (recipe instanceof ShapelessRecipe)
-				return ((ShapelessRecipe) recipe).getIngredientList().toArray(new ItemStack[0]);
-		}
-		return "";
+		if (recipe instanceof CookingRecipe<?>)
+			return new ItemStack[]{((CookingRecipe<?>) recipe).getInput()};
+		if (recipe instanceof ShapedRecipe)
+			return ((ShapedRecipe) recipe).getIngredientMap().values().toArray(new ItemStack[0]);
+		if (recipe instanceof ShapelessRecipe)
+			return ((ShapelessRecipe) recipe).getIngredientList().toArray(new ItemStack[0]);
+		return new ItemStack[0];
 	}
 
 	public static <T extends CookingRecipe<?>> void setGroup(@NonNull final CookingRecipe<T> furnaceRecipe, @NonNull final String groupName) {
@@ -563,12 +617,6 @@ public class Adapter {
 		return recipe instanceof CookingRecipe && (((CookingRecipe<?>) recipe).getKey().getNamespace().contains("craftenhance") || ((CookingRecipe<?>) recipe).getKey().getNamespace().contains("cehrecipe"));
 	}
 
-	private static ItemMeta getItemMeta(final ItemStack item, ItemMeta meta) {
-		item.setItemMeta(meta);
-		addAttributeTooltip(item);
-		return item.getItemMeta();
-	}
-
 	public static void addAttributeTooltip(ItemStack item) {
 		final UUID uuid = UUID.randomUUID();
 
@@ -582,4 +630,28 @@ public class Adapter {
 			compound.setString("id", uuid.toString());
 		});
 	}
+
+
+	private static Object getNameSpacedKey(final JavaPlugin plugin, final String key) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+		//return new NamespacedKey(plugin, key);
+		return Class.forName("org.bukkit.NamespacedKey").getConstructor(org.bukkit.plugin.Plugin.class, String.class).newInstance(plugin, key);
+	}
+
+
+	private static ItemMeta getItemMeta(final ItemStack item, ItemMeta meta) {
+		item.setItemMeta(meta);
+		addAttributeTooltip(item);
+		return item.getItemMeta();
+	}
+
+	private static <T> boolean callSingleParamMethod(final String methodName, final T param, final Class<T> paramType, final Object instance, final Class<?> instanceType) {
+		try {
+			final Method m = instanceType.getMethod(methodName, paramType);
+			m.invoke(instance, param);
+			return true;
+		} catch (final NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+			return false;
+		}
+	}
+
 }

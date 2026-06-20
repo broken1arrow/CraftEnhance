@@ -2,6 +2,7 @@ package com.dutchjelly.craftenhance.crafthandling;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.api.CraftEnhanceAPI;
 import com.dutchjelly.craftenhance.api.event.crafting.BeforeCraftOutputEvent;
 import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
@@ -52,10 +53,10 @@ public class WorkBenchRecipeInjector {
 		final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
 
 		if (possibleRecipeGroups == null || possibleRecipeGroups.isEmpty()) {
-			if (recipeManger.isDisableDefaultModeldataCrafts() && Adapter.canUseModeldata() && recipeManger.containsModelData(matrix)) {
+			if (self().isDisableDefaultModeldataCrafts() && Adapter.containsModelData(matrix)) {
 				result.accept(null);
 			}
-			if (recipeManger.checkForDisabledRecipe(disabledServerRecipes, serverRecipe.getResult())) {
+			if (RecipeAdapter.checkForDisabledRecipe(disabledServerRecipes, serverRecipe.getResult())) {
 				result.accept(null);
 			}
 			Debug.Send(Type.Crafting, () -> "No matching groups");
@@ -73,13 +74,13 @@ public class WorkBenchRecipeInjector {
 				if (!(enhancedRecipe instanceof WBRecipe)) continue;
 				final WBRecipe wbRecipe = (WBRecipe) enhancedRecipe;
 
-				notAllowedToCraft = recipeManger.isCraftingAllowedInWorld(inventory.getLocation(), enhancedRecipe);
+				notAllowedToCraft = RecipeAdapter.isCraftingAllowedInWorld(inventory.getLocation(), enhancedRecipe);
 				if (notAllowedToCraft) {
 					Debug.Send(wbRecipe, () -> "You are not allowed to craft.");
 					continue;
 				}
 
-				if (recipeManger.checkForDisabledRecipe(disabledServerRecipes, wbRecipe, serverRecipe.getResult())) {
+				if (RecipeAdapter.checkForDisabledRecipe(disabledServerRecipes, wbRecipe, serverRecipe.getResult())) {
 					result.accept(null);
 					Debug.Send(wbRecipe, () -> "This recipe is disabled. ");
 					continue;
@@ -90,10 +91,10 @@ public class WorkBenchRecipeInjector {
 				final Player player = !viewers.isEmpty() ? (Player) viewers.get(0) : null;
 
 				if (wbRecipe.matches(matrix)
-						&& recipeManger.isViewersAllowedCraft(viewers, wbRecipe)
+						&& RecipeAdapter.isViewersAllowedCraft(viewers, wbRecipe)
 						&& !CraftEnhanceAPI.fireEvent(wbRecipe, player, inventory, group)) {
 					Debug.Send(wbRecipe, () -> "Recipe matches, injecting " + wbRecipe.getResult().toString());
-					if (recipeManger.isMakeItemsadderCompatible() && recipeManger.containsModelData(matrix)) {
+					if (self().isMakeItemsadderCompatible() && Adapter.containsModelData(matrix)) {
 						Debug.Send(wbRecipe, () -> "This recipe contains Modeldata and will be crafted if the recipe is not cancelled.");
 						CraftEnhance.runTask(() -> {
 							if (wbRecipe.matches(matrix)) {
@@ -103,7 +104,7 @@ public class WorkBenchRecipeInjector {
 									return;
 								}
 								Debug.Send(wbRecipe, () -> "The recipe is now crafted and output item is " + beforeCraftOutputEvent.getResultItem());
-								Debug.Send(wbRecipe, () -> "The crafted recipe matrix: " + recipeManger.convertItemStackArrayToString(matrix));
+								Debug.Send(wbRecipe, () -> "The crafted recipe matrix: " + RecipeDebug.convertItemStackArrayToString(matrix));
 								result.accept(beforeCraftOutputEvent.getResultItem());
 							}
 						});
@@ -116,7 +117,7 @@ public class WorkBenchRecipeInjector {
 							return;
 						}
 						Debug.Send(wbRecipe, () -> "The recipe is now crafted and output item is " + beforeCraftOutputEvent.getResultItem());
-						Debug.Send(wbRecipe, () -> "The crafted recipe matrix: " + recipeManger.convertItemStackArrayToString(matrix));
+						Debug.Send(wbRecipe, () -> "The crafted recipe matrix: " + RecipeDebug.convertItemStackArrayToString(matrix));
 						result.accept(beforeCraftOutputEvent.getResultItem());
 					}
 					if (inventory.getType() != InventoryType.WORKBENCH && inventory.getType() != InventoryType.CRAFTING && plugin.getConfig().getBoolean("turn_of_crafter", true)) {
@@ -128,7 +129,7 @@ public class WorkBenchRecipeInjector {
 					return;
 				}
 				Debug.Send(wbRecipe, () -> "Recipe matrix doesn't match.");
-				Debug.Send(wbRecipe, () -> recipeManger.recipeIngredientsDebug(wbRecipe, matrix));
+				Debug.Send(wbRecipe, () -> RecipeDebug.recipeIngredientsDebug(wbRecipe, matrix));
 
 				if (wbRecipe.isCheckPartialMatch() && wbRecipe.matches(matrix, MatchType.MATCH_TYPE.getMatcher())) {
 					Debug.Send(wbRecipe, () -> "Partial matched recipe fond and will prevent craft this recipe.");
@@ -148,18 +149,18 @@ public class WorkBenchRecipeInjector {
 				if (sRecipe instanceof ShapedRecipe) {
 					final ItemStack[] content = ServerRecipeTranslator.translateShapedRecipe((ShapedRecipe) sRecipe);
 
-					Debug.Send(Type.Crafting, () -> "[ShapedRecipe] matrix to match: " + recipeManger.convertItemStackArrayToString(matrix));
-					Debug.Send(Type.Crafting, () -> "[ShapedRecipe] ingredients" + recipeManger.convertItemStackArrayToString(content));
-					if (WBRecipeComparer.shapeMatches(content, matrix, recipeManger.getTypeMatcher())) {
+					Debug.Send(Type.Crafting, () -> "[ShapedRecipe] matrix to match: " + RecipeDebug.convertItemStackArrayToString(matrix));
+					Debug.Send(Type.Crafting, () -> "[ShapedRecipe] ingredients" + RecipeDebug.convertItemStackArrayToString(content));
+					if (WBRecipeComparer.shapeMatches(content, matrix, RecipeAdapter.getTypeMatcher())) {
 						Debug.Send(Type.Crafting, () -> "Matched a ShapedRecipe and will allow this server recipe.");
 						result.accept(sRecipe.getResult());
 						return;
 					}
 				} else if (sRecipe instanceof ShapelessRecipe) {
 					final ItemStack[] ingredients = ServerRecipeTranslator.translateShapelessRecipe((ShapelessRecipe) sRecipe);
-					Debug.Send(Type.Crafting, () -> "[ShapelessRecipe] matrix to match: " + recipeManger.convertItemStackArrayToString(matrix));
-					Debug.Send(Type.Crafting, () -> "[ShapelessRecipe] ingredients" + recipeManger.convertItemStackArrayToString(ingredients));
-					if (WBRecipeComparer.ingredientsMatch(ingredients, matrix, recipeManger.getTypeMatcher())) {
+					Debug.Send(Type.Crafting, () -> "[ShapelessRecipe] matrix to match: " + RecipeDebug.convertItemStackArrayToString(matrix));
+					Debug.Send(Type.Crafting, () -> "[ShapelessRecipe] ingredients" + RecipeDebug.convertItemStackArrayToString(ingredients));
+					if (WBRecipeComparer.ingredientsMatch(ingredients, matrix, RecipeAdapter.getTypeMatcher())) {
 						Debug.Send(Type.Crafting, () -> "Matched a ShapelessRecipe and will allow this server recipe.");
 						result.accept(sRecipe.getResult());
 						return;

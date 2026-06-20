@@ -2,6 +2,7 @@ package com.dutchjelly.craftenhance.crafthandling;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
@@ -201,7 +202,7 @@ public class FurnaceRecipeInjector {
 				if(Adapter.isCraftingRecipe(sRecipe)) continue;
 
 				final org.bukkit.inventory.FurnaceRecipe fRecipe = (org.bukkit.inventory.FurnaceRecipe) sRecipe;
-				if (this.recipeInjector.getTypeMatcher().match(fRecipe.getInput(), source)) {
+				if (RecipeAdapter.getTypeMatcher().match(fRecipe.getInput(), source)) {
 					Debug.Send(Type.Smelting, () -> "Found similar server recipe for furnace, will prevent the recipe to be burnt.");
 					Debug.Send(Type.Smelting, () -> "Source " + source);
 					Debug.Send(Type.Smelting, () -> "Input: " + fRecipe.getInput());

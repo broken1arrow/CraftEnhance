@@ -2,7 +2,11 @@ package com.dutchjelly.craftenhance.crafthandling;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
+import com.dutchjelly.craftenhance.crafthandling.livedata.BrewingClickContext;
+import com.dutchjelly.craftenhance.crafthandling.livedata.BrewingWrapper;
+import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
@@ -27,15 +31,10 @@ import java.util.function.Consumer;
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class BrewingRecipeInjector {
-
-	private final RecipeInjector recipeInjector;
 	private final CraftEnhance plugin = self();
 	private boolean enableBrewing = plugin.getConfig().getBoolean("enable-brewing-recipes");
 	private boolean enableCraft = plugin.getConfig().getBoolean("enable-recipes");
 
-	public BrewingRecipeInjector(final RecipeInjector recipeInjector) {
-		this.recipeInjector = recipeInjector;
-	}
 
 	public void reloadSettings() {
 		enableBrewing = plugin.getConfig().getBoolean("enable-brewing-recipes");
@@ -43,41 +42,43 @@ public class BrewingRecipeInjector {
 	}
 
 	public void onBrewClick(final InventoryClickEvent event) {
-		if (!enableBrewing || !enableCraft) return;
-
+		if (!enableBrewing || !enableCraft) {
+			Debug.Send(Type.Brewing, () -> "Brewing is turned off in the config, set it to true to allowing custom brewing recipes.");
+			return;
+		}
 		if (event.getInventory().getType() != InventoryType.BREWING) return;
 
+		final RecipeLoader loader = RecipeLoader.getInstance();
 		final Location location = event.getInventory().getLocation();
 		if (location == null) return;
 		if (!(location.getBlock().getState() instanceof BrewingStand)) return;
 
-		BrewingStand stand = (BrewingStand) location.getBlock().getState();
-
-		BrewerInventory brewerInventory = stand.getInventory();
+		final BrewingStand stand = (BrewingStand) location.getBlock().getState();
+		final BrewerInventory brewerInventory = stand.getInventory();
 		final Inventory clickedInventory = event.getClickedInventory();
 		if (clickedInventory == null || clickedInventory.getType() != InventoryType.BREWING) return;
-
-		Debug.Send(Type.Brewing, () -> "Player clicked inside Brewing stand, will start to check after matching recipe.");
-
-		ItemStack itemStackCursor = event.getCursor();
-		if (brewerInventory.getIngredient() != null)
-			itemStackCursor = brewerInventory.getIngredient();
 
 		final int slot = event.getSlot();
 		if (slot == 4) {
 			return;
 		}
 
+		Debug.Send(Type.Brewing, () -> "Player clicked inside Brewing stand, will start to check after matching recipe.");
+		ItemStack itemStackCursor = event.getCursor();
+		if (brewerInventory.getIngredient() != null)
+			itemStackCursor = brewerInventory.getIngredient();
+
+/*
 		if (itemStackCursor != null) {
 			final ItemStack itemStackCheck = itemStackCursor.clone();
-			final List<RecipeGroup> possibleRecipeGroups = this.recipeInjector.getLoader().findGroupsBySimilarResultMatch(itemStackCheck, RecipeType.BREWING);
+			final List<RecipeGroup> possibleRecipeGroups = loader.findGroupsBySimilarResultMatch(itemStackCheck, RecipeType.BREWING);
 			final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
 
 			if (possibleRecipeGroups == null || possibleRecipeGroups.isEmpty()) {
-				if (this.recipeInjector.isDisableDefaultModeldataCrafts() && Adapter.canUseModeldata() && this.recipeInjector.containsModelData(brewerInventory.getContents())) {
+				if (self().isDisableDefaultModeldataCrafts() && Adapter.containsModelData(brewerInventory.getContents())) {
 					return;
 				}
-				if (this.recipeInjector.checkForDisabledRecipe(disabledServerRecipes, itemStackCheck)) {
+				if (RecipeAdapter.checkForDisabledRecipe(disabledServerRecipes, itemStackCheck)) {
 					return;
 				}
 
@@ -94,15 +95,48 @@ public class BrewingRecipeInjector {
 					.setPossibleRecipeGroups(possibleRecipeGroups)
 			);
 			this.brewingCheck(wrapBrewingClick);
+		}*/
+		if (itemStackCursor != null) {
+			final ItemStack itemStackCheck = itemStackCursor.clone();
+			final List<RecipeWrapper> possibleRecipeGroups = loader.findMatchingRecipe(RecipeType.BREWING, new ItemStack[]{itemStackCheck});
+			final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
+
+			if (possibleRecipeGroups.isEmpty()) {
+				if (RecipeAdapter.checkForDisabledRecipe(disabledServerRecipes, itemStackCheck)) {
+					Debug.Send(Type.Brewing, () -> "This brewing recipe is turned off, will not allow put the item inside the brewing stand.");
+					return;
+				}
+				Debug.Send(Type.Brewing, () -> "Couldn't find any matching brewing groups. Skipping the rest of the recipe checks.");
+				return;
+			}
+			if (self().isDisableDefaultModeldataCrafts() && Adapter.containsModelData(brewerInventory.getContents())) {
+				Debug.Send(Type.Brewing, () -> "Found a matching group of brewing recipes, but has turn off creating recipe with modeldata.");
+				return;
+			}
+			Debug.Send(Type.Brewing, () -> "Found " + possibleRecipeGroups.size() + " groups that matching the brewing recipe. Now checking for a matching recipe based on your provided items.");
+			final BrewingClickContext clickContext = BrewingClickContext.ofClick(wrapBrewing -> wrapBrewing
+					.setEvent(event)
+					.setBrewingInv(brewerInventory)
+					.setLocation(location)
+					.setItemStackCursor(itemStackCheck)
+					.setSlot(slot)
+			);
+			for (RecipeWrapper recipeWrapper : possibleRecipeGroups) {
+				if (recipeWrapper instanceof BrewingWrapper) {
+					((BrewingWrapper) recipeWrapper).brewingCheck(clickContext,matched -> {
+					});
+
+				}
+			}
 		}
 	}
 
 
 	public void onBrewDrag(final InventoryDragEvent event) {
 		if (!enableBrewing || !enableCraft) return;
-
 		if (event.getInventory().getType() != InventoryType.BREWING) return;
 
+		final RecipeLoader loader = RecipeLoader.getInstance();
 		final Location location = event.getInventory().getLocation();
 		if (location == null) return;
 		if (!(location.getBlock().getState() instanceof BrewingStand)) return;
@@ -110,7 +144,7 @@ public class BrewingRecipeInjector {
 		BrewingStand stand = (BrewingStand) location.getBlock().getState();
 
 		BrewerInventory inv = stand.getInventory();
-		final Inventory clickedInventory = recipeInjector.getTopInventory(event);
+		final Inventory clickedInventory = Adapter.getTopInventory(event);
 		if (clickedInventory == null || clickedInventory.getType() != InventoryType.BREWING) return;
 
 		ItemStack itemStackCursor = event.getCursor();
@@ -121,20 +155,20 @@ public class BrewingRecipeInjector {
 
 		if (itemStackCursor != null) {
 			final ItemStack itemStackCheck = itemStackCursor.clone();
-			final List<RecipeGroup> possibleRecipeGroups = this.recipeInjector.getLoader().findGroupsBySimilarResultMatch(itemStackCheck, RecipeType.BREWING);
+			final List<RecipeGroup> possibleRecipeGroups = loader.findGroupsBySimilarResultMatch(itemStackCheck, RecipeType.BREWING);
 			final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
 
 			if (possibleRecipeGroups == null || possibleRecipeGroups.isEmpty()) {
-				if (this.recipeInjector.isDisableDefaultModeldataCrafts() && Adapter.canUseModeldata() && this.recipeInjector.containsModelData(inv.getContents())) {
+				if (RecipeAdapter.checkForDisabledRecipe(disabledServerRecipes, itemStackCursor)) {
 					return;
 				}
-				if (this.recipeInjector.checkForDisabledRecipe(disabledServerRecipes, itemStackCursor)) {
-					return;
-				}
-
 				Debug.Send(Type.Brewing, () -> "No matching group or groups for the recipe.");
 				return;
 			}
+			if (self().isDisableDefaultModeldataCrafts() && Adapter.containsModelData(inv.getContents())) {
+				return;
+			}
+
 			for (final RecipeGroup group : possibleRecipeGroups) {
 				//Check if any grouped enhanced recipe is a match.
 				for (final EnhancedRecipeWrapper eRecipe : group.getRecipeGroupCache().values()) {
@@ -238,7 +272,7 @@ public class BrewingRecipeInjector {
 
 				final BrewingRecipe brewingRecipe = (BrewingRecipe) enhancedRecipe;
 
-				boolean notAllowedToBrew = recipeInjector.isCraftingAllowedInWorld(location, brewingRecipe);
+				boolean notAllowedToBrew = RecipeAdapter.isCraftingAllowedInWorld(location, brewingRecipe);
 				if (notAllowedToBrew) {
 					Debug.Send(Type.Brewing, () -> "You are not allowed to brew potions in this world: " + location.getWorld() + " with this recipe key: " + brewingRecipe.getKey());
 					continue;

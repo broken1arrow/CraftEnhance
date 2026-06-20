@@ -10,8 +10,7 @@ import java.util.List;
 @SuppressWarnings("deprecation")
 public class RecipeDebug {
 
-
-	public String recipeIngredientsDebug(final WBRecipe wbRecipe, final ItemStack[] matrix) {
+	public static String recipeIngredientsDebug(final WBRecipe wbRecipe, final ItemStack[] matrix) {
 		StringBuilder stringBuilder = new StringBuilder();
 		if (!wbRecipe.matches(matrix)) {
 			for (int i = 0; i < wbRecipe.getContent().length; i++) {
@@ -41,45 +40,7 @@ public class RecipeDebug {
 		return stringBuilder + "";
 	}
 
-	private void setIngredients(final List<ItemStack> matchingInvItems, final StringBuilder stringBuilder, final ItemMeta recipeMeta) {
-		for (int index = 0; index < matchingInvItems.size(); index++) {
-			ItemStack invItem = matchingInvItems.get(index);
-
-			final ItemMeta inveMeta = invItem == null ? null : invItem.getItemMeta();
-			stringBuilder.append("____________ingredient match №=").append(index).append("_____________");
-			stringBuilder.append("\nIngredient crafting with type= ").append(invItem == null ? "AIR" : invItem.getType());
-
-			final int mismatchIndex = findMismatchIndex(recipeMeta != null ? recipeMeta.getDisplayName() : "", inveMeta != null ? inveMeta.getDisplayName() : "");
-			String match = "matching exacly";
-			if (mismatchIndex == -2) match = "different length of the names";
-			if (mismatchIndex > 0) match = "match to pos " + mismatchIndex;
-			stringBuilder.append("\nDisplay name match= ").append(match);
-
-			if (inveMeta != null) {
-				stringBuilder.append("\nplayer added item display name= ").append(inveMeta.getDisplayName().isEmpty() ? "non" : "'" + inveMeta.getDisplayName() + "'");
-				if (inveMeta.getLore() != null)
-					stringBuilder.append("\nThe added item lore= ").append(inveMeta.getLore());
-				else stringBuilder.append("\nThe added item lore= non");
-			} else {
-				stringBuilder.append("\nplayer added item display name= non");
-				stringBuilder.append("\nThe added item lore= non");
-			}
-			stringBuilder.append("\n____________ingredient match end_____________\n\n");
-		}
-	}
-
-	private List<ItemStack> getItemStack(final ItemStack[] matrix, final ItemStack itemStack) {
-		if (itemStack == null) return null;
-		List<ItemStack> items = new ArrayList<>();
-		for (ItemStack invItemStack : matrix) {
-			if (invItemStack != null && invItemStack.getType() == itemStack.getType()) {
-				items.add(invItemStack);
-			}
-		}
-		return items.isEmpty() ? null : items;
-	}
-
-	public String convertItemStackArrayToString(final ItemStack[] matrix) {
+	public static String convertItemStackArrayToString(final ItemStack[] matrix) {
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append("\n____________ingredient matrix_____________");
 		for (ItemStack invItemStack : matrix) {
@@ -102,7 +63,7 @@ public class RecipeDebug {
 		return stringBuilder + "";
 	}
 
-	public int findMismatchIndex(String str1, String str2) {
+	public static int findMismatchIndex(String str1, String str2) {
 		int minLength = Math.min(str1.length(), str2.length());
 
 		for (int i = 0; i < minLength; i++) {
@@ -115,6 +76,44 @@ public class RecipeDebug {
 			return -2;
 		}
 		return -1; // Strings are identical
+	}
+
+	private static void setIngredients(final List<ItemStack> matchingInvItems, final StringBuilder stringBuilder, final ItemMeta recipeMeta) {
+		for (int index = 0; index < matchingInvItems.size(); index++) {
+			ItemStack invItem = matchingInvItems.get(index);
+
+			final ItemMeta inveMeta = invItem == null ? null : invItem.getItemMeta();
+			stringBuilder.append("____________ingredient match index=").append(index).append("_____________");
+			stringBuilder.append("\nIngredient crafting with type= ").append(invItem == null ? "AIR" : invItem.getType());
+
+			final int mismatchIndex = findMismatchIndex(recipeMeta != null ? recipeMeta.getDisplayName() : "", inveMeta != null ? inveMeta.getDisplayName() : "");
+			String match = "matching exactly";
+			if (mismatchIndex == -2) match = "different length of the names";
+			if (mismatchIndex > 0) match = "match to pos " + mismatchIndex;
+			stringBuilder.append("\nDisplay name match= ").append(match);
+
+			if (inveMeta != null) {
+				stringBuilder.append("\nplayer added item display name= ").append(inveMeta.getDisplayName().isEmpty() ? "non" : "'" + inveMeta.getDisplayName() + "'");
+				if (inveMeta.getLore() != null)
+					stringBuilder.append("\nThe added item lore= ").append(inveMeta.getLore());
+				else stringBuilder.append("\nThe added item lore= non");
+			} else {
+				stringBuilder.append("\nplayer added item display name= non");
+				stringBuilder.append("\nThe added item lore= non");
+			}
+			stringBuilder.append("\n____________ingredient match end_____________\n\n");
+		}
+	}
+
+	private static List<ItemStack> getItemStack(final ItemStack[] matrix, final ItemStack itemStack) {
+		if (itemStack == null) return null;
+		List<ItemStack> items = new ArrayList<>();
+		for (ItemStack invItemStack : matrix) {
+			if (invItemStack != null && invItemStack.getType() == itemStack.getType()) {
+				items.add(invItemStack);
+			}
+		}
+		return items.isEmpty() ? null : items;
 	}
 
 

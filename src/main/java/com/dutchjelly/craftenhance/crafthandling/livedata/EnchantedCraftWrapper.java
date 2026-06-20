@@ -1,16 +1,18 @@
 package com.dutchjelly.craftenhance.crafthandling.livedata;
 
+import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.api.CraftEnhanceAPI;
 import com.dutchjelly.craftenhance.api.event.crafting.BeforeCraftOutputEvent;
-import com.dutchjelly.craftenhance.crafthandling.RecipeInjector;
+import com.dutchjelly.craftenhance.crafthandling.RecipeDebug;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers.MatchType;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
-import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.HumanEntity;
@@ -21,7 +23,6 @@ import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
-import org.bukkit.permissions.Permissible;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -29,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
@@ -42,13 +42,24 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 		this.enhancedRecipe = enhancedRecipe;
 	}
 
+	@Nonnull
+	@Override
+	public RecipeType getRecipeType() {
+		return enhancedRecipe.getType();
+	}
+
+	@Override
+	public int priority() {
+		return -1;
+	}
+
 	@Override
 	public boolean isCustom() {
 		return false;
 	}
 
 	@Override
-	public void matches(@Nonnull final RecipeInjector recipeInjector, @Nonnull final Recipe serverRecipe, @Nonnull final Consumer<PrepareItemCraftContext> contextConsumer) {
+	public void matches(@Nonnull final Recipe serverRecipe, @Nonnull final Consumer<PrepareItemCraftContext> contextConsumer) {
 		final PrepareItemCraftContext craftContext = new PrepareItemCraftContext();
 		contextConsumer.accept(craftContext);
 		final ItemStack[] matrix = craftContext.getRecipeMatrix();
@@ -64,14 +75,14 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 		if (!(enhancedRecipe instanceof WBRecipe)) return;
 		final WBRecipe wbRecipe = (WBRecipe) enhancedRecipe;
 
-		boolean notAllowedToCraft = this.isCraftingAllowedInWorld(location, enhancedRecipe);
+		boolean notAllowedToCraft = RecipeAdapter.isCraftingAllowedInWorld(location, enhancedRecipe);
 		if (notAllowedToCraft) {
 			Debug.Send(wbRecipe, () -> "You are not allowed to craft this recipe: " + this.enhancedRecipe.getKey());
 			craftContext.acceptResult(null);
 			return;
 		}
 
-		if (this.checkForDisabledRecipe(disabledServerRecipes, wbRecipe, serverRecipe.getResult())) {
+		if (RecipeAdapter.checkForDisabledRecipe(disabledServerRecipes, wbRecipe, serverRecipe.getResult())) {
 			Debug.Send(wbRecipe, () -> "This recipe is disabled: " + this.enhancedRecipe.getKey());
 			craftContext.acceptResult(null);
 			return;
@@ -82,10 +93,10 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 		final Player player = !viewers.isEmpty() ? (Player) viewers.get(0) : null;
 
 		if (wbRecipe.matches(matrix)
-				&& this.isViewersAllowedCraft(viewers, wbRecipe)
+				&& RecipeAdapter.isViewersAllowedCraft(viewers, wbRecipe)
 				&& !CraftEnhanceAPI.fireEvent(wbRecipe, player, inventory, null)) {
 			Debug.Send(wbRecipe, () -> "Recipe matches, injecting " + wbRecipe.getResult().toString());
-			if (recipeInjector.isMakeItemsadderCompatible() && recipeInjector.containsModelData(matrix)) {
+			if (self().isMakeItemsadderCompatible() && Adapter.containsModelData(matrix)) {
 				Debug.Send(wbRecipe, () -> "This recipe contains Modeldata and will be crafted if the recipe is not cancelled.");
 				CraftEnhance.runTask(() -> {
 					if (wbRecipe.matches(matrix)) {
@@ -95,7 +106,7 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 							return;
 						}
 						Debug.Send(wbRecipe, () -> "The recipe is now crafted and output item is " + beforeCraftOutputEvent.getResultItem());
-						Debug.Send(wbRecipe, () -> "The crafted recipe matrix: " + recipeInjector.convertItemStackArrayToString(matrix));
+						Debug.Send(wbRecipe, () -> "The crafted recipe matrix: " + RecipeDebug.convertItemStackArrayToString(matrix));
 
 						craftContext.acceptResult(beforeCraftOutputEvent.getResultItem());
 					}
@@ -110,7 +121,7 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 					return;
 				}
 				Debug.Send(wbRecipe, () -> "The recipe is now crafted and output item is " + beforeCraftOutputEvent.getResultItem());
-				Debug.Send(wbRecipe, () -> "The crafted recipe matrix: " + recipeInjector.convertItemStackArrayToString(matrix));
+				Debug.Send(wbRecipe, () -> "The crafted recipe matrix: " + RecipeDebug.convertItemStackArrayToString(matrix));
 				craftContext.acceptResult(beforeCraftOutputEvent.getResultItem());
 			}
 			if (inventory.getType() != InventoryType.WORKBENCH && inventory.getType() != InventoryType.CRAFTING && self().getConfig().getBoolean("turn_of_crafter", true)) {
@@ -122,7 +133,7 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 			}
 		}
 		Debug.Send(wbRecipe, () -> "Recipe matrix doesn't match.");
-		Debug.Send(wbRecipe, () -> recipeInjector.recipeIngredientsDebug(wbRecipe, matrix));
+		Debug.Send(wbRecipe, () -> RecipeDebug.recipeIngredientsDebug(wbRecipe, matrix));
 
 		if (wbRecipe.isCheckPartialMatch() && wbRecipe.matches(matrix, MatchType.MATCH_TYPE.getMatcher())) {
 			Debug.Send(wbRecipe, () -> "Partial matched recipe fond and will prevent craft this recipe.");
@@ -154,42 +165,6 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 		if (type.isInstance(this.enhancedRecipe))
 			return Optional.of(type.cast(this.enhancedRecipe));
 		return Optional.empty();
-	}
-
-	private boolean isCraftingAllowedInWorld(final Location location, final EnhancedRecipe eRecipe) {
-		final Set<String> allowedWorlds = eRecipe.getAllowedWorlds();
-		//todo Similar recipes could prevent world blocking from working.
-		if (allowedWorlds == null || allowedWorlds.isEmpty()) return false;
-		if (location != null) {
-			if (location.getWorld() == null) return true;
-			for (final String world : allowedWorlds) {
-				if (location.getWorld().getName().equals(world)) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	private boolean checkForDisabledRecipe(final List<Recipe> disabledServerRecipes, final @NonNull WBRecipe wbRecipe, final @NonNull ItemStack result) {
-		if (disabledServerRecipes != null && !disabledServerRecipes.isEmpty())
-			for (final Recipe disabledRecipe : disabledServerRecipes) {
-				if (disabledRecipe.getResult().isSimilar(result) && wbRecipe.isSimilar(disabledRecipe)) {
-					return true;
-				}
-			}
-		return false;
-	}
-
-	private boolean isViewersAllowedCraft(final List<HumanEntity> viewers, final WBRecipe wbRecipe) {
-		if (viewers.isEmpty())
-			return true;
-		return viewers.stream().allMatch(x -> entityCanCraft(x, wbRecipe));
-	}
-
-	private boolean entityCanCraft(final Permissible entity, final EnhancedRecipe group) {
-		return group.getPermission() == null || group.getPermission().isEmpty()
-				|| (entity != null && entity.hasPermission(group.getPermission()));
 	}
 
 	@Override
