@@ -18,14 +18,42 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class VanillaCraftWrapper implements RecipeWrapper {
 	private final Recipe recipe;
+	private String key;
 
 	public VanillaCraftWrapper(@NonNull final Recipe recipe) {
 		this.recipe = recipe;
+		StringBuilder builder = new StringBuilder(recipe.getResult().getType().name());
+		builder.append("|");
+
+		if (recipe instanceof ShapelessRecipe) {
+			ShapelessRecipe shapeless = (ShapelessRecipe) recipe;
+			String joined = shapeless.getChoiceList().stream()
+					.map(c -> c.getItemStack().getType().name())
+					.sorted()
+					.collect(Collectors.joining(","));
+
+			builder.append("S|").append(joined);
+		}
+
+		if (recipe instanceof ShapedRecipe) {
+			ShapedRecipe shaped = (ShapedRecipe) recipe;
+			String joined = shaped.getChoiceMap().values().stream()
+					.filter(Objects::nonNull)
+					.map(c -> c.getItemStack().getType().name())
+					.sorted()
+					.collect(Collectors.joining(","));
+
+			builder.append("H|").append(joined);
+		}
+
+		this.key = builder.toString();
 	}
 
 	@Nonnull
@@ -80,28 +108,16 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 
 	@Override
 	public boolean equals(final Object o) {
-		if (o == null || getClass() != o.getClass()) return false;
+		if (o == null) return false;
+		if (!(o instanceof RecipeWrapper)) return false;
 		final VanillaCraftWrapper that = (VanillaCraftWrapper) o;
-		if (that.recipe.getResult().isSimilar(recipe.getResult())) {
-			org.bukkit.inventory.Recipe thatRecipe = that.getRecipe(Recipe.class).orElse(null);
-			if (thatRecipe instanceof ShapelessRecipe && recipe instanceof ShapelessRecipe) {
-				return ((ShapelessRecipe) thatRecipe).getChoiceList().equals(((ShapelessRecipe) recipe).getChoiceList());
-			}
-			if (thatRecipe instanceof ShapedRecipe && recipe instanceof ShapedRecipe) {
-				return ((ShapedRecipe) thatRecipe).getChoiceMap().equals(((ShapedRecipe) recipe).getChoiceMap());
-			}
-		}
-		return false;
+		return that.key.equals(key);
 	}
 
 	@Override
 	public int hashCode() {
 		int hash = 0;
-		hash = 41 * hash + recipe.getResult().hashCode();
-		if (recipe instanceof ShapelessRecipe)
-			hash = 41 * hash + ((ShapelessRecipe) recipe).getChoiceList().hashCode();
-		if (recipe instanceof ShapedRecipe)
-			hash = 41 * hash + ((ShapedRecipe) recipe).getChoiceMap().hashCode();
+		hash = 41 * hash + key.hashCode();
 		return hash;
 	}
 

@@ -36,15 +36,25 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class EnchantedCraftWrapper implements RecipeWrapper {
 	private final WBRecipe enhancedRecipe;
 	private final Map<Location, EnhancedRecipe> finishRecipe = new HashMap<>();
+	private String key;
 
 	public EnchantedCraftWrapper(@Nonnull final WBRecipe enhancedRecipe) {
 		this.enhancedRecipe = enhancedRecipe;
+
+		this.key = enhancedRecipe.getResult().getType().name() + "|" +
+				Arrays.stream(enhancedRecipe.getContent())
+						.filter(Objects::nonNull)
+						.map(i -> i.getType().name())
+						.sorted()
+						.collect(Collectors.joining(",")) +
+				"|" + (enhancedRecipe.isShapeless() ? "shapeless" : "shaped");
 	}
 
 	@Nonnull
@@ -55,7 +65,7 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 
 	@Override
 	public int priority() {
-		return -1;
+		return 0;
 	}
 
 	@Override
@@ -170,14 +180,18 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 
 	@Override
 	public boolean equals(final Object o) {
-		if (o == null || getClass() != o.getClass()) return false;
+		if (o == null) return false;
+		if (!(o instanceof RecipeWrapper)) return false;
+
 		final EnchantedCraftWrapper that = (EnchantedCraftWrapper) o;
-		return Objects.equals(enhancedRecipe, that.enhancedRecipe);
+		return that.key.equals(key);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(enhancedRecipe);
+		int hash = 0;
+		hash = 41 * hash + key.hashCode();
+		return hash;
 	}
 
 	@Override
