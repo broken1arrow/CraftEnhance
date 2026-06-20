@@ -73,4 +73,9 @@ public class RecipeAdapter {
 				: ItemMatchers::matchType;
 	}
 
+	public static IMatcher<ItemStack> getTypeMatcherNoMetadata() {
+		return Adapter.canUseModeldata() && self().isDisableDefaultModeldataCrafts() ?
+				ItemMatchers.constructIMatcher(ItemMatchers::matchType, ItemMatchers::matchModelData)
+				: ItemMatchers::matchTypeNoMeta;
+	}
 }

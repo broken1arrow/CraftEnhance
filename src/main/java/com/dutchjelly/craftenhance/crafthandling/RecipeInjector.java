@@ -111,7 +111,7 @@ public class RecipeInjector implements Listener {
 		final List<HumanEntity> viewers = craftEvent.getViewers();
 
 		final List<RecipeWrapper> recipes = this.getLoader().findMatchingRecipe(RecipeType.WORKBENCH, craftingInventory.getMatrix());
-		System.out.println("recipes\n " + recipes);
+
 		for (RecipeWrapper recipe : recipes) {
 			ResultContext contextResult = recipe.matches(craftEvent.getRecipe(), prepareRecipeContext -> {
 				if (prepareRecipeContext instanceof PrepareItemCraftContext) {
@@ -138,6 +138,7 @@ public class RecipeInjector implements Listener {
 			case DISABLED:
 			case NO_PERMISSION:
 			case CANCELLED:
+			case BLOCKED:
 				craftingInventory.setResult(null);
 				return true;
 			case NO_MATCH:

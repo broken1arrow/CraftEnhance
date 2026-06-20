@@ -77,13 +77,33 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 		final PrepareItemCraftContext prepareItemCraftContext = new PrepareItemCraftContext();
 		contextConsumer.accept(prepareItemCraftContext);
 		final ItemStack[] matrix = prepareItemCraftContext.getRecipeMatrix();
+/*
+		for (ItemStack item : matrix) {
+			if (item == null || !item.hasItemMeta()) {
+				continue;
+			}
+			final ItemMeta itemMeta = item.getItemMeta();
+			if (itemMeta.hasDisplayName() ||
+					itemMeta.hasLore() ||
+					itemMeta.hasEnchants() ||
+					item.getDurability() > 0 ||
+					(self().getVersionChecker().newerThan(ServerVersion.v1_13) && itemMeta.hasCustomModelData())) {
 
+				System.out.println("itemMeta.hasDisplayName() " + itemMeta.hasDisplayName());
+				System.out.println("itemMeta.hasLore() " + itemMeta.hasLore());
+				System.out.println("itemMeta.hasEnchants() " + itemMeta.hasEnchants() );
+				System.out.println("item.getDurability()  " + item.getDurability()  );
+				System.out.println("itemMeta.hasCustomModelData()  " + itemMeta.hasCustomModelData() );
+				return new ResultContext(recipe.getResult(), ResultType.BLOCKED);
+			}
+		}*/
+		Debug.Send(Type.Crafting, () -> "Vanilla recipe check, the result to match: " + recipe.getResult());
 		if (recipe instanceof ShapedRecipe) {
 			final ItemStack[] content = ServerRecipeTranslator.translateShapedRecipe((ShapedRecipe) recipe);
 
 			Debug.Send(Type.Crafting, () -> "[ShapedRecipe] matrix to match: " + RecipeDebug.convertItemStackArrayToString(matrix));
 			Debug.Send(Type.Crafting, () -> "[ShapedRecipe] ingredients" + RecipeDebug.convertItemStackArrayToString(content));
-			if (WBRecipeComparer.shapeMatches(content, matrix, RecipeAdapter.getTypeMatcher())) {
+			if (WBRecipeComparer.shapeMatches(content, matrix, RecipeAdapter.getTypeMatcherNoMetadata())) {
 				Debug.Send(Type.Crafting, () -> "Matched a ShapedRecipe and will allow this server recipe.");
 				return new ResultContext(recipe.getResult(), ResultType.VANILLA);
 			}
@@ -91,12 +111,13 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 			final ItemStack[] ingredients = ServerRecipeTranslator.translateShapelessRecipe((ShapelessRecipe) recipe);
 			Debug.Send(Type.Crafting, () -> "[ShapelessRecipe] matrix to match: " + RecipeDebug.convertItemStackArrayToString(matrix));
 			Debug.Send(Type.Crafting, () -> "[ShapelessRecipe] ingredients" + RecipeDebug.convertItemStackArrayToString(ingredients));
-			if (WBRecipeComparer.ingredientsMatch(ingredients, matrix, RecipeAdapter.getTypeMatcher())) {
+			if (WBRecipeComparer.ingredientsMatch(ingredients, matrix, RecipeAdapter.getTypeMatcherNoMetadata())) {
 				Debug.Send(Type.Crafting, () -> "Matched a ShapelessRecipe and will allow this server recipe.");
 				return new ResultContext(recipe.getResult(), ResultType.VANILLA);
 			}
 		}
-		return null;
+		Debug.Send(Type.Crafting, () -> "Did not match this recipe.");
+		return new ResultContext(null, ResultType.NO_MATCH);
 	}
 
 	@Override

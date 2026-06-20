@@ -2,6 +2,7 @@ package com.dutchjelly.craftenhance.crafthandling.util;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
+import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import com.dutchjelly.craftenhance.util.StripColors;
 import lombok.Getter;
 import org.broken.arrow.library.localization.builders.PluginMessages;
@@ -67,6 +68,41 @@ public class ItemMatchers {
 	public static boolean matchType(final ItemStack a, final ItemStack b) {
 		if (a == null || b == null) return a == null && b == null;
 		return a.getType().equals(b.getType());
+	}
+
+	public static boolean matchTypeNoMeta(final ItemStack a, final ItemStack b) {
+		if (a == null || b == null) return a == null && b == null;
+
+		if (a.getType() != b.getType()) {
+			return false;
+		}
+		if (!a.hasItemMeta() == !b.hasItemMeta()) {
+			return true;
+		}
+		boolean aHasRealMeta = hasCustomMeta(a);
+		boolean bHasRealMeta = hasCustomMeta(b);
+
+		return !aHasRealMeta && !bHasRealMeta;
+	}
+
+	private static boolean hasCustomMeta(ItemStack item) {
+		if (item == null || !item.hasItemMeta()) {
+			return false;
+		}
+
+		ItemMeta meta = item.getItemMeta();
+		if (meta == null) return false;
+
+		if (meta.hasDisplayName()) return true;
+		if (meta.hasLore()) return true;
+		if (meta.hasEnchants()) return true;
+
+		if(self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
+			if (meta.hasCustomModelData()) return true;
+			return !meta.getPersistentDataContainer().isEmpty();
+		}
+
+		return false;
 	}
 
 	@SafeVarargs
@@ -156,7 +192,7 @@ public class ItemMatchers {
 		if (hasMetaA && hasMetaB) {
 			final ItemMeta metaA = a.getItemMeta();
 			final ItemMeta metaB = b.getItemMeta();
-			return checkMetaIsSame(metaA , metaB) && checkModelData;
+			return checkMetaIsSame(metaA, metaB) && checkModelData;
 		}
 
 		return checkModelData && hasMetaA == hasMetaB && a.getType() == b.getType() && getDamage(a.getItemMeta()) == getDamage(b.getItemMeta());
