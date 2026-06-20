@@ -2,6 +2,7 @@ package com.dutchjelly.craftenhance.crafthandling.livedata;
 
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareFurnaceContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
+import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers.MatchType;
 import com.dutchjelly.craftenhance.messaging.Debug;
@@ -52,7 +53,7 @@ public class VanillaFurnaceWrapper implements RecipeWrapper {
 	}
 
 	@Override
-	public void matches(@Nonnull final Recipe serverRecipe, @Nonnull final Consumer<PrepareRecipeContext> contextConsumer) {
+	public ResultContext matches(@Nonnull final Recipe serverRecipe, @Nonnull final Consumer<PrepareRecipeContext> contextConsumer) {
 		final PrepareFurnaceContext furnaceContext = new PrepareFurnaceContext();
 		contextConsumer.accept(furnaceContext);
 		final ItemStack[] srcMatrix = furnaceContext.getRecipeMatrix();
@@ -64,11 +65,13 @@ public class VanillaFurnaceWrapper implements RecipeWrapper {
 			Debug.Send(Type.Smelting, () -> "Found enhanced recipe " + fRecipe.getResult() + " for furnace");
 			Debug.Send(Type.Smelting, () -> "Matching ingredients are " + Arrays.toString(srcMatrix) + " .");
 			furnaceContext.setFurnaceResult(RecipeResult.setVanilla(furnaceContext.getFurnace()));
-			return;
+			return null;
 		} else {
 			Debug.Send(Type.Smelting, () -> "found recipe doesn't match '" + Arrays.toString(srcMatrix) + "'.");
 		}
 		furnaceContext.setFurnaceResult(RecipeResult.setNone());
+
+		return null;
 	}
 
 

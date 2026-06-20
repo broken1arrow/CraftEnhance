@@ -6,12 +6,11 @@ import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 public class PrepareItemCraftContext implements PrepareRecipeContext {
 	private CraftingInventory inventory;
 	private ItemStack[] recipeMatrix;
-	private  Consumer<ItemStack> result;
+	private  ResultContext  result;
 	private List<HumanEntity> viewers;
 
 	public CraftingInventory getInventory() {
@@ -35,13 +34,12 @@ public class PrepareItemCraftContext implements PrepareRecipeContext {
 	}
 
 
-	public void acceptResult(final ItemStack itemStack) {
-		if(result == null) return;
-		result.accept(itemStack);
+	public void setResult(final ResultContext  resultType) {
+		this.result = resultType;
 	}
 
-	public void getResult(final Consumer<ItemStack> result) {
-		this.result = result;
+	public ResultContext getResult() {
+		return this.result;
 	}
 
 	@Override
@@ -53,5 +51,7 @@ public class PrepareItemCraftContext implements PrepareRecipeContext {
 	public List<HumanEntity> getViewers() {
 		return viewers;
 	}
+
+
 
 }

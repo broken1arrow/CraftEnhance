@@ -39,6 +39,9 @@ public class RecipeRegistry {
 			final Material type = itemStack == null ? null : itemStack.getType();
 			if (type == null) continue;
 			final Set<RecipeWrapper> recipeCached = this.mappedRecipes.getOrDefault(type, Collections.emptySet());
+			System.out.println("#######################"  );
+			System.out.println("type " +  type );
+			System.out.println("recipeCached " +  recipeCached);
 			if (recipeCached.isEmpty()) {
 				return Collections.emptyList();
 			}

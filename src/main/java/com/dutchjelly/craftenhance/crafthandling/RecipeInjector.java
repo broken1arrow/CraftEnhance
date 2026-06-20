@@ -5,6 +5,7 @@ import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareItemCraftContext;
+import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
@@ -108,28 +109,40 @@ public class RecipeInjector implements Listener {
 
 		final CraftingInventory craftingInventory = craftEvent.getInventory();
 		final List<HumanEntity> viewers = craftEvent.getViewers();
-		List<RecipeWrapper> recipes = this.getLoader().findMatchingRecipe(RecipeType.WORKBENCH, craftingInventory.getMatrix());
-		System.out.println("recipes " + recipes);
+
+		final List<RecipeWrapper> recipes = this.getLoader().findMatchingRecipe(RecipeType.WORKBENCH, craftingInventory.getMatrix());
+		System.out.println("recipes\n " + recipes);
 		for (RecipeWrapper recipe : recipes) {
-			final PrepareItemCraftContext[] prepareItemCraftContext = new PrepareItemCraftContext[1];
-			recipe.matches(craftEvent.getRecipe(), prepareRecipeContext -> {
+			ResultContext contextResult = recipe.matches(craftEvent.getRecipe(), prepareRecipeContext -> {
 				if (prepareRecipeContext instanceof PrepareItemCraftContext) {
 					final PrepareItemCraftContext recipeContext = (PrepareItemCraftContext) prepareRecipeContext;
 					recipeContext.setRecipeMatrix(craftingInventory.getMatrix());
 					recipeContext.setViewers(viewers);
 					recipeContext.setInventory(craftingInventory);
-					recipeContext.getResult(itemStack -> {
-						if (itemStack != null){
-							prepareItemCraftContext[0] = recipeContext;
-							craftingInventory.setResult(itemStack);
-						}
-					});
 				}
 			});
-			if(prepareItemCraftContext[0] != null)
-				break;
+			if (contextResult == null) continue;
+			if (endCraftingCheck(contextResult, craftingInventory)) return;
 		}
+		craftingInventory.setResult(null);
 		//this.workBenchRecipeInjector.craftItem(serverRecipe, craftingInventory.getMatrix(), craftingInventory, viewers, craftingInventory::setResult);
+	}
+
+	private boolean endCraftingCheck(final ResultContext contextResult, final CraftingInventory craftingInventory) {
+		switch (contextResult.getResultType()) {
+			case ENHANCED:
+			case VANILLA:
+				craftingInventory.setResult(contextResult.getItemStack());
+				return true;
+			case PARTIAL_MATCH:
+			case DISABLED:
+			case NO_PERMISSION:
+			case CANCELLED:
+				craftingInventory.setResult(null);
+				return true;
+			case NO_MATCH:
+		}
+		return false;
 	}
 
 	@EventHandler

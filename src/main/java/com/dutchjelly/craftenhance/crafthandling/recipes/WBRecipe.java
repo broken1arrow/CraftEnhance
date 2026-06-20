@@ -17,6 +17,7 @@ import org.bukkit.inventory.ShapelessRecipe;
 import javax.annotation.Nonnull;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class WBRecipe extends EnhancedRecipe {
 
@@ -198,5 +199,18 @@ public class WBRecipe extends EnhancedRecipe {
 	@Override
 	public boolean matchesBlockType(final Material blockSmelting) {
 		return true;
+	}
+
+	@Override
+	public boolean equals(final Object o) {
+		if (o == null || getClass() != o.getClass()) return false;
+		if (!super.equals(o)) return false;
+		final WBRecipe wbRecipe = (WBRecipe) o;
+		return shapeless == wbRecipe.shapeless && type == wbRecipe.type;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(super.hashCode(), type, shapeless);
 	}
 }

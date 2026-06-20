@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.crafthandling.livedata;
 
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
+import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import org.bukkit.inventory.Recipe;
 
@@ -17,7 +18,7 @@ public interface RecipeWrapper {
 
 	boolean isCustom();
 
-	void matches(@Nonnull final Recipe serverRecipe, @Nonnull final Consumer<PrepareRecipeContext> contextConsumer);
+	ResultContext matches(@Nonnull final Recipe serverRecipe, @Nonnull final Consumer<PrepareRecipeContext> contextConsumer);
 
 	<T> Optional<T> getRecipe(Class<T> type);
 

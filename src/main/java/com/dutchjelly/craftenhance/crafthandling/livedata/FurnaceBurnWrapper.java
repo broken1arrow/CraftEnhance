@@ -3,6 +3,7 @@ package com.dutchjelly.craftenhance.crafthandling.livedata;
 import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareFurnaceContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
+import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerCache;
@@ -51,34 +52,8 @@ public class FurnaceBurnWrapper implements RecipeWrapper {
 		return Optional.empty();
 	}
 
-	public FurnaceRecipe matches(@Nonnull final Furnace furnace, @Nonnull final ItemStack source) {
-		BlockOwnerCache blockOwnerCache = self().getBlockOwnerCache();
-		final BlockOwnerData containerOwner = blockOwnerCache.getContainerOwner(furnace.getLocation());
-		final Player player = containerOwner == null ? null : self().getServer().getPlayer(containerOwner.getCurrentOwner());
-
-		final ItemStack[] srcMatrix = new ItemStack[]{source};
-		final FurnaceRecipe fRecipe = this.furnaceRecipe;
-		Debug.Send(fRecipe, () -> "Checking if enhanced recipe for " + fRecipe.getResult().toString() + " matches.");
-		Debug.Send(fRecipe, () -> "The srcMatrix " + Arrays.toString(srcMatrix) + ".");
-
-		if (fRecipe.matches(srcMatrix)) {
-			if (RecipeAdapter.entityCanCraft(player, fRecipe)) {
-				Debug.Send(fRecipe, () -> "Found enhanced recipe " + fRecipe.getResult() + " for furnace");
-				Debug.Send(fRecipe, () -> "Matching ingredients are " + source + " .");
-				return fRecipe;
-			} else {
-				Debug.Send(fRecipe, () -> "found this recipe " + fRecipe.getResult().toString() + " match but, player has not this permission " + fRecipe.getPermission());
-				return null;
-			}
-		} else {
-			Debug.Send(fRecipe, () -> "found recipe doesn't match '" + source.getType() + (RecipeAdapter.entityCanCraft(player, fRecipe) ? "'." : "' and no perms."));
-		}
-		return null;
-	}
-
-
 	@Override
-	public void matches(@Nonnull final Recipe serverRecipe, @Nonnull final Consumer<PrepareRecipeContext> contextConsumer) {
+	public ResultContext matches(@Nonnull final Recipe serverRecipe, @Nonnull final Consumer<PrepareRecipeContext> contextConsumer) {
 		final PrepareFurnaceContext furnaceContext = new PrepareFurnaceContext();
 		contextConsumer.accept(furnaceContext);
 		final BlockOwnerCache blockOwnerCache = self().getBlockOwnerCache();
@@ -97,7 +72,7 @@ public class FurnaceBurnWrapper implements RecipeWrapper {
 				Debug.Send(fRecipe, () -> "Found enhanced recipe " + fRecipe.getResult() + " for furnace");
 				Debug.Send(fRecipe, () -> "Matching ingredients are " + Arrays.toString(srcMatrix) + " .");
 				furnaceContext.setFurnaceResult((RecipeResult.setResult(fRecipe)));
-				return;
+				return null;
 			} else {
 				Debug.Send(fRecipe, () -> "found this recipe " + fRecipe.getResult().toString() + " match but, player has not this permission " + fRecipe.getPermission());
 			}
@@ -105,5 +80,6 @@ public class FurnaceBurnWrapper implements RecipeWrapper {
 			Debug.Send(fRecipe, () -> "found recipe doesn't match '" + Arrays.toString(srcMatrix) + (RecipeAdapter.entityCanCraft(player, fRecipe) ? "'." : "' and no perms."));
 		}
 		furnaceContext.setFurnaceResult(RecipeResult.setNone());
+		return null;
 	}
 }

@@ -3,6 +3,7 @@ package com.dutchjelly.craftenhance.crafthandling;
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.cache.CacheRecipes;
 import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
+import com.dutchjelly.craftenhance.crafthandling.livedata.BrewingWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.EnchantedCraftWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.FurnaceBurnWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeRegistry;
@@ -12,6 +13,7 @@ import com.dutchjelly.craftenhance.crafthandling.livedata.VanillaFurnaceWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.files.CategoryData;
@@ -264,10 +266,12 @@ public class RecipeLoader {
 		String categoryName = loadCategories(recipe);
 		String groupName = addToGroup(similarServerRecipes, recipe, categoryName);
 		ItemStack[] content = recipe.getContent();
-		if (recipe instanceof FurnaceRecipe)
+		if (recipe instanceof WBRecipe)
+			liveCacheRecipe(new EnchantedCraftWrapper((WBRecipe) recipe), content);
+		else if (recipe instanceof FurnaceRecipe)
 			liveCacheRecipe(new FurnaceBurnWrapper((FurnaceRecipe) recipe), content);
-		else
-			liveCacheRecipe(new EnchantedCraftWrapper(recipe), content);
+		else if (recipe instanceof BrewingRecipe)
+			liveCacheRecipe(new BrewingWrapper((BrewingRecipe) recipe), content);
 
 		//Only load the recipe if there is not a server recipe that's always similar.
 		final Recipe serverRecipe = recipe.getServerRecipe(groupName);
