@@ -2,6 +2,7 @@ package com.dutchjelly.craftenhance.crafthandling.livedata;
 
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.RecipeAdapter;
+import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.messaging.Debug;
@@ -49,7 +50,7 @@ public class BrewingWrapper implements RecipeWrapper {
 	}
 
 	@Override
-	public void matches(@Nonnull final Recipe serverRecipe, @Nonnull final Consumer<PrepareItemCraftContext> contextConsumer) {
+	public void matches(@Nonnull final Recipe serverRecipe, @Nonnull final Consumer<PrepareRecipeContext> contextConsumer) {
 	}
 
 	public void brewingCheck(@Nonnull final BrewingClickContext wrapBrewingClick,@Nonnull final BooleanConsumer match) {

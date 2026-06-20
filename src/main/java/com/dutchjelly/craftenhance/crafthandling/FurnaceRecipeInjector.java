@@ -4,8 +4,11 @@ import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
+import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
+import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareFurnaceContext;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerCache;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerData;
 import com.dutchjelly.craftenhance.messaging.Debug;
@@ -15,7 +18,9 @@ import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import com.dutchjelly.craftenhance.util.RecipeResult;
 import lombok.Getter;
 import org.bukkit.Material;
+import org.bukkit.block.BlastFurnace;
 import org.bukkit.block.Furnace;
+import org.bukkit.block.Smoker;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -32,6 +37,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class FurnaceRecipeInjector {
 	private final CraftEnhance plugin;
@@ -58,6 +65,85 @@ public class FurnaceRecipeInjector {
 		final Furnace furnace = (Furnace) event.getBlock().getState();
 		final RecipeResult result = this.getFurnaceResult(groups, event.getSource(), furnace);
 
+
+		smeltTask(event, result, furnace, groups);
+	}
+
+	public void smeltTask(final FurnaceSmeltEvent event, final FurnaceRecipe fRecipe) {
+		final ItemStack[] matrix = {new ItemStack(event.getSource().getType())};
+		final List<RecipeWrapper> matchingRecipe = RecipeLoader.getInstance().findMatchingRecipe(fRecipe.getType(), matrix);
+		final Furnace furnace = (Furnace) event.getBlock().getState();
+		final RecipeResult result = getFurnaceResultt(event.getRecipe(), matchingRecipe, matrix,  furnace);
+
+		if (result.isEnhancedRecipe()) {
+			Debug.Send(Type.Smelting, () -> "Custom item smelted, the result item: " + result);
+			event.setResult(result.getItem());
+		} else {
+			//final List<RecipeWrapper> matchingRecipe = RecipeLoader.getInstance().findMatchingRecipe(result.getRecipeType(),new ItemStack[]{new ItemStack(event.getSource().getType())});
+			if (result.isNone()) {
+				event.setCancelled(true);
+				Debug.Send(Type.Smelting, () -> "No similar matching to the vanilla recipe, will not changing the outcome.");
+				return;
+			}
+			Debug.Send(Type.Smelting, () -> "Found similar vanilla recipe " + result.getItem());
+			final boolean isVanillaRecipe = fRecipe.matchesType(new ItemStack[]{event.getSource()}) && !fRecipe.getResult().isSimilar(result.getItem());
+			if (fRecipe.isCheckPartialMatch() && isVanillaRecipe) {
+				event.setCancelled(true);
+				return;
+			}
+			if (isVanillaRecipe) {
+				event.setResult(result.getItem());
+			}
+		}
+		// else
+		//event.setCancelled(true);
+	}
+
+	public void burnTask(final FurnaceBurnEvent burnEvent) {
+		if (burnEvent.isCancelled()) return;
+		final Furnace furnace = (Furnace) burnEvent.getBlock().getState();
+		//Reduce computing time by pausing furnaces. This can be removed if we also check for hoppers
+		//instead of only clicks to unpause.
+		if (pausedFurnaces.getOrDefault(furnace, LocalDateTime.now()).isAfter(LocalDateTime.now())) {
+			Debug.Send(Type.Smelting, () -> "Furnace burn event is on pause for couple of seconds.");
+			burnEvent.setCancelled(true);
+			return;
+		}
+		Debug.Send(Type.Smelting, () -> "Furnace start to burn event for the item");
+		RecipeType recipeType = RecipeType.FURNACE;
+		if (self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
+			if (furnace instanceof BlastFurnace)
+				recipeType = RecipeType.BLAST;
+			if (furnace instanceof Smoker)
+				recipeType = RecipeType.SMOKER;
+		}
+		final FurnaceInventory furnaceInventory = furnace.getInventory();
+		final ItemStack smeltingStack = furnaceInventory.getSmelting();
+		final ItemStack[] matrix = {(smeltingStack != null ? new ItemStack(smeltingStack) : new ItemStack(Material.AIR))};
+		final List<RecipeWrapper> matchingRecipe = RecipeLoader.getInstance().findMatchingRecipe(recipeType, matrix);
+		final RecipeResult result = getFurnaceResultt(null, matchingRecipe, matrix,  furnace);
+
+		ItemStack itemInResulSlot = furnaceInventory.getResult();
+		if (result.isEnhancedRecipe() && itemInResulSlot != null && itemInResulSlot.getType() != Material.AIR && !result.getItem().isSimilar(itemInResulSlot)) {
+			Debug.Send(Type.Smelting, () -> "It is already an item inside the furnace, that is not similar. Can't smelt the item");
+			burnEvent.setCancelled(true);
+			return;
+		}
+
+		if (!result.isEnhancedRecipe()) {
+			if (smeltingStack != null && RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(smeltingStack.getType())) != null)
+				return;
+			if (result.isVanilla())
+				return;
+			if (result.isNone()) {
+				Debug.Send(Type.Smelting, () -> "The recipe is not an enhanced recipe or vanilla recipe it will abort the burn event.");
+				burnEvent.setCancelled(true);
+			}
+			pausedFurnaces.put(furnace, LocalDateTime.now().plusSeconds(10L));
+		}
+	}
+
+	private void smeltTask(final FurnaceSmeltEvent event, final RecipeResult result, final Furnace furnace, final List<RecipeGroup> groups) {
 		if (result.isEnhancedRecipe()) {
 			Debug.Send(Type.Smelting, () -> "Custom item smelted, the result item: " + result);
 			ItemStack itemInResulSlot = furnace.getInventory().getResult();
@@ -79,7 +165,7 @@ public class FurnaceRecipeInjector {
 					}
 					for (final EnhancedRecipeWrapper eRecipe : recipeCoreList) {
 						final EnhancedRecipe enhancedRecipe = eRecipe.getEnhancedRecipe();
-						if (!(enhancedRecipe  instanceof FurnaceRecipe)) continue;
+						if (!(enhancedRecipe instanceof FurnaceRecipe)) continue;
 						final FurnaceRecipe fRecipe = (FurnaceRecipe) enhancedRecipe;
 
 						final boolean isVanillaRecipe = fRecipe.matchesType(new ItemStack[]{event.getSource()}) && !fRecipe.getResult().isSimilar(itemStack);
@@ -94,7 +180,7 @@ public class FurnaceRecipeInjector {
 					}
 				}
 			} else {
-				if(result.isNone())
+				if (result.isNone())
 					event.setCancelled(true);
 				Debug.Send(Type.Smelting, () -> "No similar matching to the vanilla recipe, will not changing the outcome.");
 			}
@@ -130,7 +216,7 @@ public class FurnaceRecipeInjector {
 				return;
 			if (result.isVanilla())
 				return;
-			if(result.isNone()) {
+			if (result.isNone()) {
 				Debug.Send(Type.Smelting, () -> "The recipe is not an enhanced recipe or vanilla recipe it will abort the burn event.");
 				burnEvent.setCancelled(true);
 			}
@@ -178,13 +264,37 @@ public class FurnaceRecipeInjector {
 		return blockOwnerCache;
 	}
 
+
+	public RecipeResult getFurnaceResultt(final Recipe serverRecipe, final List<RecipeWrapper> recipeWrappers, final ItemStack[] matrix, final Furnace furnace) {
+		if (recipeWrappers.isEmpty()) {
+			Debug.Send(Type.Smelting, () -> "furnace recipe does not match any recipe group.");
+			return RecipeResult.setVanilla(furnace);
+		}
+
+		for (RecipeWrapper group : recipeWrappers) {
+			group.matches(serverRecipe, prepareRecipeContext -> {
+				if (prepareRecipeContext instanceof PrepareFurnaceContext) {
+					((PrepareFurnaceContext) prepareRecipeContext).setFurnace(furnace);
+					prepareRecipeContext.setRecipeMatrix(matrix);
+					prepareRecipeContext.setResult(itemStack -> {
+						if (itemStack != null) {
+							group.getRecipe(FurnaceRecipe.class).ifPresent(RecipeResult::setResult);
+						}
+					});
+				}
+			});
+		}
+		return RecipeResult.setNone();
+	}
+
+
 	public RecipeResult getFurnaceResult(final List<RecipeGroup> groups, final ItemStack source, final Furnace furnace) {
 		//FurnaceRecipe recipe = new FurnaceRecipe(null, null, srcMatrix);
 		//RecipeGroup group = RecipeLoader.getInstance().findSimilarGroup(recipe);
 
 		if (groups == null || groups.isEmpty()) {
 			Debug.Send(Type.Smelting, () -> "furnace recipe does not match any recipe group.");
-			return RecipeResult.setVanilla();
+			return RecipeResult.setVanilla(furnace);
 		}
 		final BlockOwnerData containerOwner = this.blockOwnerCache.getContainerOwner(furnace.getLocation());
 		final Player player = containerOwner == null ? null : plugin.getServer().getPlayer(containerOwner.getCurrentOwner());
@@ -195,11 +305,11 @@ public class FurnaceRecipeInjector {
 			Debug.Send(DebugType.of(Type.Smelting, furnaceRecipe), () -> "Furnace group: " + groups);
 			Debug.Send(DebugType.of(Type.Smelting, furnaceRecipe), () -> "Furnace source item: " + source);
 
-			if (furnaceRecipe != null) return RecipeResult.setResult(furnaceRecipe.getResult());
+			if (furnaceRecipe != null) return RecipeResult.setResult(furnaceRecipe);
 			//Check for similar server recipes if no enhanced ones match.
 
 			for (final Recipe sRecipe : group.getServerRecipes()) {
-				if(Adapter.isCraftingRecipe(sRecipe)) continue;
+				if (Adapter.isCraftingRecipe(sRecipe)) continue;
 
 				final org.bukkit.inventory.FurnaceRecipe fRecipe = (org.bukkit.inventory.FurnaceRecipe) sRecipe;
 				if (RecipeAdapter.getTypeMatcher().match(fRecipe.getInput(), source)) {
@@ -212,7 +322,7 @@ public class FurnaceRecipeInjector {
 
 		}
 		/*todo does this part needed, if a recipe get detected wrong, as should be treated as normal vanilla recipe?
-*/
+		 */
 /*	   		for (final Recipe sRecipe : RecipeLoader.getInstance().getServerFurnaceRecipes()) {
 				if(sRecipe instanceof CraftingRecipe) continue;
 
@@ -231,14 +341,14 @@ public class FurnaceRecipeInjector {
 			}*/
 		return RecipeResult.setNone();
 	}
-
+	
 	public FurnaceRecipe getFurnaceRecipe(final Material blockSmelting, final RecipeGroup group, final ItemStack source, final Player player) {
 		if (group == null) return null;
 
 		final ItemStack[] srcMatrix = new ItemStack[]{source};
 		for (final EnhancedRecipeWrapper eRecipe : group.getRecipeGroupCache().values()) {
 			final EnhancedRecipe enhancedRecipe = eRecipe.getEnhancedRecipe();
-			if(!(enhancedRecipe instanceof FurnaceRecipe)) continue;
+			if (!(enhancedRecipe instanceof FurnaceRecipe)) continue;
 			if (!enhancedRecipe.matchesBlockType(blockSmelting)) {
 				continue;
 			}

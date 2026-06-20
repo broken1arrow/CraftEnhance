@@ -2,6 +2,8 @@ package com.dutchjelly.craftenhance.crafthandling.livedata;
 
 import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.crafthandling.RecipeDebug;
+import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareItemCraftContext;
+import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.crafthandling.util.WBRecipeComparer;
@@ -41,7 +43,7 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 	}
 
 	@Override
-	public void matches(@Nonnull final Recipe serverRecipe, @Nonnull final Consumer<PrepareItemCraftContext> contextConsumer) {
+	public void matches(@Nonnull final Recipe serverRecipe, @Nonnull final Consumer<PrepareRecipeContext> contextConsumer) {
 		final PrepareItemCraftContext prepareItemCraftContext = new PrepareItemCraftContext();
 		contextConsumer.accept(prepareItemCraftContext);
 		final ItemStack[] matrix = prepareItemCraftContext.getRecipeMatrix();
