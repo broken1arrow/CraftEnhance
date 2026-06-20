@@ -79,6 +79,10 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 		contextConsumer.accept(craftContext);
 		final ItemStack[] matrix = craftContext.getRecipeMatrix();
 		final CraftingInventory inventory = craftContext.getInventory();
+		if (inventory == null) {
+			Debug.Send(Type.Crafting, () -> "You have not set the inventory, it will deny all crafting.");
+			return new ResultContext(null, ResultType.CANCELLED);
+		}
 
 		final List<HumanEntity> viewers = craftContext.getViewers();
 		final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();

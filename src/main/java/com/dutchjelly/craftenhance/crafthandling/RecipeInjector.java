@@ -99,7 +99,7 @@ public class RecipeInjector implements Listener {
 		}
 	}
 
-	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
+	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = false)
 	public void handleCrafting(final PrepareItemCraftEvent craftEvent) {
 		final Recipe serverRecipe = craftEvent.getRecipe();
 
