@@ -8,6 +8,7 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerCache;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerData;
 import com.dutchjelly.craftenhance.messaging.Debug;
+import com.dutchjelly.craftenhance.util.RecipeResult;
 import org.bukkit.block.Furnace;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -95,13 +96,14 @@ public class FurnaceBurnWrapper implements RecipeWrapper {
 			if (RecipeAdapter.entityCanCraft(player, fRecipe)) {
 				Debug.Send(fRecipe, () -> "Found enhanced recipe " + fRecipe.getResult() + " for furnace");
 				Debug.Send(fRecipe, () -> "Matching ingredients are " + Arrays.toString(srcMatrix) + " .");
-				furnaceContext.acceptResult(fRecipe.getResult());
+				furnaceContext.setFurnaceResult((RecipeResult.setResult(fRecipe)));
+				return;
 			} else {
 				Debug.Send(fRecipe, () -> "found this recipe " + fRecipe.getResult().toString() + " match but, player has not this permission " + fRecipe.getPermission());
 			}
 		} else {
 			Debug.Send(fRecipe, () -> "found recipe doesn't match '" + Arrays.toString(srcMatrix) + (RecipeAdapter.entityCanCraft(player, fRecipe) ? "'." : "' and no perms."));
 		}
-		furnaceContext.acceptResult(null);
+		furnaceContext.setFurnaceResult(RecipeResult.setNone());
 	}
 }

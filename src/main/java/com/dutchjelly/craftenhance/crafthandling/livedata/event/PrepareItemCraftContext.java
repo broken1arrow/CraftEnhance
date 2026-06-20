@@ -34,14 +34,13 @@ public class PrepareItemCraftContext implements PrepareRecipeContext {
 		this.recipeMatrix = recipeMatrix;
 	}
 
-	@Override
+
 	public void acceptResult(final ItemStack itemStack) {
 		if(result == null) return;
 		result.accept(itemStack);
 	}
-
-	@Override
-	public void setResult(final Consumer<ItemStack> result) {
+	
+	public void getResult(final Consumer<ItemStack> result) {
 		this.result = result;
 	}
 

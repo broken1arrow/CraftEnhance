@@ -1,15 +1,26 @@
 package com.dutchjelly.craftenhance.crafthandling.livedata.event;
 
+import com.dutchjelly.craftenhance.util.RecipeResult;
 import org.bukkit.block.Furnace;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.Optional;
 
 public class PrepareFurnaceContext implements PrepareRecipeContext {
 	private Furnace furnace;
+	private ItemStack[] recipeMatrix;
+	private RecipeResult recipeResult;
+
+	public void setFurnaceResult(RecipeResult result) {
+		this.recipeResult = result;
+	}
+
+	public Optional<RecipeResult> getFurnaceResult() {
+		return Optional.ofNullable(recipeResult);
+	}
 
 	public Furnace getFurnace() {
 		return furnace;
@@ -21,22 +32,12 @@ public class PrepareFurnaceContext implements PrepareRecipeContext {
 
 	@Override
 	public ItemStack[] getRecipeMatrix() {
-		return new ItemStack[0];
+		return recipeMatrix;
 	}
 
 	@Override
 	public void setRecipeMatrix(final ItemStack[] recipeMatrix) {
-
-	}
-
-	@Override
-	public void acceptResult(final ItemStack itemStack) {
-
-	}
-
-	@Override
-	public void setResult(final Consumer<ItemStack> result) {
-
+		this.recipeMatrix = recipeMatrix;
 	}
 
 	@Override

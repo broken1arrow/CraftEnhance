@@ -4,9 +4,11 @@ import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.cache.CacheRecipes;
 import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.EnchantedCraftWrapper;
+import com.dutchjelly.craftenhance.crafthandling.livedata.FurnaceBurnWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeRegistry;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.VanillaCraftWrapper;
+import com.dutchjelly.craftenhance.crafthandling.livedata.VanillaFurnaceWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
@@ -68,7 +70,10 @@ public class RecipeLoader {
 		try {
 			server.recipeIterator().forEachRemaining(serverRecipes -> {
 				this.serverRecipes.add(serverRecipes);
-				liveCacheRecipe(new VanillaCraftWrapper(serverRecipes), Adapter.getIngredients(serverRecipes));
+				if (serverRecipes instanceof org.bukkit.inventory.FurnaceRecipe)
+					liveCacheRecipe(new VanillaFurnaceWrapper((org.bukkit.inventory.FurnaceRecipe) serverRecipes), Adapter.getIngredients(serverRecipes));
+				else
+					liveCacheRecipe(new VanillaCraftWrapper(serverRecipes), Adapter.getIngredients(serverRecipes));
 			});
 		} catch (IllegalArgumentException e) {
 			self().getLogger().log(Level.SEVERE, "This server recipe contains air, will not be loaded.", e);
@@ -259,7 +264,11 @@ public class RecipeLoader {
 		String categoryName = loadCategories(recipe);
 		String groupName = addToGroup(similarServerRecipes, recipe, categoryName);
 		ItemStack[] content = recipe.getContent();
-		liveCacheRecipe(new EnchantedCraftWrapper(recipe), content);
+		if (recipe instanceof FurnaceRecipe)
+			liveCacheRecipe(new FurnaceBurnWrapper((FurnaceRecipe) recipe), content);
+		else
+			liveCacheRecipe(new EnchantedCraftWrapper(recipe), content);
+
 		//Only load the recipe if there is not a server recipe that's always similar.
 		final Recipe serverRecipe = recipe.getServerRecipe(groupName);
 		if (alwaysSimilar == null) {
