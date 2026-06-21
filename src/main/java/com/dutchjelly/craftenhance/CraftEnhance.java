@@ -321,6 +321,7 @@ public class CraftEnhance extends JavaPlugin {
 				new ReloadCmd(),
 				new Disabler(commandHandler),
 				new RemoveRecipeCmd(commandHandler)
+				//,new Test()
 		));
 	}
 

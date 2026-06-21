@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.permissions.Permissible;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -81,51 +82,51 @@ public class RecipeAdapter {
 	}
 
 	public static ItemStack[] compressGrid(ItemStack[] originalGrid) {
-		// Räkna föremål för att avgöra strategi
-		int amount = 0;
-		for (ItemStack is : originalGrid) {
-			if (is != null && is.getType() != Material.AIR) amount++;
-		}
-
-		if (amount <= 2) {
 			final ItemStack[] itemStacks = compressShapeTo2x2(originalGrid);
 			return itemStacks != null ? itemStacks : new ItemStack[0];
-		} else if (amount <= 4) {
+
 			//Handle it as shapeless recipe when is more than 2 items to compress into a 2*2 grid.
-			final boolean treatAsShapelessIn2x2 = true;
-		}
-		return new ItemStack[0];
+			// boolean treatAsShapelessIn2x2 = true;
 	}
 
-	public static ItemStack[] compressShapeTo2x2(ItemStack[] grid3x3) {
-		int minRow = 3;
-		int maxRow = -1;
-		int minCol = 3;
-		int maxCol = -1;
+	public static ItemStack[] compressShapeTo2x2(ItemStack[] ingredients) {
 		int amount = 0;
+		int firstIndex = -1;
+		int secondIndex = -1;
+		final List<ItemStack> stacks = new ArrayList<>();
 		for (int i = 0; i < 9; i++) {
-			if (grid3x3[i] != null && grid3x3[i].getType() != Material.AIR) {
+			final ItemStack ingredient = ingredients[i];
+			if (ingredient != null && ingredient.getType() != Material.AIR) {
+				stacks.add(ingredient);
 				amount++;
-				int row = i / 3;
-				int col = i % 3;
-				if (row < minRow) minRow = row;
-				if (row > maxRow) maxRow = row;
-				if (col < minCol) minCol = col;
-				if (col > maxCol) maxCol = col;
+				if (firstIndex == -1) {
+					firstIndex = i;
+				} else {
+					secondIndex = i;
+				}
 			}
 		}
-		if (amount == 0 || amount > 2) return null;
-		int height = (maxRow - minRow) + 1;
-		int width = (maxCol - minCol) + 1;
-		if (height > 2 || width > 2) return null;
+		if (amount > 2) {
+			if(stacks.size() < 5)
+				return stacks.toArray(new ItemStack[0]);
+			return null;
+		}
+		final ItemStack[] grid2x2 = new ItemStack[4];
 
-		ItemStack[] grid2x2 = new ItemStack[4];
-		for (int r = 0; r < height; r++) {
-			for (int c = 0; c < width; c++) {
-				int oldIndex = (minRow + r) * 3 + (minCol + c);
-				int newIndex = r * 2 + c;
-				grid2x2[newIndex] = grid3x3[oldIndex];
-			}
+		int row1 = firstIndex / 3;
+		int col1 = firstIndex % 3;
+		int row2 = secondIndex / 3;
+		int col2 = secondIndex % 3;
+
+		if (row1 == row2) {
+			grid2x2[0] = ingredients[firstIndex];
+			grid2x2[1] = ingredients[secondIndex];
+		} else if (col1 == col2) {
+			grid2x2[0] = ingredients[firstIndex];
+			grid2x2[2] = ingredients[secondIndex];
+		} else {
+			grid2x2[0] = ingredients[firstIndex];
+			grid2x2[3] = ingredients[secondIndex];
 		}
 		return grid2x2;
 	}
