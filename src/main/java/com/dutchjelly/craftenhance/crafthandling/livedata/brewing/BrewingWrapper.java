@@ -5,7 +5,6 @@ import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
-import com.dutchjelly.craftenhance.crafthandling.livedata.recipes.FurnaceBurnWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.messaging.Debug;
@@ -191,7 +190,7 @@ public class BrewingWrapper implements RecipeWrapper {
 	public boolean equals(final Object o) {
 		if (o == null) return false;
 		if (!(o instanceof RecipeWrapper)) return false;
-		final FurnaceBurnWrapper that = (FurnaceBurnWrapper) o;
+		final BrewingWrapper that = (BrewingWrapper) o;
 		return that.key.equals(key);
 	}
 

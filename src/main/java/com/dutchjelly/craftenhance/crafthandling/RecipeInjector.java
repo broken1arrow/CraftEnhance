@@ -19,7 +19,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlastFurnace;
-import org.bukkit.block.Block;
 import org.bukkit.block.Crafter;
 import org.bukkit.block.Furnace;
 import org.bukkit.block.Smoker;
@@ -42,19 +41,15 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.inventory.CookingRecipe;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
-import org.bukkit.permissions.Permissible;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
@@ -245,47 +240,6 @@ public class RecipeInjector implements Listener {
 				}
 			}
 		return false;
-	}
-
-
-	@Nullable
-	public List<RecipeGroup> getMatchingRecipeGroup(final CookingRecipe<?> cookingRecipe, final Block typeOfFurnace, final ItemStack source) {
-		RecipeType recipeType = RecipeType.getType(typeOfFurnace);
-		if (recipeType == null) return null;
-		if (cookingRecipe != null) {
-			return RecipeLoader.getInstance().findGroupsByResult(source, cookingRecipe, recipeType);
-		}
-		switch (recipeType) {
-			case WORKBENCH:
-				//recipe = new WBRecipe(null, null, srcMatrix);
-				break;
-			case FURNACE:
-			case BLAST:
-			case SMOKER:
-				return RecipeLoader.getInstance().findGroupsByResult(source, null, recipeType);
-		}
-		return null;
-	}
-
-
-	public boolean isCraftingAllowedInWorld(final Location location, final EnhancedRecipe eRecipe) {
-		final Set<String> allowedWorlds = eRecipe.getAllowedWorlds();
-		//todo Similar recipes could prevent world blocking from working.
-		if (allowedWorlds == null || allowedWorlds.isEmpty()) return false;
-		if (location != null) {
-			if (location.getWorld() == null) return true;
-			for (final String world : allowedWorlds) {
-				if (location.getWorld().getName().equals(world)) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	public boolean entityCanCraft(final Permissible entity, final EnhancedRecipe group) {
-		return group.getPermission() == null || group.getPermission().isEmpty()
-				|| (entity != null && entity.hasPermission(group.getPermission()));
 	}
 
 

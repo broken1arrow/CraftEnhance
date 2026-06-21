@@ -196,19 +196,6 @@ public class RecipeLoader {
 			recipeRegistry.removeRecipe(recipe, recipe.getContent());
 		}
 
-		final RecipeGroup group = findGroup(recipe);
-		if (group == null) {
-			//Messenger.Error("Could not unload recipe from group, because the recipe doesn't have a group.");
-			printGroupsDebugInfo();
-			return;
-		}
-		//Remove entire recipe group if it's the last enhanced recipe, or remove a single recipe from the group.
-		if (group.getRecipeGroupSize() == 1)
-			mappedGroupedRecipes.remove(recipe.getGroup());
-		else {
-			group.remove(recipe);
-			unloadRecipe(recipe.getServerRecipe());
-		}
 		Debug.Send("Unloaded a recipe");
 		printGroupsDebugInfo();
 	}
