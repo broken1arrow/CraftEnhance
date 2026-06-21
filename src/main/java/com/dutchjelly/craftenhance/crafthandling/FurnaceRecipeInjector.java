@@ -52,8 +52,15 @@ public class FurnaceRecipeInjector {
 		Debug.Send(Type.Smelting, () -> "Furnace has smelt item, will start check if the output item is allowed.");
 
 		final ItemStack[] matrix = {new ItemStack(event.getSource())};
-		final List<RecipeWrapper> matchingRecipe = RecipeLoader.getInstance().findMatchingRecipe(RecipeType.FURNACE, matrix);
 		final Furnace furnace = (Furnace) event.getBlock().getState();
+		RecipeType recipeType = RecipeType.FURNACE;
+		if (self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
+			if (furnace instanceof BlastFurnace)
+				recipeType = RecipeType.BLAST;
+			if (furnace instanceof Smoker)
+				recipeType = RecipeType.SMOKER;
+		}
+		final List<RecipeWrapper> matchingRecipe = RecipeLoader.getInstance().findMatchingRecipe(recipeType, matrix);
 		final RecipeResult result = getFurnaceResult(event.getRecipe(), matchingRecipe, matrix, furnace);
 
 		if (result.isEnhancedRecipe()) {

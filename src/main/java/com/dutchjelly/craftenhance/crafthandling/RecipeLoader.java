@@ -37,6 +37,7 @@ import org.bukkit.inventory.ShapelessRecipe;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -75,9 +76,9 @@ public class RecipeLoader {
 				this.serverRecipes.add(serverRecipes);
 
 				final ItemStack[] ingredients = Adapter.getIngredients(serverRecipes);
-				if (serverRecipes instanceof org.bukkit.inventory.FurnaceRecipe)
+				if (serverRecipes instanceof org.bukkit.inventory.FurnaceRecipe) {
 					liveCacheRecipe(new VanillaFurnaceWrapper((org.bukkit.inventory.FurnaceRecipe) serverRecipes), ingredients);
-				else
+				} else
 					liveCacheRecipe(new VanillaCraftWrapper(serverRecipes), ingredients);
 			});
 		} catch (IllegalArgumentException e) {
@@ -99,8 +100,9 @@ public class RecipeLoader {
 
 	@Nonnull
 	public List<RecipeWrapper> findMatchingRecipe(@Nonnull final RecipeType recipeType, final ItemStack[] matrix) {
-		final RecipeRegistry recipeCached = this.mappedRecipes.getOrDefault(recipeType, new RecipeRegistry());
-
+		final RecipeRegistry recipeCached = this.mappedRecipes.get(recipeType);
+		if(recipeCached == null)
+			return Collections.emptyList();
 		return recipeCached.findMatchingRecipes(matrix);
 	}
 
@@ -146,15 +148,6 @@ public class RecipeLoader {
 
 		String categoryName = loadCategories(recipe);
 		String groupName = addToGroup(similarServerRecipes, recipe, categoryName);
-		ItemStack[] content = recipe.getContent();
-		if (recipe instanceof WBRecipe)
-			liveCacheRecipe(new EnchantedCraftWrapper((WBRecipe) recipe), content);
-		else if (recipe instanceof FurnaceRecipe)
-			liveCacheRecipe(new FurnaceBurnWrapper((FurnaceRecipe) recipe), content);
-		else if (recipe instanceof BrewingRecipe) {
-			liveCacheRecipe(new BrewingWrapper((BrewingRecipe) recipe), new ItemStack[]{recipe.getResult()});
-		}
-
 		//Only load the recipe if there is not a server recipe that's always similar.
 		final Recipe serverRecipe = recipe.getServerRecipe(groupName);
 		if (alwaysSimilar == null) {
@@ -172,6 +165,14 @@ public class RecipeLoader {
 			}
 		} else {
 			Debug.Send("Loading recipe", "Didn't add server recipe for " + recipe.getKey() + " because a similar one was already loaded: " + alwaysSimilar.toString() + " with the result " + alwaysSimilar.getResult().toString());
+		}
+		ItemStack[] content = recipe.getContent();
+		if (recipe instanceof WBRecipe)
+			liveCacheRecipe(new EnchantedCraftWrapper((WBRecipe) recipe), content);
+		else if (recipe instanceof FurnaceRecipe)
+			liveCacheRecipe(new FurnaceBurnWrapper((FurnaceRecipe) recipe), content);
+		else if (recipe instanceof BrewingRecipe) {
+			liveCacheRecipe(new BrewingWrapper((BrewingRecipe) recipe), new ItemStack[]{recipe.getResult()});
 		}
 	}
 
@@ -320,9 +321,14 @@ public class RecipeLoader {
 			Set<RecipeWrapper> recipeWrappers = recipes.get(stack.getType());
 			if (recipeWrappers == null) continue;
 
-			if (recipeWrappers.stream().allMatch(recipeWrapper -> recipeWrapper.getRecipeKey().equals(recipe.getKey()))) {
+			if (!recipeWrappers.isEmpty() && recipeWrappers.stream().allMatch(recipeWrapper -> recipeWrapper.getRecipeKey().equals(recipe.getKey()))) {
 				alreadyRegistered = true;
 			}
+		}
+		if(recipe instanceof FurnaceRecipe){
+			System.out.println("recipe alreadyRegistered " + recipe.getKey());
+			System.out.println("recipe alreadyRegistered " + recipe.getResult());
+			System.out.println("recipe alreadyRegistered " + alreadyRegistered);
 		}
 		return alreadyRegistered;
 	}

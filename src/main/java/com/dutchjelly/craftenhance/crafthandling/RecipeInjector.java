@@ -18,9 +18,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.block.BlastFurnace;
 import org.bukkit.block.Block;
 import org.bukkit.block.Crafter;
 import org.bukkit.block.Furnace;
+import org.bukkit.block.Smoker;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -312,9 +314,16 @@ public class RecipeInjector implements Listener {
 
 		@EventHandler
 		public void startSmelt(FurnaceStartSmeltEvent event) {
-
-			final List<RecipeWrapper> matchingRecipe = loader.findMatchingRecipe(RecipeType.FURNACE, new ItemStack[]{event.getSource()});
-			ResultContext furnaceContext = getFurnaceRecipeInjector().getFurnaceContext(event.getRecipe(), matchingRecipe, new ItemStack[]{event.getSource()}, (Furnace) event.getBlock().getState());
+			RecipeType recipeType = RecipeType.FURNACE;
+			final Furnace furnace = (Furnace) event.getBlock().getState();
+			if (self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
+				if (furnace instanceof BlastFurnace)
+					recipeType = RecipeType.BLAST;
+				if (furnace instanceof Smoker)
+					recipeType = RecipeType.SMOKER;
+			}
+			final List<RecipeWrapper> matchingRecipe = loader.findMatchingRecipe(recipeType, new ItemStack[]{event.getSource()});
+			ResultContext furnaceContext = getFurnaceRecipeInjector().getFurnaceContext(event.getRecipe(), matchingRecipe, new ItemStack[]{event.getSource()}, furnace);
 			if (furnaceContext == null) {
 				/*todo need to fix so you can stop it from progress if not allow to burn the item  */
 				return;
