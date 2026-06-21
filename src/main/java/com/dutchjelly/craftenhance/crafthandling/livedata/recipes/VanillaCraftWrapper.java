@@ -12,6 +12,7 @@ import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.crafthandling.util.WBRecipeComparer;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
+import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import lombok.NonNull;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -23,6 +24,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class VanillaCraftWrapper implements RecipeWrapper {
 	private final Recipe recipe;
@@ -60,7 +63,7 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 	@Nonnull
 	@Override
 	public String getRecipeKey() {
-		return "vanilla_recipe:"+ key;
+		return "vanilla_recipe:" + key;
 	}
 
 	@Nonnull
@@ -93,7 +96,7 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 			Debug.Send(Type.Crafting, () -> "[ShapedRecipe] ingredients" + RecipeDebug.convertItemStackArrayToString(content));
 			if (WBRecipeComparer.shapeMatches(content, matrix, RecipeAdapter.getTypeMatcherNoMetadata())) {
 				Debug.Send(Type.Crafting, () -> "Matched a ShapedRecipe and will allow this server recipe.");
-				return new ResultContext( recipe.getResult(), ResultType.VANILLA);
+				return new ResultContext(recipe.getResult(), ResultType.VANILLA);
 			}
 		} else if (recipe instanceof ShapelessRecipe) {
 			final ItemStack[] ingredients = ServerRecipeTranslator.translateShapelessRecipe((ShapelessRecipe) recipe);
@@ -101,11 +104,11 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 			Debug.Send(Type.Crafting, () -> "[ShapelessRecipe] ingredients" + RecipeDebug.convertItemStackArrayToString(ingredients));
 			if (WBRecipeComparer.ingredientsMatch(ingredients, matrix, RecipeAdapter.getTypeMatcherNoMetadata())) {
 				Debug.Send(Type.Crafting, () -> "Matched a ShapelessRecipe and will allow this server recipe.");
-				return new ResultContext( recipe.getResult(), ResultType.VANILLA);
+				return new ResultContext(recipe.getResult(), ResultType.VANILLA);
 			}
 		}
 		Debug.Send(Type.Crafting, () -> "Did not match this recipe.");
-		return new ResultContext( null, ResultType.NO_MATCH);
+		return new ResultContext(null, ResultType.NO_MATCH);
 	}
 
 	@Override
@@ -135,10 +138,16 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 		StringBuilder builder = new StringBuilder();
 		builder.append("########## Recipe ################").append("\n");
 		builder.append("Result: ").append(this.recipe.getResult()).append("\n");
-		if (recipe instanceof ShapelessRecipe)
+		if (recipe instanceof ShapelessRecipe) {
+			if (self().getVersionChecker().newerThan(ServerVersion.v1_13))
+				builder.append("Key: ").append(((ShapelessRecipe) recipe).getKey()).append("\n");
 			builder.append("Ingredients: ").append(((ShapelessRecipe) recipe).getChoiceList()).append("\n");
-		if (recipe instanceof ShapedRecipe)
+		}
+		if (recipe instanceof ShapedRecipe) {
+			if (self().getVersionChecker().newerThan(ServerVersion.v1_13))
+				builder.append("Key: ").append(((ShapedRecipe) recipe).getKey()).append("\n");
 			builder.append("Ingredients: ").append(((ShapedRecipe) recipe).getChoiceMap()).append("\n");
+		}
 		builder.append("########## Recipe ################\n");
 
 		return builder.toString();

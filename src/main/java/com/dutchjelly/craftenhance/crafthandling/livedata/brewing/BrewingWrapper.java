@@ -5,6 +5,7 @@ import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
+import com.dutchjelly.craftenhance.crafthandling.livedata.recipes.FurnaceBurnWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.messaging.Debug;
@@ -21,17 +22,30 @@ import org.bukkit.inventory.Recipe;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class BrewingWrapper implements RecipeWrapper {
 	private final BrewingRecipe brewingRecipe;
+	private final String key;
 
 	public BrewingWrapper(@Nonnull final BrewingRecipe brewingRecipe) {
 		this.brewingRecipe = brewingRecipe;
-		final CraftEnhance plugin = self();
+
+		StringBuilder builder = new StringBuilder(brewingRecipe.getResult().getType().name());
+		builder.append("|");
+		String content = Arrays.stream(brewingRecipe.getContent())
+				.filter(Objects::nonNull)
+				.map(i -> i.getType().name())
+				.sorted()
+				.collect(Collectors.joining(","));
+		builder.append(content);
+		builder.append("|");
+		this.key = builder.toString();
 	}
 
 	@Nonnull
@@ -173,4 +187,28 @@ public class BrewingWrapper implements RecipeWrapper {
 		return copy;
 	}
 
+	@Override
+	public boolean equals(final Object o) {
+		if (o == null) return false;
+		if (!(o instanceof RecipeWrapper)) return false;
+		final FurnaceBurnWrapper that = (FurnaceBurnWrapper) o;
+		return that.key.equals(key);
+	}
+
+	@Override
+	public int hashCode() {
+		int hash = 0;
+		hash = 41 * hash + key.hashCode();
+		return hash;
+	}
+
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("########## Enhanced recipe ################").append("\n");
+		builder.append("Key: ").append(this.brewingRecipe.getKey()).append("\n");
+		builder.append("Result: ").append(this.brewingRecipe.getResult()).append("\n");
+		builder.append("Ingredients: ").append(Arrays.toString(this.brewingRecipe.getContent())).append("\n");
+		builder.append("########## Enhanced recipe ################\n");
+		return builder.toString();
+	}
 }
