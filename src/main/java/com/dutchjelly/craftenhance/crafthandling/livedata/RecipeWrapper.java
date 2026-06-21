@@ -10,6 +10,8 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 public interface RecipeWrapper {
+	@Nonnull
+	String getRecipeKey();
 
 	@Nonnull
 	RecipeType getRecipeType();

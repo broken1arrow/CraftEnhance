@@ -36,8 +36,14 @@ public class BrewingWrapper implements RecipeWrapper {
 
 	@Nonnull
 	@Override
+	public String getRecipeKey() {
+		return brewingRecipe.getKey();
+	}
+
+	@Nonnull
+	@Override
 	public RecipeType getRecipeType() {
-		return null;
+		return RecipeType.BREWING;
 	}
 
 	@Override

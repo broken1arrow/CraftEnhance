@@ -1,4 +1,4 @@
-package com.dutchjelly.craftenhance.crafthandling.livedata;
+package com.dutchjelly.craftenhance.crafthandling.livedata.recipes;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.RecipeAdapter;
@@ -6,6 +6,7 @@ import com.dutchjelly.craftenhance.api.CraftEnhanceAPI;
 import com.dutchjelly.craftenhance.api.event.crafting.BeforeCraftOutputEvent;
 import com.dutchjelly.craftenhance.crafthandling.RecipeDebug;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
+import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareItemCraftContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
@@ -47,6 +48,12 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 						.sorted()
 						.collect(Collectors.joining(",")) +
 				"|" + (enhancedRecipe.isShapeless() ? "shapeless" : "shaped");
+	}
+
+	@Nonnull
+	@Override
+	public String getRecipeKey() {
+		return enhancedRecipe.getKey();
 	}
 
 	@Nonnull

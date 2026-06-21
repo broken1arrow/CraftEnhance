@@ -1,7 +1,8 @@
-package com.dutchjelly.craftenhance.crafthandling.livedata;
+package com.dutchjelly.craftenhance.crafthandling.livedata.recipes;
 
 import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.crafthandling.RecipeDebug;
+import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareItemCraftContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
 
 public class VanillaCraftWrapper implements RecipeWrapper {
 	private final Recipe recipe;
-	private String key;
+	private final String key;
 
 	public VanillaCraftWrapper(@NonNull final Recipe recipe) {
 		this.recipe = recipe;
@@ -54,6 +55,12 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 		}
 
 		this.key = builder.toString();
+	}
+
+	@Nonnull
+	@Override
+	public String getRecipeKey() {
+		return "vanilla_recipe:"+ key;
 	}
 
 	@Nonnull

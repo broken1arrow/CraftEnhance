@@ -1,9 +1,11 @@
 package com.dutchjelly.craftenhance.crafthandling.livedata;
 
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -60,24 +62,35 @@ public class RecipeRegistry {
 		return sortedRecipes;
 	}
 
-	public void removeRecipe(@Nonnull final RecipeWrapper recipe, @Nonnull final ItemStack[] content) {
-		this.allRecipes.remove(recipe);
+	public void removeRecipe(@Nonnull final EnhancedRecipe enhancedRecipe, @Nonnull final ItemStack[] content) {
+		this.allRecipes.removeIf(recipeWrapper -> recipeWrapper.getRecipeKey().equals(enhancedRecipe.getKey()));
 
 		final Set<Material> uniqueMaterials = getUniqueMaterials(content);
-
 		for (Material material : uniqueMaterials) {
-			this.mappedRecipes.compute(material, (mat, recipeWrappers) -> {
-				if (recipeWrappers != null) {
-					recipeWrappers.remove(recipe);
-					if (recipeWrappers.isEmpty()) {
-						return null;
-					}
+			Set<RecipeWrapper> recipeWrappers = this.mappedRecipes.get(material);
+			if (recipeWrappers != null) {
+				recipeWrappers.removeIf(wrapper -> wrapper.getRecipeKey().equals(enhancedRecipe.getKey()));
+				if (recipeWrappers.isEmpty()) {
+					this.mappedRecipes.remove(material);
 				}
-				return recipeWrappers;
-			});
+			}
 		}
 	}
 
+	public void removeRecipe(@Nonnull final RecipeWrapper recipeWrapper, @Nonnull final ItemStack[] content) {
+		this.allRecipes.remove(recipeWrapper);
+		final Set<Material> uniqueMaterials = getUniqueMaterials(content);
+
+		for (Material material : uniqueMaterials) {
+			Set<RecipeWrapper> recipeWrappers = this.mappedRecipes.get(material);
+			if (recipeWrappers != null) {
+				recipeWrappers.remove(recipeWrapper);
+				if (recipeWrappers.isEmpty()) {
+					this.mappedRecipes.remove(material);
+				}
+			}
+		}
+	}
 
 	public void clearAllRecipes() {
 		this.mappedRecipes.clear();
@@ -98,7 +111,10 @@ public class RecipeRegistry {
 	}
 
 	@Nonnull
-	private static Set<Material> getUniqueMaterials(@Nonnull final ItemStack[] content) {
+	private Set<Material> getUniqueMaterials(@Nullable final ItemStack[] content) {
+		if (content == null)
+			return Collections.emptySet();
+
 		return Arrays.stream(content)
 				.filter(itemStack -> itemStack != null && itemStack.getType() != Material.AIR)
 				.map(ItemStack::getType)

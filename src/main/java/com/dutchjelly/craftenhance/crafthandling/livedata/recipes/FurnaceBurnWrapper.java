@@ -1,6 +1,7 @@
-package com.dutchjelly.craftenhance.crafthandling.livedata;
+package com.dutchjelly.craftenhance.crafthandling.livedata.recipes;
 
 import com.dutchjelly.craftenhance.RecipeAdapter;
+import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareFurnaceContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
@@ -17,16 +18,36 @@ import org.bukkit.inventory.Recipe;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class FurnaceBurnWrapper implements RecipeWrapper {
 	private final FurnaceRecipe furnaceRecipe;
+	private final String key;
 
 	public FurnaceBurnWrapper(final FurnaceRecipe furnaceRecipe) {
 		this.furnaceRecipe = furnaceRecipe;
+
+		StringBuilder builder = new StringBuilder(furnaceRecipe.getResult().getType().name());
+		builder.append("|");
+		String content = Arrays.stream(furnaceRecipe.getContent())
+				.filter(Objects::nonNull)
+				.map(i -> i.getType().name())
+				.sorted()
+				.collect(Collectors.joining(","));
+		builder.append(content);
+		builder.append("|");
+		this.key = builder.toString();
+	}
+
+	@Nonnull
+	@Override
+	public String getRecipeKey() {
+		return furnaceRecipe.getKey();
 	}
 
 	@Nonnull
@@ -88,5 +109,31 @@ public class FurnaceBurnWrapper implements RecipeWrapper {
 			Debug.Send(fRecipe, () -> "found recipe doesn't match '" + Arrays.toString(srcMatrix) + (RecipeAdapter.entityCanCraft(player, fRecipe) ? "'." : "' and no perms."));
 		}
 		return new ResultContext(fRecipe, fRecipe.getResult(), ResultType.NO_MATCH);
+	}
+
+	@Override
+	public boolean equals(final Object o) {
+		if (o == null) return false;
+		if (!(o instanceof RecipeWrapper)) return false;
+		final FurnaceBurnWrapper that = (FurnaceBurnWrapper) o;
+		return that.key.equals(key);
+	}
+
+	@Override
+	public int hashCode() {
+		int hash = 0;
+		hash = 41 * hash + key.hashCode();
+		return hash;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("########## Enhanced recipe ################").append("\n");
+		builder.append("Key: ").append(this.furnaceRecipe.getKey()).append("\n");
+		builder.append("Result: ").append(this.furnaceRecipe.getResult()).append("\n");
+		builder.append("Ingredients: ").append(Arrays.toString(this.furnaceRecipe.getContent())).append("\n");
+		builder.append("########## Enhanced recipe ################\n");
+		return builder.toString();
 	}
 }

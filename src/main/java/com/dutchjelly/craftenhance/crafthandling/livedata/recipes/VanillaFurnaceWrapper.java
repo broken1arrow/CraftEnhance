@@ -1,5 +1,6 @@
-package com.dutchjelly.craftenhance.crafthandling.livedata;
+package com.dutchjelly.craftenhance.crafthandling.livedata.recipes;
 
+import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareFurnaceContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
@@ -14,6 +15,7 @@ import org.bukkit.block.Smoker;
 import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.RecipeChoice;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -23,10 +25,23 @@ import java.util.function.Consumer;
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class VanillaFurnaceWrapper implements RecipeWrapper {
-	final FurnaceRecipe furnaceRecipe;
+	private final FurnaceRecipe furnaceRecipe;
+	private String key;
 
 	public VanillaFurnaceWrapper(final FurnaceRecipe furnaceRecipe) {
 		this.furnaceRecipe = furnaceRecipe;
+
+		StringBuilder builder = new StringBuilder(furnaceRecipe.getResult().getType().name());
+		builder.append("|");
+		builder.append(furnaceRecipe.getInputChoice().getItemStack().getType().name());
+		builder.append("|");
+		this.key = builder.toString();
+	}
+
+	@Nonnull
+	@Override
+	public String getRecipeKey() {
+		return "vanilla_furnace:" + key;
 	}
 
 	@Nonnull
@@ -82,5 +97,32 @@ public class VanillaFurnaceWrapper implements RecipeWrapper {
 		if (type.isInstance(this.furnaceRecipe))
 			return Optional.of(type.cast(this.furnaceRecipe));
 		return Optional.empty();
+	}
+
+	@Override
+	public boolean equals(final Object o) {
+		if (o == null) return false;
+		if (!(o instanceof RecipeWrapper)) return false;
+		final VanillaFurnaceWrapper that = (VanillaFurnaceWrapper) o;
+		return that.key.equals(key);
+	}
+
+	@Override
+	public int hashCode() {
+		int hash = 0;
+		hash = 41 * hash + key.hashCode();
+		return hash;
+	}
+
+
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("########## Enhanced recipe ################").append("\n");
+		builder.append("Key: ").append(this.furnaceRecipe.getKey()).append("\n");
+		builder.append("Result: ").append(this.furnaceRecipe.getResult()).append("\n");
+		final RecipeChoice inputChoice = this.furnaceRecipe.getInputChoice();
+		builder.append("Ingredients: ").append(inputChoice.getItemStack().getType()).append("\n");
+		builder.append("########## Enhanced recipe ################\n");
+		return builder.toString();
 	}
 }
