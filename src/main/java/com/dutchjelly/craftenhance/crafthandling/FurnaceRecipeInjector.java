@@ -1,12 +1,9 @@
 package com.dutchjelly.craftenhance.crafthandling;
 
-import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareFurnaceContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultType;
-import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerCache;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerData;
@@ -30,7 +27,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -112,64 +108,14 @@ public class FurnaceRecipeInjector {
 			return;
 		}
 
-		if (!result.isEnhancedRecipe()) {
-			if (smeltingStack != null && RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(smeltingStack.getType())) != null)
-				return;
-			if (result.isVanilla())
-				return;
-			if (result.isNone()) {
-				Debug.Send(Type.Smelting, () -> "The recipe is not an enhanced recipe or vanilla recipe it will abort the burn event.");
-				burnEvent.setCancelled(true);
-			}
-			pausedFurnaces.put(furnace, LocalDateTime.now().plusSeconds(10L));
+		pausedFurnaces.put(furnace, LocalDateTime.now().plusSeconds(5L));
+		if (result.isNone()) {
+			Debug.Send(Type.Smelting, () -> "The recipe is not an enhanced recipe or vanilla recipe it will abort the burn event.");
+			burnEvent.setCancelled(true);
 		}
 	}
 
-	private void smeltTask(final FurnaceSmeltEvent event, final RecipeResult result, final Furnace furnace, final List<RecipeGroup> groups) {
-		if (result.isEnhancedRecipe()) {
-			Debug.Send(Type.Smelting, () -> "Custom item smelted, the result item: " + result);
-			ItemStack itemInResulSlot = furnace.getInventory().getResult();
-		/*	if(!result.get().isSimilar(itemInResulSlot)) {
-				System.out.println("result is not same");
-				event.setCancelled(true);
-				return;
-			}*/
-			event.setResult(result.getItem());
-		} else {
-			final ItemStack itemStack = RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(event.getSource().getType()));
-			if (itemStack != null && groups != null) {
-				Debug.Send(Type.Smelting, () -> "Found similar vanilla recipe " + itemStack);
-				for (RecipeGroup group : groups) {
-					final Collection<EnhancedRecipeWrapper> recipeCoreList = group == null ? null : group.getRecipeGroupCache().values();
-					if (group == null || recipeCoreList.isEmpty()) {
-						event.setResult(itemStack);
-						return;
-					}
-					for (final EnhancedRecipeWrapper eRecipe : recipeCoreList) {
-						final EnhancedRecipe enhancedRecipe = eRecipe.getEnhancedRecipe();
-						if (!(enhancedRecipe instanceof FurnaceRecipe)) continue;
-						final FurnaceRecipe fRecipe = (FurnaceRecipe) enhancedRecipe;
 
-						final boolean isVanillaRecipe = fRecipe.matchesType(new ItemStack[]{event.getSource()}) && !fRecipe.getResult().isSimilar(itemStack);
-						if (fRecipe.isCheckPartialMatch() && isVanillaRecipe) {
-							event.setCancelled(true);
-							break;
-						}
-						if (isVanillaRecipe) {
-							event.setResult(itemStack);
-							break;
-						}
-					}
-				}
-			} else {
-				if (result.isNone())
-					event.setCancelled(true);
-				Debug.Send(Type.Smelting, () -> "No similar matching to the vanilla recipe, will not changing the outcome.");
-			}
-			// else
-			//event.setCancelled(true);
-		}
-	}
 
 	public void furnaceClick(final InventoryClickEvent furnaceClick) {
 		if (furnaceClick.isCancelled() || furnaceClick.getClickedInventory() == null) return;
@@ -262,6 +208,52 @@ public class FurnaceRecipeInjector {
 	}
 
 /*
+
+/*	private void smeltTask(final FurnaceSmeltEvent event, final RecipeResult result, final Furnace furnace, final List<RecipeGroup> groups) {
+		if (result.isEnhancedRecipe()) {
+			Debug.Send(Type.Smelting, () -> "Custom item smelted, the result item: " + result);
+			ItemStack itemInResulSlot = furnace.getInventory().getResult();
+		*//*	if(!result.get().isSimilar(itemInResulSlot)) {
+				System.out.println("result is not same");
+				event.setCancelled(true);
+				return;
+			}*//*
+			event.setResult(result.getItem());
+		} else {
+			final ItemStack itemStack = RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(event.getSource().getType()));
+			if (itemStack != null && groups != null) {
+				Debug.Send(Type.Smelting, () -> "Found similar vanilla recipe " + itemStack);
+				for (RecipeGroup group : groups) {
+					final Collection<EnhancedRecipeWrapper> recipeCoreList = group == null ? null : group.getRecipeGroupCache().values();
+					if (group == null || recipeCoreList.isEmpty()) {
+						event.setResult(itemStack);
+						return;
+					}
+					for (final EnhancedRecipeWrapper eRecipe : recipeCoreList) {
+						final EnhancedRecipe enhancedRecipe = eRecipe.getEnhancedRecipe();
+						if (!(enhancedRecipe instanceof FurnaceRecipe)) continue;
+						final FurnaceRecipe fRecipe = (FurnaceRecipe) enhancedRecipe;
+
+						final boolean isVanillaRecipe = fRecipe.matchesType(new ItemStack[]{event.getSource()}) && !fRecipe.getResult().isSimilar(itemStack);
+						if (fRecipe.isCheckPartialMatch() && isVanillaRecipe) {
+							event.setCancelled(true);
+							break;
+						}
+						if (isVanillaRecipe) {
+							event.setResult(itemStack);
+							break;
+						}
+					}
+				}
+			} else {
+				if (result.isNone())
+					event.setCancelled(true);
+				Debug.Send(Type.Smelting, () -> "No similar matching to the vanilla recipe, will not changing the outcome.");
+			}
+			// else
+			//event.setCancelled(true);
+		}
+	}
 
 	public void burn(final FurnaceBurnEvent burnEvent) {
 		if (burnEvent.isCancelled()) return;
