@@ -325,11 +325,6 @@ public class RecipeLoader {
 				alreadyRegistered = true;
 			}
 		}
-		if(recipe instanceof FurnaceRecipe){
-			System.out.println("recipe alreadyRegistered " + recipe.getKey());
-			System.out.println("recipe alreadyRegistered " + recipe.getResult());
-			System.out.println("recipe alreadyRegistered " + alreadyRegistered);
-		}
 		return alreadyRegistered;
 	}
 
