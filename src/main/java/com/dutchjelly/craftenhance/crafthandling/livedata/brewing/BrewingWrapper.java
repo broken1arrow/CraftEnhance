@@ -1,7 +1,8 @@
-package com.dutchjelly.craftenhance.crafthandling.livedata;
+package com.dutchjelly.craftenhance.crafthandling.livedata.brewing;
 
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.RecipeAdapter;
+import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
@@ -32,7 +33,6 @@ public class BrewingWrapper implements RecipeWrapper {
 		this.brewingRecipe = brewingRecipe;
 		final CraftEnhance plugin = self();
 	}
-
 
 	@Nonnull
 	@Override

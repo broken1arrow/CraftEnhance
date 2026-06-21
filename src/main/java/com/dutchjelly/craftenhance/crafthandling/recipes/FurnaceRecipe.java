@@ -87,7 +87,7 @@ public class FurnaceRecipe extends EnhancedRecipe {
 	}
 
 	public boolean matchesType(final ItemStack[] content) {
-		return this.matches(content, MatchType.MATCH_TYPE.getMatcher());
+		return this.matches(content, MatchType.MATCH_TYPE_NO_META.getMatcher());
 	}
 
 	public boolean matchesPartially(final ItemStack[] content) {

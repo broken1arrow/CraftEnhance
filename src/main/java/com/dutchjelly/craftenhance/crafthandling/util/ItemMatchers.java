@@ -85,26 +85,6 @@ public class ItemMatchers {
 		return !aHasRealMeta && !bHasRealMeta;
 	}
 
-	private static boolean hasCustomMeta(ItemStack item) {
-		if (item == null || !item.hasItemMeta()) {
-			return false;
-		}
-
-		ItemMeta meta = item.getItemMeta();
-		if (meta == null) return false;
-
-		if (meta.hasDisplayName()) return true;
-		if (meta.hasLore()) return true;
-		if (meta.hasEnchants()) return true;
-
-		if(self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
-			if (meta.hasCustomModelData()) return true;
-			return !meta.getPersistentDataContainer().isEmpty();
-		}
-
-		return false;
-	}
-
 	@SafeVarargs
 	public static <T> IMatcher<T> constructIMatcher(final IMatcher<T>... matchers) {
 		return (a, b) -> Arrays.stream(matchers).allMatch(x -> x.match(a, b));
@@ -235,9 +215,30 @@ public class ItemMatchers {
 		return 0;
 	}
 
+	private static boolean hasCustomMeta(ItemStack item) {
+		if (item == null || !item.hasItemMeta()) {
+			return false;
+		}
+
+		ItemMeta meta = item.getItemMeta();
+		if (meta == null) return false;
+
+		if (meta.hasDisplayName()) return true;
+		if (meta.hasLore()) return true;
+		if (meta.hasEnchants()) return true;
+
+		if(self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
+			if (meta.hasCustomModelData()) return true;
+			return !meta.getPersistentDataContainer().isEmpty();
+		}
+
+		return false;
+	}
+
 	public enum MatchType {
 
 		MATCH_TYPE(constructIMatcher(ItemMatchers::matchType), "Match only the type of item."),
+		MATCH_TYPE_NO_META(constructIMatcher(ItemMatchers::matchTypeNoMeta), "Match only the type of item."),
 		MATCH_META(constructIMatcher(ItemMatchers::matchMeta), "Performs a full metadata match on the item.",
 				"However, due to hidden NBT data, this might not always detect items as equal.",
 				"For safer comparisons, consider using basic meta matching instead.",

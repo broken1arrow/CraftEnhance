@@ -42,22 +42,24 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.CookingRecipe;
 import org.bukkit.inventory.CraftingInventory;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.permissions.Permissible;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class RecipeInjector implements Listener {
-
 	@Getter
 	private final CraftEnhance plugin;
-	private final boolean disableDefaultModeldataCrafts;
+	private final Map<Location, EnhancedRecipe> finishRecipe = new HashMap<>();
 
 	private final BrewingRecipeInjector brewingRecipeInjector;
 	private final WorkBenchRecipeInjector workBenchRecipeInjector;
@@ -67,7 +69,7 @@ public class RecipeInjector implements Listener {
 
 	public RecipeInjector(final CraftEnhance plugin) {
 		this.plugin = plugin;
-		disableDefaultModeldataCrafts = plugin.getConfig().getBoolean("disable-default-custom-model-data-crafts");
+
 		this.brewingRecipeInjector = new BrewingRecipeInjector();
 		this.workBenchRecipeInjector = new WorkBenchRecipeInjector(this);
 		this.furnaceRecipeInjector = new FurnaceRecipeInjector(this);
@@ -75,7 +77,7 @@ public class RecipeInjector implements Listener {
 			Bukkit.getPluginManager().registerEvents(new SmeltListener(), plugin);
 			Bukkit.getPluginManager().registerEvents(new CrafterListener(), plugin);
 		} catch (Throwable throwable) {
-			Debug.Send("Some functions did not work on your serverversion. will be turned off.");
+			Debug.Send("Some functions did not work on your server version. will be turned off.");
 		}
 	}
 
@@ -109,8 +111,9 @@ public class RecipeInjector implements Listener {
 
 		final CraftingInventory craftingInventory = craftEvent.getInventory();
 		final List<HumanEntity> viewers = craftEvent.getViewers();
-
 		final List<RecipeWrapper> recipes = this.getLoader().findMatchingRecipe(RecipeType.WORKBENCH, craftingInventory.getMatrix());
+
+		this.finishRecipe.remove(craftingInventory.getLocation());
 
 		for (RecipeWrapper recipe : recipes) {
 			ResultContext contextResult = recipe.matches(craftEvent.getRecipe(), prepareRecipeContext -> {
@@ -132,7 +135,12 @@ public class RecipeInjector implements Listener {
 		switch (contextResult.getResultType()) {
 			case ENHANCED:
 			case VANILLA:
-				craftingInventory.setResult(contextResult.getItemStack());
+				if (self().isMakeItemsadderCompatible() && Adapter.containsModelData(craftingInventory.getMatrix())) {
+					CraftEnhance.runTask(() -> craftingInventory.setResult(contextResult.getItemStack()));
+				} else {
+					craftingInventory.setResult(contextResult.getItemStack());
+				}
+				this.finishRecipe.put(craftingInventory.getLocation(), contextResult.getEnhancedRecipe());
 				return true;
 			case PARTIAL_MATCH:
 			case DISABLED:
@@ -157,7 +165,7 @@ public class RecipeInjector implements Listener {
 
 	@EventHandler
 	public void smelt(final FurnaceSmeltEvent e) {
-		this.furnaceRecipeInjector.smelt(e);
+		this.furnaceRecipeInjector.smeltTask(e);
 	}
 
 	@EventHandler(ignoreCancelled = false)
@@ -166,8 +174,7 @@ public class RecipeInjector implements Listener {
 			Debug.Send(Type.Smelting, () -> "Furnace could not start start to burn the item. As the event is canceled.");
 			return;
 		}
-		Debug.Send(Type.Smelting, () -> "Furnace start to burn the item");
-		this.furnaceRecipeInjector.burn(e);
+		this.furnaceRecipeInjector.burnTask(e);
 	}
 
 	@EventHandler
@@ -178,7 +185,7 @@ public class RecipeInjector implements Listener {
 			this.furnaceRecipeInjector.furnaceClick(event);
 		}
 		if (event.getClickedInventory().getType() == InventoryType.WORKBENCH) {
-			this.workBenchRecipeInjector.craftingClick(event);
+			this.craftingClick(event);
 		}
 		if (event.getInventory().getType() == InventoryType.BREWING) {
 			brewingRecipeInjector.onBrewClick(event);
@@ -212,6 +219,21 @@ public class RecipeInjector implements Listener {
 	public void onBrew(BrewEvent event) {
 	}
 
+	public void craftingClick(final InventoryClickEvent craftingClick) {
+
+		if (craftingClick.getSlot() != 0) return;
+		final Inventory clickedInventory = craftingClick.getClickedInventory();
+		if (clickedInventory == null) return;
+
+		this.finishRecipe.computeIfPresent(clickedInventory.getLocation(), (location, recipe) -> {
+			if (recipe == null || recipe.getOnCraftCommand() == null || recipe.getOnCraftCommand().trim().isEmpty())
+				return null;
+			CraftEnhance.runTaskLater(2, () ->
+					Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), recipe.getOnCraftCommand().replace("%playername%", craftingClick.getWhoClicked().getName()))
+			);
+			return null;
+		});
+	}
 
 	public boolean checkForDisabledRecipe(final List<Recipe> disabledServerRecipes, final @NonNull ItemStack result) {
 		if (disabledServerRecipes != null && !disabledServerRecipes.isEmpty())
@@ -290,17 +312,17 @@ public class RecipeInjector implements Listener {
 
 		@EventHandler
 		public void startSmelt(FurnaceStartSmeltEvent event) {
-			final List<RecipeGroup> groups = getMatchingRecipeGroup(event.getRecipe(), event.getBlock(), event.getSource());
-			if (groups == null) return;
 
-			for (RecipeGroup group : groups) {
-				FurnaceRecipe furnaceRecipe = getFurnaceRecipeInjector().getFurnaceRecipe(event.getBlock().getType(), group, event.getSource(), null);
-				if (furnaceRecipe == null) {
-					/*todo need to fix so you can stop it from progress if not allow to burn the item  */
-					return;
-				}
-				event.setTotalCookTime(furnaceRecipe.getDuration());
+			final List<RecipeWrapper> matchingRecipe = loader.findMatchingRecipe(RecipeType.FURNACE, new ItemStack[]{event.getSource()});
+			ResultContext furnaceContext = getFurnaceRecipeInjector().getFurnaceContext(event.getRecipe(), matchingRecipe, new ItemStack[]{event.getSource()}, (Furnace) event.getBlock().getState());
+			if (furnaceContext == null) {
+				/*todo need to fix so you can stop it from progress if not allow to burn the item  */
 				return;
+			}
+			if (furnaceContext.getEnhancedRecipe() instanceof FurnaceRecipe) {
+				final int duration = ((FurnaceRecipe) furnaceContext.getEnhancedRecipe()).getDuration();
+				Debug.Send(Type.Smelting, () -> "Alter the time for the furnace recipe to the correct time that is: " + duration + " ticks from the recipes set: " + event.getTotalCookTime());
+				event.setTotalCookTime(duration);
 			}
 		}
 	}

@@ -3,7 +3,7 @@ package com.dutchjelly.craftenhance.crafthandling;
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.cache.CacheRecipes;
 import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
-import com.dutchjelly.craftenhance.crafthandling.livedata.BrewingWrapper;
+import com.dutchjelly.craftenhance.crafthandling.livedata.brewing.BrewingWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.EnchantedCraftWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.FurnaceBurnWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeRegistry;

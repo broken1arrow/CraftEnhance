@@ -1,4 +1,4 @@
-package com.dutchjelly.craftenhance.crafthandling.livedata;
+package com.dutchjelly.craftenhance.crafthandling.livedata.brewing;
 
 import org.bukkit.Location;
 import org.bukkit.event.inventory.InventoryClickEvent;

@@ -4,12 +4,12 @@ import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareFurnaceContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
+import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultType;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerCache;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerData;
 import com.dutchjelly.craftenhance.messaging.Debug;
-import com.dutchjelly.craftenhance.util.RecipeResult;
 import org.bukkit.block.Furnace;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -71,15 +71,22 @@ public class FurnaceBurnWrapper implements RecipeWrapper {
 			if (RecipeAdapter.entityCanCraft(player, fRecipe)) {
 				Debug.Send(fRecipe, () -> "Found enhanced recipe " + fRecipe.getResult() + " for furnace");
 				Debug.Send(fRecipe, () -> "Matching ingredients are " + Arrays.toString(srcMatrix) + " .");
-				furnaceContext.setFurnaceResult((RecipeResult.setResult(fRecipe)));
-				return null;
+				return new ResultContext(fRecipe, fRecipe.getResult(), ResultType.ENHANCED);
 			} else {
 				Debug.Send(fRecipe, () -> "found this recipe " + fRecipe.getResult().toString() + " match but, player has not this permission " + fRecipe.getPermission());
+				return new ResultContext(fRecipe, fRecipe.getResult(), ResultType.NO_PERMISSION);
 			}
 		} else {
+			final boolean isVanillaRecipe = fRecipe.matchesType(new ItemStack[]{((org.bukkit.inventory.FurnaceRecipe) serverRecipe).getInput()}) && !fRecipe.getResult().isSimilar(serverRecipe.getResult());
+			if (fRecipe.isCheckPartialMatch() && isVanillaRecipe) {
+				Debug.Send(fRecipe, () -> "Recipe partial match match: input '" + Arrays.toString(srcMatrix) + " , furnace burn result " + fRecipe.getResult() + " | " + (RecipeAdapter.entityCanCraft(player, fRecipe) ? "'." : "' and no perms."));
+				return new ResultContext(fRecipe, fRecipe.getResult(), ResultType.PARTIAL_MATCH);
+			}
+			if (isVanillaRecipe) {
+				return new ResultContext(fRecipe, fRecipe.getResult(), ResultType.NO_MATCH);
+			}
 			Debug.Send(fRecipe, () -> "found recipe doesn't match '" + Arrays.toString(srcMatrix) + (RecipeAdapter.entityCanCraft(player, fRecipe) ? "'." : "' and no perms."));
 		}
-		furnaceContext.setFurnaceResult(RecipeResult.setNone());
-		return null;
+		return new ResultContext(fRecipe, fRecipe.getResult(), ResultType.NO_MATCH);
 	}
 }

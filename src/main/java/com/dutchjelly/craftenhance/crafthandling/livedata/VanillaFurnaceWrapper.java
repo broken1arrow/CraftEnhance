@@ -3,12 +3,12 @@ package com.dutchjelly.craftenhance.crafthandling.livedata;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareFurnaceContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
+import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultType;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers.MatchType;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
-import com.dutchjelly.craftenhance.util.RecipeResult;
 import org.bukkit.block.BlastFurnace;
 import org.bukkit.block.Smoker;
 import org.bukkit.inventory.FurnaceRecipe;
@@ -58,29 +58,24 @@ public class VanillaFurnaceWrapper implements RecipeWrapper {
 		contextConsumer.accept(furnaceContext);
 		final ItemStack[] srcMatrix = furnaceContext.getRecipeMatrix();
 		final FurnaceRecipe fRecipe = this.furnaceRecipe;
-		Debug.Send(Type.Smelting, () -> "Checking if enhanced recipe for " + fRecipe.getResult() + " matches.");
+		Debug.Send(Type.Smelting, () -> "Checking if vanilla recipe for " + fRecipe.getResult() + " matches.");
 		Debug.Send(Type.Smelting, () -> "The srcMatrix " + Arrays.toString(srcMatrix) + ".");
 
 		if (matchesType(fRecipe, srcMatrix)) {
-			Debug.Send(Type.Smelting, () -> "Found enhanced recipe " + fRecipe.getResult() + " for furnace");
+			Debug.Send(Type.Smelting, () -> "Found vanilla recipe " + fRecipe.getResult() + " for furnace.");
 			Debug.Send(Type.Smelting, () -> "Matching ingredients are " + Arrays.toString(srcMatrix) + " .");
-			furnaceContext.setFurnaceResult(RecipeResult.setVanilla(furnaceContext.getFurnace()));
-			return null;
+			return new ResultContext(fRecipe.getResult(), ResultType.VANILLA);
 		} else {
-			Debug.Send(Type.Smelting, () -> "found recipe doesn't match '" + Arrays.toString(srcMatrix) + "'.");
+			Debug.Send(Type.Smelting, () -> "Found recipe doesn't match '" + Arrays.toString(srcMatrix) + "' and output item " + fRecipe.getResult() + ".");
 		}
-		furnaceContext.setFurnaceResult(RecipeResult.setNone());
-
-		return null;
+		return new ResultContext(fRecipe.getResult(), ResultType.NO_MATCH);
 	}
-
 
 	public boolean matchesType(final FurnaceRecipe fRecipe, final ItemStack[] content) {
 		if (content.length < 1)
 			return false;
 		return MatchType.MATCH_TYPE.getMatcher().match(fRecipe.getInput(), content[0]);
 	}
-
 
 	@Override
 	public <T> Optional<T> getRecipe(final Class<T> type) {

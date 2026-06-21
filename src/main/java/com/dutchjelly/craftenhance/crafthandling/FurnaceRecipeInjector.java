@@ -1,27 +1,25 @@
 package com.dutchjelly.craftenhance.crafthandling;
 
-import com.dutchjelly.bukkitadapter.Adapter;
-import com.dutchjelly.craftenhance.CraftEnhance;
-import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareFurnaceContext;
+import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
+import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultType;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerCache;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerData;
 import com.dutchjelly.craftenhance.messaging.Debug;
-import com.dutchjelly.craftenhance.messaging.Debug.DebugType;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import com.dutchjelly.craftenhance.util.RecipeResult;
 import lombok.Getter;
+import lombok.NonNull;
 import org.bukkit.Material;
 import org.bukkit.block.BlastFurnace;
 import org.bukkit.block.Furnace;
 import org.bukkit.block.Smoker;
-import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.FurnaceBurnEvent;
@@ -32,7 +30,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -41,37 +38,21 @@ import java.util.Map;
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class FurnaceRecipeInjector {
-	private final CraftEnhance plugin;
 	//Stores info to pause furnaces from running their burn event every tick.
 	private final Map<Furnace, LocalDateTime> pausedFurnaces = new HashMap<>();
 	//Keep track of the id's of the owners of containers.
 	@Getter
 	private final BlockOwnerCache blockOwnerCache;
-	private final RecipeInjector recipeInjector;
-	private final boolean newerThanThirteen;
 
 	public FurnaceRecipeInjector(RecipeInjector recipeInjector) {
-		this.recipeInjector = recipeInjector;
-		this.plugin = this.recipeInjector.getPlugin();
-		this.blockOwnerCache = plugin.getBlockOwnerCache();
-		this.newerThanThirteen = this.recipeInjector.getPlugin().getVersionChecker().newerThan(ServerVersion.v1_13);
+		this.blockOwnerCache = self().getBlockOwnerCache();
 	}
 
-	public void smelt(final FurnaceSmeltEvent event) {
+	public void smeltTask(final FurnaceSmeltEvent event) {
+		Debug.Send(Type.Smelting, () -> "Furnace has smelt item, will start check if the output item is allowed.");
 
-		Debug.Send(Type.Smelting, () -> "Furnace has smelt item");
-
-		final List<RecipeGroup> groups = this.recipeInjector.getMatchingRecipeGroup(event.getRecipe(), event.getBlock(), event.getSource());
-		final Furnace furnace = (Furnace) event.getBlock().getState();
-		final RecipeResult result = this.getFurnaceResult(groups, event.getSource(), furnace);
-
-
-		smeltTask(event, result, furnace, groups);
-	}
-
-	public void smeltTask(final FurnaceSmeltEvent event, final FurnaceRecipe fRecipe) {
-		final ItemStack[] matrix = {new ItemStack(event.getSource().getType())};
-		final List<RecipeWrapper> matchingRecipe = RecipeLoader.getInstance().findMatchingRecipe(fRecipe.getType(), matrix);
+		final ItemStack[] matrix = {new ItemStack(event.getSource())};
+		final List<RecipeWrapper> matchingRecipe = RecipeLoader.getInstance().findMatchingRecipe(RecipeType.FURNACE, matrix);
 		final Furnace furnace = (Furnace) event.getBlock().getState();
 		final RecipeResult result = getFurnaceResult(event.getRecipe(), matchingRecipe, matrix, furnace);
 
@@ -81,22 +62,14 @@ public class FurnaceRecipeInjector {
 		} else {
 			if (result.isNone()) {
 				event.setCancelled(true);
-				Debug.Send(Type.Smelting, () -> "No similar matching to the vanilla recipe, will not changing the outcome.");
+				Debug.Send(Type.Smelting, () -> "No similar matching to the vanilla recipe, will prevent the recipe.");
 				return;
 			}
-			Debug.Send(Type.Smelting, () -> "Found similar vanilla recipe " + result.getItem());
-			final boolean isVanillaRecipe = fRecipe.matchesType(new ItemStack[]{event.getSource()}) && !fRecipe.getResult().isSimilar(result.getItem());
-			if (fRecipe.isCheckPartialMatch() && isVanillaRecipe) {
-				event.setCancelled(true);
-				return;
-			}
-			if (isVanillaRecipe) {
+			if (result.isVanilla()) {
+				Debug.Send(Type.Smelting, () -> "Found similar vanilla recipe " + result.getItem());
 				event.setResult(result.getItem());
 			}
 		}
-
-		// else
-		//event.setCancelled(true);
 	}
 
 	public void burnTask(final FurnaceBurnEvent burnEvent) {
@@ -110,7 +83,8 @@ public class FurnaceRecipeInjector {
 			burnEvent.setCancelled(true);
 			return;
 		}
-		Debug.Send(Type.Smelting, () -> "Furnace start to burn event for the item");
+
+		Debug.Send(Type.Smelting, () -> "Furnace start to burn the item, will check if item could be smelt.");
 		RecipeType recipeType = RecipeType.FURNACE;
 		if (self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
 			if (furnace instanceof BlastFurnace)
@@ -118,6 +92,7 @@ public class FurnaceRecipeInjector {
 			if (furnace instanceof Smoker)
 				recipeType = RecipeType.SMOKER;
 		}
+
 		final FurnaceInventory furnaceInventory = furnace.getInventory();
 		final ItemStack smeltingStack = furnaceInventory.getSmelting();
 		final ItemStack[] matrix = {(smeltingStack != null ? new ItemStack(smeltingStack) : new ItemStack(Material.AIR))};
@@ -141,7 +116,6 @@ public class FurnaceRecipeInjector {
 			}
 			pausedFurnaces.put(furnace, LocalDateTime.now().plusSeconds(10L));
 		}
-
 	}
 
 	private void smeltTask(final FurnaceSmeltEvent event, final RecipeResult result, final Furnace furnace, final List<RecipeGroup> groups) {
@@ -190,41 +164,6 @@ public class FurnaceRecipeInjector {
 		}
 	}
 
-	public void burn(final FurnaceBurnEvent burnEvent) {
-		if (burnEvent.isCancelled()) return;
-		final Furnace furnace = (Furnace) burnEvent.getBlock().getState();
-		//Reduce computing time by pausing furnaces. This can be removed if we also check for hoppers
-		//instead of only clicks to unpause.
-		if (pausedFurnaces.getOrDefault(furnace, LocalDateTime.now()).isAfter(LocalDateTime.now())) {
-			Debug.Send(Type.Smelting, () -> "Furnace burn event is on pause for couple of seconds.");
-			burnEvent.setCancelled(true);
-			return;
-		}
-		Debug.Send(Type.Smelting, () -> "Furnace start to burn event for the item");
-		final FurnaceInventory furnaceInventory = furnace.getInventory();
-		final List<RecipeGroup> group = this.recipeInjector.getMatchingRecipeGroup(null, burnEvent.getBlock(), furnaceInventory.getSmelting());
-
-		final RecipeResult result = this.getFurnaceResult(group, furnaceInventory.getSmelting(), furnace);
-		ItemStack itemInResulSlot = furnaceInventory.getResult();
-		if (result.isEnhancedRecipe() && itemInResulSlot != null && itemInResulSlot.getType() != Material.AIR && !result.getItem().isSimilar(itemInResulSlot)) {
-			Debug.Send(Type.Smelting, () -> "It is already an item inside the furnace, that is not similar. Can't smelt the item");
-			burnEvent.setCancelled(true);
-			return;
-		}
-
-		if (!result.isEnhancedRecipe()) {
-			if (furnaceInventory.getSmelting() != null && RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(furnaceInventory.getSmelting().getType())) != null)
-				return;
-			if (result.isVanilla())
-				return;
-			if (result.isNone()) {
-				Debug.Send(Type.Smelting, () -> "The recipe is not an enhanced recipe or vanilla recipe it will abort the burn event.");
-				burnEvent.setCancelled(true);
-			}
-			pausedFurnaces.put(furnace, LocalDateTime.now().plusSeconds(10L));
-		}
-	}
-
 	public void furnaceClick(final InventoryClickEvent furnaceClick) {
 		if (furnaceClick.isCancelled() || furnaceClick.getClickedInventory() == null) return;
 /*		System.out.println("blockOwnerCache. " + blockOwnerCache.getContainerOwners());
@@ -265,35 +204,94 @@ public class FurnaceRecipeInjector {
 		return blockOwnerCache;
 	}
 
-
+	@NonNull
 	public RecipeResult getFurnaceResult(final Recipe serverRecipe, final List<RecipeWrapper> recipeWrappers, final ItemStack[] matrix, final Furnace furnace) {
 		if (recipeWrappers.isEmpty()) {
 			Debug.Send(Type.Smelting, () -> "furnace recipe does not match any recipe group.");
-			return RecipeResult.setVanilla(furnace);
+			return RecipeResult.setVanilla(serverRecipe != null ? serverRecipe.getResult() : null);
 		}
-		for (RecipeWrapper group : recipeWrappers) {
-			final PrepareFurnaceContext[] contextHolder = new PrepareFurnaceContext[1];
 
-			group.matches(serverRecipe, prepareRecipeContext -> {
+		for (RecipeWrapper group : recipeWrappers) {
+			ResultContext resultContext = group.matches(serverRecipe, prepareRecipeContext -> {
 				if (!(prepareRecipeContext instanceof PrepareFurnaceContext)) return;
 				final PrepareFurnaceContext furnaceContext = (PrepareFurnaceContext) prepareRecipeContext;
-
-				contextHolder[0] = furnaceContext;
 				furnaceContext.setFurnace(furnace);
 				furnaceContext.setRecipeMatrix(matrix);
 			});
-			final PrepareFurnaceContext furnaceContext = contextHolder[0];
-			if (furnaceContext == null) continue;
+			if (resultContext == null) continue;
 
-			if (furnaceContext.getFurnaceResult().isPresent()) {
-				final RecipeResult recipeResult = furnaceContext.getFurnaceResult().get();
-				if (!recipeResult.isNone())
-					return recipeResult;
+			if (resultContext.getResultType() == ResultType.ENHANCED) {
+				return RecipeResult.setCustomRecipe(resultContext.getItemStack());
+			}
+			if (resultContext.getResultType() == ResultType.VANILLA) {
+				return RecipeResult.setVanilla(serverRecipe != null ? serverRecipe.getResult() : null);
+			}
+			if (resultContext.getResultType() == ResultType.PARTIAL_MATCH) {
+				return RecipeResult.setNone();
 			}
 		}
 		return RecipeResult.setNone();
 	}
 
+	@NonNull
+	public ResultContext getFurnaceContext(final Recipe serverRecipe, final List<RecipeWrapper> recipeWrappers, final ItemStack[] matrix, final Furnace furnace) {
+		if (recipeWrappers.isEmpty()) {
+			Debug.Send(Type.Smelting, () -> "furnace recipe does not match any recipe group.");
+			return new ResultContext(serverRecipe != null ? serverRecipe.getResult() : null, ResultType.VANILLA);
+		}
+
+		for (RecipeWrapper group : recipeWrappers) {
+			ResultContext resultContext = group.matches(serverRecipe, prepareRecipeContext -> {
+				if (!(prepareRecipeContext instanceof PrepareFurnaceContext)) return;
+				final PrepareFurnaceContext furnaceContext = (PrepareFurnaceContext) prepareRecipeContext;
+				furnaceContext.setFurnace(furnace);
+				furnaceContext.setRecipeMatrix(matrix);
+			});
+			if (resultContext == null) continue;
+
+			return resultContext;
+		}
+		return new ResultContext(null, ResultType.NO_MATCH);
+	}
+
+/*
+
+	public void burn(final FurnaceBurnEvent burnEvent) {
+		if (burnEvent.isCancelled()) return;
+
+
+		final Furnace furnace = (Furnace) burnEvent.getBlock().getState();
+		//Reduce computing time by pausing furnaces. This can be removed if we also check for hoppers
+		//instead of only clicks to unpause.
+		if (pausedFurnaces.getOrDefault(furnace, LocalDateTime.now()).isAfter(LocalDateTime.now())) {
+			Debug.Send(Type.Smelting, () -> "Furnace burn event is on pause for couple of seconds.");
+			burnEvent.setCancelled(true);
+			return;
+		}
+		Debug.Send(Type.Smelting, () -> "Furnace start to burn event for the item");
+		final FurnaceInventory furnaceInventory = furnace.getInventory();
+		final List<RecipeGroup> group = this.recipeInjector.getMatchingRecipeGroup(null, burnEvent.getBlock(), furnaceInventory.getSmelting());
+
+		final RecipeResult result = this.getFurnaceResult(group, furnaceInventory.getSmelting(), furnace);
+		ItemStack itemInResulSlot = furnaceInventory.getResult();
+		if (result.isEnhancedRecipe() && itemInResulSlot != null && itemInResulSlot.getType() != Material.AIR && !result.getItem().isSimilar(itemInResulSlot)) {
+			Debug.Send(Type.Smelting, () -> "It is already an item inside the furnace, that is not similar. Can't smelt the item");
+			burnEvent.setCancelled(true);
+			return;
+		}
+
+		if (!result.isEnhancedRecipe()) {
+			if (furnaceInventory.getSmelting() != null && RecipeLoader.getInstance().getSimilarVanillaRecipe().get(new ItemStack(furnaceInventory.getSmelting().getType())) != null)
+				return;
+			if (result.isVanilla())
+				return;
+			if (result.isNone()) {
+				Debug.Send(Type.Smelting, () -> "The recipe is not an enhanced recipe or vanilla recipe it will abort the burn event.");
+				burnEvent.setCancelled(true);
+			}
+			pausedFurnaces.put(furnace, LocalDateTime.now().plusSeconds(10L));
+		}
+	}
 
 	public RecipeResult getFurnaceResult(final List<RecipeGroup> groups, final ItemStack source, final Furnace furnace) {
 		//FurnaceRecipe recipe = new FurnaceRecipe(null, null, srcMatrix);
@@ -301,7 +299,7 @@ public class FurnaceRecipeInjector {
 
 		if (groups == null || groups.isEmpty()) {
 			Debug.Send(Type.Smelting, () -> "furnace recipe does not match any recipe group.");
-			return RecipeResult.setVanilla(furnace);
+			return RecipeResult.setVanilla(null);
 		}
 		final BlockOwnerData containerOwner = this.blockOwnerCache.getContainerOwner(furnace.getLocation());
 		final Player player = containerOwner == null ? null : plugin.getServer().getPlayer(containerOwner.getCurrentOwner());
@@ -312,9 +310,8 @@ public class FurnaceRecipeInjector {
 			Debug.Send(DebugType.of(Type.Smelting, furnaceRecipe), () -> "Furnace group: " + groups);
 			Debug.Send(DebugType.of(Type.Smelting, furnaceRecipe), () -> "Furnace source item: " + source);
 
-			if (furnaceRecipe != null) return RecipeResult.setResult(furnaceRecipe);
+			if (furnaceRecipe != null) return RecipeResult.setCustomRecipe(furnaceRecipe.getResult());
 			//Check for similar server recipes if no enhanced ones match.
-
 			for (final Recipe sRecipe : group.getServerRecipes()) {
 				if (Adapter.isCraftingRecipe(sRecipe)) continue;
 
@@ -328,8 +325,11 @@ public class FurnaceRecipeInjector {
 			}
 
 		}
-		/*todo does this part needed, if a recipe get detected wrong, as should be treated as normal vanilla recipe?
-		 */
+		*/
+	/*todo does this part needed, if a recipe get detected wrong, as should be treated as normal vanilla recipe?
+	 *//*
+
+	 */
 /*	   		for (final Recipe sRecipe : RecipeLoader.getInstance().getServerFurnaceRecipes()) {
 				if(sRecipe instanceof CraftingRecipe) continue;
 
@@ -345,7 +345,8 @@ public class FurnaceRecipeInjector {
 					Debug.Send(Type.Smelting, () -> "Input: " + inputStack);
 					return RecipeResult.setVanilla();
 				}
-			}*/
+			}*//*
+
 		return RecipeResult.setNone();
 	}
 
@@ -375,18 +376,21 @@ public class FurnaceRecipeInjector {
 			} else {
 				Debug.Send(fRecipe, () -> "found recipe doesn't match '" + source.getType() + (this.recipeInjector.entityCanCraft(player, fRecipe) ? "'." : "and no perms.") + " Check next custom recipe if it exist.");
 				//TODO should this code be removed?
-			/*	if (fRecipe.matcheType(srcMatrix)) {
+			*/
+/*	if (fRecipe.matcheType(srcMatrix)) {
 					Debug.Send("Found similar match itemtype for furnace");
 					Debug.Send("Is item similar= "  + fRecipe.getContent()[0].isSimilar(srcMatrix[0]));
 					Debug.Send("For recipe: " + fRecipe.getResult());
 					return Optional.empty();
 				}
 				Debug.Send("found recipe doesn't match " + (entityCanCraft(p, fRecipe) ? "." : "and no perms."));
-				return null;*/
+				return null;*//*
+
 			}
 		}
 		return null;
 	}
+*/
 
 
 }
