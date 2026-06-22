@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public class CacheRecipesGroup {
 	private final Map<RecipeType, Set<String>> groups = new HashMap<>();
 	protected boolean groupCacheDirty;
-	public Map<String, EnhancedRecipe> getRecipesMap()  {
+	public Map<String, EnhancedRecipe> getRecipes()  {
 		return new HashMap<>();
 	}
 
@@ -21,7 +21,7 @@ public class CacheRecipesGroup {
 			groups.clear();
 			groupCacheDirty = false;
 		}
-		return groups.computeIfAbsent(type, t -> this.getRecipesMap().values().stream()
+		return groups.computeIfAbsent(type, t -> this.getRecipes().values().stream()
 				.filter(enhancedRecipe -> enhancedRecipe.getType() == t)
 				.map(EnhancedRecipe::getGroup)
 				.distinct()

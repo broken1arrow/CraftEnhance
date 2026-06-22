@@ -98,7 +98,7 @@ public class ItemMatchers {
 			final ItemMeta itemMetaB = b.getItemMeta();
 			if (itemMetaA != null && itemMetaB != null && itemMetaA.hasCustomModelData() && itemMetaB.hasCustomModelData())
 				return itemMetaA.getCustomModelData() == itemMetaB.getCustomModelData();
-			return itemMetaA != null && itemMetaB != null && (!itemMetaA.hasCustomModelData() && !itemMetaB.hasCustomModelData());
+			return itemMetaA != null && itemMetaB != null && !itemMetaA.hasCustomModelData() && !itemMetaB.hasCustomModelData();
 		}
 		return false;
 	}

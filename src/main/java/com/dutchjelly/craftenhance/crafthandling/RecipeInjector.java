@@ -8,7 +8,9 @@ import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareItemCraft
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.ServerLoadable;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
+import com.dutchjelly.craftenhance.gui.util.FormatListContents;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
@@ -23,6 +25,7 @@ import org.bukkit.block.Crafter;
 import org.bukkit.block.Furnace;
 import org.bukkit.block.Smoker;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -50,6 +53,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
@@ -86,15 +90,19 @@ public class RecipeInjector implements Listener {
 	@EventHandler
 	public void onJoin(final PlayerJoinEvent e) {
 		if (self().getConfig().getBoolean("learn-recipes")) {
+			final Player player = e.getPlayer();
 			try {
-				for (final NamespacedKey namespacedKey : e.getPlayer().getDiscoveredRecipes()) {
+				for (final NamespacedKey namespacedKey : player.getDiscoveredRecipes()) {
 					if (namespacedKey.getNamespace().contains("craftenhance")) {
-						e.getPlayer().undiscoverRecipe(namespacedKey);
+						player.undiscoverRecipe(namespacedKey);
 					}
 				}
 			} catch (final Exception ignored) {
 			}
-			Adapter.DiscoverRecipes(e.getPlayer(), RecipeLoader.getInstance().getLoadedServerRecipes());
+			Adapter.DiscoverRecipes(player, self().getCacheRecipes().getListOfRecipes().stream()
+					.filter(enhancedRecipe -> FormatListContents.canViewRecipe(enhancedRecipe, player))
+					.map(ServerLoadable::getServerRecipe)
+					.collect(Collectors.toList()));
 		}
 	}
 

@@ -243,7 +243,7 @@ public class CraftEnhance extends JavaPlugin {
 	public void reloadServerRecipes() {
 		RecipeLoader.clearInstance();
 		RecipeLoader loader = RecipeLoader.getInstance();
-		this.cacheRecipes.getRecipes().stream().filter(x -> x.validate() == null).forEach((recipe) -> loader.loadRecipe(recipe, isReloading));
+		this.cacheRecipes.getListOfRecipes().stream().filter(x -> x.validate() == null).forEach((recipe) -> loader.loadRecipe(recipe, isReloading));
 		loader.printGroupsDebugInfo();
 		final List<Recipe> collect = fm.readDisabledServerRecipes().stream().map(x ->
 				Adapter.FilterRecipes(loader.getServerRecipes(), x)
@@ -258,7 +258,7 @@ public class CraftEnhance extends JavaPlugin {
 		//todo learn recipes are little broken. when you reload it. This is an attempt to force learn recipes too all players.
 		if (!Bukkit.getOnlinePlayers().isEmpty() && self().getConfig().getBoolean("learn-recipes"))
 			for (final Player player : Bukkit.getOnlinePlayers())
-				Adapter.DiscoverRecipes(player, getCacheRecipes().getRecipes().stream()
+				Adapter.DiscoverRecipes(player, getCacheRecipes().getListOfRecipes().stream()
 						.filter(enhancedRecipe -> FormatListContents.canViewRecipe(enhancedRecipe, player))
 						.map(ServerLoadable::getServerRecipe)
 						.collect(Collectors.toList()));
@@ -373,7 +373,7 @@ public class CraftEnhance extends JavaPlugin {
 	}
 
 	private void loadingRecipes(final RecipeLoader loader) {
-		this.cacheRecipes.getRecipes().stream().filter(x -> x.validate() == null).forEach((recipe) -> loader.loadRecipe(recipe, isReloading));
+		this.cacheRecipes.getListOfRecipes().stream().filter(x -> x.validate() == null).forEach((recipe) -> loader.loadRecipe(recipe, isReloading));
 		loader.printGroupsDebugInfo();
 		loader.disableServerRecipes(
 				fm.readDisabledServerRecipes().stream().map(x ->

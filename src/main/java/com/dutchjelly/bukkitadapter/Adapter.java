@@ -17,6 +17,7 @@ import lombok.NonNull;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
@@ -43,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -255,7 +257,7 @@ public class Adapter {
 	public static Inventory getTopInventory(InventoryEvent event) {
 		if (self().getVersionChecker().newerThan(ServerVersion.v1_19)) {
 			try {
-				if(InventoryView == null)
+				if (InventoryView == null)
 					return null;
 				// Use reflection to avoid linking to InventoryView directly
 				Object view = InventoryView.invoke(event);
@@ -485,7 +487,6 @@ public class Adapter {
 			boolean serverIsNewer = self().getVersionChecker().newerThan(ServerVersion.v1_12);
 			if (!serverIsNewer)
 				return;
-
 			for (final Recipe recipe : recipes) {
 				if (recipe instanceof ShapedRecipe) {
 					final ShapedRecipe shaped = (ShapedRecipe) recipe;
@@ -518,7 +519,7 @@ public class Adapter {
 		}
 	}
 
-	public static Recipe FilterRecipes(final List<Recipe> recipes, final String name) {
+	public static Recipe FilterRecipes(final Set<Recipe> recipes, final String name) {
 		for (final Recipe r : recipes) {
 			final String id = GetRecipeIdentifier(r);
 			if (id == null) continue;
@@ -544,6 +545,21 @@ public class Adapter {
 		}
 
 		return r.getResult().getType().name();
+	}
+
+	public static NamespacedKey getNamespacedKey(final Recipe recipe) {
+		if (recipe instanceof ShapedRecipe) {
+			final ShapedRecipe shaped = (ShapedRecipe) recipe;
+			return shaped.getKey();
+
+		} else if (recipe instanceof ShapelessRecipe) {
+			final ShapelessRecipe shapeless = (ShapelessRecipe) recipe;
+			return shapeless.getKey();
+		} else if (recipe instanceof CookingRecipe) {
+			final CookingRecipe<?> cookingRecipe = (CookingRecipe<?>) recipe;
+			return cookingRecipe.getKey();
+		}
+		return null;
 	}
 
 	public static String getGroup(@NonNull final Recipe recipe) {
@@ -602,19 +618,52 @@ public class Adapter {
 
 	public static boolean recipeContainsNamespace(final Recipe recipe) {
 		final VersionChecker versionChecker = self().getVersionChecker();
+		if (versionChecker.olderThan(ServerVersion.v1_14)) {
+			return false;
+		}
 		if (isCraftingRecipe(recipe)) {
 			if (versionChecker.newerThan(ServerVersion.v1_19))
-				return (((CraftingRecipe) recipe).getKey().getNamespace().contains("craftenhance") || ((CraftingRecipe) recipe).getKey().getNamespace().contains("cehrecipe"));
+				return (((CraftingRecipe) recipe).getKey().getNamespace().contains("craftenhance") || ((CraftingRecipe) recipe).getKey().getKey().contains("cehrecipe"));
 
 			if (recipe instanceof ShapedRecipe) {
-				return (((ShapedRecipe) recipe).getKey().getNamespace().contains("craftenhance") || ((ShapedRecipe) recipe).getKey().getNamespace().contains("cehrecipe"));
+				return (((ShapedRecipe) recipe).getKey().getNamespace().contains("craftenhance") || ((ShapedRecipe) recipe).getKey().getKey().contains("cehrecipe"));
 			}
 
 			if (recipe instanceof ShapelessRecipe) {
-				return (((ShapelessRecipe) recipe).getKey().getNamespace().contains("craftenhance") || ((ShapelessRecipe) recipe).getKey().getNamespace().contains("cehrecipe"));
+				return (((ShapelessRecipe) recipe).getKey().getNamespace().contains("craftenhance") || ((ShapelessRecipe) recipe).getKey().getKey().contains("cehrecipe"));
 			}
 		}
-		return recipe instanceof CookingRecipe && (((CookingRecipe<?>) recipe).getKey().getNamespace().contains("craftenhance") || ((CookingRecipe<?>) recipe).getKey().getNamespace().contains("cehrecipe"));
+		return recipe instanceof CookingRecipe && (((CookingRecipe<?>) recipe).getKey().getNamespace().contains("craftenhance") || ((CookingRecipe<?>) recipe).getKey().getKey().contains("cehrecipe"));
+	}
+
+	public static boolean isRecipeCustom(final Recipe recipe) {
+		final VersionChecker versionChecker = self().getVersionChecker();
+		if (versionChecker.olderThan(ServerVersion.v1_14)) {
+			return !hasCustomMeta(recipe.getResult());
+		}
+		if (isCraftingRecipe(recipe)) {
+			if (versionChecker.newerThan(ServerVersion.v1_19)) {
+				final CraftingRecipe craftingRecipe = (CraftingRecipe) recipe;
+				System.out.println("craftingRecipe.getKey().getNamespace() " + craftingRecipe.getKey().getNamespace());
+				System.out.println("craftingRecipe.getKey().getKey() " + craftingRecipe.getKey().getKey());
+				System.out.println("does any returns true " + (craftingRecipe.getKey().getNamespace().contains("craftenhance") || craftingRecipe.getKey().getKey().contains("cehrecipe")));
+				return craftingRecipe.getKey().getNamespace().contains("craftenhance") || craftingRecipe.getKey().getKey().contains("cehrecipe");
+			}
+			if (recipe instanceof ShapedRecipe) {
+				final ShapedRecipe shapedRecipe = (ShapedRecipe) recipe;
+				return shapedRecipe.getKey().getNamespace().contains("craftenhance") || shapedRecipe.getKey().getKey().contains("cehrecipe");
+			}
+
+			if (recipe instanceof ShapelessRecipe) {
+				final ShapelessRecipe shapelessRecipe = (ShapelessRecipe) recipe;
+				return shapelessRecipe.getKey().getNamespace().contains("craftenhance") || shapelessRecipe.getKey().getKey().contains("cehrecipe");
+			}
+		}
+		if (recipe instanceof CookingRecipe) {
+			final CookingRecipe<?> cookingRecipe = (CookingRecipe<?>) recipe;
+			return cookingRecipe.getKey().getNamespace().contains("craftenhance") || cookingRecipe.getKey().getKey().contains("cehrecipe");
+		}
+		return false;
 	}
 
 	public static void addAttributeTooltip(ItemStack item) {
@@ -653,5 +702,26 @@ public class Adapter {
 			return false;
 		}
 	}
+
+	private static boolean hasCustomMeta(ItemStack item) {
+		if (item == null || !item.hasItemMeta()) {
+			return false;
+		}
+
+		ItemMeta meta = item.getItemMeta();
+		if (meta == null) return false;
+
+		if (meta.hasDisplayName()) return true;
+		if (meta.hasLore()) return true;
+		if (meta.hasEnchants()) return true;
+
+		if (self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
+			if (meta.hasCustomModelData()) return true;
+			return !meta.getPersistentDataContainer().isEmpty();
+		}
+
+		return false;
+	}
+
 
 }

@@ -93,8 +93,8 @@ public class FormatListContents {
 		return categoryNames.stream().filter(x -> x.contains(grupSeachFor)).collect(Collectors.toList());
 	}
 
-	public static List<Recipe> getRecipes(final List<Recipe> enabledRecipes, final List<Recipe> disabledRecipes, final boolean enableMode, final String grupSeachFor) {
-		final List<Recipe> recipes = !enableMode ? enabledRecipes : disabledRecipes;
+	public static List<Recipe> getRecipes(final Set<Recipe> enabledRecipes, final List<Recipe> disabledRecipes, final boolean enableMode, final String grupSeachFor) {
+		final List<Recipe> recipes = !enableMode ? new ArrayList<>(enabledRecipes) : disabledRecipes;
 		if (grupSeachFor == null || grupSeachFor.equals("")) {
 			return recipes;
 		}

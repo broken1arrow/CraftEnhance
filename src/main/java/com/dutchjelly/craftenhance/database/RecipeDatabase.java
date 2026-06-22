@@ -337,7 +337,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 		try (Connection connection = connect()) {
 			connection.setAutoCommit(false);
 			try {
-				List<EnhancedRecipe> tempList = new ArrayList<>(self().getCacheRecipes().getRecipes());
+				List<EnhancedRecipe> tempList = new ArrayList<>(self().getCacheRecipes().getListOfRecipes());
 				for (EnhancedRecipe recipe : tempList) {
 					if (recipe.isRemove()) {
 						this.deleteRecipe(connection, recipe);

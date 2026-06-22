@@ -26,12 +26,12 @@ public class CacheRecipes extends CacheRecipesGroup {
 	}
 
 
-	public List<EnhancedRecipe> getRecipes() {
+	public List<EnhancedRecipe> getListOfRecipes() {
 		return new ArrayList<>(recipes.values());
 	}
 
 	@Override
-	public Map<String, EnhancedRecipe> getRecipesMap() {
+	public Map<String, EnhancedRecipe> getRecipes() {
 		return Collections.unmodifiableMap(recipes);
 	}
 

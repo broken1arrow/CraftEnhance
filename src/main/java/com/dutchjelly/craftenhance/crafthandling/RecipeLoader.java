@@ -27,12 +27,11 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Server;
 import org.bukkit.inventory.CookingRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
-import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.inventory.ShapelessRecipe;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -59,7 +58,7 @@ public class RecipeLoader {
 	private final CategoryDataCache categoryDataCache;
 	private final Server server;
 	@Getter
-	private List<Recipe> serverRecipes = new ArrayList<>();
+	private Set<Recipe> serverRecipes = new HashSet<>();
 	@Getter
 	private List<Recipe> disabledServerRecipes = new ArrayList<>();
 	@Getter
@@ -89,7 +88,7 @@ public class RecipeLoader {
 	}
 
 	public static void clearInstance() {
-		for (final Entry<String, EnhancedRecipe> loaded : self().getCacheRecipes().getRecipesMap().entrySet()) {
+		for (final Entry<String, EnhancedRecipe> loaded : self().getCacheRecipes().getRecipes().entrySet()) {
 			instance.unloadRecipe(loaded.getValue().getServerRecipe());
 		}
 		instance = null;
@@ -98,7 +97,7 @@ public class RecipeLoader {
 	@Nonnull
 	public List<RecipeWrapper> findMatchingRecipe(@Nonnull final RecipeType recipeType, final ItemStack[] matrix) {
 		final RecipeRegistry recipeCached = this.mappedRecipes.get(recipeType);
-		if(recipeCached == null)
+		if (recipeCached == null)
 			return Collections.emptyList();
 		return recipeCached.findMatchingRecipes(matrix);
 	}
@@ -128,14 +127,6 @@ public class RecipeLoader {
 		Recipe alwaysSimilar = null;
 		for (final Recipe r : similarServerRecipes) {
 			if (recipe.isAlwaysSimilar(r)) {
-				if (self().getVersionChecker().newerThan(ServerVersion.v1_12)) {
-					if (r instanceof ShapedRecipe)
-						if (((ShapedRecipe) r).getKey().getNamespace().contains("craftenhance"))
-							continue;
-					if (r instanceof ShapelessRecipe)
-						if (((ShapelessRecipe) r).getKey().getNamespace().contains("craftenhance"))
-							continue;
-				}
 				alwaysSimilar = r;
 				break;
 			}
@@ -155,6 +146,7 @@ public class RecipeLoader {
 				final boolean alreadyRegistered = isAlreadyRegistered(recipe, containsRecipe);
 				if (!alreadyRegistered && !isReloading) {
 					server.addRecipe(serverRecipe);
+					serverRecipes.add(serverRecipe);
 				}
 				Debug.Send("Loading recipe", "Added server recipe for " + serverRecipe.getResult().getType());
 			}
@@ -183,7 +175,7 @@ public class RecipeLoader {
 		mappedGroupedRecipes.clear();
 		mappedRecipes.clear();
 		serverRecipes.clear();
-		unloadCehRecipes();
+		unloadAllCehRecipes();
 	}
 
 	public void unloadRecipe(final EnhancedRecipe recipe) {
@@ -200,10 +192,8 @@ public class RecipeLoader {
 		printGroupsDebugInfo();
 	}
 
-	public List<Recipe> getLoadedServerRecipes() {
-		List<Recipe> recipes = new ArrayList<>();
-		this.server.recipeIterator().forEachRemaining(recipes::add);
-		return recipes;
+	public Set<Recipe> getLoadedServerRecipes() {
+		return serverRecipes;
 	}
 
 	public void printGroupsDebugInfo() {
@@ -216,7 +206,7 @@ public class RecipeLoader {
 			Debug.Send("Recipes cached:\n " + group.getMappedRecipes().values().stream()
 					.filter(Objects::nonNull).map(x ->
 							x.stream().map(Object::toString)
-					.collect(Collectors.joining("\nRecipe:\n")))
+									.collect(Collectors.joining("\nRecipe:\n")))
 					.collect(Collectors.joining(",\n")));
 		}
 	}
@@ -230,7 +220,7 @@ public class RecipeLoader {
 			unloadRecipe(r);
 
 			final ItemStack[] ingredients = Adapter.getIngredients(r);
-			if (serverRecipes instanceof org.bukkit.inventory.FurnaceRecipe)
+			if (r instanceof org.bukkit.inventory.FurnaceRecipe)
 				liveCacheRecipe(new VanillaFurnaceWrapper((org.bukkit.inventory.FurnaceRecipe) r), ingredients);
 			else
 				liveCacheRecipe(new VanillaCraftWrapper(r), ingredients);
@@ -271,7 +261,7 @@ public class RecipeLoader {
 	}
 
 	public void clearCache() {
-		this.serverRecipes = new ArrayList<>();
+		this.serverRecipes = new HashSet<>();
 		this.disabledServerRecipes = new ArrayList<>();
 		this.mappedGroupedRecipes = new HashMap<>();
 		this.mappedRecipes.clear();
@@ -285,7 +275,7 @@ public class RecipeLoader {
 			Set<RecipeWrapper> recipeWrappers = recipes.get(stack.getType());
 			if (recipeWrappers == null) continue;
 
-			if (!recipeWrappers.isEmpty() && recipeWrappers.stream().allMatch(recipeWrapper -> recipeWrapper.getRecipeKey().equals(recipe.getKey()))) {
+			if (!recipeWrappers.isEmpty() && recipeWrappers.stream().anyMatch(recipeWrapper -> recipeWrapper.getRecipeKey().equals(recipe.getKey()))) {
 				alreadyRegistered = true;
 			}
 		}
@@ -391,23 +381,39 @@ public class RecipeLoader {
 		return recipeGroup != null;
 	}
 
-	private void unloadCehRecipes() {
-		final Iterator<Recipe> it = server.recipeIterator();
-		while (it.hasNext()) {
-			final Recipe r = it.next();
-			if (Adapter.ContainsSubKey(r, ServerRecipeTranslator.KeyPrefix)) {
-				it.remove();
+	private void unloadAllCehRecipes() {
+		if (self().getVersionChecker().newerThan(ServerVersion.v1_12)) {
+			for (final Entry<String, EnhancedRecipe> recipeEntry : self().getCacheRecipes().getRecipes().entrySet()) {
+				final NamespacedKey namespacedKey = Adapter.getNamespacedKey(recipeEntry.getValue().getServerRecipe());
+				if (namespacedKey != null) {
+					Bukkit.removeRecipe(namespacedKey);
+				}
+			}
+		} else {
+			final Iterator<Recipe> it = server.recipeIterator();
+			while (it.hasNext()) {
+				final Recipe r = it.next();
+				if (Adapter.ContainsSubKey(r, ServerRecipeTranslator.KeyPrefix)) {
+					it.remove();
+				}
 			}
 		}
 	}
 
 	private void unloadRecipe(final Recipe r) {
 		final Iterator<Recipe> it = server.recipeIterator();
-		while (it.hasNext()) {
-			final Recipe currentRecipe = it.next();
-			if (currentRecipe.equals(r)) {
-				it.remove();
-				return;
+		if (self().getVersionChecker().newerThan(ServerVersion.v1_12)) {
+			final NamespacedKey namespacedKey = Adapter.getNamespacedKey(r);
+			if (namespacedKey != null) {
+				Bukkit.removeRecipe(namespacedKey);
+			}
+		} else {
+			while (it.hasNext()) {
+				final Recipe currentRecipe = it.next();
+				if (currentRecipe.equals(r)) {
+					it.remove();
+					return;
+				}
 			}
 		}
 	}
@@ -425,7 +431,8 @@ public class RecipeLoader {
 	}
 
 	//Find groups that contain at least one recipe that maps to result.
-	public List<RecipeGroup> findGroupsByResult(final ItemStack result, final Recipe recipe, final RecipeType recipeType) {
+	public List<RecipeGroup> findGroupsByResult(final ItemStack result, final Recipe recipe,
+	                                            final RecipeType recipeType) {
 		final List<RecipeGroup> originGroups = new ArrayList<>();
 		if (self().getVersionChecker().olderThan(ServerVersion.v1_13) || recipe == null) {
 			final Set<String> seenGroups = new HashSet<>();

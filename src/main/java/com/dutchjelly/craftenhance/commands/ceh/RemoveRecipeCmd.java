@@ -62,7 +62,7 @@ public class RemoveRecipeCmd implements ICommand {
 	public List<String> handleTabCompletion(final CommandSender sender, final String[] args) {
 		List<String> recipes = new ArrayList<>();
 		if (args.length == 2) {
-			self().getCacheRecipes().getRecipes().forEach(recipe -> recipes.add(recipe.getKey()));
+			self().getCacheRecipes().getListOfRecipes().forEach(recipe -> recipes.add(recipe.getKey()));
 		}
 		return recipes;
 	}
