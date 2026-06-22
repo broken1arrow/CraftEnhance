@@ -6,14 +6,15 @@ import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
-import com.dutchjelly.craftenhance.util.BooleanConsumer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.BrewerInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -74,7 +75,7 @@ public class BrewingWrapper implements RecipeWrapper {
 		return null;
 	}
 
-	public void brewingCheck(@Nonnull final BrewingClickContext wrapBrewingClick,@Nonnull final BooleanConsumer match) {
+	public boolean brewingCheck(@Nonnull final BrewingClickContext wrapBrewingClick) {
 		final InventoryClickEvent event = wrapBrewingClick.getEvent();
 		final Location location = wrapBrewingClick.getLocation();
 		final ItemStack itemStackCursor = wrapBrewingClick.getItemStackCursor();
@@ -85,7 +86,7 @@ public class BrewingWrapper implements RecipeWrapper {
 		boolean notAllowedToBrew = RecipeAdapter.isCraftingAllowedInWorld(location, brewingRecipe);
 		if (notAllowedToBrew) {
 			Debug.Send(Type.Brewing, () -> "You are not allowed to brew potions in this world: " + location.getWorld() + " with this recipe key: " + brewingRecipe.getKey());
-			return;
+			return false;
 		}
 
 		if (brewingRecipe.getResult().isSimilar(itemStackCursor)) {
@@ -100,18 +101,50 @@ public class BrewingWrapper implements RecipeWrapper {
 				if (brewingRecipe.matches(outputItems)) {
 					Debug.Send(Type.Brewing, () -> "Found matching brewing recipe and will start to make the recipe: " + brewingRecipe.getKey());
 					self().getBrewingTask().addTask(location, brewingRecipe);
-					match.accept(true);
 				} else {
 					Debug.Send(Type.Brewing, () -> "Failed to find a matching brewing ingredients recipe for recipe: " + brewingRecipe.getKey());
 					Debug.Send(Type.Brewing, () -> "Result item: " + brewingRecipe.getResult());
 					Debug.Send(Type.Brewing, () -> "The items to match: " + Arrays.toString(brewingRecipe.getContent()));
 					Debug.Send(Type.Brewing, () -> "The items inside inventory: " + Arrays.toString(outputItems));
-					match.accept(false);
 				}
 			});
+			return true;
 		} else {
 			Debug.Send(Type.Brewing, () -> "No match for this recipe: " + brewingRecipe.getKey());
 		}
+		return false;
+	}
+
+	public boolean brewingDragCheck(@Nonnull final BrewingDragContext brewingDragContext) {
+		final EnhancedRecipe enhancedRecipe = brewingRecipe;
+		final InventoryDragEvent event = brewingDragContext.getEvent();
+		final ItemStack itemStackCursor = brewingDragContext.getItemStackCursor();
+		final Inventory clickedInventory = event.getInventory();
+
+		final ItemStack[] itemStacks = clickedInventory.getContents();
+		final ItemStack firstItem = itemStacks[0];
+		final ItemStack secondItem = itemStacks[1];
+		final ItemStack thirdItem = itemStacks[2];
+		final ItemStack[] outputItems = new ItemStack[]{firstItem, secondItem, thirdItem};
+
+		if (enhancedRecipe.getResult().isSimilar(itemStackCursor)) {
+			ItemStack eventCursor = event.getCursor();
+			if (eventCursor == null)
+				eventCursor = event.getOldCursor();
+
+			if (eventCursor.getType() != Material.AIR) {
+				for (int slot : event.getRawSlots()) {
+					if (slot < clickedInventory.getSize()) {
+						Debug.Send(Type.Brewing, () -> "Dragged into top inventory at slot: " + slot);
+						break;
+					}
+				}
+			}
+			event.setCancelled(true);
+			Debug.Send(Type.Brewing, () -> "Found matching brewing recipe, will prevent inventory drag.");
+			return true;
+		}
+		return false;
 	}
 
 	@Override

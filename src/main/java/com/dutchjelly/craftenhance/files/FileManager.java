@@ -8,6 +8,7 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerCache;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerData;
 import com.dutchjelly.craftenhance.messaging.Debug;
+import com.dutchjelly.craftenhance.messaging.Debug.DebugContext;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.util.LocationWrapper;
 import com.google.gson.Gson;
@@ -40,7 +41,7 @@ import java.util.stream.Collectors;
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class FileManager {
-
+	private static final DebugContext loadingFiles  = DebugContext.of(Debug.Type.Loading_yaml, "Loading yml");
 	private final boolean useJson;
 
 	private File dataFolder;
@@ -135,7 +136,7 @@ public class FileManager {
 	}
 
 	public void cacheRecipes() {
-		Debug.Send("The file manager is caching recipes...");
+		Debug.Send(loadingFiles,()-> "The file manager is caching recipes...");
 		EnhancedRecipe keyValue;
 		if (!recipesFile.exists())
 			return;
@@ -143,7 +144,7 @@ public class FileManager {
 		recipesConfig = getYamlConfig(recipesFile);
 		recipes.clear();
 		for (final String key : recipesConfig.getKeys(false)) {
-			Debug.Send("Caching recipe with key " + key);
+			Debug.Send(loadingFiles,()-> "Caching recipe with key " + key);
 			keyValue = (EnhancedRecipe) recipesConfig.get(key);
 			final String validation = keyValue.validate();
 			if (validation != null) {
@@ -352,72 +353,16 @@ public class FileManager {
 		return true;
 	}
 
-	public void saveRecipe(final EnhancedRecipe recipe) {
-		Debug.Send("Saving recipe " + recipe.toString() + " with key " + recipe.getKey());
-		String recipeKey = recipe.getKey();
-		if (recipe.getKey().contains(".")) {
-			recipeKey = recipeKey.replace(".", "_");
-			Messenger.Message("your recipe key contains '.', it is removed now. Before " + recipe.getKey() + " after removed " + recipeKey);
-			recipe.setKey(recipeKey);
-		}
-
-		recipesConfig = getYamlConfig(recipesFile);
-		recipesConfig.set(recipeKey, recipe);
-		try {
-			recipesConfig.save(recipesFile);
-			if (getRecipe(recipe.getKey()) == null)
-				recipes.add(recipe);
-			Debug.Send("Succesfully saved the recipe, there are now " + recipes.size() + " recipes cached.");
-		} catch (final IOException e) {
-			logger.severe("Error saving a recipe to the recipes.yml file.");
-		}
-	}
-
-	public void removeRecipe(final EnhancedRecipe recipe) {
-		Debug.Send("Removing recipe " + recipe.toString() + " with key " + recipe.getKey());
-		String recipeKey = recipe.getKey();
-		if (recipe.getKey().contains(".")) {
-			recipeKey = recipeKey.replace(".", "_");
-			Messenger.Message("your recipe key contains '.', it is removed now. Before " + recipe.getKey() + " after removed " + recipeKey);
-			recipe.setKey(recipeKey);
-		}
-
-		recipesConfig = getYamlConfig(recipesFile);
-		recipesConfig.set(recipeKey, null);
-		recipes.remove(recipe);
-		try {
-			recipesConfig.save(recipesFile);
-		} catch (final IOException e) {
-			logger.severe("Error removing a recipe.");
-		}
-	}
-
-	public void overrideSave() {
-		Debug.Send("Overriding saved recipes with new list..");
-		final List<EnhancedRecipe> cloned = new ArrayList<>();
-		recipes.forEach(x -> cloned.add(x));
-		removeAllRecipes();
-		cloned.forEach(x -> saveRecipe(x));
-		recipes = cloned;
-		recipesConfig = getYamlConfig(recipesFile);
-	}
-
-	private void removeAllRecipes() {
-		if (recipes.isEmpty()) return;
-		removeRecipe(recipes.get(0));
-		removeAllRecipes();
-	}
-
 	public void cleanItemFile() {
-		Debug.Send("Cleaning up unused items.");
+		Debug.Send(loadingFiles ,()-> "Cleaning up unused items.");
 		for (final String itemKey : items.keySet()) {
 			if (!isItemInUse(items.get(itemKey))) {
-				Debug.Send("Item with key " + itemKey + " is not used and will be removed.");
+				Debug.Send(loadingFiles ,()-> "Item with key " + itemKey + " is not used and will be removed.");
 				itemsConfig.set(itemKey, null);
 				try {
 					itemsConfig.save(itemsFile);
 				} catch (final IOException e) {
-					Debug.Send("Failed saving itemsConfig");
+					Debug.Send(loadingFiles ,()-> "Failed saving itemsConfig");
 				}
 			}
 		}

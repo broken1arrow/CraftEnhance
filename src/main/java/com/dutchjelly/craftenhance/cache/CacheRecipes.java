@@ -25,7 +25,6 @@ public class CacheRecipes extends CacheRecipesGroup {
 		this.saveSchedule = craftEnhance.getSaveScheduler();
 	}
 
-
 	public List<EnhancedRecipe> getListOfRecipes() {
 		return new ArrayList<>(recipes.values());
 	}

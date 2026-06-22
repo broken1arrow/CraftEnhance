@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.crafthandling.livedata.recipes;
 
+import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.crafthandling.RecipeDebug;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
@@ -36,27 +37,17 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 		StringBuilder builder = new StringBuilder(recipe.getResult().getType().name());
 		builder.append("|");
 
+		String joined = Adapter.getIngredientsList(recipe).stream()
+				.filter(Objects::nonNull)
+				.map(stack ->  stack.getType().name())
+				.sorted()
+				.collect(Collectors.joining(","));
 		if (recipe instanceof ShapelessRecipe) {
-			ShapelessRecipe shapeless = (ShapelessRecipe) recipe;
-			String joined = shapeless.getChoiceList().stream()
-					.map(c -> c.getItemStack().getType().name())
-					.sorted()
-					.collect(Collectors.joining(","));
-
 			builder.append("S|").append(joined);
 		}
-
 		if (recipe instanceof ShapedRecipe) {
-			ShapedRecipe shaped = (ShapedRecipe) recipe;
-			String joined = shaped.getChoiceMap().values().stream()
-					.filter(Objects::nonNull)
-					.map(c -> c.getItemStack().getType().name())
-					.sorted()
-					.collect(Collectors.joining(","));
-
 			builder.append("H|").append(joined);
 		}
-
 		this.key = builder.toString();
 	}
 

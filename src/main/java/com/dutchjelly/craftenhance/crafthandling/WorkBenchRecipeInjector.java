@@ -8,7 +8,6 @@ import com.dutchjelly.craftenhance.api.event.crafting.BeforeCraftOutputEvent;
 import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers.MatchType;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.crafthandling.util.WBRecipeComparer;
@@ -26,6 +25,7 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +49,7 @@ public class WorkBenchRecipeInjector {
 		Debug.Send(Type.Crafting, () -> "The server wants to inject " + serverRecipe.getResult() + " ceh will check or modify this.");
 		RecipeInjector recipeManger = this.recipeInjector;
 
-		final List<RecipeGroup> possibleRecipeGroups = recipeManger.getLoader().findGroupsByResult(serverRecipe.getResult(), serverRecipe, RecipeType.WORKBENCH);
+		final List<RecipeGroup> possibleRecipeGroups = new ArrayList<>();//recipeManger.getLoader().findGroupsByResult(serverRecipe.getResult(), serverRecipe, RecipeType.WORKBENCH);
 		final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
 
 		if (possibleRecipeGroups == null || possibleRecipeGroups.isEmpty()) {

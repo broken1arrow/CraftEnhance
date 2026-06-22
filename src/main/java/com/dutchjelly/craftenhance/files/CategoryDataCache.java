@@ -22,8 +22,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 public class CategoryDataCache extends SimpleYamlHelper {
-
-
 	private final Map<String, CategoryData> recipeCategories = new HashMap<>();
 
 	public CategoryDataCache() {

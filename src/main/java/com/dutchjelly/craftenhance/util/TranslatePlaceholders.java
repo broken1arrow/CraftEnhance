@@ -41,14 +41,14 @@ public class TranslatePlaceholders {
 		if (meta == null)
 			return;
 		final StringBuilder placeholderValue = new StringBuilder();
-
-		if (meta.getDisplayName().contains(placeHolder)) {
+		final String displayName = meta.getDisplayName();
+		if (displayName != null && displayName.contains(placeHolder)) {
 			if (value instanceof List) {
 				((List<?>) value).forEach(o -> placeholderValue.append(o.toString()));
 			} else {
 				placeholderValue.append(value != null ? value.toString() : "");
 			}
-			meta.setDisplayName(meta.getDisplayName().replace(placeHolder, placeholderValue.toString()));
+			meta.setDisplayName(displayName.replace(placeHolder, placeholderValue.toString()));
 		}
 
 		List<String> lore = meta.getLore();

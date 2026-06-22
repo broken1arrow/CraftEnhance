@@ -46,7 +46,7 @@ public class CustomCmdHandler implements TabCompleter{
 			}
 		}
 		if(annotation == null){
-			Debug.Send("Could not load the commandclass " + baseClass.getClass().getName());
+			Debug.error("Could not load the command class " + baseClass.getClass().getName());
 			return;
 		}
 		commandClasses.put(baseClass, annotation);

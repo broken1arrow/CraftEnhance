@@ -117,7 +117,7 @@ public class FurnaceRecipe extends EnhancedRecipe {
 		int duration = self().getVersionChecker().olderThan(ServerVersion.v1_17) ? this.duration : 200;
 		final org.bukkit.inventory.FurnaceRecipe furnaceRecipe = Adapter.GetFurnaceRecipe(self(), ServerRecipeTranslator.GetFreeKey(getKey()), getResult(), getContent()[0], duration, getExp());
 		if (groupName != null) {
-			Adapter.setGroup(furnaceRecipe,groupName);
+			Adapter.setGroup( furnaceRecipe, groupName);
 		}
 		this.setGroup(groupName);
 		return furnaceRecipe;
@@ -147,7 +147,7 @@ public class FurnaceRecipe extends EnhancedRecipe {
 
 	@Override
 	public Map<String, Object> placeholders(final Player viewer) {
-		Map<String,Object> map = new HashMap<>();
+		Map<String, Object> map = new HashMap<>();
 		map.put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(this.getExp()));
 		map.put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(this.getDuration()));
 		return map;

@@ -5,6 +5,7 @@ import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.brewing.BrewingClickContext;
+import com.dutchjelly.craftenhance.crafthandling.livedata.brewing.BrewingDragContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.brewing.BrewingWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
@@ -123,9 +124,8 @@ public class BrewingRecipeInjector {
 			);
 			for (RecipeWrapper recipeWrapper : possibleRecipeGroups) {
 				if (recipeWrapper instanceof BrewingWrapper) {
-					((BrewingWrapper) recipeWrapper).brewingCheck(clickContext,matched -> {
-					});
-
+					if(((BrewingWrapper) recipeWrapper).brewingCheck(clickContext))
+						return;
 				}
 			}
 		}
@@ -139,13 +139,12 @@ public class BrewingRecipeInjector {
 		final RecipeLoader loader = RecipeLoader.getInstance();
 		final Location location = event.getInventory().getLocation();
 		if (location == null) return;
-		if (!(location.getBlock().getState() instanceof BrewingStand)) return;
 
-		BrewingStand stand = (BrewingStand) location.getBlock().getState();
-
-		BrewerInventory inv = stand.getInventory();
 		final Inventory clickedInventory = Adapter.getTopInventory(event);
 		if (clickedInventory == null || clickedInventory.getType() != InventoryType.BREWING) return;
+
+		final BrewingStand stand = (BrewingStand) location.getBlock().getState();
+		final BrewerInventory inv = stand.getInventory();
 
 		ItemStack itemStackCursor = event.getCursor();
 		if (itemStackCursor == null)
@@ -155,7 +154,7 @@ public class BrewingRecipeInjector {
 
 		if (itemStackCursor != null) {
 			final ItemStack itemStackCheck = itemStackCursor.clone();
-			final List<RecipeGroup> possibleRecipeGroups = loader.findGroupsBySimilarResultMatch(itemStackCheck, RecipeType.BREWING);
+			final List<RecipeWrapper> possibleRecipeGroups = loader.findMatchingRecipe(RecipeType.BREWING, new ItemStack[]{itemStackCheck});
 			final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
 
 			if (possibleRecipeGroups == null || possibleRecipeGroups.isEmpty()) {
@@ -168,39 +167,16 @@ public class BrewingRecipeInjector {
 			if (self().isDisableDefaultModeldataCrafts() && Adapter.containsModelData(inv.getContents())) {
 				return;
 			}
-
-			for (final RecipeGroup group : possibleRecipeGroups) {
-				//Check if any grouped enhanced recipe is a match.
-				for (final EnhancedRecipeWrapper eRecipe : group.getRecipeGroupCache().values()) {
-					EnhancedRecipe enhancedRecipe = eRecipe.getEnhancedRecipe();
-					if (!(enhancedRecipe  instanceof BrewingRecipe)) continue;
-					final BrewingRecipe brewingRecipe = (BrewingRecipe) enhancedRecipe;
-
-					ItemStack[] itemStacks = inv.getContents();
-					ItemStack firstItem = itemStacks[0];
-					ItemStack secondItem = itemStacks[1];
-					ItemStack thirdItem = itemStacks[2];
-					ItemStack[] outputItems = new ItemStack[]{firstItem, secondItem, thirdItem};
-					if (brewingRecipe.getResult().isSimilar(itemStackCursor)) {
-						ItemStack eventCursor = event.getCursor();
-						if (eventCursor == null)
-							eventCursor = event.getOldCursor();
-
-						if (eventCursor.getType() != Material.AIR) {
-							for (int slot : event.getRawSlots()) {
-								if (slot < clickedInventory.getSize()) {
-
-									Debug.Send(Type.Brewing, () -> "Dragged into top inventory at slot: " + slot);
-									if (clickedInventory.getType() == InventoryType.BREWING) {
-										event.setCancelled(true);
-										break;
-									}
-								}
-							}
-						}
-						Debug.Send(Type.Brewing, () -> "Found matching brewing recipe, will prevent inventory drag.");
-						break;
-					}
+			final BrewingDragContext clickContext = BrewingDragContext.ofClick(wrapBrewing -> wrapBrewing
+					.setEvent(event)
+					.setBrewingInv(clickedInventory)
+					.setLocation(location)
+					.setItemStackCursor(itemStackCheck)
+			);
+			for (RecipeWrapper recipeWrapper : possibleRecipeGroups) {
+				if (recipeWrapper instanceof BrewingWrapper) {
+					if (((BrewingWrapper) recipeWrapper).brewingDragCheck(clickContext))
+						return;
 				}
 			}
 		}
@@ -268,7 +244,7 @@ public class BrewingRecipeInjector {
 			//Check if any grouped enhanced recipe is a match.
 			for (final EnhancedRecipeWrapper eRecipe : group.getRecipeGroupCache().values()) {
 				final EnhancedRecipe enhancedRecipe = eRecipe.getEnhancedRecipe();
-				if (!(enhancedRecipe  instanceof BrewingRecipe)) continue;
+				if (!(enhancedRecipe instanceof BrewingRecipe)) continue;
 
 				final BrewingRecipe brewingRecipe = (BrewingRecipe) enhancedRecipe;
 

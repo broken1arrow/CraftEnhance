@@ -25,6 +25,7 @@ public class VersionChecker {
             version =version.substring(0,version.indexOf('-'));
 
         checker.currentServerVersion = Integer.parseInt(version);
+        System.out.println("version " + version);
         checker.plugin = plugin;
         return checker;
     }

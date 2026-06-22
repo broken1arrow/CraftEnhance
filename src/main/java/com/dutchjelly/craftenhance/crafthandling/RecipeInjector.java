@@ -12,8 +12,10 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.ServerLoadable;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.gui.util.FormatListContents;
 import com.dutchjelly.craftenhance.messaging.Debug;
+import com.dutchjelly.craftenhance.messaging.Debug.DebugContext;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
+import com.dutchjelly.craftenhance.util.TrackPlayerLocation;
 import lombok.Getter;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
@@ -21,6 +23,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlastFurnace;
+import org.bukkit.block.Block;
 import org.bukkit.block.Crafter;
 import org.bukkit.block.Furnace;
 import org.bukkit.block.Smoker;
@@ -39,11 +42,13 @@ import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.FurnaceStartSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -66,6 +71,7 @@ public class RecipeInjector implements Listener {
 	private final WorkBenchRecipeInjector workBenchRecipeInjector;
 	@Getter
 	private final FurnaceRecipeInjector furnaceRecipeInjector;
+	private final TrackPlayerLocation trackPlayerLocation;
 	private RecipeLoader loader;
 
 	public RecipeInjector(final CraftEnhance plugin) {
@@ -74,11 +80,12 @@ public class RecipeInjector implements Listener {
 		this.brewingRecipeInjector = new BrewingRecipeInjector();
 		this.workBenchRecipeInjector = new WorkBenchRecipeInjector(this);
 		this.furnaceRecipeInjector = new FurnaceRecipeInjector(this);
+		this.trackPlayerLocation = new TrackPlayerLocation();
 		try {
 			Bukkit.getPluginManager().registerEvents(new SmeltListener(), plugin);
 			Bukkit.getPluginManager().registerEvents(new CrafterListener(), plugin);
 		} catch (Throwable throwable) {
-			Debug.Send("Some functions did not work on your server version. will be turned off.");
+			Debug.Send(DebugContext.of(Type.Loading, "Loading plugin"), () -> "Some functions did not work on your server version. will be turned off.");
 		}
 	}
 
@@ -180,6 +187,34 @@ public class RecipeInjector implements Listener {
 			return;
 		}
 		this.furnaceRecipeInjector.burnTask(e);
+	}
+
+	@EventHandler
+	public void startSmet(PlayerInteractEvent event) {
+		final Block clickedBlock = event.getClickedBlock();
+		if (clickedBlock == null || clickedBlock.getType() != Material.getMaterial("WORKBENCH"))
+			return;
+
+		com.dutchjelly.craftenhance.util.TrackPlayerLocation trackPlayer = this.trackPlayerLocation;
+		if (trackPlayer != null)
+			trackPlayer.onInventoryInteract(event);
+
+	}
+
+	@EventHandler
+	public void onInventoryClose(InventoryCloseEvent event) {
+		if (event.getInventory().getType() == InventoryType.WORKBENCH) {
+			com.dutchjelly.craftenhance.util.TrackPlayerLocation trackPlayer = this.trackPlayerLocation;
+			if (trackPlayer != null)
+				trackPlayer.onInventoryClose(event);
+		}
+	}
+
+	@EventHandler
+	public void onPlayerQuit(PlayerQuitEvent event) {
+		com.dutchjelly.craftenhance.util.TrackPlayerLocation trackPlayer = this.trackPlayerLocation;
+		if (trackPlayer != null)
+			trackPlayer.onPlayerQuit(event);
 	}
 
 	@EventHandler
