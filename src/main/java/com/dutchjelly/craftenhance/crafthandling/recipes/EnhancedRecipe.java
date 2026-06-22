@@ -292,40 +292,48 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 	}
 
 	public final Map<String, Object> getPlaceholders(final Player viewer) {
-		final Map<String, Object> placeholders = new HashMap<String, Object>() {{
-			final boolean viewAll = viewer.hasPermission(PermissionTypes.View_ALL.getPerm()) || viewer.hasPermission(PermissionTypes.Edit.getPerm());
-			final CraftEnhance self = self();
-			final String recipeCraftCommand = getOnCraftCommand();
+		final Map<String, Object> placeholders = new HashMap<>();
+		final CraftEnhance self = self();
+		final boolean viewAll = viewer.hasPermission(PermissionTypes.View_ALL.getPerm())
+				|| viewer.hasPermission(PermissionTypes.Edit.getPerm());
+		final String recipeCraftCommand = getOnCraftCommand();
+		final MatchType matchType = getMatchType();
+		final String permission = getPermission();
 
-			put(InfoItemPlaceHolders.Exp.getPlaceHolder(), "not in use");
-			put(InfoItemPlaceHolders.Duration.getPlaceHolder(), "not in use");
-			put(InfoItemPlaceHolders.Brewing_status.getPlaceHolder(), "");
-			put(InfoItemPlaceHolders.Recipe_activated.getPlaceHolder(), self().getConfig().getBoolean("enable-recipes") ? "Activated" : "Activate custom crafting in config");
+		placeholders.put(InfoItemPlaceHolders.Exp.getPlaceHolder(), "not in use");
+		placeholders.put(InfoItemPlaceHolders.Duration.getPlaceHolder(), "not in use");
+		placeholders.put(InfoItemPlaceHolders.Brewing_status.getPlaceHolder(), "");
 
-			put(InfoItemPlaceHolders.Hidden.getPlaceHolder(), isHidden() ? self.getText("recipe_hidden") : self.getText("recipe_not_hidden"));
-			put(InfoItemPlaceHolders.RecipeCommand.getPlaceHolder(), recipeCraftCommand == null || recipeCraftCommand.trim().isEmpty() ? self.getText("craft_command_non_set") : recipeCraftCommand);
+		placeholders.put(InfoItemPlaceHolders.Recipe_activated.getPlaceHolder(),
+				self.getConfig().getBoolean("enable-recipes") ? "Activated" : "Activate custom crafting in config");
 
-			put(InfoItemPlaceHolders.Partial_match.getPlaceHolder(), isCheckPartialMatch() ? "checks for partial match" : "doesn't check for partial match");
+		placeholders.put(InfoItemPlaceHolders.Hidden.getPlaceHolder(),
+				isHidden() ? self.getText("recipe_hidden") : self.getText("recipe_not_hidden"));
 
-			String permission = getPermission();
-			final boolean permissionSet = permission == null || permission.trim().equals("");
-			final MatchType matchType = getMatchType();
-			final Object description = matchType.getMatchDescription();
+		placeholders.put(InfoItemPlaceHolders.RecipeCommand.getPlaceHolder(),
+				recipeCraftCommand == null || recipeCraftCommand.trim().isEmpty() ? self.getText("craft_command_non_set") : recipeCraftCommand);
 
-			put(InfoItemPlaceHolders.Slot.getPlaceHolder(), String.valueOf(getSlot()));
-			put(InfoItemPlaceHolders.Page.getPlaceHolder(), String.valueOf(getPage()));
+		placeholders.put(InfoItemPlaceHolders.Partial_match.getPlaceHolder(),
+				isCheckPartialMatch() ? "checks for partial match" : "doesn't check for partial match");
 
-			put(InfoItemPlaceHolders.Recipe_type.getPlaceHolder(), capitalizeFully(getType().name()));
-			put(InfoItemPlaceHolders.Config_permission.getPlaceHolder(), PermissionTypes.Edit.getPerm());
-			put(InfoItemPlaceHolders.Key.getPlaceHolder(), getKey() == null ? "null" : getKey());
-			put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), matchType.getMatchName());
-			put(InfoItemPlaceHolders.Recipe_group.getPlaceHolder(), getGroup() != null ? getGroup() : "no group set");
-			put(InfoItemPlaceHolders.Category.getPlaceHolder(), getRecipeCategory() != null ? getRecipeCategory() : "default");
+		placeholders.put(InfoItemPlaceHolders.Slot.getPlaceHolder(), String.valueOf(getSlot()));
+		placeholders.put(InfoItemPlaceHolders.Page.getPlaceHolder(), String.valueOf(getPage()));
+		placeholders.put(InfoItemPlaceHolders.Recipe_type.getPlaceHolder(), capitalizeFully(getType().name()));
+		placeholders.put(InfoItemPlaceHolders.Config_permission.getPlaceHolder(), PermissionTypes.Edit.getPerm());
 
-			put(InfoItemPlaceHolders.MatchDescription.getPlaceHolder(), description);
-			put(InfoItemPlaceHolders.Permission.getPlaceHolder(), getPermissionText(viewAll, permission, permissionSet));
-			put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), getAllowedWorlds() == null || getAllowedWorlds().isEmpty() ? self.getText("allowed_worlds_not_set") : getAllowedWorldsFormatted());
-		}};
+		placeholders.put(InfoItemPlaceHolders.Key.getPlaceHolder(), getKey() == null ? "null" : getKey());
+		placeholders.put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), matchType.getMatchName());
+		placeholders.put(InfoItemPlaceHolders.Recipe_group.getPlaceHolder(), getGroup() != null ? getGroup() : "no group set");
+		placeholders.put(InfoItemPlaceHolders.Category.getPlaceHolder(), getRecipeCategory() != null ? getRecipeCategory() : "default");
+
+		placeholders.put(InfoItemPlaceHolders.MatchDescription.getPlaceHolder(), matchType.getMatchDescription());
+
+		final boolean permissionSet = permission == null || permission.trim().isEmpty();
+		placeholders.put(InfoItemPlaceHolders.Permission.getPlaceHolder(), getPermissionText(viewAll, permission, permissionSet));
+
+		placeholders.put(InfoItemPlaceHolders.Worlds.getPlaceHolder(),
+				getAllowedWorlds() == null || getAllowedWorlds().isEmpty() ? self.getText("allowed_worlds_not_set") : getAllowedWorldsFormatted());
+
 		placeholders.putAll(this.placeholders(viewer));
 
 		return placeholders;
