@@ -187,6 +187,7 @@ public class RecipeLoader {
 		if (recipeRegistry != null) {
 			recipeRegistry.removeRecipe(recipe, recipe.getContent());
 		}
+		unloadRecipe(recipe.getServerRecipe());
 
 		Debug.Send("Unloaded a recipe");
 		printGroupsDebugInfo();
@@ -401,13 +402,13 @@ public class RecipeLoader {
 	}
 
 	private void unloadRecipe(final Recipe r) {
-		final Iterator<Recipe> it = server.recipeIterator();
 		if (self().getVersionChecker().newerThan(ServerVersion.v1_12)) {
 			final NamespacedKey namespacedKey = Adapter.getNamespacedKey(r);
 			if (namespacedKey != null) {
 				Bukkit.removeRecipe(namespacedKey);
 			}
 		} else {
+			final Iterator<Recipe> it = server.recipeIterator();
 			while (it.hasNext()) {
 				final Recipe currentRecipe = it.next();
 				if (currentRecipe.equals(r)) {
