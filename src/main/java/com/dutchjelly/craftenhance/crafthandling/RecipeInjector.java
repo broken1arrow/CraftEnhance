@@ -294,13 +294,52 @@ public class RecipeInjector implements Listener {
 
 		@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = false)
 		public void CrafterCraft(final CrafterCraftEvent craftEvent) {
-			Crafter crafterInventory = ((Crafter) craftEvent.getBlock().getState());
-			workBenchRecipeInjector.craftItem(craftEvent.getRecipe(), crafterInventory.getInventory().getContents(), crafterInventory.getInventory(), new ArrayList<>(), (itemstack) -> {
+			Crafter crafter = ((Crafter) craftEvent.getBlock().getState());
+			final ItemStack[] matrix = crafter.getInventory().getContents();
+			final List<RecipeWrapper> recipes = getLoader().findMatchingRecipe(RecipeType.WORKBENCH, matrix);
+
+			for (RecipeWrapper recipe : recipes) {
+				ResultContext contextResult = recipe.matches(craftEvent.getRecipe(), prepareRecipeContext -> {
+					if (prepareRecipeContext instanceof PrepareItemCraftContext) {
+						final PrepareItemCraftContext recipeContext = (PrepareItemCraftContext) prepareRecipeContext;
+						recipeContext.setRecipeMatrix(matrix);
+						recipeContext.setViewers(new ArrayList<>());
+						recipeContext.setInventory(crafter.getInventory());
+					}
+				});
+				if (contextResult == null) continue;
+				if (endCraftingCheck(contextResult, crafter, craftEvent)) return;
+			}
+			if (true) return;
+			workBenchRecipeInjector.craftItem(craftEvent.getRecipe(), matrix, crafter.getInventory(), new ArrayList<>(), (itemstack) -> {
 				if (itemstack != null)
 					craftEvent.setResult(itemstack);
 				else
 					craftEvent.setResult(new ItemStack(Material.AIR));
 			});
+		}
+
+		private boolean endCraftingCheck(final ResultContext contextResult, final Crafter crafter, final CrafterCraftEvent craftEvent) {
+			switch (contextResult.getResultType()) {
+				case ENHANCED:
+				case VANILLA:
+					final ItemStack itemStack = contextResult.getItemStack() != null ? contextResult.getItemStack() : new ItemStack(Material.AIR);
+					if (self().isMakeItemsadderCompatible() && Adapter.containsModelData(crafter.getInventory().getContents())) {
+						CraftEnhance.runTask(() -> craftEvent.setResult(itemStack));
+					} else {
+						craftEvent.setResult(itemStack);
+					}
+					return true;
+				case PARTIAL_MATCH:
+				case DISABLED:
+				case NO_PERMISSION:
+				case CANCELLED:
+				case BLOCKED:
+					craftEvent.setResult(new ItemStack(Material.AIR));
+					return true;
+				case NO_MATCH:
+			}
+			return false;
 		}
 	}
 }

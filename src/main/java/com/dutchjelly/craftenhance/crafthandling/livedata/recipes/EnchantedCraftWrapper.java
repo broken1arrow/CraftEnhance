@@ -20,7 +20,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.CraftingInventory;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
@@ -77,7 +77,7 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 		final PrepareItemCraftContext craftContext = new PrepareItemCraftContext();
 		contextConsumer.accept(craftContext);
 		final ItemStack[] matrix = craftContext.getRecipeMatrix();
-		final CraftingInventory inventory = craftContext.getInventory();
+		final Inventory inventory = craftContext.getInventory();
 		final WBRecipe wbRecipe = enhancedRecipe;
 
 		if (inventory == null) {

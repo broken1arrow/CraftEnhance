@@ -2,22 +2,22 @@ package com.dutchjelly.craftenhance.crafthandling.livedata.event;
 
 
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.inventory.CraftingInventory;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 
 public class PrepareItemCraftContext implements PrepareRecipeContext {
-	private CraftingInventory inventory;
+	private Inventory inventory;
 	private ItemStack[] recipeMatrix;
 	private  ResultContext  result;
 	private List<HumanEntity> viewers;
 
-	public CraftingInventory getInventory() {
+	public Inventory getInventory() {
 		return inventory;
 	}
 
-	public void setInventory(final CraftingInventory inventory) {
+	public void setInventory(final Inventory inventory) {
 		this.inventory = inventory;
 	}
 
