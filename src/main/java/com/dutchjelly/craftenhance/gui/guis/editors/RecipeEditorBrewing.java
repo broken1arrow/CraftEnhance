@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
+
 public class RecipeEditorBrewing extends RecipeEditor<BrewingRecipe> {
 	private final BrewingRecipe brewingRecipe;
 
@@ -48,7 +50,7 @@ public class RecipeEditorBrewing extends RecipeEditor<BrewingRecipe> {
 			}
 			if (slot > menu.getSize())
 				throw new ConfigError("fill space spot " + slot + " is outside of inventory");
-			if (index +1 > content.length)
+			if (index + 1 > content.length)
 				menu.setItem(slot, null);
 			else
 				menu.setItem(slot, content[index++]);
@@ -67,7 +69,7 @@ public class RecipeEditorBrewing extends RecipeEditor<BrewingRecipe> {
 			final Integer key = stackEntry.getKey();
 
 			if (key != resultSlot) {
-				switch (key){
+				switch (key) {
 					case 19:
 						itemStacks[0] = itemStack;
 						break;
@@ -93,7 +95,7 @@ public class RecipeEditorBrewing extends RecipeEditor<BrewingRecipe> {
 
 		}
 		this.result = map.remove(resultSlot);
-		return  itemStacks;
+		return itemStacks;
 	}
 
 	@Override
@@ -101,12 +103,5 @@ public class RecipeEditorBrewing extends RecipeEditor<BrewingRecipe> {
 		recipe.setDuration(recipe.getDuration());
 	}
 
-	@Override
-	protected Map<String, String> recipePlaceholders(final BrewingRecipe recipe) {
-		return new HashMap<String, String>() {{
-			put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(0));
-			put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(recipe.getDuration()));
-		}};
-	}
 
 }

@@ -3,15 +3,20 @@ package com.dutchjelly.craftenhance.crafthandling.recipes;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
 import com.dutchjelly.craftenhance.crafthandling.util.WBRecipeComparer;
+import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
+
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class BrewingRecipe extends EnhancedRecipe{
 
@@ -129,4 +134,14 @@ public class BrewingRecipe extends EnhancedRecipe{
 		}
 		return brewingRecipe;
 	}
+
+	@Override
+	public Map<String, Object> placeholders(final Player viewer) {
+		Map<String,Object> map = new HashMap<>();
+		map.put(InfoItemPlaceHolders.Exp.getPlaceHolder(), "not in use");
+		map.put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(this.getDuration()));
+		map.put(InfoItemPlaceHolders.Brewing_status.getPlaceHolder(), self().getConfig().getBoolean("enable-brewing-recipes") ? "Activated" : "Activate custom brewing in config");
+		return map;
+	}
+
 }

@@ -189,7 +189,7 @@ public class BrewingWrapper implements RecipeWrapper {
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null) return false;
-		if (!(o instanceof RecipeWrapper)) return false;
+		if (!(o instanceof BrewingWrapper)) return false;
 		final BrewingWrapper that = (BrewingWrapper) o;
 		return that.key.equals(key);
 	}

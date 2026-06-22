@@ -44,7 +44,6 @@ import java.util.Map.Entry;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 import static com.dutchjelly.craftenhance.gui.util.FormatListContents.formatRecipes;
-import static com.dutchjelly.craftenhance.util.StringUtil.capitalizeFully;
 
 public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage<ItemStack> {
 
@@ -151,10 +150,9 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 			if (this.categoryData != null) {
 				final RecipesViewer recipesViewer = new RecipesViewer(this.categoryData, "", player);
 				recipesViewer.menuOpen(player);
-				if ( this.page > 0)
-					recipesViewer.setPage( this.page);
-			}
-			else
+				if (this.page > 0)
+					recipesViewer.setPage(this.page);
+			} else
 				new EditorTypeSelector(null, permission).menuOpen(player);
 			return true;
 		}
@@ -179,24 +177,24 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 				new RecipeEditor<>((WBRecipe) this.enhancedRecipe, this.page, categoryData, null, ButtonType.ChooseWorkbenchType).menuOpen(player);
 			}
 			if (this.enhancedRecipe instanceof FurnaceRecipe) {
-				new RecipeEditorFurnace((FurnaceRecipe) this.enhancedRecipe, this.page,categoryData, null, ButtonType.ChooseFurnaceType, false).menuOpen(player);
+				new RecipeEditorFurnace((FurnaceRecipe) this.enhancedRecipe, this.page, categoryData, null, ButtonType.ChooseFurnaceType, false).menuOpen(player);
 			}
 			if (this.enhancedRecipe instanceof BlastRecipe) {
-				new RecipeEditorBlast((BlastRecipe) this.enhancedRecipe, this.page,categoryData, null, ButtonType.ChooseBlastType, false).menuOpen(player);
+				new RecipeEditorBlast((BlastRecipe) this.enhancedRecipe, this.page, categoryData, null, ButtonType.ChooseBlastType, false).menuOpen(player);
 			}
 			if (this.enhancedRecipe instanceof SmokerRecipe) {
-				new RecipeEditorSmoker((SmokerRecipe) this.enhancedRecipe, this.page,categoryData, null, ButtonType.ChooseSmokerType, false).menuOpen(player);
+				new RecipeEditorSmoker((SmokerRecipe) this.enhancedRecipe, this.page, categoryData, null, ButtonType.ChooseSmokerType, false).menuOpen(player);
 			}
 			if (this.enhancedRecipe instanceof BrewingRecipe) {
-				new RecipeEditorBrewing((BrewingRecipe) this.enhancedRecipe, this.page, categoryData, null, ButtonType.ChooseBrewingType,false).menuOpen(player);
+				new RecipeEditorBrewing((BrewingRecipe) this.enhancedRecipe, this.page, categoryData, null, ButtonType.ChooseBrewingType, false).menuOpen(player);
 			}
 		}
 		if (value.isActionTypeEqual(ButtonType.Back.name())) {
 			if (this.categoryData != null) {
 				final RecipesViewer recipesViewer = new RecipesViewer(this.categoryData, "", player);
 				recipesViewer.menuOpen(player);
-				if ( this.page > 0)
-					recipesViewer.setPage( this.page);
+				if (this.page > 0)
+					recipesViewer.setPage(this.page);
 			} else
 				new EditorTypeSelector(null, permission).menuOpen(player);
 		}
@@ -265,10 +263,6 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 		}
 	}
 
-	protected Map<String, String> recipePlaceholders(final RecipeT recipe) {
-		return null;
-	}
-
 	protected boolean onPlayerClick(final RecipeT recipe, final CategoryData categoryData, final String permission, final String buttonAction, final Player player) {
 		return false;
 	}
@@ -285,7 +279,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 				Messenger.Message("Recipes only support amounts of 1 in the content.", player);
 				itemStack.setAmount(1);
 			}
-			if(index > stackList.size())
+			if (index > stackList.size())
 				break;
 			if (slot != resultSlot)
 				stackList.add(index, itemStack);
@@ -318,33 +312,15 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 	}
 
 	private Map<String, Object> getPlaceholders() {
-		final Map<String, Object> placeHolders = new HashMap<String, Object>() {{
-			final CraftEnhance self = self();
+		final Map<String, Object> placeHolders = new HashMap<>(enhancedRecipe.getPlaceholders(player));
+		final CraftEnhance self = self();
+		placeHolders.put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), matchType.getMatchName());
+		placeHolders.put(InfoItemPlaceHolders.MatchDescription.getPlaceHolder(), matchType.getMatchDescription());
+		placeHolders.put(InfoItemPlaceHolders.Hidden.getPlaceHolder(), hidden ? self.getText("recipe_hidden") : self.getText("recipe_not_hidden"));
+		placeHolders.put(InfoItemPlaceHolders.Permission.getPlaceHolder(), permission == null || permission.trim().equals("") ? self.getText("craft_command_not_set") : permission);
 
-			put(InfoItemPlaceHolders.Key.getPlaceHolder(), enhancedRecipe.getKey() == null ? "null" : enhancedRecipe.getKey());
-			if (enhancedRecipe instanceof WBRecipe)
-				put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), shapeless ? self.getText("shapeless_recipe") :self. getText("shaped_recipe"));
-
-			put(InfoItemPlaceHolders.Recipe_type.getPlaceHolder(), capitalizeFully(enhancedRecipe.getType().name()));
-			put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), matchType.getMatchName());
-			put(InfoItemPlaceHolders.MatchDescription.getPlaceHolder(), matchType.getMatchDescription());
-			put(InfoItemPlaceHolders.Hidden.getPlaceHolder(), hidden ? self.getText("recipe_hidden") :  self.getText("recipe_not_hidden"));
-			put(InfoItemPlaceHolders.Permission.getPlaceHolder(), permission == null || permission.trim().equals("") ? self.getText("craft_command_not_set") : permission);
-			put(InfoItemPlaceHolders.Slot.getPlaceHolder(), String.valueOf(enhancedRecipe.getSlot()));
-			put(InfoItemPlaceHolders.Page.getPlaceHolder(), String.valueOf(enhancedRecipe.getPage()));
-			put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), enhancedRecipe.getAllowedWorlds() != null && !enhancedRecipe.getAllowedWorlds().isEmpty() ?
-					enhancedRecipe.getAllowedWorldsFormatted() : "non set");
-			put(InfoItemPlaceHolders.Recipe_group.getPlaceHolder(), enhancedRecipe.getGroup() != null ?
-					enhancedRecipe.getGroup() : "not loaded");
-			if (categoryData != null)
-				put(InfoItemPlaceHolders.Category.getPlaceHolder(), categoryData.getRecipeCategory());
-			else
-				put(InfoItemPlaceHolders.Category.getPlaceHolder(), enhancedRecipe.getRecipeCategory() != null ? enhancedRecipe.getRecipeCategory() : "default");
-		}};
-
-		Map<String, String> extraPlaceholders = recipePlaceholders(enhancedRecipe);
-		if (extraPlaceholders != null)
-			placeHolders.putAll(extraPlaceholders);
+		if (categoryData != null)
+			placeHolders.put(InfoItemPlaceHolders.Category.getPlaceHolder(), categoryData.getRecipeCategory());
 
 		return placeHolders;
 	}

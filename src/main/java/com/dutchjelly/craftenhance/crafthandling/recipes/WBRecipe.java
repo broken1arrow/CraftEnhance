@@ -1,23 +1,29 @@
 package com.dutchjelly.craftenhance.crafthandling.recipes;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.crafthandling.util.WBRecipeComparer;
+import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 
 import javax.annotation.Nonnull;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class WBRecipe extends EnhancedRecipe {
 
@@ -212,5 +218,13 @@ public class WBRecipe extends EnhancedRecipe {
 	@Override
 	public int hashCode() {
 		return Objects.hash(super.hashCode(), type, shapeless);
+	}
+
+	@Override
+	public Map<String, Object> placeholders(final Player viewer) {
+		final Map<String, Object> map = new HashMap<>();
+		CraftEnhance self = self();
+		map.put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), isShapeless() ? self.getText("shapeless_recipe") : self.getText("shaped_recipe"));
+		return map;
 	}
 }

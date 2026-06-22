@@ -8,9 +8,12 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
+import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers.MatchType;
 import com.dutchjelly.craftenhance.files.FileManager;
 import com.dutchjelly.craftenhance.gui.interfaces.GuiPlacable;
+import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.messaging.Messenger;
+import com.dutchjelly.craftenhance.util.PermissionTypes;
 import com.dutchjelly.craftenhance.util.StringUtil;
 import lombok.Getter;
 import lombok.NonNull;
@@ -19,12 +22,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,6 +37,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
+
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
+import static com.dutchjelly.craftenhance.util.StringUtil.capitalizeFully;
 
 public abstract class EnhancedRecipe extends GuiPlacable implements ConfigurationSerializable, ServerLoadable {
 
@@ -246,7 +254,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 
 	@NonNull
 	public Set<String> getAllowedWorlds() {
-		if(allowedWorlds == null)
+		if (allowedWorlds == null)
 			return new HashSet<>();
 		return allowedWorlds;
 	}
@@ -283,6 +291,47 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 		return type;
 	}
 
+	public final Map<String, Object> getPlaceholders(final Player viewer) {
+		final Map<String, Object> placeholders = new HashMap<String, Object>() {{
+			final boolean viewAll = viewer.hasPermission(PermissionTypes.View_ALL.getPerm()) || viewer.hasPermission(PermissionTypes.Edit.getPerm());
+			final CraftEnhance self = self();
+			final String recipeCraftCommand = getOnCraftCommand();
+
+			put(InfoItemPlaceHolders.Exp.getPlaceHolder(), "not in use");
+			put(InfoItemPlaceHolders.Duration.getPlaceHolder(), "not in use");
+			put(InfoItemPlaceHolders.Brewing_status.getPlaceHolder(), "");
+			put(InfoItemPlaceHolders.Recipe_activated.getPlaceHolder(), self().getConfig().getBoolean("enable-recipes") ? "Activated" : "Activate custom crafting in config");
+
+			put(InfoItemPlaceHolders.Hidden.getPlaceHolder(), isHidden() ? self.getText("recipe_hidden") : self.getText("recipe_not_hidden"));
+			put(InfoItemPlaceHolders.RecipeCommand.getPlaceHolder(), recipeCraftCommand == null || recipeCraftCommand.trim().isEmpty() ? self.getText("craft_command_non_set") : recipeCraftCommand);
+
+			put(InfoItemPlaceHolders.Partial_match.getPlaceHolder(), isCheckPartialMatch() ? "checks for partial match" : "doesn't check for partial match");
+
+			String permission = getPermission();
+			final boolean permissionSet = permission == null || permission.trim().equals("");
+			final MatchType matchType = getMatchType();
+			final Object description = matchType.getMatchDescription();
+
+			put(InfoItemPlaceHolders.Slot.getPlaceHolder(), String.valueOf(getSlot()));
+			put(InfoItemPlaceHolders.Page.getPlaceHolder(), String.valueOf(getPage()));
+
+			put(InfoItemPlaceHolders.Recipe_type.getPlaceHolder(), capitalizeFully(getType().name()));
+			put(InfoItemPlaceHolders.Config_permission.getPlaceHolder(), PermissionTypes.Edit.getPerm());
+			put(InfoItemPlaceHolders.Key.getPlaceHolder(), getKey() == null ? "null" : getKey());
+			put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), matchType.getMatchName());
+			put(InfoItemPlaceHolders.Recipe_group.getPlaceHolder(), getGroup() != null ? getGroup() : "no group set");
+			put(InfoItemPlaceHolders.Category.getPlaceHolder(), getRecipeCategory() != null ? getRecipeCategory() : "default");
+
+			put(InfoItemPlaceHolders.MatchDescription.getPlaceHolder(), description);
+			put(InfoItemPlaceHolders.Permission.getPlaceHolder(), getPermissionText(viewAll, permission, permissionSet));
+			put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), getAllowedWorlds() == null || getAllowedWorlds().isEmpty() ? self.getText("allowed_worlds_not_set") : getAllowedWorldsFormatted());
+		}};
+		placeholders.putAll(this.placeholders(viewer));
+
+		return placeholders;
+	}
+
+	public abstract Map<String, Object> placeholders(final Player viewer);
 
 	public abstract boolean sharesIngredientWith(Recipe r);
 
@@ -291,4 +340,9 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 	public abstract boolean matches(ItemStack[] content, IMatcher<ItemStack> matcher);
 
 	public abstract boolean matchesBlockType(final Material blockSmelting);
+
+	private Object getPermissionText(final boolean viewAll, final String permissionText, final boolean permissionSet) {
+		final CraftEnhance self = self();
+		return viewAll && !permissionSet ? permissionText : permissionSet ? self.getText("permission_non_set") : self.getText("permission_no_perm");
+	}
 }

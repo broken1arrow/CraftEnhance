@@ -643,6 +643,7 @@ Menus:
         material: BREWING_STAND
         name: "&aEnhanced [Recipe_type] recipe"
         lore:
+          - "&fBrewing active: &3[brewing_status]"
           - "&fThe ingredients need &3[matcher]"
           - "&fThe key of the recipe is &3[key]"
           - "&fThe brewing time is &3[duration] &fsec"
@@ -823,6 +824,7 @@ Menus:
         name: "&fClick to create a brewing recipe"
         lore:
           - ""
+          - "&fRecipe activated:&3 [recipe_activated]"
         glow: true
       "0-1,3-5,7-9,11,13-26":
         extra: GRAY

@@ -6,14 +6,17 @@ import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers.MatchType;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
+import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
 import javax.annotation.Nonnull;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -61,6 +64,7 @@ public class FurnaceRecipe extends EnhancedRecipe {
 			put("duration", duration);
 		}};
 	}
+
 
 	@Override
 	public boolean sharesIngredientWith(final Recipe r) {
@@ -140,4 +144,13 @@ public class FurnaceRecipe extends EnhancedRecipe {
 			return false;
 		return isSimilar(r);
 	}
+
+	@Override
+	public Map<String, Object> placeholders(final Player viewer) {
+		Map<String,Object> map = new HashMap<>();
+		map.put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(this.getExp()));
+		map.put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(this.getDuration()));
+		return map;
+	}
+
 }

@@ -165,7 +165,7 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null) return false;
-		if (!(o instanceof RecipeWrapper)) return false;
+		if (!(o instanceof EnchantedCraftWrapper)) return false;
 
 		final EnchantedCraftWrapper that = (EnchantedCraftWrapper) o;
 		return that.key.equals(key);

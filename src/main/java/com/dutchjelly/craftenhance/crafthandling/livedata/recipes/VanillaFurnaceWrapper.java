@@ -102,7 +102,7 @@ public class VanillaFurnaceWrapper implements RecipeWrapper {
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null) return false;
-		if (!(o instanceof RecipeWrapper)) return false;
+		if (!(o instanceof VanillaFurnaceWrapper)) return false;
 		final VanillaFurnaceWrapper that = (VanillaFurnaceWrapper) o;
 		return that.key.equals(key);
 	}

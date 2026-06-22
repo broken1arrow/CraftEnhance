@@ -70,4 +70,6 @@ public class BlastRecipe extends FurnaceRecipe {
 			putAll(BlastRecipe.super.serialize());
 		}};
 	}
+
+
 }

@@ -7,7 +7,6 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
-import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers.MatchType;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.CategoryList;
@@ -38,7 +37,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -392,41 +390,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	}
 
 	public Map<String, Object> setPlaceholders() {
-		Map<String, Object> placeholders = new HashMap<String, Object>() {{
-			final CraftEnhance self = self();
-			final String permission = recipe.getPermission();
-			final String recipeCraftCommand = recipe.getOnCraftCommand();
-			final MatchType matchType = recipe.getMatchType();
-
-			put(InfoItemPlaceHolders.Key.getPlaceHolder(), recipe.getKey() == null ? "null" : recipe.getKey());
-			if (recipe instanceof WBRecipe)
-				put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), ((WBRecipe) recipe).isShapeless() ? self.getText("shapeless_recipe") : self.getText("shaped_recipe"));
-
-
-			put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), matchType.getMatchName());
-			put(InfoItemPlaceHolders.MatchDescription.getPlaceHolder(), matchType.getMatchDescription());
-
-			put(InfoItemPlaceHolders.Hidden.getPlaceHolder(), recipe.isHidden() ? self.getText("recipe_hidden") : self.getText("recipe_not_hidden"));
-
-			put(InfoItemPlaceHolders.Permission.getPlaceHolder(), permission == null || permission.trim().equals("") ? self.getText("permission_non_set") : permission);
-			put(InfoItemPlaceHolders.RecipeCommand.getPlaceHolder(), recipeCraftCommand == null || recipeCraftCommand.trim().isEmpty() ? self.getText("craft_command_non_set") : recipeCraftCommand);
-
-			put(InfoItemPlaceHolders.Slot.getPlaceHolder(), String.valueOf(recipe.getSlot()));
-			put(InfoItemPlaceHolders.Page.getPlaceHolder(), String.valueOf(recipe.getPage()));
-			put(InfoItemPlaceHolders.Partial_match.getPlaceHolder(), recipe.isCheckPartialMatch() ? "checks for partial match" : "doesn't check for partial match");
-			put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), recipe.getAllowedWorlds() != null && !recipe.getAllowedWorlds().isEmpty() ?
-					recipe.getAllowedWorldsFormatted() : "non set");
-			if (categoryData != null)
-				put(InfoItemPlaceHolders.Category.getPlaceHolder(), categoryData.getRecipeCategory());
-			else
-				put(InfoItemPlaceHolders.Category.getPlaceHolder(), recipe.getRecipeCategory() != null ? recipe.getRecipeCategory() : "default");
-
-		}};
-		Map<String, String> extraPlaceholders = recipePlaceholders(recipe);
-		if (extraPlaceholders != null && !extraPlaceholders.isEmpty())
-			placeholders.putAll(extraPlaceholders);
-
-		return placeholders;
+		return recipe.getPlaceholders(player);
 	}
 
 	protected void runTask(final Runnable runnable) {
@@ -440,7 +404,4 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	protected void handleBack(final RecipeT recipe, final CategoryData categoryData, final Player player) {
 	}
 
-	protected Map<String, String> recipePlaceholders(final RecipeT recipe) {
-		return null;
-	}
 }

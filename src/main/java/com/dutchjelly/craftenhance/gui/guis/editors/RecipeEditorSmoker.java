@@ -4,11 +4,7 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.gui.guis.settings.RecipeSettingsSmoker;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
-import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import org.bukkit.entity.Player;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class RecipeEditorSmoker extends RecipeEditor<SmokerRecipe> {
 
@@ -31,13 +27,7 @@ public class RecipeEditorSmoker extends RecipeEditor<SmokerRecipe> {
 		return false;
 	}
 
-	@Override
-	protected Map<String, String> recipePlaceholders(final SmokerRecipe recipe) {
-		return new HashMap<String, String>() {{
-			put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(recipe.getExp()));
-			put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(recipe.getDuration()));
-		}};
-	}
+
 
 }
 

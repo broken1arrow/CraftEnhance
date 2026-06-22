@@ -114,7 +114,7 @@ public class FurnaceBurnWrapper implements RecipeWrapper {
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null) return false;
-		if (!(o instanceof RecipeWrapper)) return false;
+		if (!(o instanceof FurnaceBurnWrapper)) return false;
 		final FurnaceBurnWrapper that = (FurnaceBurnWrapper) o;
 		return that.key.equals(key);
 	}

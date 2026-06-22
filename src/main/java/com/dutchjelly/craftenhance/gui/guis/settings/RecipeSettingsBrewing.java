@@ -12,6 +12,8 @@ import org.bukkit.entity.Player;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
+
 public class RecipeSettingsBrewing extends RecipeSettings<BrewingRecipe> {
 
 
@@ -77,11 +79,5 @@ public class RecipeSettingsBrewing extends RecipeSettings<BrewingRecipe> {
 		new RecipeEditorBrewing(recipe, this.page, categoryData, null, ButtonType.ChooseBrewingType, false).menuOpen(player);
 	}
 
-	@Override
-	protected Map<String, String> recipePlaceholders(final BrewingRecipe recipe) {
-		return new HashMap<String, String>() {{
-			put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(0));
-			put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(recipe.getDuration()));
-		}};
-	}
+
 }

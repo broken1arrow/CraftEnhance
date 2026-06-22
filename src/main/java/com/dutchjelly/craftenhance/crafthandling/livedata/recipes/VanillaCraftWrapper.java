@@ -121,7 +121,7 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null) return false;
-		if (!(o instanceof RecipeWrapper)) return false;
+		if (!(o instanceof VanillaCraftWrapper)) return false;
 		final VanillaCraftWrapper that = (VanillaCraftWrapper) o;
 		return that.key.equals(key);
 	}
