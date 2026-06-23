@@ -4,19 +4,20 @@ import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.SaveScheduler;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.database.RecipeDatabase;
+import org.bukkit.inventory.Recipe;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class CacheRecipes extends CacheRecipesGroup {
 
-	private final Map<String,EnhancedRecipe> recipes = new HashMap<>();
+	private final Map<String,EnhancedRecipe> recipes = new ConcurrentHashMap<>();
 	private final RecipeDatabase database;
 	private final SaveScheduler saveSchedule;
 
@@ -87,4 +88,7 @@ public class CacheRecipes extends CacheRecipesGroup {
 		return this.getRecipe(key) == null;
 	}
 
+	public boolean isCustomRecipe(final Recipe recipe) {
+		return this.getRecipes().values().stream().anyMatch(enhancedRecipe -> enhancedRecipe.isSimilar(recipe));
+	}
 }

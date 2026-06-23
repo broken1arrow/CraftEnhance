@@ -31,7 +31,6 @@ public class RecipeRegistry {
 		this.allRecipes.add(recipe);
 
 		final Set<Material> uniqueMaterials = getUniqueMaterials(content);
-
 		for (Material type : uniqueMaterials) {
 			if (type == null) continue;
 			this.mappedRecipes.computeIfAbsent(type, material -> new HashSet<>()).add(recipe);

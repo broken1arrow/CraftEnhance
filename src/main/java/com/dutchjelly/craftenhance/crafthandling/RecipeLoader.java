@@ -70,23 +70,7 @@ public class RecipeLoader {
 
 	private RecipeLoader(final Server server, final CategoryDataCache categoryDataCache) {
 		this.server = server;
-		try {
-			server.recipeIterator().forEachRemaining(serverRecipe -> {
-				this.serverRecipes.add(serverRecipe);
-
-				final ItemStack[] ingredients = Adapter.getIngredients(serverRecipe);
-				if (Adapter.isCookingRecipe(serverRecipe)) {
-					if (self().getVersionChecker().newerThan(ServerVersion.v1_13) && serverRecipe instanceof CookingRecipe) {
-						liveCacheRecipe(new VanillaCookingWrapper((CookingRecipe<?>) serverRecipe), ingredients);
-					} else {
-						liveCacheRecipe(new VanillaFurnaceWrapper((org.bukkit.inventory.FurnaceRecipe) serverRecipe), ingredients);
-					}
-				} else
-					liveCacheRecipe(new VanillaCraftWrapper(serverRecipe), ingredients);
-			});
-		} catch (IllegalArgumentException e) {
-			self().getLogger().log(Level.SEVERE, "This server recipe contains air, will not be loaded.", e);
-		}
+		updateServerRecipes();
 		this.categoryDataCache = categoryDataCache;
 	}
 
@@ -281,6 +265,28 @@ public class RecipeLoader {
 		this.disabledServerRecipes = new ArrayList<>();
 		this.mappedGroupedRecipes = new HashMap<>();
 		this.mappedRecipes.clear();
+	}
+
+	public void updateServerRecipes() {
+		try {
+			server.recipeIterator().forEachRemaining(serverRecipe -> {
+				if (!Adapter.recipeContainsNamespace(serverRecipe)) return;
+				if (self().getCacheRecipes().isCustomRecipe(serverRecipe)) return;
+
+				this.serverRecipes.add(serverRecipe);
+				final ItemStack[] ingredients = Adapter.getIngredients(serverRecipe);
+				if (Adapter.isCookingRecipe(serverRecipe)) {
+					if (self().getVersionChecker().newerThan(ServerVersion.v1_13) && serverRecipe instanceof CookingRecipe) {
+						liveCacheRecipe(new VanillaCookingWrapper((CookingRecipe<?>) serverRecipe), ingredients);
+					} else {
+						liveCacheRecipe(new VanillaFurnaceWrapper((org.bukkit.inventory.FurnaceRecipe) serverRecipe), ingredients);
+					}
+				} else
+					liveCacheRecipe(new VanillaCraftWrapper(serverRecipe), ingredients);
+			});
+		} catch (IllegalArgumentException e) {
+			self().getLogger().log(Level.SEVERE, "This server recipe contains air, will not be loaded.", e);
+		}
 	}
 
 	private boolean isAlreadyRegistered(@Nonnull final EnhancedRecipe recipe, @Nullable final RecipeRegistry containsRecipe) {

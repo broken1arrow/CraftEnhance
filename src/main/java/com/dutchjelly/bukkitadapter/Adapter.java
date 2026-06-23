@@ -621,8 +621,12 @@ public class Adapter {
 		if (versionChecker.olderThan(ServerVersion.v1_14)) {
 			return false;
 		}
+		if (recipe instanceof Keyed) {
+			final NamespacedKey key = ((Keyed) recipe).getKey();
+			return key.getNamespace().contains("craftenhance") || key.getKey().contains("cehrecipe");
+		}
 		if (isCraftingRecipe(recipe)) {
-			if (versionChecker.newerThan(ServerVersion.v1_19))
+			if (versionChecker.newerThan(ServerVersion.v1_19) && recipe instanceof CraftingRecipe)
 				return (((CraftingRecipe) recipe).getKey().getNamespace().contains("craftenhance") || ((CraftingRecipe) recipe).getKey().getKey().contains("cehrecipe"));
 
 			if (recipe instanceof ShapedRecipe) {

@@ -252,6 +252,7 @@ public class CraftEnhance extends JavaPlugin {
 				Adapter.FilterRecipes(loader.getLoadedServerRecipes(), x)
 		).collect(Collectors.toList());
 		loader.disableServerRecipes(collect);
+		loader.updateServerRecipes();
 	}
 
 	public void reLearnRecipes() {
