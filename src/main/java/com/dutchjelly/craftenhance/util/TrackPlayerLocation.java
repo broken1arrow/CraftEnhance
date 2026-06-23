@@ -5,6 +5,7 @@ import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareItemCraftContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
 import com.dutchjelly.craftenhance.messaging.Debug;
+import com.dutchjelly.craftenhance.messaging.Debug.DebugContext;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -25,19 +26,21 @@ import java.util.UUID;
 
 public class TrackPlayerLocation {
 	private final Map<UUID, Location> activeCraftingTables = new HashMap<>();
+	private final DebugContext legacyCrafting = DebugContext.of(Type.Crafting,"Legacy crafting detected");
 
 	public void onInventoryClose(InventoryCloseEvent event) {
+
 		if (event.getInventory().getType() == InventoryType.WORKBENCH) {
 			Location removed = activeCraftingTables.remove(event.getPlayer().getUniqueId());
 			if (removed != null)
-				Debug.Send(Type.Crafting, () -> "Legacy crafting detected, removed player has he close the crafting inventory.");
+				Debug.Send(legacyCrafting, () -> "Legacy crafting detected, removed player has he close the crafting inventory.");
 		}
 	}
 
 	public void onPlayerQuit(PlayerQuitEvent event) {
 		Location removed = activeCraftingTables.remove(event.getPlayer().getUniqueId());
 		if (removed != null)
-			Debug.Send(Type.Crafting, () -> "Legacy crafting detected, removed player has he left the server.");
+			Debug.Send(legacyCrafting, () -> "Legacy crafting detected, removed player has he left the server.");
 	}
 
 	public void onInventoryInteract(final PlayerInteractEvent event) {
@@ -45,7 +48,7 @@ public class TrackPlayerLocation {
 		final Block clickedBlock = event.getClickedBlock();
 		final Location location = clickedBlock.getLocation();
 		activeCraftingTables.put(player.getUniqueId(), location);
-		Debug.Send(Type.Crafting, () -> "Legacy crafting detected, adding player during crating to the cache.");
+		Debug.Send(legacyCrafting, () -> "Legacy crafting detected, adding player during crafting to the cache.");
 	}
 
 	public boolean onPrepareCrafting(@Nonnull final RecipeInjector recipeInjector, @Nonnull final PrepareItemCraftEvent craftEvent, @Nonnull final List<RecipeWrapper> recipes, @Nonnull final List<HumanEntity> viewers) {
@@ -70,5 +73,9 @@ public class TrackPlayerLocation {
 			}
 		}
 		return false;
+	}
+
+	public DebugContext getLegacyCrafting() {
+		return legacyCrafting;
 	}
 }

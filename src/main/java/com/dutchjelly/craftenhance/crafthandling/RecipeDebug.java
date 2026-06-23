@@ -6,6 +6,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @SuppressWarnings("deprecation")
@@ -40,30 +41,45 @@ public class RecipeDebug {
 		}
 		return stringBuilder + "";
 	}
+	public static String convertItemStackArrayToString(final Collection<ItemStack> matrix) {
+		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append("\n____________ingredient matrix_____________");
+		for (ItemStack invItemStack : matrix) {
+			formatStack(invItemStack, stringBuilder);
+		}
+		stringBuilder.append("\n____________ingredient matrix_____________\n");
+		return stringBuilder + "";
+	}
 
 	public static String convertItemStackArrayToString(final ItemStack[] matrix) {
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append("\n____________ingredient matrix_____________");
 		for (ItemStack invItemStack : matrix) {
-			if (invItemStack != null) {
-				final ItemMeta itemMeta = invItemStack.getItemMeta();
-				stringBuilder.append("\nIngredient  type= ").append(invItemStack.getType());
-				if (itemMeta != null) {
-					final String displayName = itemMeta.getDisplayName();
-					stringBuilder.append("\nItem display name= ").append(itemMeta.hasDisplayName() && displayName != null && displayName.isEmpty() ? "non" : "'" + displayName + "'");
-					if (itemMeta.getLore() != null)
-						stringBuilder.append("\nItem lore= ").append(itemMeta.getLore());
-					else stringBuilder.append("\nItem lore= non");
-				} else {
-					stringBuilder.append("\nItem display name= non");
-					stringBuilder.append("\nItem lore= non");
-				}
-				stringBuilder.append("\n");
-			}
+			formatStack(invItemStack, stringBuilder);
 		}
 		stringBuilder.append("\n____________ingredient matrix_____________\n");
 		return stringBuilder + "";
 	}
+
+	public static void formatStack(final ItemStack stack, final StringBuilder stringBuilder) {
+		if (stack != null) {
+			final ItemMeta itemMeta = stack.getItemMeta();
+			stringBuilder.append("\nIngredient  type= ").append(stack.getType());
+			if (itemMeta != null) {
+				final String displayName = itemMeta.getDisplayName();
+				final String name =  displayName == null || displayName.isEmpty() || displayName.equals("null") ? "non" : "'" + displayName + "'";
+				stringBuilder.append("\nItem display name= ").append(name);
+				if (itemMeta.getLore() != null)
+					stringBuilder.append("\nItem lore= ").append(itemMeta.getLore());
+				else stringBuilder.append("\nItem lore= non");
+			} else {
+				stringBuilder.append("\nItem display name= non");
+				stringBuilder.append("\nItem lore= non");
+			}
+			stringBuilder.append("\n");
+		}
+	}
+
 
 	public static int findMismatchIndex(String str1, String str2) {
 		if (str1 == null || str2 == null) {
@@ -105,7 +121,8 @@ public class RecipeDebug {
 			stringBuilder.append("\nDisplay name match= ").append(match);
 
 			if (invItemMeta != null) {
-				stringBuilder.append("\nplayer added item display name= ").append(displayName != null && displayName.isEmpty() ? "non" : "'" + displayName + "'");
+				final String name = displayName == null || displayName.isEmpty() || displayName.equals("null") ? "non" : "'" + displayName + "'";
+				stringBuilder.append("\nplayer added item display name= ").append(name);
 				if (invItemMeta.getLore() != null)
 					stringBuilder.append("\nThe added item lore= ").append(invItemMeta.getLore());
 				else stringBuilder.append("\nThe added item lore= non");

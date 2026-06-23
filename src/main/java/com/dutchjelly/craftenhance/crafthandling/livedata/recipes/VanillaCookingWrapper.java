@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.crafthandling.livedata.recipes;
 
+import com.dutchjelly.craftenhance.crafthandling.RecipeDebug;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareFurnaceContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
@@ -15,6 +16,7 @@ import org.bukkit.block.Smoker;
 import org.bukkit.inventory.CookingRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.RecipeChoice;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -117,13 +119,15 @@ public class VanillaCookingWrapper implements RecipeWrapper {
 
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("########## Enhanced recipe ################").append("\n");
-		//	if (self().getVersionChecker().newerThan(ServerVersion.v1_13))
-		//		builder.append("Key: ").append(this.furnaceRecipe.getKey()).append("\n");
+		builder.append("___________< Vanilla cooking recipe >___________").append("\n");
+		if (self().getVersionChecker().newerThan(ServerVersion.v1_13))
+			builder.append("Key: ").append(this.furnaceRecipe.getKey()).append("\n");
 		builder.append("Result: ").append(this.furnaceRecipe.getResult()).append("\n");
-		//	final RecipeChoice inputChoice = this.furnaceRecipe.getInputChoice();
-		//	builder.append("Ingredients: ").append(inputChoice.getItemStack().getType()).append("\n");
-		builder.append("########## Enhanced recipe ################\n");
+		final RecipeChoice inputChoice = this.furnaceRecipe.getInputChoice();
+		builder.append("Ingredients:");
+		RecipeDebug.formatStack(inputChoice.getItemStack(),builder);
+		builder.append("\n");
+		builder.append("___________< Vanilla cooking recipe end >___________\n");
 		return builder.toString();
 	}
 }

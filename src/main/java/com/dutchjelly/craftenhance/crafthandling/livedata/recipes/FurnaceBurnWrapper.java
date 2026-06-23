@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.crafthandling.livedata.recipes;
 
 import com.dutchjelly.craftenhance.RecipeAdapter;
+import com.dutchjelly.craftenhance.crafthandling.RecipeDebug;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareFurnaceContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
@@ -129,11 +130,14 @@ public class FurnaceBurnWrapper implements RecipeWrapper {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("########## Enhanced recipe ################").append("\n");
-		builder.append("Key: ").append(this.furnaceRecipe.getKey()).append("\n");
-		builder.append("Result: ").append(this.furnaceRecipe.getResult()).append("\n");
-		builder.append("Ingredients: ").append(Arrays.toString(this.furnaceRecipe.getContent())).append("\n");
-		builder.append("########## Enhanced recipe ################\n");
+		final ItemStack[] content = this.furnaceRecipe.getContent();
+		builder.append("___________< Enhanced furnace recipe >___________").append("\n")
+				.append("Key: ").append(this.furnaceRecipe.getKey()).append("\n")
+				.append("Result: ").append(this.furnaceRecipe.getResult()).append("\n")
+				.append("Ingredients:")
+				.append(RecipeDebug.convertItemStackArrayToString(content))
+				.append("\n")
+				.append("___________< Enhanced furnace recipe end >___________\n");
 		return builder.toString();
 	}
 }

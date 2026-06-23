@@ -2,6 +2,7 @@ package com.dutchjelly.craftenhance.crafthandling.livedata.brewing;
 
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.RecipeAdapter;
+import com.dutchjelly.craftenhance.crafthandling.RecipeDebug;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
@@ -234,13 +235,17 @@ public class BrewingWrapper implements RecipeWrapper {
 		return hash;
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("########## Enhanced recipe ################").append("\n");
-		builder.append("Key: ").append(this.brewingRecipe.getKey()).append("\n");
-		builder.append("Result: ").append(this.brewingRecipe.getResult()).append("\n");
-		builder.append("Ingredients: ").append(Arrays.toString(this.brewingRecipe.getContent())).append("\n");
-		builder.append("########## Enhanced recipe ################\n");
+		final ItemStack[] content = this.brewingRecipe.getContent();
+		builder.append("___________< Enhanced brewing recipe >___________").append("\n")
+				.append("Key: ").append(this.brewingRecipe.getKey()).append("\n")
+				.append("Result: ").append(this.brewingRecipe.getResult()).append("\n")
+				.append("Ingredients:")
+				.append(RecipeDebug.convertItemStackArrayToString(content))
+				.append("\n")
+				.append("___________< Enhanced brewing recipe end >___________\n");
 		return builder.toString();
 	}
 }

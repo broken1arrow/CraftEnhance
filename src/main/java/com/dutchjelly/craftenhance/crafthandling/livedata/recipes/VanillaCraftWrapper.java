@@ -3,6 +3,7 @@ package com.dutchjelly.craftenhance.crafthandling.livedata.recipes;
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.crafthandling.RecipeDebug;
+import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareItemCraftContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
@@ -21,6 +22,7 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -78,8 +80,14 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 		final PrepareItemCraftContext prepareItemCraftContext = new PrepareItemCraftContext();
 		contextConsumer.accept(prepareItemCraftContext);
 		final ItemStack[] matrix = prepareItemCraftContext.getRecipeMatrix();
+		final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
 
 		Debug.Send(Type.Crafting, () -> "Vanilla recipe check, the result to match: " + recipe.getResult());
+		if (RecipeAdapter.checkForDisabledRecipe(disabledServerRecipes, recipe.getResult())) {
+			Debug.Send(Type.Crafting, () -> "This recipe is disabled with result: " + recipe.getResult());
+			return new ResultContext( null, ResultType.DISABLED);
+		}
+
 		if (recipe instanceof ShapedRecipe) {
 			final ItemStack[] content = ServerRecipeTranslator.translateShapedRecipe((ShapedRecipe) recipe);
 
@@ -127,20 +135,26 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("########## Recipe ################").append("\n");
+		builder.append("___________<  Vanilla Recipe >___________").append("\n");
 		builder.append("Result: ").append(this.recipe.getResult()).append("\n");
+
 		if (recipe instanceof ShapelessRecipe) {
+			final ShapelessRecipe shapelessRecipe = (ShapelessRecipe) recipe;
 			if (self().getVersionChecker().newerThan(ServerVersion.v1_13))
-				builder.append("Key: ").append(((ShapelessRecipe) recipe).getKey()).append("\n");
-			builder.append("Ingredients: ").append(((ShapelessRecipe) recipe).getIngredientList()).append("\n");
+				builder.append("Key: ").append(shapelessRecipe.getKey()).append("\n");
+			builder.append("Ingredients: ")
+					.append(RecipeDebug.convertItemStackArrayToString(shapelessRecipe.getIngredientList()))
+					.append("\n");
 		}
 		if (recipe instanceof ShapedRecipe) {
+			final ShapedRecipe shapedRecipe = (ShapedRecipe) recipe;
 			if (self().getVersionChecker().newerThan(ServerVersion.v1_13))
-				builder.append("Key: ").append(((ShapedRecipe) recipe).getKey()).append("\n");
-			builder.append("Ingredients: ").append(((ShapedRecipe) recipe).getIngredientMap()).append("\n");
+				builder.append("Key: ").append(shapedRecipe.getKey()).append("\n");
+			builder.append("Ingredients: ")
+					.append(RecipeDebug.convertItemStackArrayToString(shapedRecipe.getIngredientMap().values()))
+					.append("\n");
 		}
-		builder.append("########## Recipe ################\n");
-
+		builder.append("___________<  Vanilla Recipe end >___________\n");
 		return builder.toString();
 	}
 

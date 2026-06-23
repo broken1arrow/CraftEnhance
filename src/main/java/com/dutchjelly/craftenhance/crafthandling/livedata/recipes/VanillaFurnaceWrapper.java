@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.crafthandling.livedata.recipes;
 
+import com.dutchjelly.craftenhance.crafthandling.RecipeDebug;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareFurnaceContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
@@ -116,13 +117,15 @@ public class VanillaFurnaceWrapper implements RecipeWrapper {
 
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("########## Enhanced recipe ################").append("\n");
-		//	if (self().getVersionChecker().newerThan(ServerVersion.v1_13))
-		//		builder.append("Key: ").append(this.furnaceRecipe.getKey()).append("\n");
+		final ItemStack inputChoice = this.furnaceRecipe.getInput();
+		builder.append("________< Vanilla furnace recipe >________").append("\n");
+		if (self().getVersionChecker().newerThan(ServerVersion.v1_13))
+			builder.append("Key: ").append(this.furnaceRecipe.getKey()).append("\n");
 		builder.append("Result: ").append(this.furnaceRecipe.getResult()).append("\n");
-		//	final RecipeChoice inputChoice = this.furnaceRecipe.getInputChoice();
-		//	builder.append("Ingredients: ").append(inputChoice.getItemStack().getType()).append("\n");
-		builder.append("########## Enhanced recipe ################\n");
+		builder.append("Ingredients:");
+		RecipeDebug.formatStack(inputChoice, builder);
+		builder.append("\n");
+		builder.append("________< Vanilla furnace recipe end >________\n");
 		return builder.toString();
 	}
 }

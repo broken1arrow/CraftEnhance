@@ -125,11 +125,14 @@ public class RecipeInjector implements Listener {
 		final CraftingInventory craftingInventory = craftEvent.getInventory();
 		final List<HumanEntity> viewers = craftEvent.getViewers();
 		final List<RecipeWrapper> recipes = this.getLoader().findMatchingRecipe(RecipeType.WORKBENCH, craftingInventory.getMatrix());
-		if (this.trackPlayerLocation != null) {
-			boolean foundMatch = this.trackPlayerLocation.onPrepareCrafting(this, craftEvent, recipes, viewers);
-			if (!foundMatch && !recipes.isEmpty()) {
-				Debug.Send(Type.Crafting, () -> "Legacy crafting detected, could not found a valid recipe for result will deny the crafting: " + serverRecipe.getResult());
-				craftingInventory.setResult(null);
+		final TrackPlayerLocation trackPlayerCraft = this.trackPlayerLocation;
+		if (trackPlayerCraft != null) {
+			craftingInventory.setResult(null);
+			final DebugContext legacyCrafting = trackPlayerCraft.getLegacyCrafting();
+			Debug.Send(legacyCrafting, () -> "Legacy crafting detected, amount recipes found for the items added in crafting grid: " + recipes.size());
+			boolean foundMatch = trackPlayerCraft.onPrepareCrafting(this, craftEvent, recipes, viewers);
+			if (!foundMatch) {
+				Debug.Send(legacyCrafting, () -> "Legacy crafting detected, could not found a valid recipe for result will deny the crafting: " + serverRecipe.getResult());
 			}
 			return;
 		}

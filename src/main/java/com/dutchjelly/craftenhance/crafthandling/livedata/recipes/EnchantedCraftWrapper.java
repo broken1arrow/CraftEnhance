@@ -178,14 +178,16 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 		return hash;
 	}
 
-	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("########## Enhanced recipe ################").append("\n");
-		builder.append("Key: ").append(this.enhancedRecipe.getKey()).append("\n");
-		builder.append("Result: ").append(this.enhancedRecipe.getResult()).append("\n");
-		builder.append("Ingredients: ").append(Arrays.toString(this.enhancedRecipe.getContent())).append("\n");
-		builder.append("########## Enhanced recipe ################\n");
+		final ItemStack[] content = this.enhancedRecipe.getContent();
+		builder.append("___________< Enhanced recipe >___________").append("\n")
+				.append("Key: ").append(this.enhancedRecipe.getKey()).append("\n")
+				.append("Result: ").append(this.enhancedRecipe.getResult()).append("\n")
+				.append("Ingredients:")
+				.append(RecipeDebug.convertItemStackArrayToString(content))
+				.append("\n")
+				.append("___________< Enhanced recipe end >___________\n");
 		return builder.toString();
 	}
 }
