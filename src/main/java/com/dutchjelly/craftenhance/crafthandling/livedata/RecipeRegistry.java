@@ -1,6 +1,9 @@
 package com.dutchjelly.craftenhance.crafthandling.livedata;
 
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
+import com.dutchjelly.craftenhance.messaging.Debug;
+import com.dutchjelly.craftenhance.messaging.Debug.DebugContext;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
@@ -22,6 +25,7 @@ import java.util.stream.Collectors;
 public class RecipeRegistry {
 	private final Map<Material, Set<RecipeWrapper>> mappedRecipes = new HashMap<>();
 	private final Set<RecipeWrapper> allRecipes = new HashSet<>();
+	private DebugContext matchingRecipes;
 
 	public void addRecipe(@Nonnull final RecipeWrapper recipe, @Nonnull final ItemStack[] content) {
 		this.allRecipes.add(recipe);
@@ -35,17 +39,26 @@ public class RecipeRegistry {
 	}
 
 	public List<RecipeWrapper> findMatchingRecipes(@Nonnull final ItemStack[] matrix) {
+		return findMatchingRecipes(null, matrix);
+	}
+
+	public List<RecipeWrapper> findMatchingRecipes(@Nullable final RecipeType recipeType, @Nonnull final ItemStack[] matrix) {
 		Set<RecipeWrapper> wrappersMatch = null;
+		matchingRecipes = DebugContext.of(recipeType, "Find_matching_recipes");
+		if (recipeType == RecipeType.WORKBENCH) {
+			Debug.Send(matchingRecipes, () -> "The recipe matrics to find a match: " + Arrays.toString(matrix));
+		}
 
 		for (ItemStack itemStack : matrix) {
 			final Material type = itemStack == null ? null : itemStack.getType();
-			if (type == null) continue;
+			if (type == null || type == Material.AIR) continue;
 			final Set<RecipeWrapper> recipeCached = this.mappedRecipes.getOrDefault(type, Collections.emptySet());
+
+			Debug.Send(matchingRecipes, () -> "The item type to find a match: '" + type + "' the number of ingredients matching: " + recipeCached.size());
 
 			if (recipeCached.isEmpty()) {
 				return Collections.emptyList();
 			}
-
 			if (wrappersMatch == null) {
 				wrappersMatch = new HashSet<>(recipeCached);
 			} else {
@@ -54,6 +67,9 @@ public class RecipeRegistry {
 			if (wrappersMatch.isEmpty())
 				return Collections.emptyList();
 		}
+
+		final Set<RecipeWrapper> finalWrappersMatch = wrappersMatch;
+		Debug.Send(matchingRecipes, () -> "The final matched recipes:" + (finalWrappersMatch == null ? "'no match found" : "\n|" + finalWrappersMatch) + "|");
 		if (wrappersMatch == null)
 			return Collections.emptyList();
 

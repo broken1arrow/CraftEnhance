@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.crafthandling;
 
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -30,9 +31,9 @@ public class RecipeDebug {
 							stringBuilder.append("The recipe lore= ").append(recipeMeta.getLore());
 					}
 
-					stringBuilder.append("\nMatched ingrediens in the crafting grid: \n\n");
+					stringBuilder.append("\nMatched ingredients in the crafting grid: \n");
 					setIngredients(matchingInvItems, stringBuilder, recipeMeta);
-					stringBuilder.append("\n<--------Ingredient-------->\n");
+					stringBuilder.append("\n<--------Similar ingredient match end-------->\n\n");
 				}
 			}
 
@@ -48,7 +49,8 @@ public class RecipeDebug {
 				final ItemMeta itemMeta = invItemStack.getItemMeta();
 				stringBuilder.append("\nIngredient  type= ").append(invItemStack.getType());
 				if (itemMeta != null) {
-					stringBuilder.append("\nItem display name= ").append(itemMeta.getDisplayName().isEmpty() ? "non" : "'" + itemMeta.getDisplayName() + "'");
+					final String displayName = itemMeta.getDisplayName();
+					stringBuilder.append("\nItem display name= ").append(itemMeta.hasDisplayName() && displayName != null && displayName.isEmpty() ? "non" : "'" + displayName + "'");
 					if (itemMeta.getLore() != null)
 						stringBuilder.append("\nItem lore= ").append(itemMeta.getLore());
 					else stringBuilder.append("\nItem lore= non");
@@ -64,6 +66,14 @@ public class RecipeDebug {
 	}
 
 	public static int findMismatchIndex(String str1, String str2) {
+		if (str1 == null || str2 == null) {
+			if (str1 == null && str2 == null)
+				return -1;
+			if (str1 != null) {
+				return 0;
+			}
+			return 0;
+		}
 		int minLength = Math.min(str1.length(), str2.length());
 
 		for (int i = 0; i < minLength; i++) {
@@ -82,31 +92,33 @@ public class RecipeDebug {
 		for (int index = 0; index < matchingInvItems.size(); index++) {
 			ItemStack invItem = matchingInvItems.get(index);
 
-			final ItemMeta inveMeta = invItem == null ? null : invItem.getItemMeta();
-			stringBuilder.append("____________ingredient match index=").append(index).append("_____________");
+			final ItemMeta invItemMeta = invItem == null ? null : invItem.getItemMeta();
+			stringBuilder.append("____________ingredient match").append("_____________\n");
+			stringBuilder.append("slot index=").append(index);
 			stringBuilder.append("\nIngredient crafting with type= ").append(invItem == null ? "AIR" : invItem.getType());
+			final String displayName = invItemMeta != null ? invItemMeta.getDisplayName() : "";
 
-			final int mismatchIndex = findMismatchIndex(recipeMeta != null ? recipeMeta.getDisplayName() : "", inveMeta != null ? inveMeta.getDisplayName() : "");
+			final int mismatchIndex = findMismatchIndex(recipeMeta != null ? recipeMeta.getDisplayName() : "", displayName);
 			String match = "matching exactly";
 			if (mismatchIndex == -2) match = "different length of the names";
 			if (mismatchIndex > 0) match = "match to pos " + mismatchIndex;
 			stringBuilder.append("\nDisplay name match= ").append(match);
 
-			if (inveMeta != null) {
-				stringBuilder.append("\nplayer added item display name= ").append(inveMeta.getDisplayName().isEmpty() ? "non" : "'" + inveMeta.getDisplayName() + "'");
-				if (inveMeta.getLore() != null)
-					stringBuilder.append("\nThe added item lore= ").append(inveMeta.getLore());
+			if (invItemMeta != null) {
+				stringBuilder.append("\nplayer added item display name= ").append(displayName != null && displayName.isEmpty() ? "non" : "'" + displayName + "'");
+				if (invItemMeta.getLore() != null)
+					stringBuilder.append("\nThe added item lore= ").append(invItemMeta.getLore());
 				else stringBuilder.append("\nThe added item lore= non");
 			} else {
 				stringBuilder.append("\nplayer added item display name= non");
 				stringBuilder.append("\nThe added item lore= non");
 			}
-			stringBuilder.append("\n____________ingredient match end_____________\n\n");
+			stringBuilder.append("\n____________ingredient match end_____________\n");
 		}
 	}
 
 	private static List<ItemStack> getItemStack(final ItemStack[] matrix, final ItemStack itemStack) {
-		if (itemStack == null) return null;
+		if (itemStack == null || itemStack.getType() == Material.AIR) return null;
 		List<ItemStack> items = new ArrayList<>();
 		for (ItemStack invItemStack : matrix) {
 			if (invItemStack != null && invItemStack.getType() == itemStack.getType()) {

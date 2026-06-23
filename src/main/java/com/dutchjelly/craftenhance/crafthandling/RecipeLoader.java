@@ -7,6 +7,7 @@ import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.brewing.BrewingWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.recipes.EnchantedCraftWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.recipes.FurnaceBurnWrapper;
+import com.dutchjelly.craftenhance.crafthandling.livedata.recipes.VanillaCookingWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.recipes.VanillaCraftWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.recipes.VanillaFurnaceWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
@@ -29,6 +30,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Server;
+import org.bukkit.inventory.CookingRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
@@ -69,14 +71,18 @@ public class RecipeLoader {
 	private RecipeLoader(final Server server, final CategoryDataCache categoryDataCache) {
 		this.server = server;
 		try {
-			server.recipeIterator().forEachRemaining(serverRecipes -> {
-				this.serverRecipes.add(serverRecipes);
+			server.recipeIterator().forEachRemaining(serverRecipe -> {
+				this.serverRecipes.add(serverRecipe);
 
-				final ItemStack[] ingredients = Adapter.getIngredients(serverRecipes);
-				if (Adapter.isCookingRecipe(serverRecipes)) {
-					liveCacheRecipe(new VanillaFurnaceWrapper((org.bukkit.inventory.FurnaceRecipe) serverRecipes), ingredients);
+				final ItemStack[] ingredients = Adapter.getIngredients(serverRecipe);
+				if (Adapter.isCookingRecipe(serverRecipe)) {
+					if (self().getVersionChecker().newerThan(ServerVersion.v1_13) && serverRecipe instanceof CookingRecipe) {
+						liveCacheRecipe(new VanillaCookingWrapper((CookingRecipe<?>) serverRecipe), ingredients);
+					} else {
+						liveCacheRecipe(new VanillaFurnaceWrapper((org.bukkit.inventory.FurnaceRecipe) serverRecipe), ingredients);
+					}
 				} else
-					liveCacheRecipe(new VanillaCraftWrapper(serverRecipes), ingredients);
+					liveCacheRecipe(new VanillaCraftWrapper(serverRecipe), ingredients);
 			});
 		} catch (IllegalArgumentException e) {
 			self().getLogger().log(Level.SEVERE, "This server recipe contains air, will not be loaded.", e);
@@ -98,9 +104,12 @@ public class RecipeLoader {
 	@Nonnull
 	public List<RecipeWrapper> findMatchingRecipe(@Nonnull final RecipeType recipeType, final ItemStack[] matrix) {
 		final RecipeRegistry recipeCached = this.mappedRecipes.get(recipeType);
+		if (recipeType == RecipeType.WORKBENCH)
+			Debug.Send(Type.Crafting, () -> "Found the group for this type: " + recipeType);
+
 		if (recipeCached == null)
 			return Collections.emptyList();
-		return recipeCached.findMatchingRecipes(matrix);
+		return recipeCached.findMatchingRecipes(recipeType, matrix);
 	}
 
 	public void loadRecipe(@NonNull final EnhancedRecipe recipe) {
@@ -166,6 +175,9 @@ public class RecipeLoader {
 
 
 	public void liveCacheRecipe(@Nonnull final RecipeWrapper recipe, @Nonnull final ItemStack[] content) {
+		Debug.Send(loading_recipe, () -> "Added server recipe to fast lookup cache: " + recipe.getRecipeType());
+		Debug.Send(loading_recipe, () -> "Fast lookup cache recipe key: " + recipe.getRecipeKey());
+		Debug.Send(loading_recipe, () -> "Fast lookup cache contents: " + RecipeDebug.convertItemStackArrayToString(content));
 		this.mappedRecipes.computeIfAbsent(recipe.getRecipeType(), material -> new RecipeRegistry()).addRecipe(recipe, content);
 	}
 

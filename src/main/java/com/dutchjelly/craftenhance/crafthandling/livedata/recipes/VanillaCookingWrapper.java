@@ -12,7 +12,7 @@ import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import org.bukkit.block.BlastFurnace;
 import org.bukkit.block.Smoker;
-import org.bukkit.inventory.FurnaceRecipe;
+import org.bukkit.inventory.CookingRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
@@ -23,12 +23,13 @@ import java.util.function.Consumer;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
-public class VanillaFurnaceWrapper implements RecipeWrapper {
-	private final FurnaceRecipe furnaceRecipe;
-	private String key;
+public class VanillaCookingWrapper implements RecipeWrapper {
+	private final CookingRecipe<?> furnaceRecipe;
+	private final String key;
 
-	public VanillaFurnaceWrapper(final FurnaceRecipe furnaceRecipe) {
+	public VanillaCookingWrapper(final CookingRecipe<?> furnaceRecipe) {
 		this.furnaceRecipe = furnaceRecipe;
+
 		StringBuilder builder = new StringBuilder(furnaceRecipe.getResult().getType().name());
 		builder.append("|");
 		builder.append(furnaceRecipe.getInputChoice().getItemStack().getType().name());
@@ -70,7 +71,7 @@ public class VanillaFurnaceWrapper implements RecipeWrapper {
 		final PrepareFurnaceContext furnaceContext = new PrepareFurnaceContext();
 		contextConsumer.accept(furnaceContext);
 		final ItemStack[] srcMatrix = furnaceContext.getRecipeMatrix();
-		final FurnaceRecipe fRecipe = this.furnaceRecipe;
+		final CookingRecipe<?> fRecipe = this.furnaceRecipe;
 
 		Debug.Send(Type.Smelting, () -> "Checking if vanilla recipe for " + fRecipe.getResult() + " matches.");
 		Debug.Send(Type.Smelting, () -> "The srcMatrix " + Arrays.toString(srcMatrix) + ".");
@@ -85,7 +86,7 @@ public class VanillaFurnaceWrapper implements RecipeWrapper {
 		return new ResultContext(fRecipe.getResult(), ResultType.NO_MATCH);
 	}
 
-	public boolean matchesType(final FurnaceRecipe fRecipe, final ItemStack[] content) {
+	public boolean matchesType(final CookingRecipe<?> fRecipe, final ItemStack[] content) {
 		if (content.length < 1)
 			return false;
 		return MatchType.MATCH_TYPE.getMatcher().match(fRecipe.getInput(), content[0]);
@@ -101,8 +102,8 @@ public class VanillaFurnaceWrapper implements RecipeWrapper {
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null) return false;
-		if (!(o instanceof VanillaFurnaceWrapper)) return false;
-		final VanillaFurnaceWrapper that = (VanillaFurnaceWrapper) o;
+		if (!(o instanceof VanillaCookingWrapper)) return false;
+		final VanillaCookingWrapper that = (VanillaCookingWrapper) o;
 		return that.key.equals(key);
 	}
 

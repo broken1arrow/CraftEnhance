@@ -282,7 +282,7 @@ public class Adapter {
 			return ShapedRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class).newInstance(getNameSpacedKey(plugin, key), result);
 		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
 		               NoSuchMethodException | ClassNotFoundException e) {
-			Debug.error("Couldn't use namespaced key: '" + key + "' will fallback to legacy option\n", e);
+			Debug.errorDisablable("Couldn't use namespaced key for shaped recipe: '" + key + "' will fallback to legacy option\n", e);
 		}
 		return new ShapedRecipe(result);
 	}
@@ -292,7 +292,7 @@ public class Adapter {
 			return ShapelessRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class).newInstance(getNameSpacedKey(plugin, key), result);
 		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
 		               NoSuchMethodException | ClassNotFoundException e) {
-			Debug.error("Couldn't use namespaced key: '" + key + "' will fallback to legacy option\n", e);
+			Debug.errorDisablable("Couldn't use namespaced key for shapeless recipe: '" + key + "' will fallback to legacy option\n", e);
 		}
 		return new ShapelessRecipe(result);
 	}
@@ -416,7 +416,7 @@ public class Adapter {
 			return furnaceRecipe;
 		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
 		               NoSuchMethodException | ClassNotFoundException e) {
-			Debug.error("Couldn't use namespaced key:' " + key + "' will fallback to legacy option\n", e);
+			Debug.errorDisablable("Couldn't use namespaced key for furnace recipe:' " + key + "' will fallback to legacy option\n", e);
 			//e.printStackTrace();
 			final org.bukkit.inventory.FurnaceRecipe recipe = new org.bukkit.inventory.FurnaceRecipe(result, source.getType());
 			if (!callSingleParamMethod("setCookingTime", duration, Integer.class, recipe, FurnaceRecipe.class))

@@ -1,52 +1,74 @@
 package com.dutchjelly.craftenhance.util;
 
+import com.dutchjelly.craftenhance.crafthandling.RecipeInjector;
+import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
+import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareItemCraftContext;
+import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
+import com.dutchjelly.craftenhance.messaging.Debug;
+import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.CraftingInventory;
 
+import javax.annotation.Nonnull;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class TrackPlayerLocation {
 	private final Map<UUID, Location> activeCraftingTables = new HashMap<>();
 
-	public Location onPrepareCraft(Player player) {
-		Location craftLocation = activeCraftingTables.get(player.getUniqueId());
-		if (craftLocation == null) {
-			craftLocation = player.getLocation();
-		}
-		return craftLocation;
-	}
-
 	public void onInventoryClose(InventoryCloseEvent event) {
 		if (event.getInventory().getType() == InventoryType.WORKBENCH) {
-			activeCraftingTables.remove(event.getPlayer().getUniqueId());
+			Location removed = activeCraftingTables.remove(event.getPlayer().getUniqueId());
+			if (removed != null)
+				Debug.Send(Type.Crafting, () -> "Legacy crafting detected, removed player has he close the crafting inventory.");
 		}
 	}
 
 	public void onPlayerQuit(PlayerQuitEvent event) {
-		activeCraftingTables.remove(event.getPlayer().getUniqueId());
+		Location removed = activeCraftingTables.remove(event.getPlayer().getUniqueId());
+		if (removed != null)
+			Debug.Send(Type.Crafting, () -> "Legacy crafting detected, removed player has he left the server.");
 	}
 
 	public void onInventoryInteract(final PlayerInteractEvent event) {
 		Player player = event.getPlayer();
-		try {
-			final Block clickedBlock = event.getClickedBlock();
-			final BlockState state = clickedBlock.getState();
-			System.out.println("state  " + state );
-			Inventory inventory = (Inventory) state;
-			final Location location = clickedBlock.getLocation();
-			activeCraftingTables.put(player.getUniqueId(),  location);
-		} catch (Exception e) {
-			e.printStackTrace();
+		final Block clickedBlock = event.getClickedBlock();
+		final Location location = clickedBlock.getLocation();
+		activeCraftingTables.put(player.getUniqueId(), location);
+		Debug.Send(Type.Crafting, () -> "Legacy crafting detected, adding player during crating to the cache.");
+	}
+
+	public boolean onPrepareCrafting(@Nonnull final RecipeInjector recipeInjector, @Nonnull final PrepareItemCraftEvent craftEvent, @Nonnull final List<RecipeWrapper> recipes, @Nonnull final List<HumanEntity> viewers) {
+		for (HumanEntity viewer : viewers) {
+			final Location location = this.activeCraftingTables.get(viewer.getUniqueId());
+			final CraftingInventory craftingInventory = craftEvent.getInventory();
+
+			recipeInjector.removeFinishRecipe(viewer.getUniqueId());
+
+			for (RecipeWrapper recipe : recipes) {
+				ResultContext contextResult = recipe.matches(craftEvent.getRecipe(), prepareRecipeContext -> {
+					if (prepareRecipeContext instanceof PrepareItemCraftContext) {
+						final PrepareItemCraftContext recipeContext = (PrepareItemCraftContext) prepareRecipeContext;
+						recipeContext.setRecipeMatrix(craftingInventory.getMatrix());
+						recipeContext.setViewers(viewers);
+						recipeContext.setInventory(craftingInventory);
+						recipeContext.setLocation(location);
+					}
+				});
+				if (contextResult == null) continue;
+				if (recipeInjector.endCraftingCheck(contextResult, location, craftingInventory)) return true;
+			}
 		}
-		System.out.println("activeCraftingTables " + activeCraftingTables);
+		return false;
 	}
 }

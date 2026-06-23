@@ -2,9 +2,11 @@ package com.dutchjelly.craftenhance.messaging;
 
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import lombok.NonNull;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,7 +27,7 @@ public class Debug {
 
 	public static void init(final CraftEnhance main) {
 		startup_debug = main.getConfig().getBoolean("startup_debug");
-		show_errors = main.getConfig().getBoolean("show_errors", true);
+		show_errors = main.getConfig().getBoolean("show_errors", false);
 		enable = main.getConfig().getBoolean("enable-debug");
 		enable_deap = main.getConfig().getBoolean("enable_debug_deap");
 		enable_crafting_debug = main.getConfig().getBoolean("enable_crafting-debug");
@@ -96,10 +98,10 @@ public class Debug {
 		logger.info(prefix + debugHowName + (obj != null ? obj.get().toString() : "null"));
 	}
 
-	private static void Send(final Object sender, final Object obj) {
+	private static void Send(final Type type, final Object obj) {
 		if (!enable) return;
 
-		logger.info(prefix + "<" + sender.getClass().getName() + "> " + (obj != null ? obj.toString() : "null"));
+		logger.info(prefix + "<" + type.name() + "> " + (obj != null ? obj.toString() : "null"));
 	}
 
 	private static void Send(final Object[] arr) {
@@ -117,6 +119,11 @@ public class Debug {
 			logger.log(Level.WARNING, prefix + message);
 	}
 
+	public static void errorDisablable(final String message, Throwable throwable) {
+		if (show_errors)
+			logger.log(Level.WARNING, prefix + message, throwable);
+	}
+
 	public static void error(final String message, Throwable throwable) {
 		logger.log(Level.WARNING, prefix + message, throwable);
 	}
@@ -127,6 +134,20 @@ public class Debug {
 
 	public static boolean isGeneralDebugEnable() {
 		return enable;
+	}
+
+	public static Type getDebugType(final @Nullable RecipeType type) {
+		switch (type) {
+			case WORKBENCH:
+				return Crafting;
+			case FURNACE:
+			case BLAST:
+			case SMOKER:
+				return Smelting;
+			case BREWING:
+				return Brewing;
+		}
+		return Other;
 	}
 
 	private static Type getDebugType(final @Nonnull EnhancedRecipe recipe) {
@@ -143,7 +164,6 @@ public class Debug {
 		return Other;
 	}
 
-
 	public enum Type {
 		Crafting,
 		Smelting,
@@ -155,24 +175,50 @@ public class Debug {
 	}
 
 	public static class DebugContext {
+		private final RecipeType recipeType;
 		private final Type type;
 		private final String typeOfAction;
 
-		private DebugContext(@NonNull final Type type, @Nonnull final String typeOfAction) {
+		private DebugContext(@NonNull final Type type, final @Nullable RecipeType recipeType, @Nonnull final String typeOfAction) {
+			this.recipeType = recipeType;
 			this.type = type;
 			this.typeOfAction = typeOfAction;
 		}
 
 		public static DebugContext of(@NonNull final Type type, @Nonnull final String typeOfAction) {
-			return new DebugContext(type, typeOfAction);
+			return new DebugContext(type, null, typeOfAction);
 		}
 
+		public static DebugContext of(@Nullable final RecipeType recipeType, @Nonnull final String typeOfAction) {
+			return new DebugContext(Other, recipeType, typeOfAction);
+		}
+
+
 		public Type getType() {
+			if (this.recipeType != null)
+				return getDebugType();
 			return type;
 		}
 
 		public String getTypeOfAction() {
 			return typeOfAction;
+		}
+
+		private Type getDebugType() {
+			RecipeType type = this.recipeType;
+			if (type == null) return Other;
+
+			switch (type) {
+				case WORKBENCH:
+					return Crafting;
+				case FURNACE:
+				case BLAST:
+				case SMOKER:
+					return Smelting;
+				case BREWING:
+					return Brewing;
+			}
+			return Other;
 		}
 	}
 }

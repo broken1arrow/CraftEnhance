@@ -132,12 +132,12 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 		if (recipe instanceof ShapelessRecipe) {
 			if (self().getVersionChecker().newerThan(ServerVersion.v1_13))
 				builder.append("Key: ").append(((ShapelessRecipe) recipe).getKey()).append("\n");
-			builder.append("Ingredients: ").append(((ShapelessRecipe) recipe).getChoiceList()).append("\n");
+			builder.append("Ingredients: ").append(((ShapelessRecipe) recipe).getIngredientList()).append("\n");
 		}
 		if (recipe instanceof ShapedRecipe) {
 			if (self().getVersionChecker().newerThan(ServerVersion.v1_13))
 				builder.append("Key: ").append(((ShapedRecipe) recipe).getKey()).append("\n");
-			builder.append("Ingredients: ").append(((ShapedRecipe) recipe).getChoiceMap()).append("\n");
+			builder.append("Ingredients: ").append(((ShapedRecipe) recipe).getIngredientMap()).append("\n");
 		}
 		builder.append("########## Recipe ################\n");
 

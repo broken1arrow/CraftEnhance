@@ -78,6 +78,7 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 		contextConsumer.accept(craftContext);
 		final ItemStack[] matrix = craftContext.getRecipeMatrix();
 		final Inventory inventory = craftContext.getInventory();
+		final Location location = craftContext.getLocation();
 		final WBRecipe wbRecipe = enhancedRecipe;
 
 		if (inventory == null) {
@@ -87,7 +88,6 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 
 		final List<HumanEntity> viewers = craftContext.getViewers();
 		final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
-		final Location location = inventory.getLocation();
 
 		Debug.Send(Type.Crafting, () -> "The server wants to inject " + serverRecipe.getResult() + " ceh will check or modify this.");
 

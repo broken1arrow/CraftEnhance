@@ -13,6 +13,7 @@ import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import com.dutchjelly.craftenhance.util.RecipeResult;
 import lombok.Getter;
 import lombok.NonNull;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.BlastFurnace;
 import org.bukkit.block.Furnace;
@@ -26,6 +27,7 @@ import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
+import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -57,7 +59,17 @@ public class FurnaceRecipeInjector {
 				recipeType = RecipeType.SMOKER;
 		}
 		final List<RecipeWrapper> matchingRecipe = RecipeLoader.getInstance().findMatchingRecipe(recipeType, matrix);
-		final RecipeResult result = getFurnaceResult(event.getRecipe(), matchingRecipe, matrix, furnace);
+		org.bukkit.inventory.Recipe recipe;
+		ItemStack resultItem;
+		if (self().getVersionChecker().olderThan(ServerVersion.v1_14)) {
+			recipe = Bukkit.getRecipesFor(event.getResult()).stream().findFirst().orElse(null);
+			resultItem = event.getResult();
+		} else {
+			recipe = event.getRecipe();
+			resultItem = null;
+		}
+
+		final RecipeResult result = getFurnaceResult(recipe, resultItem, matchingRecipe, matrix, furnace);
 
 		if (result.isEnhancedRecipe()) {
 			Debug.Send(Type.Smelting, () -> "Custom item smelted, the result item: " + result);
@@ -100,7 +112,7 @@ public class FurnaceRecipeInjector {
 		final ItemStack smeltingStack = furnaceInventory.getSmelting();
 		final ItemStack[] matrix = {(smeltingStack != null ? new ItemStack(smeltingStack) : new ItemStack(Material.AIR))};
 		final List<RecipeWrapper> matchingRecipe = RecipeLoader.getInstance().findMatchingRecipe(recipeType, matrix);
-		final RecipeResult result = getFurnaceResult(null, matchingRecipe, matrix, furnace);
+		final RecipeResult result = getFurnaceResult(null, null, matchingRecipe, matrix, furnace);
 		ItemStack itemInResulSlot = furnaceInventory.getResult();
 		if (result.isEnhancedRecipe() && itemInResulSlot != null && itemInResulSlot.getType() != Material.AIR && !result.getItem().isSimilar(itemInResulSlot)) {
 			Debug.Send(Type.Smelting, () -> "It is already an item inside the furnace, that is not similar. Can't smelt the item");
@@ -114,7 +126,6 @@ public class FurnaceRecipeInjector {
 			burnEvent.setCancelled(true);
 		}
 	}
-
 
 
 	public void furnaceClick(final InventoryClickEvent furnaceClick) {
@@ -158,9 +169,11 @@ public class FurnaceRecipeInjector {
 	}
 
 	@NonNull
-	public RecipeResult getFurnaceResult(final Recipe serverRecipe, final List<RecipeWrapper> recipeWrappers, final ItemStack[] matrix, final Furnace furnace) {
+	public RecipeResult getFurnaceResult(final Recipe serverRecipe, @Nullable final ItemStack resultItem, final List<RecipeWrapper> recipeWrappers, final ItemStack[] matrix, final Furnace furnace) {
 		if (recipeWrappers.isEmpty()) {
 			Debug.Send(Type.Smelting, () -> "furnace recipe does not match any recipe group.");
+			if (resultItem != null)
+				return RecipeResult.setVanilla(resultItem);
 			return RecipeResult.setVanilla(serverRecipe != null ? serverRecipe.getResult() : null);
 		}
 
@@ -177,6 +190,8 @@ public class FurnaceRecipeInjector {
 				return RecipeResult.setCustomRecipe(resultContext.getItemStack());
 			}
 			if (resultContext.getResultType() == ResultType.VANILLA) {
+				if (resultItem != null)
+					return RecipeResult.setVanilla(resultItem);
 				return RecipeResult.setVanilla(serverRecipe != null ? serverRecipe.getResult() : null);
 			}
 			if (resultContext.getResultType() == ResultType.PARTIAL_MATCH) {
