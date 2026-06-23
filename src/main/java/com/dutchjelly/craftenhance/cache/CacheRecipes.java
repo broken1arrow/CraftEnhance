@@ -63,14 +63,6 @@ public class CacheRecipes extends CacheRecipesGroup {
 		groupCacheDirty = true;
 	}
 
-
-	public boolean isUniqueRecipeKey(final String key) {
-		return this.getRecipe(key) == null;
-	}
-	public void clear() {
-		recipes.clear();
-	}
-
 	public void save() {
 		saveSchedule.addTask(this.database::saveRecipes);
 	}
@@ -87,5 +79,12 @@ public class CacheRecipes extends CacheRecipesGroup {
 		saveSchedule.addTask(() -> this.database.saveRecipe(enhancedRecipe));
 	}
 
+	public void clear() {
+		recipes.clear();
+	}
+
+	public boolean isUniqueRecipeKey(final String key) {
+		return this.getRecipe(key) == null;
+	}
 
 }

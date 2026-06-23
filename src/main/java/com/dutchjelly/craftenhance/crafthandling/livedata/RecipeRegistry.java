@@ -45,9 +45,8 @@ public class RecipeRegistry {
 	public List<RecipeWrapper> findMatchingRecipes(@Nullable final RecipeType recipeType, @Nonnull final ItemStack[] matrix) {
 		Set<RecipeWrapper> wrappersMatch = null;
 		matchingRecipes = DebugContext.of(recipeType, "Find_matching_recipes");
-		if (recipeType == RecipeType.WORKBENCH) {
-			Debug.Send(matchingRecipes, () -> "The recipe matrics to find a match: " + Arrays.toString(matrix));
-		}
+		
+		Debug.Send(matchingRecipes, () -> "The recipe matrics to find a match: " + Arrays.toString(matrix));
 
 		for (ItemStack itemStack : matrix) {
 			final Material type = itemStack == null ? null : itemStack.getType();

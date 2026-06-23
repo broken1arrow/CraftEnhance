@@ -186,7 +186,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 
 	// Create tables
 	public void createTables(Connection conn) {
-		String createRecipesTable = " CREATE TABLE IF NOT EXISTS recipes ( "
+		String createRecipesTable = "CREATE TABLE IF NOT EXISTS recipes ( "
 				+ "id TEXT PRIMARY KEY, "
 				+ "recipe_type TEXT NOT NULL, "
 				+ "page INTEGER NOT NULL, "
@@ -199,8 +199,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 				+ "check_partial_match BOOLEAN NOT NULL, "
 				+ "on_craft_command TEXT, "
 				+ "result_item_type TEXT NOT NULL, "
-				+ "shapeless BOOLEAN NOT NULL, "
-				+ "FOREIGN KEY (result_item_type) REFERENCES items(id));";
+				+ "shapeless BOOLEAN NOT NULL);";
 
 		String createItemsTable = " CREATE TABLE IF NOT EXISTS items ( "
 				+ "recipe_id TEXT NOT NULL, "
@@ -232,8 +231,8 @@ public class RecipeDatabase implements RecipeSQLQueries {
 				+ "FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE);";
 
 		try (Statement stmt = conn.createStatement()) {
-			stmt.addBatch(createItemsTable);
 			stmt.addBatch(createRecipesTable);
+			stmt.addBatch(createItemsTable);
 			stmt.addBatch(createAllowedWorldsTable);
 			stmt.addBatch(furnaceData);
 			stmt.executeBatch();
