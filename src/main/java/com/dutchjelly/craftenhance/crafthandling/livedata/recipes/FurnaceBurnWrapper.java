@@ -98,7 +98,7 @@ public class FurnaceBurnWrapper implements RecipeWrapper {
 				return new ResultContext(fRecipe, fRecipe.getResult(), ResultType.NO_PERMISSION);
 			}
 		} else {
-			final boolean isVanillaRecipe = fRecipe.matchesType(new ItemStack[]{((org.bukkit.inventory.FurnaceRecipe) serverRecipe).getInput()}) && !fRecipe.getResult().isSimilar(serverRecipe.getResult());
+			final boolean isVanillaRecipe = serverRecipe != null && fRecipe.matchesType(new ItemStack[]{((org.bukkit.inventory.FurnaceRecipe) serverRecipe).getInput()}) && !fRecipe.getResult().isSimilar(serverRecipe.getResult());
 			if (fRecipe.isCheckPartialMatch() && isVanillaRecipe) {
 				Debug.Send(fRecipe, () -> "Recipe partial match match: input '" + Arrays.toString(srcMatrix) + " , furnace burn result " + fRecipe.getResult() + " | " + (RecipeAdapter.entityCanCraft(player, fRecipe) ? "'." : "' and no perms."));
 				return new ResultContext(fRecipe, fRecipe.getResult(), ResultType.PARTIAL_MATCH);
