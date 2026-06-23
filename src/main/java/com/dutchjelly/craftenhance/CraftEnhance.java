@@ -213,7 +213,7 @@ public class CraftEnhance extends JavaPlugin {
 			this.blockOwnerCache.reload();
 			isReloading = false;
 			injector.reload();
-			reLearnRecipes();
+			//reLearnRecipes();
 			Debug.init(this);
 			if (this.playerCheckTask != null)
 				this.playerCheckTask.cancel();
@@ -246,17 +246,12 @@ public class CraftEnhance extends JavaPlugin {
 	}
 
 	public void reloadServerRecipes() {
-		RecipeLoader.clearInstance();
 		RecipeLoader loader = RecipeLoader.getInstance();
-		this.cacheRecipes.getListOfRecipes().stream().filter(x -> x.validate() == null).forEach((recipe) -> loader.loadRecipe(recipe, isReloading));
 		loader.printGroupsDebugInfo();
 		final List<Recipe> collect = fm.readDisabledServerRecipes().stream().map(x ->
 				Adapter.FilterRecipes(loader.getLoadedServerRecipes(), x)
 		).collect(Collectors.toList());
 		loader.disableServerRecipes(collect);
-/*		fm.readDisabledServerRecipes().stream().map(x ->
-				Adapter.FilterRecipes(loader.getServerRecipes(), x)
-		).collect(Collectors.toList()).forEach(loader::enableServerRecipe);*/
 	}
 
 	public void reLearnRecipes() {

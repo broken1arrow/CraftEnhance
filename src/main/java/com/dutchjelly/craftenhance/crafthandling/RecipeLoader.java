@@ -95,9 +95,7 @@ public class RecipeLoader {
 	}
 
 	public static void clearInstance() {
-		for (final Entry<String, EnhancedRecipe> loaded : self().getCacheRecipes().getRecipes().entrySet()) {
-			instance.unloadRecipe(loaded.getValue().getServerRecipe());
-		}
+		instance.unloadAllCehRecipes();
 		instance = null;
 	}
 
@@ -216,17 +214,19 @@ public class RecipeLoader {
 	public void printGroupsDebugInfo() {
 		if (!Debug.isGeneralDebugEnable()) return;
 		final DebugContext debugContext = DebugContext.of(Type.Deep_lookup, "Check live cached recipes");
+		Debug.Send(debugContext, () -> {
+			for (final Entry<RecipeType, RecipeRegistry> recipeGrouping : mappedRecipes.entrySet()) {
+				Debug.Send(debugContext, () -> "Groups for recipes of type: " + recipeGrouping.getKey() + "\n");
+				final RecipeRegistry group = recipeGrouping.getValue();
 
-		for (final Entry<RecipeType, RecipeRegistry> recipeGrouping : mappedRecipes.entrySet()) {
-			Debug.Send(debugContext, () -> "Groups for recipes of type: " + recipeGrouping.getKey() + "\n");
-			final RecipeRegistry group = recipeGrouping.getValue();
-
-			Debug.Send(debugContext, () -> "Recipes cached:\n " + group.getMappedRecipes().values().stream()
-					.filter(Objects::nonNull).map(x ->
-							x.stream().map(Object::toString)
-									.collect(Collectors.joining("\nRecipe:\n")))
-					.collect(Collectors.joining(",\n")));
-		}
+				Debug.Send(debugContext, () -> "Recipes cached:\n " + group.getMappedRecipes().values().stream()
+						.filter(Objects::nonNull).map(x ->
+								x.stream().map(Object::toString)
+										.collect(Collectors.joining("\nRecipe:\n")))
+						.collect(Collectors.joining(",\n")));
+			}
+			return "";
+		});
 	}
 
 	public boolean disableServerRecipe(final Recipe r) {
@@ -396,10 +396,15 @@ public class RecipeLoader {
 
 	private void unloadAllCehRecipes() {
 		if (self().getVersionChecker().newerThan(ServerVersion.v1_12)) {
-			for (final Entry<String, EnhancedRecipe> recipeEntry : self().getCacheRecipes().getRecipes().entrySet()) {
-				final NamespacedKey namespacedKey = Adapter.getNamespacedKey(recipeEntry.getValue().getServerRecipe());
-				if (namespacedKey != null) {
-					Bukkit.removeRecipe(namespacedKey);
+			Iterator<Recipe> iterator = Bukkit.recipeIterator();
+			while (iterator.hasNext()) {
+				Recipe recipe = iterator.next();
+				final NamespacedKey namespacedKey = Adapter.getNamespacedKey(recipe);
+				if (namespacedKey == null) {
+					continue;
+				}
+				if (namespacedKey.getNamespace().equalsIgnoreCase("craftenhance")) {
+					iterator.remove();
 				}
 			}
 		} else {
@@ -416,9 +421,16 @@ public class RecipeLoader {
 	private void unloadRecipe(final Recipe r) {
 		serverRecipes.remove(r);
 		if (self().getVersionChecker().newerThan(ServerVersion.v1_12)) {
-			final NamespacedKey namespacedKey = Adapter.getNamespacedKey(r);
-			if (namespacedKey != null) {
-				Bukkit.removeRecipe(namespacedKey);
+			Iterator<Recipe> iterator = Bukkit.recipeIterator();
+			while (iterator.hasNext()) {
+				Recipe recipe = iterator.next();
+				final NamespacedKey namespacedKey = Adapter.getNamespacedKey(recipe);
+				if (namespacedKey == null) {
+					continue;
+				}
+				if (namespacedKey.getNamespace().equalsIgnoreCase("craftenhance") && recipe.equals(r)) {
+					iterator.remove();
+				}
 			}
 		} else {
 			final Iterator<Recipe> it = server.recipeIterator();

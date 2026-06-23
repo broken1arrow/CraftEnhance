@@ -18,6 +18,7 @@ import de.tr7zw.changeme.nbtapi.iface.ReadWriteNBTCompoundList;
 import lombok.NonNull;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
+import org.bukkit.Keyed;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
@@ -521,6 +522,11 @@ public class Adapter {
 		if (self().getVersionChecker().olderThan(ServerVersion.v1_13)) {
 			return recipe.getResult().getType().getKey();
 		}
+
+		if (recipe instanceof Keyed) {
+			return ((Keyed) recipe).getKey();
+		}
+
 		if (recipe instanceof ShapedRecipe) {
 			final ShapedRecipe shaped = (ShapedRecipe) recipe;
 			return shaped.getKey();
