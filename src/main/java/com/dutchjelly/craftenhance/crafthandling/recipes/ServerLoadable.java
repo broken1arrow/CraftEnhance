@@ -12,7 +12,6 @@ public interface ServerLoadable {
     @Nullable
     String getGroup();
     Recipe getServerRecipe();
-    Recipe getServerRecipe(final String groupName);
 
     boolean isSimilar(Recipe r);
 

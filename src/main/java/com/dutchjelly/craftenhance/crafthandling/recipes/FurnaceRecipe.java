@@ -109,11 +109,7 @@ public class FurnaceRecipe extends EnhancedRecipe {
 
 	@Override
 	public Recipe getServerRecipe() {
-		return this.getServerRecipe(this.getGroup());
-	}
-
-	@Override
-	public Recipe getServerRecipe(final String groupName) {
+		final String groupName = this.getGroup();
 		int duration = self().getVersionChecker().olderThan(ServerVersion.v1_17) ? this.duration : 200;
 		final org.bukkit.inventory.FurnaceRecipe furnaceRecipe = Adapter.GetFurnaceRecipe(self(), ServerRecipeTranslator.GetFreeKey(getKey()), getResult(), getContent()[0], duration, getExp());
 		if (groupName != null) {

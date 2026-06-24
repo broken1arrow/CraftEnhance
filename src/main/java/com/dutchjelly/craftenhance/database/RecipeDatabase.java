@@ -7,6 +7,8 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
+import com.dutchjelly.craftenhance.database.util.ColumnDefinition;
+import com.dutchjelly.craftenhance.database.util.SQLiteMigrationUtil;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import lombok.NonNull;
 import org.broken.arrow.library.nbt.RegisterNbtAPI;
@@ -22,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,6 +45,11 @@ public class RecipeDatabase implements RecipeSQLQueries {
 			checkFile.mkdirs();
 		try (Connection connection = connect()) {
 			createTables(connection);
+
+			final List<ColumnDefinition> columnsToAdd = Arrays.asList(
+					new ColumnDefinition("recipe_group", "TEXT")
+			);
+			SQLiteMigrationUtil.addColumnsIfMissing(connection, "recipes", columnsToAdd);
 		} catch (SQLException exception) {
 			Debug.error("Failed to connect to database", exception);
 		}
@@ -193,6 +201,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 				+ "slot INTEGER NOT NULL, "
 				+ "result_slot INTEGER NOT NULL, "
 				+ "category TEXT NOT NULL, "
+				+ "recipe_group TEXT, "
 				+ "permission TEXT, "
 				+ "matchtype TEXT NOT NULL, "
 				+ "hidden BOOLEAN NOT NULL,"
@@ -285,6 +294,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 
 			boolean isShapeless = (recipe instanceof WBRecipe) && ((WBRecipe) recipe).isShapeless();
 			pstmt.setBoolean(13, isShapeless);
+			pstmt.setString(14,recipe.getGroup());
 			try {
 				updateSQL(pstmt);
 			} catch (SQLException e) {
@@ -408,6 +418,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 		map.put("check_partial_match", rs.getBoolean("check_partial_match"));
 		map.put("oncraftcommand", rs.getString("on_craft_command"));
 		map.put("shapeless", rs.getBoolean("shapeless"));
+		map.put("recipe_group", rs.getString("recipe_group"));
 
 		RecipeType type = RecipeType.getType(rs.getString("recipe_type"));
 		recipe = getEnhancedRecipe(rs, type, map);
@@ -664,7 +675,8 @@ public class RecipeDatabase implements RecipeSQLQueries {
 			boolean isShapeless = (recipe instanceof WBRecipe) && ((WBRecipe) recipe).isShapeless();
 			pstmt.setBoolean(12, isShapeless);
 
-			pstmt.setString(13, recipeResultSet.getString("id"));
+			pstmt.setString(13, recipe.getGroup());
+			pstmt.setString(14, recipeResultSet.getString("id"));
 			updateSQL(pstmt);
 		}
 	}

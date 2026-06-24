@@ -36,17 +36,12 @@ public class SmokerRecipe extends FurnaceRecipe {
 
 	@Override
 	public Recipe getServerRecipe() {
-		return this.getServerRecipe(this.getGroup());
-	}
-
-	@Override
-	public Recipe getServerRecipe(final String groupName) {
+		final String groupName =this.getGroup();
 		int duration = self().getVersionChecker().olderThan(ServerVersion.v1_17) ? this.getDuration() : 100;
 		final SmokingRecipe smokingRecipe = Adapter.getSmokingRecipe(self(), ServerRecipeTranslator.GetFreeKey(getKey()), getResult(), getContent()[0], duration, getExp());
 		if (groupName != null && smokingRecipe != null) {
 			Adapter.setGroup(smokingRecipe,groupName);
 		}
-		this.setGroup(groupName);
 		return smokingRecipe;
 	}
 

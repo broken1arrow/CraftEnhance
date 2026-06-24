@@ -736,11 +736,20 @@ Menus:
         lore:
           - "&fcurrent:&3 [duration]"
         glow: true
-      "20":
+      "18":
         action_type: SwitchHidden
         material: DIAMOND
         name: "&fClick to change: &e[hidden]"
         glow: true
+      "20":
+        action_type: Group_name
+        material: OAK_LOG
+        name: "&fClick to change group: &e[recipe_group]"
+        glow: true
+        lore:
+          - "&6"
+          - "&fSet the group name, this will be only updated when"
+          - "&fcreate recipe or if you force reload the plugin."
       "22":
         action_type: SwitchMatchMeta
         material: ENCHANTED_BOOK
@@ -889,12 +898,21 @@ Menus:
         lore:
           - "&fcurrent:&3 [permission]"
         glow: true
-      "19":
+      "18":
         action_type: SwitchHidden
         material: DIAMOND
         name: "&aClick to change: &3[hidden]"
         glow: true
-      "21":
+      "20":
+        action_type: Group_name
+        material: OAK_LOG
+        name: "&fClick to change group: &e[recipe_group]"
+        glow: true
+        lore:
+          - "&6"
+          - "&fSet the group name, this will be only updated when"
+          - "&fcreate recipe or if you force reload the plugin."
+      "22":
         action_type: SwitchMatchMeta
         material: ENCHANTED_BOOK
         name: "&aClick to change: &3[matcher]"
@@ -902,14 +920,14 @@ Menus:
           - "&fDescription:"
           - "&f[match_description]"
         glow: true
-      "23":
+      "24":
         action_type: SwitchShaped
         material: WEB
         name: "&aClick to change: &3[shaped]"
         lore:
           - ""
         glow: true
-      "25":
+      "26":
         action_type: SetPosition
         material: PAPER
         name: "&aClick to set the position"
@@ -1001,6 +1019,15 @@ Menus:
         name: "&fClick to change: &e[hidden]"
         glow: true
       "22":
+        action_type: Group_name
+        material: OAK_LOG
+        name: "&fClick to change group: &e[recipe_group]"
+        glow: true
+        lore:
+          - "&6"
+          - "&fSet the group name, this will be only updated when"
+          - "&fcreate recipe or if you force reload the plugin."
+      "24":
         action_type: SwitchMatchMeta
         material: ENCHANTED_BOOK
         name: "&fClick to change: &e[matcher]"
@@ -1008,7 +1035,7 @@ Menus:
           - "&fDescription:"
           - "&f[match_description]"
         glow: true
-      "24":
+      "26":
         action_type: SetPosition
         material: PAPER
         name: "&fClick to set the position"
@@ -1017,7 +1044,7 @@ Menus:
           - "&fSlot &3[slot]"
           - "&fPage &3[page]"
         glow: true
-      "26":
+      "28":
         action_type: AllowedWorldsCraft
         material: IRON_INGOT
         name: "&aChange or set worlds"
@@ -1030,7 +1057,7 @@ Menus:
           - "&fCurrently set worlds:"
           - "&3 [worlds]"
         glow: true
-      "28":
+      "30":
         action_type: SetPartialMatch
         material: PAPER
         name: "&aClick to prevent similar match"
@@ -1048,7 +1075,7 @@ Menus:
         lore:
           - "&fGo back to the previous GUI"
         glow: true
-      "0-8,27,29-34":
+      "0-8,36-43":
         extra: GRAY
         material: STAINED_GLASS_PANE
         name: " "

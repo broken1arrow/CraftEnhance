@@ -2,7 +2,7 @@ package com.dutchjelly.craftenhance.database;
 
 public interface RecipeSQLQueries {
 
-	String SELECT_RECIPE_SQL = "SELECT id, recipe_type, page, slot, result_slot, category, permission, matchtype, hidden, check_partial_match, on_craft_command, result_item_type, shapeless FROM recipes WHERE id = ?";
+	String SELECT_RECIPE_SQL = "SELECT id, recipe_type, page, slot, result_slot, category, permission, matchtype, hidden, check_partial_match, on_craft_command, result_item_type, shapeless, recipe_group FROM recipes WHERE id = ?";
 	String CHECK_ITEM_EXISTENCE_SQL = "SELECT slot FROM items WHERE recipe_id = ? AND slot = ?;";
 	String SELECT_ITEM_FROM_RECIPE_SLOT_SQL = "SELECT recipe_id, slot FROM items WHERE recipe_id = ? AND slot = ?;";
 	String SELECT_FURNACE_DATA_SQL = "SELECT recipe_id, duration, exp FROM furnace_data WHERE recipe_id = ?;";
@@ -40,13 +40,14 @@ public interface RecipeSQLQueries {
 			"    check_partial_match = ?, " +
 			"    on_craft_command = ?, " +
 			"    result_item_type = ?, " +
-			"    shapeless = ? " +
+			"    shapeless = ?, " +
+			"    recipe_group = ? "+
 			"WHERE id = ?;";
 	String UPDATE_WORLDS_SQL = "UPDATE allowed_worlds SET world = ? WHERE recipe_id = ? AND world = ?";
 
 	String INSERT_RECIPES_SQL = "INSERT INTO recipes " +
-			"(id, recipe_type, page, slot, result_slot, category, permission, matchtype, hidden, check_partial_match, on_craft_command, result_item_type, shapeless) " +
-			"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+			"(id, recipe_type, page, slot, result_slot, category, permission, matchtype, hidden, check_partial_match, on_craft_command, result_item_type, shapeless, recipe_group) " +
+			"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 	String INSERT_OR_REPLACE_WORLDS_SQL = "INSERT INTO allowed_worlds (recipe_id, world) VALUES (?, ?) " +
 			"ON CONFLICT(recipe_id, world) DO UPDATE SET world = excluded.world;";
 

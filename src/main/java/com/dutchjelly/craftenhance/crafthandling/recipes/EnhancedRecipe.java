@@ -56,6 +56,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 		this.hidden = enhancedRecipe.isHidden();
 		this.serialize = enhancedRecipe.getSerialize();
 		this.remove = enhancedRecipe.isRemove();
+		this.group = enhancedRecipe.getGroup();
 	}
 
 	public EnhancedRecipe(final String perm, final ItemStack result, final ItemStack[] content) {
@@ -86,6 +87,9 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 
 		if (args.containsKey("hidden"))
 			hidden = (Boolean) args.get("hidden");
+
+		if (args.containsKey("recipe_group"))
+			group = (String) args.get("recipe_group");
 
 		if (args.containsKey("check_partial_match")) {
 			Object partialMatch = args.get("check_partial_match");
@@ -323,6 +327,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 
 		placeholders.put(InfoItemPlaceHolders.Key.getPlaceHolder(), getKey() == null ? "null" : getKey());
 		placeholders.put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), matchType.getMatchName());
+
 		placeholders.put(InfoItemPlaceHolders.Recipe_group.getPlaceHolder(), getGroup() != null ? getGroup() : "no group set");
 		placeholders.put(InfoItemPlaceHolders.Category.getPlaceHolder(), getRecipeCategory() != null ? getRecipeCategory() : "default");
 

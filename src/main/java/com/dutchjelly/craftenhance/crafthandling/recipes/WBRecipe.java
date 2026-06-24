@@ -73,11 +73,7 @@ public class WBRecipe extends EnhancedRecipe {
 
 	@Override
 	public Recipe getServerRecipe() {
-		return this.getServerRecipe(this.getGroup());
-	}
-
-	@Override
-	public Recipe getServerRecipe(final String groupName) {
+		final String groupName = this.getGroup();
 		if (recipe == null) {
 			if (shapeless)
 				recipe = ServerRecipeTranslator.translateShapelessEnhancedRecipe(this);
@@ -87,7 +83,6 @@ public class WBRecipe extends EnhancedRecipe {
 		if (recipe != null && groupName != null) {
 			Adapter.setGroup(recipe, groupName);
 		}
-		this.setGroup(groupName);
 		return recipe;
 	}
 

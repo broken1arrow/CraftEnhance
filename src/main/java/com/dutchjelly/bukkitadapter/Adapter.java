@@ -3,6 +3,9 @@ package com.dutchjelly.bukkitadapter;
 
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
+import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.exceptions.ConfigError;
 import com.dutchjelly.craftenhance.gui.util.SkullCreator;
 import com.dutchjelly.craftenhance.itemcreation.EnchantmentUtil;
@@ -33,6 +36,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -372,7 +376,7 @@ public class Adapter {
 					.getConstructor(ItemStack.class)
 					.newInstance(ingredient);
 
-			Method setIngredient = recipeClass.getMethod("setIngredient", recipeChoiceClass);
+			Method setIngredient = recipeClass.getMethod("addIngredient", recipeChoiceClass);
 			setIngredient.invoke(recipe, choice);
 		} catch (final Exception e) {
 			recipe.addIngredient(ingredient.getType());
@@ -404,6 +408,34 @@ public class Adapter {
 				return false;
 		}
 	}
+	public static org.bukkit.inventory.FurnaceRecipe GetFurnaceRecipe(final BlastRecipe blastRecipe) {
+		final String key = ServerRecipeTranslator.GetFreeKey(blastRecipe.getKey());
+		final ItemStack result = blastRecipe.getResult();
+		final ItemStack ingredient = blastRecipe.getContent()[0];
+		final int duration = blastRecipe.getDuration();
+		final float exp = blastRecipe.getExp();
+
+		try {
+			new RecipeChoice.MaterialChoice(Material.ICE);
+			new RecipeChoice.ExactChoice(ingredient);
+			org.bukkit.inventory.FurnaceRecipe furnaceRecipe = org.bukkit.inventory.FurnaceRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, Material.class, float.class, int.class)
+					.newInstance(getNameSpacedKey(plugin, key), result, ingredient.getType(), exp, duration);
+			setIngredient(furnaceRecipe, ingredient);
+			return furnaceRecipe;
+		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
+		               NoSuchMethodException | ClassNotFoundException e) {
+			Debug.errorDisablable("Couldn't use namespaced key for furnace recipe:' " + key + "' will fallback to legacy option\n", e);
+			final org.bukkit.inventory.FurnaceRecipe recipe = new org.bukkit.inventory.FurnaceRecipe(result,  ingredient.getType());
+			if (!callSingleParamMethod("setCookingTime", duration, Integer.class, recipe, FurnaceRecipe.class))
+				Debug.Send(DebugContext.of(Type.Other, "furnace recipe registering"), () -> "Custom cooking time is not supported.");
+			try {
+				recipe.setExperience(exp);
+			} catch (NoSuchMethodError ex) {
+				Debug.Send(DebugContext.of(Type.Other, "furnace recipe registering"), () -> "Set experience is not supported.");
+			}
+			return recipe;
+		}
+	}
 
 	public static org.bukkit.inventory.FurnaceRecipe GetFurnaceRecipe(final JavaPlugin plugin, final String key, final ItemStack result, final ItemStack source, final int duration, final float exp) {
 		//public FurnaceRecipe(@NotNull NamespacedKey key, @NotNull ItemStack result, @NotNull Material source, float experience, int cookingTime) {
@@ -431,6 +463,23 @@ public class Adapter {
 		}
 	}
 
+	public static org.bukkit.inventory.BlastingRecipe getBlastRecipe(final BlastRecipe blastRecipe) {
+		final String key = ServerRecipeTranslator.GetFreeKey(blastRecipe.getKey());
+		final ItemStack result = blastRecipe.getResult();
+		final ItemStack ingredient = blastRecipe.getContent()[0];
+		final int duration = blastRecipe.getDuration();
+		final float exp = blastRecipe.getExp();
+
+		try {
+			return org.bukkit.inventory.BlastingRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, Material.class, float.class, int.class)
+					.newInstance(getNameSpacedKey(CraftEnhance.self(), key), result, ingredient.getType(), exp, duration);
+		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
+		               NoSuchMethodException | ClassNotFoundException e) {
+			Debug.Send(DebugContext.of(Type.Other, "blast recipe registering"), () -> "Couldn't set blast furnace recipe. Wrong server version?");
+			return null;
+		}
+	}
+
 	public static org.bukkit.inventory.BlastingRecipe getBlastRecipe(final JavaPlugin plugin, final String key, final ItemStack result, final ItemStack source, final int duration, final float exp) {
 		try {
 			return org.bukkit.inventory.BlastingRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, Material.class, float.class, int.class)
@@ -441,11 +490,27 @@ public class Adapter {
 			return null;
 		}
 	}
+	public static org.bukkit.inventory.SmokingRecipe getSmokingRecipe(final SmokerRecipe smokerRecipe){
+		final String key = ServerRecipeTranslator.GetFreeKey(smokerRecipe.getKey());
+		final ItemStack result = smokerRecipe.getResult();
+		final ItemStack ingredient = smokerRecipe.getContent()[0];
+		final int duration = smokerRecipe.getDuration();
+		final float exp = smokerRecipe.getExp();
+
+		try {
+			return org.bukkit.inventory.SmokingRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, Material.class, float.class, int.class)
+					.newInstance(getNameSpacedKey(CraftEnhance.self(), key), result, ingredient.getType(), exp, duration);
+		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
+		               NoSuchMethodException | ClassNotFoundException e) {
+			Debug.Send(DebugContext.of(Type.Other, "smoker recipe registering"), () -> "Couldn't set smoker recipe. Wrong server version?");
+			return null;
+		}
+	}
 
 	public static org.bukkit.inventory.SmokingRecipe getSmokingRecipe(final JavaPlugin plugin, final String key, final ItemStack result, final ItemStack source, final int duration, final float exp) {
 		try {
 			return org.bukkit.inventory.SmokingRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, Material.class, float.class, int.class)
-					.newInstance(getNameSpacedKey(plugin, key), result, source.getType(), exp, duration);
+					.newInstance(getNameSpacedKey(CraftEnhance.self(), key), result, source.getType(), exp, duration);
 		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
 		               NoSuchMethodException | ClassNotFoundException e) {
 			Debug.Send(DebugContext.of(Type.Other, "smoker recipe registering"), () -> "Couldn't set smoker recipe. Wrong server version?");

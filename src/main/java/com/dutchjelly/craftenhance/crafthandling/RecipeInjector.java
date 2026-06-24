@@ -68,7 +68,7 @@ public class RecipeInjector implements Listener {
 	private final Map<UUID, FinishCraft> finishRecipe = new HashMap<>();
 
 	private final BrewingRecipeInjector brewingRecipeInjector;
-	private final WorkBenchRecipeInjector workBenchRecipeInjector;
+	private  WorkBenchRecipeInjector workBenchRecipeInjector;
 	@Getter
 	private final FurnaceRecipeInjector furnaceRecipeInjector;
 	private TrackPlayerLocation trackPlayerLocation;
@@ -78,7 +78,7 @@ public class RecipeInjector implements Listener {
 		this.plugin = plugin;
 
 		this.brewingRecipeInjector = new BrewingRecipeInjector();
-		this.workBenchRecipeInjector = new WorkBenchRecipeInjector(this);
+		//this.workBenchRecipeInjector = new WorkBenchRecipeInjector(this);
 		this.furnaceRecipeInjector = new FurnaceRecipeInjector(this);
 		if (plugin.getVersionChecker().olderThan(ServerVersion.v1_10))
 			this.trackPlayerLocation = new TrackPlayerLocation();
@@ -369,13 +369,6 @@ public class RecipeInjector implements Listener {
 				if (contextResult == null) continue;
 				if (endCraftingCheck(contextResult, crafter, craftEvent)) return;
 			}
-			if (true) return;
-			workBenchRecipeInjector.craftItem(craftEvent.getRecipe(), matrix, inventory, new ArrayList<>(), (itemstack) -> {
-				if (itemstack != null)
-					craftEvent.setResult(itemstack);
-				else
-					craftEvent.setResult(new ItemStack(Material.AIR));
-			});
 		}
 
 		private boolean endCraftingCheck(final ResultContext contextResult, final Crafter crafter, final CrafterCraftEvent craftEvent) {

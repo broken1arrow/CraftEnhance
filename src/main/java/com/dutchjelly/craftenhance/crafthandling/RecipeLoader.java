@@ -23,7 +23,6 @@ import com.dutchjelly.craftenhance.messaging.Debug.DebugContext;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
-import com.dutchjelly.craftenhance.util.Pair;
 import lombok.Getter;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
@@ -129,10 +128,10 @@ public class RecipeLoader {
 		}
 
 		String categoryName = loadCategories(recipe);
-		String groupName = addToGroup(categoryName);
+		String groupName = recipe.getGroup() != null ? recipe.getGroup() : categoryName;
 		Debug.Send(loading_recipe, () -> "Added to recipe group with the name: '" + groupName + "'");
 		//Only load the recipe if there is not a server recipe that's always similar.
-		final Recipe serverRecipe = recipe.getServerRecipe(groupName);
+		final Recipe serverRecipe = recipe.getServerRecipe();
 		if (alwaysSimilar == null) {
 			if (!(recipe instanceof BrewingRecipe)) {
 				if (serverRecipe == null) {
@@ -299,19 +298,6 @@ public class RecipeLoader {
 		return alreadyRegistered;
 	}
 
-	@Nullable
-	private String addToGroup(final String categoryName) {
-		final Pair<String, RecipeGroup> recipeGroupPair = getRecipeGroup(categoryName);
-		final String first = recipeGroupPair.getFirst();
-		RecipeGroup recipeGroup = recipeGroupPair.getSecond();
-		if (recipeGroup == null) {
-			recipeGroup = new RecipeGroup(first);
-		}
-		mappedGroupedRecipes.put(first, recipeGroup);
-
-		return first;
-	}
-
 	private String loadCategories(@NonNull final EnhancedRecipe recipe) {
 		String categoryName = recipe.getRecipeCategory();
 		if (recipe instanceof FurnaceRecipe)
@@ -347,47 +333,7 @@ public class RecipeLoader {
 		return categoryName;
 	}
 
-	@Nonnull
-	private Pair<String, RecipeGroup> getRecipeGroup(final String categoryName) {
-		RecipeGroup recipeGroup = mappedGroupedRecipes.get(categoryName);
-		if (recipeGroup == null)
-			recipeGroup = new RecipeGroup(categoryName);
-		String groupName = getGroupName(categoryName, recipeGroup);
-		if (groupName != null) {
-			recipeGroup = mappedGroupedRecipes.get(groupName);
-			if (recipeGroup == null)
-				recipeGroup = new RecipeGroup(groupName);
-		}
-		return new Pair<>(groupName, recipeGroup);
-	}
 
-	@Nullable
-	private String getGroupName(final String categoryName, final RecipeGroup groupedRecipes) {
-		String groupName = categoryName;
-
-		final int recipeGroupSize = groupedRecipes.getRecipeGroupSize();
-		if (recipeGroupSize > recipeSize) {
-			final String finalGroupName = groupName;
-			Debug.Send(loading_recipe, () -> "Current group '" + finalGroupName + "' have more than " + recipeGroupSize + ", creating new group to add recipes inside.");
-			int index = 0;
-			while (checkGroupWithSpace(categoryName, index)) {
-				index++;
-			}
-			groupName += index;
-			return groupName;
-		}
-		final String finalName = groupName;
-		Debug.Send(loading_recipe, () -> "Current group '" + finalName + "' have " + recipeGroupSize + ", it will add the recipe to the current group.");
-		return groupName;
-	}
-
-	private boolean checkGroupWithSpace(final String categoryName, final int index) {
-		final RecipeGroup recipeGroup = mappedGroupedRecipes.get(categoryName + index);
-		if (recipeGroup != null && recipeGroup.getRecipeGroupSize() < recipeSize + 1) {
-			return false;
-		}
-		return recipeGroup != null;
-	}
 
 	private void unloadAllCehRecipes() {
 		if (self().getVersionChecker().newerThan(ServerVersion.v1_12)) {

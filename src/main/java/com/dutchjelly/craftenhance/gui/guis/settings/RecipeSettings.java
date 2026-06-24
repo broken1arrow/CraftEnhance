@@ -158,11 +158,27 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			}
 			return true;
 		}
+
 		if (value.isActionTypeEqual(ButtonType.SwitchHidden.name())) {
 			final boolean hidden = !this.recipe.isHidden();
 			this.recipe.setHidden(hidden);
 			return true;
 		}
+
+		if (value.isActionTypeEqual(ButtonType.Group_name.name())) {
+			if (player.isConversing()) return true;
+			if (click.isRightClick()) {
+				recipe.setGroup(null);
+				return true;
+			}
+			new HandleChatInput(this, msg -> {
+				recipe.setGroup(msg);
+				this.runTask(() -> this.menuOpen(player));
+				return true;
+			}).setMessages("Set the group for the recipe, the group with recipes sha be added to same group in the learning book", " Type q,exit,cancel to turn it off").start(getViewer());
+			return true;
+		}
+
 		if (value.isActionTypeEqual(ButtonType.SwitchMatchMeta.name())) {
 			switchMatchMeta();
 			return true;
