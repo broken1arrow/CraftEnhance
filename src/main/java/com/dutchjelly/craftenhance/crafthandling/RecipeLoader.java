@@ -52,7 +52,6 @@ import java.util.stream.Collectors;
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class RecipeLoader {
-
 	//Ensure one instance
 	private static RecipeLoader instance = null;
 	private static final DebugContext loading_recipe = DebugContext.of(Type.Other, "Loading recipe");
@@ -60,11 +59,9 @@ public class RecipeLoader {
 	private final int recipeSize = 20;
 	private final CategoryDataCache categoryDataCache;
 	private final Server server;
-	@Getter
 	private Set<Recipe> serverRecipes = new HashSet<>();
 	@Getter
 	private List<Recipe> disabledServerRecipes = new ArrayList<>();
-	@Getter
 	private Map<String, RecipeGroup> mappedGroupedRecipes = new HashMap<>();
 	private final Map<RecipeType, RecipeRegistry> mappedRecipes = new HashMap<>();
 
@@ -78,9 +75,16 @@ public class RecipeLoader {
 		return instance == null ? instance = new RecipeLoader(Bukkit.getServer(), self().getCategoryDataCache()) : instance;
 	}
 
-	public static void clearInstance() {
+	public static void refreshInstance() {
 		instance.unloadAllCehRecipes();
 		instance = null;
+		RecipeLoader loader = getInstance();
+		final List<Recipe> collect = self().getFm().readDisabledServerRecipes().stream().map(x ->
+				Adapter.FilterRecipes(loader.getLoadedServerRecipes(), x)
+		).collect(Collectors.toList());
+		loader.disableServerRecipes(collect);
+		self().getCacheRecipes().getRecipes().forEach((string, enhancedRecipe) -> loader.loadRecipe(enhancedRecipe));
+		loader.printGroupsDebugInfo();
 	}
 
 	@Nonnull
@@ -110,7 +114,7 @@ public class RecipeLoader {
 		//	unloadRecipe(recipe);
 
 		final List<Recipe> similarServerRecipes = new ArrayList<>();
-		for (final Recipe r : serverRecipes) {
+		for (final Recipe r : this.getLoadedServerRecipes()) {
 			if (!Adapter.recipeContainsNamespace(r) && recipe.sharesIngredientWith(r)) {
 				similarServerRecipes.add(r);
 			}
@@ -161,15 +165,6 @@ public class RecipeLoader {
 		Debug.Send(loading_recipe, () -> "Fast lookup cache recipe key: " + recipe.getRecipeKey());
 		Debug.Send(loading_recipe, () -> "Fast lookup cache contents: " + RecipeDebug.convertItemStackArrayToString(content));
 		this.mappedRecipes.computeIfAbsent(recipe.getRecipeType(), material -> new RecipeRegistry()).addRecipe(recipe, content);
-	}
-
-	public void unloadAll() {
-		disabledServerRecipes.forEach(x ->
-				enableServerRecipe(x)
-		);
-		mappedGroupedRecipes.clear();
-		mappedRecipes.clear();
-		unloadAllCehRecipes();
 	}
 
 	public void unloadRecipe(final EnhancedRecipe recipe) {
@@ -270,10 +265,10 @@ public class RecipeLoader {
 	public void updateServerRecipes() {
 		try {
 			server.recipeIterator().forEachRemaining(serverRecipe -> {
-				if (!Adapter.recipeContainsNamespace(serverRecipe)) return;
-				if (self().getCacheRecipes().isCustomRecipe(serverRecipe)) return;
-
-				this.serverRecipes.add(serverRecipe);
+				if (Adapter.isRecipeCustom(serverRecipe) || self().getCacheRecipes().isCustomRecipe(serverRecipe)) {
+					return;
+				}
+				this.addServerRecipes(serverRecipe);
 				final ItemStack[] ingredients = Adapter.getIngredients(serverRecipe);
 				if (Adapter.isCookingRecipe(serverRecipe)) {
 					if (self().getVersionChecker().newerThan(ServerVersion.v1_13) && serverRecipe instanceof CookingRecipe) {
@@ -352,12 +347,6 @@ public class RecipeLoader {
 		return categoryName;
 	}
 
-	private RecipeGroup getCraftingRecipeGroup(final Recipe recipe) {
-		String recipeGroup = Adapter.getGroup(recipe);
-		Debug.Send(Type.Crafting, () -> "Attempt to find the group for recipe. Group name: '" + (recipeGroup.isEmpty() ? "No group set" : recipeGroup) + "'");
-		return mappedGroupedRecipes.get(recipeGroup);
-	}
-
 	@Nonnull
 	private Pair<String, RecipeGroup> getRecipeGroup(final String categoryName) {
 		RecipeGroup recipeGroup = mappedGroupedRecipes.get(categoryName);
@@ -426,22 +415,20 @@ public class RecipeLoader {
 
 	private void unloadRecipe(final Recipe r) {
 		serverRecipes.remove(r);
-		if (self().getVersionChecker().newerThan(ServerVersion.v1_12)) {
-			Iterator<Recipe> iterator = Bukkit.recipeIterator();
-			while (iterator.hasNext()) {
-				Recipe recipe = iterator.next();
-				final NamespacedKey namespacedKey = Adapter.getNamespacedKey(recipe);
-				if (namespacedKey == null) {
+		final Iterator<Recipe> it = server.recipeIterator();
+		while (it.hasNext()) {
+			final Recipe currentRecipe = it.next();
+			if (self().getVersionChecker().newerThan(ServerVersion.v1_12)) {
+				final NamespacedKey namespacedKey = Adapter.getNamespacedKey(r);
+				final NamespacedKey currentRecipeKey = Adapter.getNamespacedKey(currentRecipe);
+				if (currentRecipeKey == null || namespacedKey == null) {
 					continue;
 				}
-				if (namespacedKey.getNamespace().equalsIgnoreCase("craftenhance") && recipe.equals(r)) {
-					iterator.remove();
+				if (currentRecipeKey.equals(namespacedKey)) {
+					it.remove();
+					return;
 				}
-			}
-		} else {
-			final Iterator<Recipe> it = server.recipeIterator();
-			while (it.hasNext()) {
-				final Recipe currentRecipe = it.next();
+			} else {
 				if (currentRecipe.equals(r)) {
 					it.remove();
 					return;

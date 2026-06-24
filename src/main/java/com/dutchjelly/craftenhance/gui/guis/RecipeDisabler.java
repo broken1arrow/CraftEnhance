@@ -103,14 +103,14 @@ public class RecipeDisabler extends MenuHolderPage<Recipe> {
 		}
 		if (value.isActionTypeEqual(ButtonType.SwitchDisablerMode.name())) {
 			this.enableMode = !this.enableMode;
-			new RecipeDisabler(RecipeLoader.getInstance().getServerRecipes(), RecipeLoader.getInstance().getDisabledServerRecipes(), this.enableMode, "").menuOpen(player);
+			new RecipeDisabler(RecipeLoader.getInstance().getLoadedServerRecipes(), RecipeLoader.getInstance().getDisabledServerRecipes(), this.enableMode, "").menuOpen(player);
 			return true;
 		}
 		if (value.isActionTypeEqual(ButtonType.Search.name())) {
 			if (click == ClickType.RIGHT) {
 				new HandleChatInput(this, msg -> {
 					if (GuiUtil.seachCategory(msg)) {
-						new RecipeDisabler(RecipeLoader.getInstance().getServerRecipes(), RecipeLoader.getInstance().getDisabledServerRecipes(), this.enableMode, msg).menuOpen(getViewer());
+						new RecipeDisabler(RecipeLoader.getInstance().getLoadedServerRecipes(), RecipeLoader.getInstance().getDisabledServerRecipes(), this.enableMode, msg).menuOpen(getViewer());
 						return false;
 					}
 					return true;
@@ -125,7 +125,7 @@ public class RecipeDisabler extends MenuHolderPage<Recipe> {
 					return true;
 				});*/
 			} else
-				new RecipeDisabler(RecipeLoader.getInstance().getServerRecipes(), RecipeLoader.getInstance().getDisabledServerRecipes(), this.enableMode, "").menuOpen(player);
+				new RecipeDisabler(RecipeLoader.getInstance().getLoadedServerRecipes(), RecipeLoader.getInstance().getDisabledServerRecipes(), this.enableMode, "").menuOpen(player);
 		}
 		return false;
 	}

@@ -247,7 +247,6 @@ public class CraftEnhance extends JavaPlugin {
 
 	public void reloadServerRecipes() {
 		RecipeLoader loader = RecipeLoader.getInstance();
-		loader.printGroupsDebugInfo();
 		final List<Recipe> collect = fm.readDisabledServerRecipes().stream().map(x ->
 				Adapter.FilterRecipes(loader.getLoadedServerRecipes(), x)
 		).collect(Collectors.toList());

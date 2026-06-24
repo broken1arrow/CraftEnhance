@@ -522,21 +522,8 @@ public class Adapter {
 		if (self().getVersionChecker().olderThan(ServerVersion.v1_13)) {
 			return recipe.getResult().getType().getKey();
 		}
-
 		if (recipe instanceof Keyed) {
 			return ((Keyed) recipe).getKey();
-		}
-
-		if (recipe instanceof ShapedRecipe) {
-			final ShapedRecipe shaped = (ShapedRecipe) recipe;
-			return shaped.getKey();
-
-		} else if (recipe instanceof ShapelessRecipe) {
-			final ShapelessRecipe shapeless = (ShapelessRecipe) recipe;
-			return shapeless.getKey();
-		} else if (recipe instanceof CookingRecipe) {
-			final CookingRecipe<?> cookingRecipe = (CookingRecipe<?>) recipe;
-			return cookingRecipe.getKey();
 		}
 		return null;
 	}
@@ -625,19 +612,7 @@ public class Adapter {
 			final NamespacedKey key = ((Keyed) recipe).getKey();
 			return key.getNamespace().contains("craftenhance") || key.getKey().contains("cehrecipe");
 		}
-		if (isCraftingRecipe(recipe)) {
-			if (versionChecker.newerThan(ServerVersion.v1_19) && recipe instanceof CraftingRecipe)
-				return (((CraftingRecipe) recipe).getKey().getNamespace().contains("craftenhance") || ((CraftingRecipe) recipe).getKey().getKey().contains("cehrecipe"));
-
-			if (recipe instanceof ShapedRecipe) {
-				return (((ShapedRecipe) recipe).getKey().getNamespace().contains("craftenhance") || ((ShapedRecipe) recipe).getKey().getKey().contains("cehrecipe"));
-			}
-
-			if (recipe instanceof ShapelessRecipe) {
-				return (((ShapelessRecipe) recipe).getKey().getNamespace().contains("craftenhance") || ((ShapelessRecipe) recipe).getKey().getKey().contains("cehrecipe"));
-			}
-		}
-		return recipe instanceof CookingRecipe && (((CookingRecipe<?>) recipe).getKey().getNamespace().contains("craftenhance") || ((CookingRecipe<?>) recipe).getKey().getKey().contains("cehrecipe"));
+		return false;
 	}
 
 	public static boolean isRecipeCustom(final Recipe recipe) {
@@ -645,24 +620,9 @@ public class Adapter {
 		if (versionChecker.olderThan(ServerVersion.v1_14)) {
 			return !hasCustomMeta(recipe.getResult());
 		}
-		if (isCraftingRecipe(recipe)) {
-			if (versionChecker.newerThan(ServerVersion.v1_19)) {
-				final CraftingRecipe craftingRecipe = (CraftingRecipe) recipe;
-				return craftingRecipe.getKey().getNamespace().contains("craftenhance") || craftingRecipe.getKey().getKey().contains("cehrecipe");
-			}
-			if (recipe instanceof ShapedRecipe) {
-				final ShapedRecipe shapedRecipe = (ShapedRecipe) recipe;
-				return shapedRecipe.getKey().getNamespace().contains("craftenhance") || shapedRecipe.getKey().getKey().contains("cehrecipe");
-			}
-
-			if (recipe instanceof ShapelessRecipe) {
-				final ShapelessRecipe shapelessRecipe = (ShapelessRecipe) recipe;
-				return shapelessRecipe.getKey().getNamespace().contains("craftenhance") || shapelessRecipe.getKey().getKey().contains("cehrecipe");
-			}
-		}
-		if (recipe instanceof CookingRecipe) {
-			final CookingRecipe<?> cookingRecipe = (CookingRecipe<?>) recipe;
-			return cookingRecipe.getKey().getNamespace().contains("craftenhance") || cookingRecipe.getKey().getKey().contains("cehrecipe");
+		if (recipe instanceof Keyed) {
+			final NamespacedKey key = ((Keyed) recipe).getKey();
+			return key.getNamespace().contains("craftenhance") || key.getKey().contains("cehrecipe");
 		}
 		return false;
 	}
