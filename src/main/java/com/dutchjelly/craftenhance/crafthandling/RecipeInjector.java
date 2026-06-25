@@ -12,7 +12,6 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.ServerLoadable;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.gui.util.FormatListContents;
 import com.dutchjelly.craftenhance.messaging.Debug;
-import com.dutchjelly.craftenhance.messaging.Debug.DebugContext;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import com.dutchjelly.craftenhance.util.TrackPlayerLocation;
@@ -86,7 +85,7 @@ public class RecipeInjector implements Listener {
 			Bukkit.getPluginManager().registerEvents(new SmeltListener(), plugin);
 			Bukkit.getPluginManager().registerEvents(new CrafterListener(), plugin);
 		} catch (Throwable throwable) {
-			Debug.Send(DebugContext.of(Type.Loading, "Loading plugin"), () -> "Some functions did not work on your server version. will be turned off.");
+			Debug.send(Type.Loading, "Loading plugin", () -> "Some functions did not work on your server version. will be turned off.");
 		}
 	}
 
@@ -140,11 +139,10 @@ public class RecipeInjector implements Listener {
 		final TrackPlayerLocation trackPlayerCraft = this.trackPlayerLocation;
 		if (trackPlayerCraft != null) {
 			craftingInventory.setResult(null);
-			final DebugContext legacyCrafting = trackPlayerCraft.getLegacyCrafting();
-			Debug.Send(legacyCrafting, () -> "Legacy crafting detected, amount recipes found for the items added in crafting grid: " + recipes.size());
+			Debug.send(Type.Crafting,"Legacy craft", () -> "Legacy crafting detected, amount recipes found for the items added in crafting grid: " + recipes.size());
 			boolean foundMatch = trackPlayerCraft.onPrepareCrafting(this, craftEvent, recipes, viewers);
 			if (!foundMatch) {
-				Debug.Send(legacyCrafting, () -> "Legacy crafting detected, could not found a valid recipe for result will deny the crafting: " + serverRecipe.getResult());
+				Debug.send(Type.Crafting,"Legacy craft", () -> "Legacy crafting detected, could not found a valid recipe for result will deny the crafting: " + serverRecipe.getResult());
 			}
 			return;
 		}

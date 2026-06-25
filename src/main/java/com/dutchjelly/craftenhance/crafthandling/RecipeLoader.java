@@ -19,7 +19,6 @@ import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.CategoryDataCache;
 import com.dutchjelly.craftenhance.messaging.Debug;
-import com.dutchjelly.craftenhance.messaging.Debug.DebugContext;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
@@ -55,8 +54,6 @@ public class RecipeLoader {
 	private static RecipeLoader instance = null;
 
 	private final int recipeSize = 20;
-	private static final DebugContext loading_recipe = DebugContext.of(Type.Other, "Loading recipe");
-	private static final DebugContext unloading_recipe = DebugContext.of(Type.Other, "Unloading recipe");
 	private final CategoryDataCache categoryDataCache;
 	private final Server server;
 
@@ -134,7 +131,7 @@ public class RecipeLoader {
 
 		String categoryName = loadCategories(recipe);
 		String groupName = recipe.getGroup() != null ? recipe.getGroup() : categoryName;
-		Debug.Send(loading_recipe, () -> "Added to recipe group with the name: '" + groupName + "'");
+		Debug.send(Type.Other, "Loading recipe", () -> "Added to recipe group with the name: '" + groupName + "'");
 		if (recipe.getGroup() == null)
 			recipe.setGroup(groupName);
 		final Recipe serverRecipe = recipe.getServerRecipe();
@@ -143,7 +140,7 @@ public class RecipeLoader {
 		if (alwaysSimilar == null) {
 			if (!(recipe instanceof BrewingRecipe)) {
 				if (serverRecipe == null) {
-					Debug.Send(loading_recipe, () -> "Added server recipe is null for " + recipe.getKey());
+					Debug.send(Type.Other, "Loading recipe", () -> "Added server recipe is null for " + recipe.getKey());
 					self().getLogger().log(Level.WARNING, "Recipe " + recipe.getKey() + " will not be cached because the result is null or invalid material type.");
 					return;
 				}
@@ -151,10 +148,10 @@ public class RecipeLoader {
 				if (!alreadyRegistered && !isReloading) {
 					server.addRecipe(serverRecipe);
 				}
-				Debug.Send(loading_recipe, () -> "Added server recipe for " + serverRecipe.getResult().getType());
+				Debug.send(Type.Other, "Loading recipe", () -> "Added server recipe for " + serverRecipe.getResult().getType());
 			}
 		} else {
-			Debug.Send(loading_recipe, () -> "Didn't add server recipe for " + recipe.getKey() + " because a similar one was already loaded: " + recipe.getKey() + " with the result " + recipe.getResult().getType());
+			Debug.send(Type.Other, "Loading recipe", () -> "Didn't add server recipe for " + recipe.getKey() + " because a similar one was already loaded: " + recipe.getKey() + " with the result " + recipe.getResult().getType());
 		}
 		ItemStack[] content = recipe.getContent();
 		if (recipe instanceof WBRecipe)
@@ -168,9 +165,9 @@ public class RecipeLoader {
 
 
 	public void liveCacheRecipe(@Nonnull final RecipeWrapper recipe, @Nonnull final ItemStack[] content) {
-		Debug.Send(loading_recipe, () -> "Added server recipe to fast lookup cache: " + recipe.getRecipeType());
-		Debug.Send(loading_recipe, () -> "Fast lookup cache recipe key: " + recipe.getRecipeKey());
-		Debug.Send(loading_recipe, () -> "Fast lookup cache contents: " + RecipeDebug.convertItemStackArrayToString(content));
+		Debug.send(Type.Other, "Loading recipe", () -> "Added server recipe to fast lookup cache: " + recipe.getRecipeType());
+		Debug.send(Type.Other, "Loading recipe", () -> "Fast lookup cache recipe key: " + recipe.getRecipeKey());
+		Debug.send(Type.Other, "Loading recipe", () -> "Fast lookup cache contents: " + RecipeDebug.convertItemStackArrayToString(content));
 		this.mappedRecipes.computeIfAbsent(recipe.getRecipeType(), material -> new RecipeRegistry()).addRecipe(recipe, content);
 	}
 
@@ -184,8 +181,7 @@ public class RecipeLoader {
 			recipeRegistry.removeRecipe(recipe, recipe.getContent());
 		}
 		unloadRecipe(recipe.getServerRecipe());
-
-		Debug.Send(unloading_recipe, () -> "Unloaded the recipe: " + recipe.getKey());
+		Debug.send(Type.Other, "Unloading recipe", () -> "Unloaded the recipe: " + recipe.getKey());
 		printGroupsDebugInfo();
 	}
 
@@ -199,13 +195,13 @@ public class RecipeLoader {
 
 	public void printGroupsDebugInfo() {
 		if (!Debug.isGeneralDebugEnable()) return;
-		final DebugContext debugContext = DebugContext.of(Type.Deep_lookup, "Check live cached recipes");
-		Debug.Send(debugContext, () -> {
+
+		Debug.send(Type.Deep_lookup, "Check live cached recipes", () -> {
 			for (final Entry<RecipeType, RecipeRegistry> recipeGrouping : mappedRecipes.entrySet()) {
-				Debug.Send(debugContext, () -> "Groups for recipes of type: " + recipeGrouping.getKey() + "\n");
+				Debug.send(Type.Deep_lookup, "Check live cached recipes", () -> "Groups for recipes of type: " + recipeGrouping.getKey() + "\n");
 				final RecipeRegistry group = recipeGrouping.getValue();
 
-				Debug.Send(debugContext, () -> "Recipes cached:\n " + group.getMappedRecipes().values().stream()
+				Debug.send(Type.Deep_lookup, "Check live cached recipes", () -> "Recipes cached:\n " + group.getMappedRecipes().values().stream()
 						.filter(Objects::nonNull).map(x ->
 								x.stream().map(Object::toString)
 										.collect(Collectors.joining("\nRecipe:\n")))
@@ -217,7 +213,7 @@ public class RecipeLoader {
 
 	public boolean disableServerRecipe(final Recipe r) {
 		if (serverRecipes.remove(r)) {
-			Debug.Send(unloading_recipe, () -> "Disabling server recipe for " + r.getResult().getType().name());
+			Debug.send(Type.Other, "Unloading recipe", () -> "Disabling server recipe for " + r.getResult().getType().name());
 			disabledServerRecipes.add(r);
 			unloadRecipe(r);
 
@@ -232,7 +228,7 @@ public class RecipeLoader {
 
 	public boolean enableServerRecipe(final Recipe r) {
 		if (serverRecipes.add(r)) {
-			Debug.Send(loading_recipe, () -> "Enabling server recipe for " + r.getResult().getType().name());
+			Debug.send(Type.Other, "Loading recipe", () -> "Enabling server recipe for " + r.getResult().getType().name());
 			disabledServerRecipes.remove(r);
 			if (self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
 				final NamespacedKey namespacedKey = Adapter.getNamespacedKey(r);

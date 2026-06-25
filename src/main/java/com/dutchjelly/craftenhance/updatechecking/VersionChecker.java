@@ -2,6 +2,8 @@ package com.dutchjelly.craftenhance.updatechecking;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.messaging.Debug;
+import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import lombok.Getter;
 
@@ -30,7 +32,10 @@ public class VersionChecker {
     }
 
     public void runUpdateCheck() {
-        if (!plugin.getConfig().getBoolean("enable-updatechecker")) return;
+        if (!plugin.getConfig().getBoolean("enable-updatechecker")) {
+            Debug.send(Type.Loading, "Loading plugin",()-> "Update checker is turned off in config.");
+            return;
+        }
 
         final GithubLoader loader = GithubLoader.init(this);
         loader.readVersion();

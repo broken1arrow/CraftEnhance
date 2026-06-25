@@ -39,7 +39,6 @@ import com.dutchjelly.craftenhance.gui.customcrafting.CustomCraftingTable;
 import com.dutchjelly.craftenhance.gui.guis.editors.IngredientsCache;
 import com.dutchjelly.craftenhance.gui.util.FormatListContents;
 import com.dutchjelly.craftenhance.messaging.Debug;
-import com.dutchjelly.craftenhance.messaging.Debug.DebugContext;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.runnable.BrewingTask;
@@ -72,7 +71,6 @@ import java.util.stream.Collectors;
 public class CraftEnhance extends JavaPlugin {
 
 	private static CraftEnhance plugin;
-	private static final DebugContext loadingPlugin  = DebugContext.of(Type.Loading, "Loading plugin");
 	@Getter
 	VersionChecker versionChecker;
 	@Getter
@@ -111,7 +109,6 @@ public class CraftEnhance extends JavaPlugin {
 	@Getter
 	private LocalizationCache localizationCache;
 	private PlayerCheckTask playerCheckTask;
-
 
 
 	public static CraftEnhance self() {
@@ -167,7 +164,7 @@ public class CraftEnhance extends JavaPlugin {
 		this.localizationCache = new LocalizationCache(this, "localization.yml");
 		this.localizationCache.reload();
 
-		Debug.Send(loadingPlugin, () -> "Setting up the file manager for recipes.");
+		Debug.send(Type.Loading, "Loading plugin", () -> "Setting up the file manager for recipes.");
 		setupFileManager();
 		saveDefaultConfig();
 
@@ -181,7 +178,7 @@ public class CraftEnhance extends JavaPlugin {
 			injector = new RecipeInjector(this);
 		guiManager = new GuiManager(this);
 
-		Debug.Send(loadingPlugin, () ->"Setting up listeners and commands");
+		Debug.send(Type.Loading, "Loading plugin", () -> "Setting up listeners and commands");
 		setupListeners();
 		setupCommands();
 
@@ -348,13 +345,13 @@ public class CraftEnhance extends JavaPlugin {
 		categoryDataCache.reload();
 		this.blockOwnerCache.reload();
 
-		Debug.Send(loadingPlugin, () -> "Checking for config updates.");
+		Debug.send(Type.Loading, "Loading plugin", () -> "Checking for config updates.");
 		final File configFile = new File(getDataFolder(), "config.yml");
 		FileManager.EnsureResourceUpdate("config.yml", configFile, YamlConfiguration.loadConfiguration(configFile), this);
-		Debug.Send(loadingPlugin, () ->"Coloring config messages.");
+		Debug.send(Type.Loading, "Loading plugin", () -> "Coloring config messages.");
 		ConfigFormatter.init(this).formatConfigMessages();
 		ItemMatchers.init(getConfig().getBoolean("enable-backwards-compatible-item-matching"));
-		Debug.Send(loadingPlugin, () ->"Loading gui templates");
+		Debug.send(Type.Loading, "Loading plugin", () -> "Loading gui templates");
 
 		if (menuSettingsCache == null)
 			menuSettingsCache = new MenuSettingsCache(this);
@@ -363,7 +360,7 @@ public class CraftEnhance extends JavaPlugin {
 	private void loadRecipes() {
 		this.usingItemsAdder = this.getServer().getPluginManager().getPlugin("ItemsAdder") != null;
 		//Most other instances use the file manager, so setup before everything.
-		Debug.Send(loadingPlugin, () ->"Loading recipes");
+		Debug.send(Type.Loading, "Loading plugin", () -> "Loading recipes");
 		final RecipeLoader loader = RecipeLoader.getInstance();
 		final List<EnhancedRecipe> recipes = this.database.loadRecipes();
 		this.cacheRecipes.addAll(recipes);

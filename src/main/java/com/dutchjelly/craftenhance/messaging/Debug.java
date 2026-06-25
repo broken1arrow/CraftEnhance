@@ -6,7 +6,6 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import lombok.NonNull;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -44,10 +43,6 @@ public class Debug {
 		send(Type.Other, Type.Other.name(), () -> obj + "");
 	}
 
-	public static void Send(@NonNull final Debug.DebugContext debugContext, final Supplier<String> obj) {
-		final Type type = debugContext.getType();
-		send(type, debugContext.getTypeOfAction(), obj);
-	}
 
 	public static void Send(@NonNull final EnhancedRecipe recipe, final Supplier<String> obj) {
 		final Type type = getDebugType(recipe);
@@ -155,6 +150,7 @@ public class Debug {
 		CONFIGS.put(Brewing, new DebugConfig(enable_brewing_debug, "brewing"));
 		CONFIGS.put(Deep_lookup, new DebugConfig(enable_deap, "deep_lookup"));
 		CONFIGS.put(Loading, new DebugConfig(startup_debug, "loading"));
+		CONFIGS.put(Loading_yaml, new DebugConfig(startup_debug, "loading_yaml"));
 	}
 
 
@@ -181,54 +177,4 @@ public class Debug {
 
 	}
 
-	public static class DebugContext {
-		private final RecipeType recipeType;
-		private final Type type;
-		private final String typeOfAction;
-
-		private DebugContext(@NonNull final Type type, final @Nullable RecipeType recipeType, @Nonnull final String typeOfAction) {
-			this.recipeType = recipeType;
-			this.type = type;
-			this.typeOfAction = typeOfAction;
-		}
-
-		public static DebugContext of(@NonNull final Type type, @Nonnull final String typeOfAction) {
-			return new DebugContext(type, null, typeOfAction);
-		}
-
-		public static DebugContext of(@Nullable final RecipeType recipeType, @Nonnull final String typeOfAction) {
-			return new DebugContext(Other, recipeType, typeOfAction);
-		}
-
-		public Type getType() {
-			if (this.recipeType != null)
-				return getDebugType();
-			return type;
-		}
-
-		public String getTypeOfAction() {
-			return typeOfAction;
-		}
-
-		private Type getDebugType() {
-			RecipeType type = this.recipeType;
-			if (type == null) return Other;
-
-			switch (type) {
-				case WORKBENCH:
-					return Crafting;
-				case FURNACE:
-				case BLAST:
-				case SMOKER:
-					return Smelting;
-				case BREWING:
-					return Brewing;
-			}
-			return Other;
-		}
-
-		public String getMessage() {
-			return "";
-		}
-	}
 }

@@ -10,7 +10,7 @@ import com.dutchjelly.craftenhance.exceptions.ConfigError;
 import com.dutchjelly.craftenhance.gui.util.SkullCreator;
 import com.dutchjelly.craftenhance.itemcreation.EnchantmentUtil;
 import com.dutchjelly.craftenhance.messaging.Debug;
-import com.dutchjelly.craftenhance.messaging.Debug.DebugContext;
+
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
