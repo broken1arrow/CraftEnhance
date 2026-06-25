@@ -53,15 +53,16 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 public class RecipeLoader {
 	//Ensure one instance
 	private static RecipeLoader instance = null;
+
+	private final int recipeSize = 20;
 	private static final DebugContext loading_recipe = DebugContext.of(Type.Other, "Loading recipe");
 	private static final DebugContext unloading_recipe = DebugContext.of(Type.Other, "Unloading recipe");
-	private final int recipeSize = 20;
 	private final CategoryDataCache categoryDataCache;
 	private final Server server;
+
 	private Set<Recipe> serverRecipes = new HashSet<>();
 	@Getter
 	private List<Recipe> disabledServerRecipes = new ArrayList<>();
-	private Map<String, RecipeGroup> mappedGroupedRecipes = new HashMap<>();
 	private final Map<RecipeType, RecipeRegistry> mappedRecipes = new HashMap<>();
 
 	private RecipeLoader(final Server server, final CategoryDataCache categoryDataCache) {
@@ -130,8 +131,11 @@ public class RecipeLoader {
 		String categoryName = loadCategories(recipe);
 		String groupName = recipe.getGroup() != null ? recipe.getGroup() : categoryName;
 		Debug.Send(loading_recipe, () -> "Added to recipe group with the name: '" + groupName + "'");
-		//Only load the recipe if there is not a server recipe that's always similar.
+		if (recipe.getGroup() == null)
+			recipe.setGroup(groupName);
 		final Recipe serverRecipe = recipe.getServerRecipe();
+
+		//Only load the recipe if there is not a server recipe that's always similar.
 		if (alwaysSimilar == null) {
 			if (!(recipe instanceof BrewingRecipe)) {
 				if (serverRecipe == null) {
@@ -261,7 +265,6 @@ public class RecipeLoader {
 	public void clearCache() {
 		this.serverRecipes = new HashSet<>();
 		this.disabledServerRecipes = new ArrayList<>();
-		this.mappedGroupedRecipes = new HashMap<>();
 		this.mappedRecipes.clear();
 	}
 
