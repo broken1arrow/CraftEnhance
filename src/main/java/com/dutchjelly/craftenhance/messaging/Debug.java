@@ -7,6 +7,8 @@ import lombok.NonNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,7 +16,7 @@ import java.util.logging.Logger;
 import static com.dutchjelly.craftenhance.messaging.Debug.Type.*;
 
 public class Debug {
-
+	private static Map<Type, DebugConfig> CONFIGS;
 	private static Logger logger;
 	private static boolean startup_debug;
 	private static boolean show_errors;
@@ -35,84 +37,64 @@ public class Debug {
 		enable_brewing_debug = main.getConfig().getBoolean("enable_brewing-debug");
 		prefix = main.getConfig().getString("debug-prefix");
 		logger = main.getLogger();
+		rebuildConfigs();
 	}
 
 	public static void Send(final Object obj) {
-		Send(Type.Other, obj);
+		send(Type.Other, Type.Other.name(), () -> obj + "");
 	}
 
-	public static void Send(@NonNull final Debug.DebugContext debugContext, final Supplier<Object> obj) {
-		final String typeOfAction = debugContext.getTypeOfAction();
+	public static void Send(@NonNull final Debug.DebugContext debugContext, final Supplier<String> obj) {
 		final Type type = debugContext.getType();
-		Send(type, typeOfAction, obj);
+		send(type, debugContext.getTypeOfAction(), obj);
 	}
 
-	public static void Send(@NonNull final EnhancedRecipe recipe, final Supplier<Object> obj) {
+	public static void Send(@NonNull final EnhancedRecipe recipe, final Supplier<String> obj) {
 		final Type type = getDebugType(recipe);
 		if (obj == null) {
-			Send(type, "null");
+			send(type, type.name(), () -> "message not set");
 			return;
 		}
-		Send(type, recipe.getKey(), obj);
+		send(type, recipe.getKey(), obj);
 	}
 
-	public static void Send(final Type type, final Supplier<Object> obj) {
-		if (obj == null) {
-			Send(type, "null");
+	public static void Send(final Type type, final Supplier<String> message) {
+		if (message == null) {
+			send(type, type.name(), () -> "message not set");
 			return;
 		}
-		Send(type, "", obj);
+		send(type, type.name(), message);
 	}
 
-	private static void Send(final Type type, final String name, final Supplier<Object> obj) {
-		String debugHowName = "";
-		if (name != null)
-			debugHowName = " <" + name + "> ";
-
-		if (type == Crafting) {
-			if (enable_crafting_debug)
-				System.out.println(prefix + "[crafting] " + debugHowName + (obj != null ? obj.get().toString() : "null"));
-			return;
-		}
-		if (type == Smelting) {
-			if (enable_smelting__debug)
-				System.out.println(prefix + "[furnace] " + debugHowName + (obj != null ? obj.get().toString() : "null"));
-			return;
-		}
-		if (type == Brewing) {
-			if (enable_brewing_debug)
-				System.out.println(prefix + "[brewing] " + debugHowName + (obj != null ? obj.get().toString() : "null"));
-			return;
-		}
-		if (type == Deep_lookup) {
-			if (enable_deap)
-				System.out.println(prefix + "[deep_lookup] " + debugHowName + (obj != null ? obj.get().toString() : "null"));
-			return;
-		}
-		if (type == Loading) {
-			if (startup_debug)
-				logger.info(prefix + "[loading] " + debugHowName + (obj != null ? obj.get().toString() : "null"));
-			return;
-		}
-		if (!enable) return;
-		logger.info(prefix + debugHowName + (obj != null ? obj.get().toString() : "null"));
+	public static void send(final RecipeType type, final String action, Supplier<String> contextSupplier) {
+		if (!anyDebugEnabled()) return;
+		log(getDebugType(type), action, contextSupplier);
 	}
 
-	private static void Send(final Type type, final Object obj) {
-		if (!enable) return;
+	public static void send(Type type, final String action, final Supplier<String> supplier) {
+		if (!anyDebugEnabled()) return;
 
-		logger.info(prefix + "<" + type.name() + "> " + (obj != null ? obj.toString() : "null"));
-	}
-
-	private static void Send(final Object[] arr) {
-		if (arr == null) return;
-		logger.info(prefix + " ");
-		for (final Object o : arr) {
-			if (o == null) continue;
-			logger.info(o.toString());
+		DebugConfig config = CONFIGS.get(type);
+		if (config == null) {
+			if (!enable) return;
+			log(type, action, supplier);
+			return;
 		}
-		logger.info("");
+		if (!config.enabled) return;
+
+		log(type, action, supplier);
 	}
+
+	private static void log(final Type type, final String action, final Supplier<String> supplier) {
+		final String message = supplier != null ? supplier.get() : "missing message";
+		final String debugHowName = action != null
+				? " <" + action + "> "
+				: " <" + type + "> ";
+
+		final String output = prefix + "[" + type + "] " + debugHowName + message;
+		logger.info(output);
+	}
+
 
 	public static void error(final String message) {
 		if (show_errors)
@@ -136,7 +118,14 @@ public class Debug {
 		return enable;
 	}
 
-	public static Type getDebugType(final @Nullable RecipeType type) {
+
+	private static Type getDebugType(final @Nonnull EnhancedRecipe recipe) {
+		return getDebugType(recipe.getType());
+	}
+
+	private static Type getDebugType(final RecipeType type) {
+		if (type == null) return Other;
+
 		switch (type) {
 			case WORKBENCH:
 				return Crafting;
@@ -150,18 +139,34 @@ public class Debug {
 		return Other;
 	}
 
-	private static Type getDebugType(final @Nonnull EnhancedRecipe recipe) {
-		switch (recipe.getType()) {
-			case WORKBENCH:
-				return Crafting;
-			case FURNACE:
-			case BLAST:
-			case SMOKER:
-				return Smelting;
-			case BREWING:
-				return Brewing;
+	private static boolean anyDebugEnabled() {
+		return enable ||
+				enable_crafting_debug ||
+				enable_smelting__debug ||
+				enable_brewing_debug ||
+				enable_deap ||
+				startup_debug;
+	}
+
+	private static void rebuildConfigs() {
+		CONFIGS = new HashMap<>();
+		CONFIGS.put(Crafting, new DebugConfig(enable_crafting_debug, "crafting"));
+		CONFIGS.put(Smelting, new DebugConfig(enable_smelting__debug, "furnace"));
+		CONFIGS.put(Brewing, new DebugConfig(enable_brewing_debug, "brewing"));
+		CONFIGS.put(Deep_lookup, new DebugConfig(enable_deap, "deep_lookup"));
+		CONFIGS.put(Loading, new DebugConfig(startup_debug, "loading"));
+	}
+
+
+	private static class DebugConfig {
+		final boolean enabled;
+		final String label;
+
+		DebugConfig(final boolean enabled, final String label) {
+			this.enabled = enabled;
+			this.label = label;
+
 		}
-		return Other;
 	}
 
 	public enum Type {
@@ -172,6 +177,8 @@ public class Debug {
 		Loading,
 		Deep_lookup,
 		Non, Loading_yaml;
+
+
 	}
 
 	public static class DebugContext {
@@ -192,7 +199,6 @@ public class Debug {
 		public static DebugContext of(@Nullable final RecipeType recipeType, @Nonnull final String typeOfAction) {
 			return new DebugContext(Other, recipeType, typeOfAction);
 		}
-
 
 		public Type getType() {
 			if (this.recipeType != null)
@@ -219,6 +225,10 @@ public class Debug {
 					return Brewing;
 			}
 			return Other;
+		}
+
+		public String getMessage() {
+			return "";
 		}
 	}
 }

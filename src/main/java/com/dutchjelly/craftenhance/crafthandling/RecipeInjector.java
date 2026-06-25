@@ -68,7 +68,7 @@ public class RecipeInjector implements Listener {
 	private final Map<UUID, FinishCraft> finishRecipe = new HashMap<>();
 
 	private final BrewingRecipeInjector brewingRecipeInjector;
-	private  WorkBenchRecipeInjector workBenchRecipeInjector;
+	private WorkBenchRecipeInjector workBenchRecipeInjector;
 	@Getter
 	private final FurnaceRecipeInjector furnaceRecipeInjector;
 	private TrackPlayerLocation trackPlayerLocation;
@@ -118,12 +118,24 @@ public class RecipeInjector implements Listener {
 	public void handleCrafting(final PrepareItemCraftEvent craftEvent) {
 		final Recipe serverRecipe = craftEvent.getRecipe();
 
-		if (serverRecipe == null || serverRecipe.getResult() == null || !plugin.getConfig().getBoolean("enable-recipes"))
+		final boolean enabled = !plugin.getConfig().getBoolean("enable-recipes");
+		if (serverRecipe == null || serverRecipe.getResult() == null || enabled) {
+			String reason = "Unknown event";
+			if (serverRecipe == null)
+				reason = "The server recipe is null";
+			if (enabled)
+				reason = "The check for custom recipes is turned off in the config.yml, it will allowing the crafting and not doing the recipe check.";
+
+			final String finalReason = reason;
+			Debug.send(Type.Crafting, "craft event", () -> "Failed to search for a recipe because: " + finalReason);
 			return;
+		}
 		if (!(craftEvent.getInventory() instanceof CraftingInventory)) return;
 
 		final CraftingInventory craftingInventory = craftEvent.getInventory();
 		final List<HumanEntity> viewers = craftEvent.getViewers();
+
+
 		final List<RecipeWrapper> recipes = this.getLoader().findMatchingRecipe(RecipeType.WORKBENCH, craftingInventory.getMatrix());
 		final TrackPlayerLocation trackPlayerCraft = this.trackPlayerLocation;
 		if (trackPlayerCraft != null) {
@@ -354,6 +366,7 @@ public class RecipeInjector implements Listener {
 			Crafter crafter = ((Crafter) craftEvent.getBlock().getState());
 			final Inventory inventory = crafter.getInventory();
 			final ItemStack[] matrix = inventory.getContents();
+
 			final List<RecipeWrapper> recipes = getLoader().findMatchingRecipe(RecipeType.WORKBENCH, matrix);
 
 			for (RecipeWrapper recipe : recipes) {

@@ -323,11 +323,11 @@ public class Adapter {
 
 			final org.bukkit.inventory.FurnaceRecipe recipe = new org.bukkit.inventory.FurnaceRecipe(result, ingredient.getType());
 			if (!callSingleParamMethod("setCookingTime", duration, Integer.class, recipe, FurnaceRecipe.class))
-				Debug.Send(DebugContext.of(Type.Other, "furnace recipe registering"), () -> "Custom cooking time is not supported.");
+				Debug.send(Type.Other, "furnace recipe registering", () -> "Custom cooking time is not supported.");
 			try {
 				recipe.setExperience(exp);
 			} catch (NoSuchMethodError ex) {
-				Debug.Send(DebugContext.of(Type.Other, "furnace recipe registering"), () -> "Set experience is not supported.");
+				Debug.send(Type.Other, "furnace recipe registering", () -> "Set experience is not supported.");
 			}
 			return recipe;
 		}
@@ -345,7 +345,7 @@ public class Adapter {
 					.newInstance(getNameSpacedKey(CraftEnhance.self(), key), result, new RecipeChoice.ExactChoice(ingredient), exp, duration);
 		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
 		               NoSuchMethodException | ClassNotFoundException e) {
-			Debug.Send(DebugContext.of(Type.Other, "blast recipe registering"), () -> "Couldn't set blast furnace recipe. Wrong server version?");
+			Debug.send(Type.Other, "blast recipe registering", () -> "Couldn't set blast furnace recipe. Wrong server version?");
 			return null;
 		}
 	}
@@ -362,7 +362,7 @@ public class Adapter {
 					.newInstance(getNameSpacedKey(CraftEnhance.self(), key), result, new RecipeChoice.ExactChoice(ingredient), exp, duration);
 		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
 		               NoSuchMethodException | ClassNotFoundException e) {
-			Debug.Send(DebugContext.of(Type.Other, "smoker recipe registering"), () -> "Couldn't set smoker recipe. Wrong server version?");
+			Debug.send(Type.Other, "smoker recipe registering", () -> "Couldn't set smoker recipe. Wrong server version?");
 			return null;
 		}
 	}

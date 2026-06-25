@@ -90,8 +90,12 @@ public class RecipeLoader {
 	@Nonnull
 	public List<RecipeWrapper> findMatchingRecipe(@Nonnull final RecipeType recipeType, final ItemStack[] matrix) {
 		final RecipeRegistry recipeCached = this.mappedRecipes.get(recipeType);
-		if (recipeType == RecipeType.WORKBENCH)
-			Debug.Send(Type.Crafting, () -> "Found the group for this type: " + recipeType);
+
+		if (recipeCached != null) {
+			Debug.send(recipeType, "Find_matching_recipes", () -> "Found the group for this type: " + recipeType);
+		} else {
+			Debug.send(recipeType, "Find_matching_recipes", () -> "Did not find this group in cache: " + recipeType);
+		}
 
 		if (recipeCached == null)
 			return Collections.emptyList();
@@ -230,7 +234,7 @@ public class RecipeLoader {
 		if (serverRecipes.add(r)) {
 			Debug.Send(loading_recipe, () -> "Enabling server recipe for " + r.getResult().getType().name());
 			disabledServerRecipes.remove(r);
-			if(self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
+			if (self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
 				final NamespacedKey namespacedKey = Adapter.getNamespacedKey(r);
 				if (namespacedKey != null && server.getRecipe(namespacedKey) == null)
 					server.addRecipe(r);
@@ -339,7 +343,6 @@ public class RecipeLoader {
 
 		return categoryName;
 	}
-
 
 
 	private void unloadAllCehRecipes() {
