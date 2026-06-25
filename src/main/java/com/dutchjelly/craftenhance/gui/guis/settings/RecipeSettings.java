@@ -168,7 +168,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		if (value.isActionTypeEqual(ButtonType.Group_name.name())) {
 			if (player.isConversing()) return true;
 			if (click.isRightClick()) {
-				recipe.setGroup(null);
+				recipe.setGroup("");
 				return true;
 			}
 			new HandleChatInput(this, msg -> {

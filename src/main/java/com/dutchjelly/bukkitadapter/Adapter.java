@@ -305,7 +305,6 @@ public class Adapter {
 	}
 
 
-
 	public static org.bukkit.inventory.FurnaceRecipe getFurnaceRecipe(@NonNull final FurnaceRecipe enhancedFurnaceRecipe) {
 		final String key = ServerRecipeTranslator.GetFreeKey(enhancedFurnaceRecipe.getKey());
 		final ItemStack result = enhancedFurnaceRecipe.getResult();
@@ -490,6 +489,8 @@ public class Adapter {
 	}
 
 	public static void setGroup(final Recipe recipe, final String groupName) {
+		if (groupName.isEmpty()) return;
+
 		final VersionChecker versionChecker = self().getVersionChecker();
 		if (versionChecker.newerThan(ServerVersion.v1_12)) {
 			if (versionChecker.newerThan(ServerVersion.v1_19) && recipe instanceof CraftingRecipe) {
