@@ -226,9 +226,13 @@ public class RecipeLoader {
 		if (serverRecipes.add(r)) {
 			Debug.Send(loading_recipe, () -> "Enabling server recipe for " + r.getResult().getType().name());
 			disabledServerRecipes.remove(r);
-			final NamespacedKey namespacedKey = Adapter.getNamespacedKey(r);
-			if (namespacedKey != null && server.getRecipe(namespacedKey) == null)
+			if(self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
+				final NamespacedKey namespacedKey = Adapter.getNamespacedKey(r);
+				if (namespacedKey != null && server.getRecipe(namespacedKey) == null)
+					server.addRecipe(r);
+			} else {
 				server.addRecipe(r);
+			}
 
 			final RecipeType type = RecipeType.getType(r);
 			if (type != null) {

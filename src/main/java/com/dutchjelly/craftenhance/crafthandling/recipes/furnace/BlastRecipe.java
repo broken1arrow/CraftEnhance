@@ -1,11 +1,9 @@
 package com.dutchjelly.craftenhance.crafthandling.recipes.furnace;
 
 import com.dutchjelly.bukkitadapter.Adapter;
-import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
-import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import lombok.Getter;
 import org.bukkit.Material;
@@ -47,7 +45,7 @@ public class BlastRecipe extends FurnaceRecipe {
 	public Recipe getServerRecipe() {
 		final String groupName = this.getGroup();
 		int duration = self().getVersionChecker().olderThan(ServerVersion.v1_17) ? this.getDuration() : 100;
-		final BlastingRecipe blastRecipe = Adapter.getBlastRecipe(CraftEnhance.self(), ServerRecipeTranslator.GetFreeKey(getKey()), getResult(), getContent()[0], duration, getExp());
+		final BlastingRecipe blastRecipe = Adapter.getBlastRecipe(this);
 		if (groupName != null && blastRecipe != null) {
 			Adapter.setGroup(blastRecipe, groupName);
 		}

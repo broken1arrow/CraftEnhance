@@ -4,7 +4,6 @@ import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
-import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import lombok.Getter;
 import org.bukkit.Material;
@@ -38,7 +37,7 @@ public class SmokerRecipe extends FurnaceRecipe {
 	public Recipe getServerRecipe() {
 		final String groupName =this.getGroup();
 		int duration = self().getVersionChecker().olderThan(ServerVersion.v1_17) ? this.getDuration() : 100;
-		final SmokingRecipe smokingRecipe = Adapter.getSmokingRecipe(self(), ServerRecipeTranslator.GetFreeKey(getKey()), getResult(), getContent()[0], duration, getExp());
+		final SmokingRecipe smokingRecipe = Adapter.getSmokingRecipe(this);
 		if (groupName != null && smokingRecipe != null) {
 			Adapter.setGroup(smokingRecipe,groupName);
 		}

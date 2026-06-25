@@ -51,7 +51,7 @@ public class ServerRecipeTranslator {
         final ShapelessRecipe shapeless = Adapter.GetShapelessRecipe(
                 CraftEnhance.getPlugin(CraftEnhance.class), KeyPrefix + recipeKey, result
         );
-        ingredients.forEach(x -> Adapter.AddIngredient(shapeless, x));
+        ingredients.forEach(x -> Adapter.addIngredient(shapeless, x));
         return shapeless;
     }
 
@@ -144,7 +144,7 @@ public class ServerRecipeTranslator {
         for (int i = 0; i < 9; i++) {
             final ItemStack itemStacks = content[i];
             if (itemStacks != null) {
-                Adapter.SetIngredient(recipe, (char) ('A' + i), itemStacks);
+                Adapter.setIngredient(recipe, (char) ('A' + i), itemStacks);
             }
         }
     }

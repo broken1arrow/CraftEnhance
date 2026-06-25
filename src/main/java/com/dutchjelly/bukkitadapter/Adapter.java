@@ -217,6 +217,8 @@ public class Adapter {
 				case "BLAST_FURNACE":
 				case "SMOKER":
 					return Material.FURNACE;
+				case "OAK_LOG":
+					return Material.getMaterial("LOG");
 			}
 		}
 		return null;
@@ -302,130 +304,25 @@ public class Adapter {
 		return new ShapelessRecipe(result);
 	}
 
-	public static ItemStack SetDurability(final ItemStack item, final int damage) {
-		item.setDurability((short) damage);
-		return item;
-	}
 
-	public static void SetIngredient(final ShapedRecipe recipe, final char key, final ItemStack ingredient) {
-		if (ingredient.getType() == Material.AIR) return;
 
-		if (!self().getConfig().getBoolean("learn-recipes")) {
-			if (self().getVersionChecker().newerThan(VersionChecker.ServerVersion.v1_14)) {
-				if (ingredient == null) return;
-				final Material md = ingredient.getType();
-				if (md != ingredient.getType() || md == Material.AIR) {
-					recipe.setIngredient(key, ingredient.getType());
-				} else {
-					recipe.setIngredient(key, md);
-				}
-				return;
-			} else {
-				final MaterialData md = ingredient.getData();
-				if (md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)) {
-					recipe.setIngredient(key, ingredient.getType());
-				} else {
-					recipe.setIngredient(key, md);
-				}
-			}
-			return;
-		}
-		try {
-			final Class<?> recipeClass = recipe.getClass();
-			final Class<?> recipeChoiceClass = Class.forName("org.bukkit.inventory.RecipeChoice");
-			final Class<?> exactChoiceClass = Class.forName("org.bukkit.inventory.RecipeChoice$ExactChoice");
-
-			Object choice = exactChoiceClass
-					.getConstructor(ItemStack.class)
-					.newInstance(ingredient);
-
-			Method setIngredient = recipeClass.getMethod("setIngredient", char.class, recipeChoiceClass);
-			setIngredient.invoke(recipe, key, choice);
-		} catch (final Exception e) {
-			recipe.setIngredient(key, ingredient.getType());
-		}
-	}
-
-	public static void setIngredient(final Recipe recipe, final ItemStack ingredient) {
-		if (ingredient.getType() == Material.AIR || !(recipe instanceof FurnaceRecipe)) return;
-		FurnaceWrapper.setFurnaceIngredients((CookingRecipe<?>) recipe, ingredient);
-	}
-
-	public static void AddIngredient(final ShapelessRecipe recipe, final ItemStack ingredient) {
-		if (ingredient.getType() == Material.AIR) return;
-
-		if (!self().getConfig().getBoolean("learn-recipes")) {
-			if (self().getVersionChecker().olderThan(ServerVersion.v1_16)) {
-				final MaterialData md = ingredient.getData();
-				if (md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)) {
-					recipe.addIngredient(ingredient.getType());
-				} else {
-					recipe.addIngredient(md);
-				}
-			} else {
-				recipe.addIngredient(ingredient.getType());
-			}
-			return;
-		}
-		try {
-			final Class<?> recipeClass = recipe.getClass();
-			final Class<?> recipeChoiceClass = Class.forName("org.bukkit.inventory.RecipeChoice");
-			final Class<?> exactChoiceClass = Class.forName("org.bukkit.inventory.RecipeChoice$ExactChoice");
-
-			Object choice = exactChoiceClass
-					.getConstructor(ItemStack.class)
-					.newInstance(ingredient);
-
-			Method setIngredient = recipeClass.getMethod("addIngredient", recipeChoiceClass);
-			setIngredient.invoke(recipe, choice);
-		} catch (final Exception e) {
-			recipe.addIngredient(ingredient.getType());
-		}
-	}
-
-	public static boolean hasDamageTag(ItemStack item) {
-		if (item == null || item.getType() == Material.AIR) return false;
-		Material mat = item.getType();
-		String name = mat.name();
-
-		if (name.endsWith("_SWORD") || name.endsWith("_AXE") || name.endsWith("_PICKAXE")
-				|| name.endsWith("_SPADE") || name.endsWith("_HOE") || name.endsWith("_SHOVEL")
-				|| name.endsWith("_HELMET") || name.endsWith("_CHESTPLATE")
-				|| name.endsWith("_LEGGINGS") || name.endsWith("_BOOTS")) {
-			return true;
-		}
-		switch (name) {
-			case "BOW":
-			case "FISHING_ROD":
-			case "SHEARS":
-			case "FLINT_AND_STEEL":
-			case "CARROT_STICK":
-			case "CARROT_ON_A_STICK":
-			case "SHIELD":
-			case "ELYTRA":
-				return true;
-			default:
-				return false;
-		}
-	}
-	public static org.bukkit.inventory.FurnaceRecipe GetFurnaceRecipe(final BlastRecipe blastRecipe) {
-		final String key = ServerRecipeTranslator.GetFreeKey(blastRecipe.getKey());
-		final ItemStack result = blastRecipe.getResult();
-		final ItemStack ingredient = blastRecipe.getContent()[0];
-		final int duration = blastRecipe.getDuration();
-		final float exp = blastRecipe.getExp();
+	public static org.bukkit.inventory.FurnaceRecipe getFurnaceRecipe(@NonNull final FurnaceRecipe enhancedFurnaceRecipe) {
+		final String key = ServerRecipeTranslator.GetFreeKey(enhancedFurnaceRecipe.getKey());
+		final ItemStack result = enhancedFurnaceRecipe.getResult();
+		final ItemStack ingredient = enhancedFurnaceRecipe.getContent()[0];
+		final int duration = enhancedFurnaceRecipe.getDuration();
+		final float exp = enhancedFurnaceRecipe.getExp();
 
 		try {
-			new RecipeChoice.MaterialChoice(Material.ICE);
-			new RecipeChoice.ExactChoice(ingredient);
-			org.bukkit.inventory.FurnaceRecipe furnaceRecipe = org.bukkit.inventory.FurnaceRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, Material.class, float.class, int.class)
-					.newInstance(getNameSpacedKey(plugin, key), result, ingredient.getType(), exp, duration);
+			org.bukkit.inventory.FurnaceRecipe furnaceRecipe = org.bukkit.inventory.FurnaceRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, RecipeChoice.class, float.class, int.class)
+					.newInstance(getNameSpacedKey(plugin, key), result, new RecipeChoice.ExactChoice(ingredient), exp, duration);
 			setIngredient(furnaceRecipe, ingredient);
 			return furnaceRecipe;
 		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
 		               NoSuchMethodException | ClassNotFoundException e) {
 			Debug.errorDisablable("Couldn't use namespaced key for furnace recipe:' " + key + "' will fallback to legacy option\n", e);
-			final org.bukkit.inventory.FurnaceRecipe recipe = new org.bukkit.inventory.FurnaceRecipe(result,  ingredient.getType());
+
+			final org.bukkit.inventory.FurnaceRecipe recipe = new org.bukkit.inventory.FurnaceRecipe(result, ingredient.getType());
 			if (!callSingleParamMethod("setCookingTime", duration, Integer.class, recipe, FurnaceRecipe.class))
 				Debug.Send(DebugContext.of(Type.Other, "furnace recipe registering"), () -> "Custom cooking time is not supported.");
 			try {
@@ -437,33 +334,7 @@ public class Adapter {
 		}
 	}
 
-	public static org.bukkit.inventory.FurnaceRecipe GetFurnaceRecipe(final JavaPlugin plugin, final String key, final ItemStack result, final ItemStack source, final int duration, final float exp) {
-		//public FurnaceRecipe(@NotNull NamespacedKey key, @NotNull ItemStack result, @NotNull Material source, float experience, int cookingTime) {
-		try {
-
-		/*	return org.bukkit.inventory.FurnaceRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, RecipeChoice.class, float.class, int.class)
-					.newInstance(getNameSpacedKey(plugin, key), result, new RecipeChoice.ExactChoice(Collections.singletonList(source)), exp, duration);*/
-			org.bukkit.inventory.FurnaceRecipe furnaceRecipe = org.bukkit.inventory.FurnaceRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, Material.class, float.class, int.class)
-					.newInstance(getNameSpacedKey(plugin, key), result, source.getType(), exp, duration);
-			setIngredient(furnaceRecipe, source);
-			return furnaceRecipe;
-		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
-		               NoSuchMethodException | ClassNotFoundException e) {
-			Debug.errorDisablable("Couldn't use namespaced key for furnace recipe:' " + key + "' will fallback to legacy option\n", e);
-			//e.printStackTrace();
-			final org.bukkit.inventory.FurnaceRecipe recipe = new org.bukkit.inventory.FurnaceRecipe(result, source.getType());
-			if (!callSingleParamMethod("setCookingTime", duration, Integer.class, recipe, FurnaceRecipe.class))
-				Debug.Send(DebugContext.of(Type.Other, "furnace recipe registering"), () -> "Custom cooking time is not supported.");
-			try {
-				recipe.setExperience(exp);
-			} catch (NoSuchMethodError ex) {
-				Debug.Send(DebugContext.of(Type.Other, "furnace recipe registering"), () -> "Set experience is not supported.");
-			}
-			return recipe;
-		}
-	}
-
-	public static org.bukkit.inventory.BlastingRecipe getBlastRecipe(final BlastRecipe blastRecipe) {
+	public static org.bukkit.inventory.BlastingRecipe getBlastRecipe(@NonNull final BlastRecipe blastRecipe) {
 		final String key = ServerRecipeTranslator.GetFreeKey(blastRecipe.getKey());
 		final ItemStack result = blastRecipe.getResult();
 		final ItemStack ingredient = blastRecipe.getContent()[0];
@@ -471,8 +342,8 @@ public class Adapter {
 		final float exp = blastRecipe.getExp();
 
 		try {
-			return org.bukkit.inventory.BlastingRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, Material.class, float.class, int.class)
-					.newInstance(getNameSpacedKey(CraftEnhance.self(), key), result, ingredient.getType(), exp, duration);
+			return org.bukkit.inventory.BlastingRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, RecipeChoice.class, float.class, int.class)
+					.newInstance(getNameSpacedKey(CraftEnhance.self(), key), result, new RecipeChoice.ExactChoice(ingredient), exp, duration);
 		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
 		               NoSuchMethodException | ClassNotFoundException e) {
 			Debug.Send(DebugContext.of(Type.Other, "blast recipe registering"), () -> "Couldn't set blast furnace recipe. Wrong server version?");
@@ -480,17 +351,7 @@ public class Adapter {
 		}
 	}
 
-	public static org.bukkit.inventory.BlastingRecipe getBlastRecipe(final JavaPlugin plugin, final String key, final ItemStack result, final ItemStack source, final int duration, final float exp) {
-		try {
-			return org.bukkit.inventory.BlastingRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, Material.class, float.class, int.class)
-					.newInstance(getNameSpacedKey(plugin, key), result, source.getType(), exp, duration);
-		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
-		               NoSuchMethodException | ClassNotFoundException e) {
-			Debug.Send(DebugContext.of(Type.Other, "blast recipe registering"), () -> "Couldn't set blast furnace recipe. Wrong server version?");
-			return null;
-		}
-	}
-	public static org.bukkit.inventory.SmokingRecipe getSmokingRecipe(final SmokerRecipe smokerRecipe){
+	public static org.bukkit.inventory.SmokingRecipe getSmokingRecipe(@NonNull final SmokerRecipe smokerRecipe) {
 		final String key = ServerRecipeTranslator.GetFreeKey(smokerRecipe.getKey());
 		final ItemStack result = smokerRecipe.getResult();
 		final ItemStack ingredient = smokerRecipe.getContent()[0];
@@ -498,19 +359,8 @@ public class Adapter {
 		final float exp = smokerRecipe.getExp();
 
 		try {
-			return org.bukkit.inventory.SmokingRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, Material.class, float.class, int.class)
-					.newInstance(getNameSpacedKey(CraftEnhance.self(), key), result, ingredient.getType(), exp, duration);
-		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
-		               NoSuchMethodException | ClassNotFoundException e) {
-			Debug.Send(DebugContext.of(Type.Other, "smoker recipe registering"), () -> "Couldn't set smoker recipe. Wrong server version?");
-			return null;
-		}
-	}
-
-	public static org.bukkit.inventory.SmokingRecipe getSmokingRecipe(final JavaPlugin plugin, final String key, final ItemStack result, final ItemStack source, final int duration, final float exp) {
-		try {
-			return org.bukkit.inventory.SmokingRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, Material.class, float.class, int.class)
-					.newInstance(getNameSpacedKey(CraftEnhance.self(), key), result, source.getType(), exp, duration);
+			return org.bukkit.inventory.SmokingRecipe.class.getConstructor(Class.forName("org.bukkit.NamespacedKey"), ItemStack.class, RecipeChoice.class, float.class, int.class)
+					.newInstance(getNameSpacedKey(CraftEnhance.self(), key), result, new RecipeChoice.ExactChoice(ingredient), exp, duration);
 		} catch (final InstantiationException | IllegalAccessException | InvocationTargetException |
 		               NoSuchMethodException | ClassNotFoundException e) {
 			Debug.Send(DebugContext.of(Type.Other, "smoker recipe registering"), () -> "Couldn't set smoker recipe. Wrong server version?");
@@ -593,6 +443,37 @@ public class Adapter {
 		return null;
 	}
 
+	public static ItemStack SetDurability(final ItemStack item, final int damage) {
+		item.setDurability((short) damage);
+		return item;
+	}
+
+	public static boolean hasDamageTag(ItemStack item) {
+		if (item == null || item.getType() == Material.AIR) return false;
+		Material mat = item.getType();
+		String name = mat.name();
+
+		if (name.endsWith("_SWORD") || name.endsWith("_AXE") || name.endsWith("_PICKAXE")
+				|| name.endsWith("_SPADE") || name.endsWith("_HOE") || name.endsWith("_SHOVEL")
+				|| name.endsWith("_HELMET") || name.endsWith("_CHESTPLATE")
+				|| name.endsWith("_LEGGINGS") || name.endsWith("_BOOTS")) {
+			return true;
+		}
+		switch (name) {
+			case "BOW":
+			case "FISHING_ROD":
+			case "SHEARS":
+			case "FLINT_AND_STEEL":
+			case "CARROT_STICK":
+			case "CARROT_ON_A_STICK":
+			case "SHIELD":
+			case "ELYTRA":
+				return true;
+			default:
+				return false;
+		}
+	}
+
 	public static String getGroup(@NonNull final Recipe recipe) {
 		final VersionChecker versionChecker = self().getVersionChecker();
 		if (versionChecker.newerThan(ServerVersion.v1_12)) {
@@ -606,28 +487,6 @@ public class Adapter {
 				return ((ShapelessRecipe) recipe).getGroup();
 		}
 		return "";
-	}
-
-	public static ItemStack[] getIngredients(@NonNull final Recipe recipe) {
-		if (isCookingRecipe(recipe)) {
-			return FurnaceWrapper.getFurnaceStack(recipe);
-		}
-		if (recipe instanceof ShapedRecipe)
-			return ((ShapedRecipe) recipe).getIngredientMap().values().toArray(new ItemStack[0]);
-		if (recipe instanceof ShapelessRecipe)
-			return ((ShapelessRecipe) recipe).getIngredientList().toArray(new ItemStack[0]);
-		return new ItemStack[0];
-	}
-
-	public static List<ItemStack> getIngredientsList(@NonNull final Recipe recipe) {
-		if (isCookingRecipe(recipe)) {
-			return Arrays.asList(FurnaceWrapper.getFurnaceStack(recipe));
-		}
-		if (recipe instanceof ShapedRecipe)
-			return new ArrayList<>(((ShapedRecipe) recipe).getIngredientMap().values());
-		if (recipe instanceof ShapelessRecipe)
-			return ((ShapelessRecipe) recipe).getIngredientList();
-		return Collections.emptyList();
 	}
 
 	public static void setGroup(final Recipe recipe, final String groupName) {
@@ -652,13 +511,98 @@ public class Adapter {
 		}
 	}
 
-	public static boolean isCraftingRecipe(final Recipe recipe) {
-		final VersionChecker versionChecker = self().getVersionChecker();
-		if (versionChecker.newerThan(ServerVersion.v1_19) && recipe instanceof CraftingRecipe) {
-			return true;
-		}
-		return recipe instanceof ShapedRecipe || recipe instanceof ShapelessRecipe;
+	private static <T extends CookingRecipe<?>> void setGroup(@NonNull final CookingRecipe<T> furnaceRecipe, @NonNull final String groupName) {
+		FurnaceWrapper.setGroup(furnaceRecipe, groupName);
 	}
+
+	public static void setIngredient(final ShapedRecipe recipe, final char key, final ItemStack ingredient) {
+		if (ingredient.getType() == Material.AIR) return;
+
+		if (self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
+			try {
+				final Class<?> recipeClass = recipe.getClass();
+				final Class<?> recipeChoiceClass = Class.forName("org.bukkit.inventory.RecipeChoice");
+				final Class<?> exactChoiceClass = Class.forName("org.bukkit.inventory.RecipeChoice$ExactChoice");
+
+				Object choice = exactChoiceClass
+						.getConstructor(ItemStack.class)
+						.newInstance(ingredient);
+
+				Method setIngredient = recipeClass.getMethod("setIngredient", char.class, recipeChoiceClass);
+				setIngredient.invoke(recipe, key, choice);
+			} catch (final Exception e) {
+				Debug.errorDisablable("Couldn't use full metadata for shaped recipe ingredient:' " + ingredient.getType() + "', will try to set type\n", e);
+				recipe.setIngredient(key, ingredient.getType());
+			}
+		} else {
+			final MaterialData md = ingredient.getData();
+			if (md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)) {
+				recipe.setIngredient(key, ingredient.getType());
+			} else {
+				recipe.setIngredient(key, md);
+			}
+		}
+	}
+
+	public static void setIngredient(final Recipe recipe, final ItemStack ingredient) {
+		if (ingredient.getType() == Material.AIR || !(recipe instanceof org.bukkit.inventory.FurnaceRecipe)) return;
+		if (self().getVersionChecker().newerThan(ServerVersion.v1_13))
+			FurnaceWrapper.setFurnaceIngredients((CookingRecipe<?>) recipe, ingredient);
+		else
+			FurnaceWrapper.setFurnaceIngredients((org.bukkit.inventory.FurnaceRecipe) recipe, ingredient);
+	}
+
+	public static void addIngredient(final ShapelessRecipe recipe, final ItemStack ingredient) {
+		if (ingredient.getType() == Material.AIR) return;
+
+		if (self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
+			try {
+				final Class<?> recipeClass = recipe.getClass();
+				final Class<?> recipeChoiceClass = Class.forName("org.bukkit.inventory.RecipeChoice");
+				final Class<?> exactChoiceClass = Class.forName("org.bukkit.inventory.RecipeChoice$ExactChoice");
+
+				Object choice = exactChoiceClass
+						.getConstructor(ItemStack.class)
+						.newInstance(ingredient);
+
+				Method setIngredient = recipeClass.getMethod("addIngredient", recipeChoiceClass);
+				setIngredient.invoke(recipe, choice);
+			} catch (final Exception e) {
+				Debug.errorDisablable("Couldn't use full metadata for shapeless recipe ingredient:' " + ingredient.getType() + "', will try to set type\n", e);
+				recipe.addIngredient(ingredient.getType());
+			}
+		} else {
+			final MaterialData md = ingredient.getData();
+			if (md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)) {
+				recipe.addIngredient(ingredient.getType());
+			} else {
+				recipe.addIngredient(md);
+			}
+		}
+	}
+
+	public static ItemStack[] getIngredients(@NonNull final Recipe recipe) {
+		if (isCookingRecipe(recipe)) {
+			return FurnaceWrapper.getFurnaceStack(recipe);
+		}
+		if (recipe instanceof ShapedRecipe)
+			return ((ShapedRecipe) recipe).getIngredientMap().values().toArray(new ItemStack[0]);
+		if (recipe instanceof ShapelessRecipe)
+			return ((ShapelessRecipe) recipe).getIngredientList().toArray(new ItemStack[0]);
+		return new ItemStack[0];
+	}
+
+	public static List<ItemStack> getIngredientsList(@NonNull final Recipe recipe) {
+		if (isCookingRecipe(recipe)) {
+			return Arrays.asList(FurnaceWrapper.getFurnaceStack(recipe));
+		}
+		if (recipe instanceof ShapedRecipe)
+			return new ArrayList<>(((ShapedRecipe) recipe).getIngredientMap().values());
+		if (recipe instanceof ShapelessRecipe)
+			return ((ShapelessRecipe) recipe).getIngredientList();
+		return Collections.emptyList();
+	}
+
 
 	public static boolean isCookingRecipe(final Recipe recipe) {
 		final VersionChecker versionChecker = self().getVersionChecker();
@@ -683,7 +627,7 @@ public class Adapter {
 	public static boolean isRecipeCustom(final Recipe recipe) {
 		final VersionChecker versionChecker = self().getVersionChecker();
 		if (versionChecker.olderThan(ServerVersion.v1_14)) {
-			return !hasCustomMeta(recipe.getResult());
+			return hasCustomMeta(recipe.getResult());
 		}
 		if (recipe instanceof Keyed) {
 			final NamespacedKey key = ((Keyed) recipe).getKey();
@@ -706,10 +650,6 @@ public class Adapter {
 		});
 	}
 
-
-	private static <T extends CookingRecipe<?>> void setGroup(@NonNull final CookingRecipe<T> furnaceRecipe, @NonNull final String groupName) {
-		FurnaceWrapper.setGroup(furnaceRecipe, groupName);
-	}
 
 	private static Object getNameSpacedKey(final JavaPlugin plugin, final String key) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 		//return new NamespacedKey(plugin, key);
@@ -755,43 +695,63 @@ public class Adapter {
 
 	static class FurnaceWrapper {
 
-		public static <T extends CookingRecipe<?>> void setFurnaceIngredients(final CookingRecipe<T> recipe, final ItemStack ingredient) {
+
+		public static void setFurnaceIngredients(final org.bukkit.inventory.FurnaceRecipe recipe, final ItemStack ingredient) {
 			if (ingredient.getType() == Material.AIR) return;
 
-/*		if (!self().getConfig().getBoolean("learn-recipes")) {
-			if (self().getVersionChecker().newerThan(VersionChecker.ServerVersion.v1_14)) {
-				if (ingredient == null) return;
-				final Material md = ingredient.getType();
-				if (md != ingredient.getType() || md == Material.AIR) {
-					recipe.setInput( ingredient.getType());
-				} else {
-					recipe.setInput( md);
+			if (self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
+				try {
+					final Class<?> recipeClass = recipe.getClass();
+					final Class<?> recipeChoiceClass = Class.forName("org.bukkit.inventory.RecipeChoice");
+					final Class<?> exactChoiceClass = Class.forName("org.bukkit.inventory.RecipeChoice$ExactChoice");
+
+					Object choice = exactChoiceClass
+							.getConstructor(ItemStack.class)
+							.newInstance(ingredient);
+
+					Method setIngredient = recipeClass.getMethod("setInputChoice", recipeChoiceClass);
+					setIngredient.invoke(recipe, choice);
+				} catch (final Exception e) {
+					Debug.errorDisablable("Couldn't use full metadata for this furnace ingredient:' " + ingredient.getType() + "', will try to set type\n", e);
+					recipe.setInput(ingredient.getType());
 				}
-				return;
 			} else {
 				final MaterialData md = ingredient.getData();
 				if (md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)) {
-					recipe.setInput( ingredient.getType());
+					recipe.setInput(ingredient.getType());
 				} else {
-					recipe.setInput( md.getItemType());
+					recipe.setInput(md.getItemType());
 				}
 			}
-			return;
-		}*/
-			try {
-				final Class<?> recipeClass = recipe.getClass();
-				final Class<?> recipeChoiceClass = Class.forName("org.bukkit.inventory.RecipeChoice");
-				final Class<?> exactChoiceClass = Class.forName("org.bukkit.inventory.RecipeChoice$ExactChoice");
+		}
 
-				Object choice = exactChoiceClass
-						.getConstructor(ItemStack.class)
-						.newInstance(ingredient);
 
-				Method setIngredient = recipeClass.getMethod("setInputChoice", recipeChoiceClass);
-				setIngredient.invoke(recipe, choice);
-			} catch (final Exception e) {
-				e.printStackTrace();
-				recipe.setInput(ingredient.getType());
+		public static <T extends CookingRecipe<?>> void setFurnaceIngredients(final CookingRecipe<T> recipe, final ItemStack ingredient) {
+			if (ingredient.getType() == Material.AIR) return;
+
+			if (self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
+				try {
+					final Class<?> recipeClass = recipe.getClass();
+					final Class<?> recipeChoiceClass = Class.forName("org.bukkit.inventory.RecipeChoice");
+					final Class<?> exactChoiceClass = Class.forName("org.bukkit.inventory.RecipeChoice$ExactChoice");
+
+					Object choice = exactChoiceClass
+							.getConstructor(ItemStack.class)
+							.newInstance(ingredient);
+
+					Method setIngredient = recipeClass.getMethod("setInputChoice", recipeChoiceClass);
+					setIngredient.invoke(recipe, choice);
+				} catch (final Exception e) {
+					Debug.errorDisablable("Couldn't use full metadata for this furnace ingredient:' " + ingredient.getType() + "', will try to set type\n", e);
+					recipe.setInput(ingredient.getType());
+				}
+			} else {
+				final MaterialData md = ingredient.getData();
+				if (md == null || !md.getItemType().equals(ingredient.getType()) || md.getItemType().equals(Material.AIR)) {
+					recipe.setInput(ingredient.getType());
+				} else {
+					recipe.setInput(md.getItemType());
+				}
 			}
 		}
 
