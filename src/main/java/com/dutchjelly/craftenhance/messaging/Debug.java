@@ -63,12 +63,11 @@ public class Debug {
 
 	public static void send(final RecipeType type, final String action, Supplier<String> contextSupplier) {
 		if (!anyDebugEnabled()) return;
-		log(getDebugType(type), action, contextSupplier);
+		send(getDebugType(type), action, contextSupplier);
 	}
 
 	public static void send(Type type, final String action, final Supplier<String> supplier) {
 		if (!anyDebugEnabled()) return;
-
 		DebugConfig config = CONFIGS.get(type);
 		if (config == null) {
 			if (!enable) return;
@@ -76,7 +75,6 @@ public class Debug {
 			return;
 		}
 		if (!config.enabled) return;
-
 		log(type, action, supplier);
 	}
 
