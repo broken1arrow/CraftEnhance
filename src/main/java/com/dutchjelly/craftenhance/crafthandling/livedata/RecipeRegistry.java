@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +25,9 @@ import java.util.stream.Collectors;
 public class RecipeRegistry {
 	private final Map<Material, Set<RecipeWrapper>> mappedRecipes = new HashMap<>();
 	private final Set<RecipeWrapper> allRecipes = new HashSet<>();
+	private final boolean[] processedIndices = new boolean[9];
+	private final Set<Material> matrixIngredients = EnumSet.noneOf(Material.class);
+	private final List<RecipeWrapper> filteredResult = new ArrayList<>();
 
 	public void addRecipe(@Nonnull final RecipeWrapper recipe, @Nonnull final ItemStack[] content) {
 		this.allRecipes.add(recipe);
@@ -40,42 +44,54 @@ public class RecipeRegistry {
 	}
 
 	public List<RecipeWrapper> findMatchingRecipes(@Nullable final RecipeType recipeType, @Nonnull final ItemStack[] matrix) {
-		Set<RecipeWrapper> wrappersMatch = null;
-
 		Debug.send(recipeType, "Find_matching_recipes", () -> "The recipe matrics to find a match: [" + Arrays.stream(matrix).map(stack -> {
 					if (stack != null)
 						return stack.getType().name();
 					return null;
 				}).collect(Collectors.joining(",")) + "]"
 		);
-
+		matrixIngredients.clear();
 		for (ItemStack itemStack : matrix) {
-			final Material type = itemStack == null ? null : itemStack.getType();
-			if (type == null || type == Material.AIR) continue;
-			final Set<RecipeWrapper> recipeCached = this.mappedRecipes.getOrDefault(type, Collections.emptySet());
-
-			Debug.send(recipeType, "Find_matching_recipes", () -> "The item type to find a match: '" + type + "' the number of ingredients matching: " + recipeCached.size());
-
-			if (recipeCached.isEmpty()) {
-				return Collections.emptyList();
+			if (itemStack != null) {
+				final Material type = itemStack.getType();
+				if (type != null && type != Material.AIR) {
+					matrixIngredients.add(type);
+				}
 			}
-			if (wrappersMatch == null) {
-				wrappersMatch = new HashSet<>(recipeCached);
-			} else {
-				wrappersMatch.retainAll(recipeCached);
-			}
-			if (wrappersMatch.isEmpty())
-				return Collections.emptyList();
 		}
 
-		final Set<RecipeWrapper> finalWrappersMatch = wrappersMatch;
-		Debug.send(recipeType, "Find_matching_recipes", () -> "The final matched recipes:" + (finalWrappersMatch == null ? "'no match found" : "\n|" + finalWrappersMatch) + "|");
-		if (wrappersMatch == null)
+		if (matrixIngredients.isEmpty()) {
+			Debug.send(recipeType, "Find_matching_recipes", () -> "Was no recipe that matched the crafting matrix in the cache");
 			return Collections.emptyList();
+		}
 
-		final List<RecipeWrapper> sortedRecipes = new ArrayList<>(wrappersMatch);
-		sortedRecipes.sort(Comparator.comparingInt(RecipeWrapper::priority));
-		return sortedRecipes;
+		Material bestTrigger = null;
+		int smallestCacheSize = Integer.MAX_VALUE;
+
+		for (Material type : matrixIngredients) {
+			int size = this.mappedRecipes.getOrDefault(type, Collections.emptySet()).size();
+			if (size > 0 && size < smallestCacheSize) {
+				smallestCacheSize = size;
+				bestTrigger = type;
+			}
+		}
+
+		if (bestTrigger == null) {
+			Debug.send(recipeType, "Find_matching_recipes", () -> "Was no recipe that matched the best matched item type in the cache");
+			return Collections.emptyList();
+		}
+
+		final Set<RecipeWrapper> smallestRecipeSet = this.mappedRecipes.getOrDefault(bestTrigger, Collections.emptySet());
+
+		filteredResult.clear();
+		for (RecipeWrapper recipe : smallestRecipeSet) {
+				filteredResult.add(recipe);
+		}
+
+		Debug.send(recipeType, "Find_matching_recipes", () -> "The final matched recipes amount:" +  filteredResult.size());
+		Debug.send(recipeType, "Find_matching_recipes", () -> "The final matched recipes:" + ( filteredResult.isEmpty() ? "'no match found" : "\n|" +  filteredResult) + "|");
+		filteredResult.sort(Comparator.comparingInt(RecipeWrapper::priority));
+		return new ArrayList<>(filteredResult);
 	}
 
 	public void removeRecipe(@Nonnull final EnhancedRecipe enhancedRecipe, @Nonnull final ItemStack[] content) {

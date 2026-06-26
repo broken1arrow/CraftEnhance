@@ -56,6 +56,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
@@ -586,10 +587,36 @@ public class Adapter {
 		if (isCookingRecipe(recipe)) {
 			return FurnaceWrapper.getFurnaceStack(recipe);
 		}
-		if (recipe instanceof ShapedRecipe)
+		if (recipe instanceof ShapedRecipe) {
+			if (self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
+				return ((ShapedRecipe) recipe).getChoiceMap().values().stream()
+						.flatMap(choice -> {
+							if(choice == null)
+								return null;
+							if (choice instanceof RecipeChoice.MaterialChoice) {
+								return ((RecipeChoice.MaterialChoice) choice).getChoices().stream()
+										.map(ItemStack::new);
+							}
+							return Stream.of(choice.getItemStack());
+						}).toArray(ItemStack[]::new);
+			}
 			return ((ShapedRecipe) recipe).getIngredientMap().values().toArray(new ItemStack[0]);
-		if (recipe instanceof ShapelessRecipe)
+		}
+		if (recipe instanceof ShapelessRecipe) {
+			if (self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
+				return ((ShapelessRecipe) recipe).getChoiceList().stream()
+						.flatMap(choice -> {
+							if(choice == null)
+								return null;
+							if (choice instanceof RecipeChoice.MaterialChoice) {
+								return ((RecipeChoice.MaterialChoice) choice).getChoices().stream()
+										.map(ItemStack::new);
+							}
+							return Stream.of(choice.getItemStack());
+						}).toArray(ItemStack[]::new);
+			}
 			return ((ShapelessRecipe) recipe).getIngredientList().toArray(new ItemStack[0]);
+		}
 		return new ItemStack[0];
 	}
 

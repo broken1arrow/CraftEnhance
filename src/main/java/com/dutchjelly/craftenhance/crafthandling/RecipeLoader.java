@@ -274,6 +274,12 @@ public class RecipeLoader {
 				if (Adapter.isRecipeCustom(serverRecipe) || self().getCacheRecipes().isCustomRecipe(serverRecipe)) {
 					return;
 				}
+				if(serverRecipe.getResult().getType() == Material.CAMPFIRE){
+					System.out.println("serverRecipe " + serverRecipe);
+					System.out.println("serverRecipe " + serverRecipe.getClass());
+					System.out.println("isCookingRecipe " + Adapter.isCookingRecipe(serverRecipe));
+					System.out.println("serverRecipe.getClass() " + serverRecipe.getClass().getName());
+				}
 				this.addServerRecipes(serverRecipe);
 				final ItemStack[] ingredients = Adapter.getIngredients(serverRecipe);
 				if (Adapter.isCookingRecipe(serverRecipe)) {

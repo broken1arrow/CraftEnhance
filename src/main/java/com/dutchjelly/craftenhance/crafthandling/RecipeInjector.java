@@ -85,7 +85,7 @@ public class RecipeInjector implements Listener {
 			Bukkit.getPluginManager().registerEvents(new SmeltListener(), plugin);
 			Bukkit.getPluginManager().registerEvents(new CrafterListener(), plugin);
 		} catch (Throwable throwable) {
-			Debug.send(Type.Loading, "Loading plugin", () -> "Some functions did not work on your server version. will be turned off.");
+			Debug.error("Some functions did not work on your server version. will be turned off.", throwable);
 		}
 	}
 
@@ -139,10 +139,10 @@ public class RecipeInjector implements Listener {
 		final TrackPlayerLocation trackPlayerCraft = this.trackPlayerLocation;
 		if (trackPlayerCraft != null) {
 			craftingInventory.setResult(null);
-			Debug.send(Type.Crafting,"Legacy craft", () -> "Legacy crafting detected, amount recipes found for the items added in crafting grid: " + recipes.size());
+			Debug.send(Type.Crafting, "Legacy craft", () -> "Legacy crafting detected, amount recipes found for the items added in crafting grid: " + recipes.size());
 			boolean foundMatch = trackPlayerCraft.onPrepareCrafting(this, craftEvent, recipes, viewers);
 			if (!foundMatch) {
-				Debug.send(Type.Crafting,"Legacy craft", () -> "Legacy crafting detected, could not found a valid recipe for result will deny the crafting: " + serverRecipe.getResult());
+				Debug.send(Type.Crafting, "Legacy craft", () -> "Legacy crafting detected, could not found a valid recipe for result will deny the crafting: " + serverRecipe.getResult());
 			}
 			return;
 		}
@@ -343,6 +343,7 @@ public class RecipeInjector implements Listener {
 				if (furnace instanceof Smoker)
 					recipeType = RecipeType.SMOKER;
 			}
+			Debug.Send(Type.Smelting, () -> "Alter the time for the furnace recipe if could find it in cache.");
 			final List<RecipeWrapper> matchingRecipe = loader.findMatchingRecipe(recipeType, new ItemStack[]{event.getSource()});
 			ResultContext furnaceContext = getFurnaceRecipeInjector().getFurnaceContext(event.getRecipe(), matchingRecipe, new ItemStack[]{event.getSource()}, furnace);
 			if (furnaceContext == null) {
