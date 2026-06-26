@@ -23,6 +23,7 @@ import org.bukkit.inventory.Recipe;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -55,6 +56,11 @@ public class BrewingWrapper implements RecipeWrapper {
 		return brewingRecipe.getKey();
 	}
 
+	@Override
+	public boolean containsIngredient(final Material material) {
+		return false;
+	}
+
 	@Nonnull
 	@Override
 	public RecipeType getRecipeType() {
@@ -68,7 +74,12 @@ public class BrewingWrapper implements RecipeWrapper {
 
 	@Override
 	public boolean isCustom() {
-		return false;
+		return true;
+	}
+
+	@Override
+	public EnumMap<Material, Integer> getIngredients() {
+		return new EnumMap<>(Material.class);
 	}
 
 	@Override

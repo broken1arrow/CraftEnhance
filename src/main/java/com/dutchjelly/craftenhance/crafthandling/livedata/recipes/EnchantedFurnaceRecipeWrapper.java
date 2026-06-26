@@ -12,6 +12,7 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerCache;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerData;
 import com.dutchjelly.craftenhance.messaging.Debug;
+import org.bukkit.Material;
 import org.bukkit.block.Furnace;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -19,6 +20,7 @@ import org.bukkit.inventory.Recipe;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -26,21 +28,29 @@ import java.util.stream.Collectors;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
-public class FurnaceBurnWrapper implements RecipeWrapper {
+public class EnchantedFurnaceRecipeWrapper implements RecipeWrapper {
 	private final FurnaceRecipe furnaceRecipe;
+	private final EnumMap<Material, Integer> ingredients = new EnumMap<>(Material.class);
 	private final String key;
 
-	public FurnaceBurnWrapper(final FurnaceRecipe furnaceRecipe) {
+	public EnchantedFurnaceRecipeWrapper(@Nonnull final FurnaceRecipe furnaceRecipe) {
 		this.furnaceRecipe = furnaceRecipe;
+		final ItemStack[] content = furnaceRecipe.getContent();
+		for (ItemStack stack : content) {
+			if (stack == null) continue;
+			Material type = stack.getType();
+			if (type == Material.AIR) continue;
+			ingredients.merge(type, 1, Integer::sum);
+		}
 
 		StringBuilder builder = new StringBuilder(furnaceRecipe.getResult().getType().name());
 		builder.append("|");
-		String content = Arrays.stream(furnaceRecipe.getContent())
+		String collect = Arrays.stream(furnaceRecipe.getContent())
 				.filter(Objects::nonNull)
 				.map(i -> i.getType().name())
 				.sorted()
 				.collect(Collectors.joining(","));
-		builder.append(content);
+		builder.append(collect);
 		builder.append("|");
 		this.key = builder.toString();
 	}
@@ -65,6 +75,16 @@ public class FurnaceBurnWrapper implements RecipeWrapper {
 	@Override
 	public boolean isCustom() {
 		return true;
+	}
+
+	@Override
+	public EnumMap<Material, Integer> getIngredients() {
+		return ingredients;
+	}
+
+	@Override
+	public boolean containsIngredient(final Material material) {
+		return this.ingredients.containsKey(material);
 	}
 
 	@Override
@@ -115,8 +135,8 @@ public class FurnaceBurnWrapper implements RecipeWrapper {
 	@Override
 	public boolean equals(final Object o) {
 		if (o == null) return false;
-		if (!(o instanceof FurnaceBurnWrapper)) return false;
-		final FurnaceBurnWrapper that = (FurnaceBurnWrapper) o;
+		if (!(o instanceof EnchantedFurnaceRecipeWrapper)) return false;
+		final EnchantedFurnaceRecipeWrapper that = (EnchantedFurnaceRecipeWrapper) o;
 		return that.key.equals(key);
 	}
 

@@ -10,7 +10,6 @@ import com.dutchjelly.craftenhance.exceptions.ConfigError;
 import com.dutchjelly.craftenhance.gui.util.SkullCreator;
 import com.dutchjelly.craftenhance.itemcreation.EnchantmentUtil;
 import com.dutchjelly.craftenhance.messaging.Debug;
-
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
@@ -51,7 +50,10 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -591,13 +593,16 @@ public class Adapter {
 			if (self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
 				return ((ShapedRecipe) recipe).getChoiceMap().values().stream()
 						.flatMap(choice -> {
-							if(choice == null)
+							if (choice == null)
 								return null;
 							if (choice instanceof RecipeChoice.MaterialChoice) {
 								return ((RecipeChoice.MaterialChoice) choice).getChoices().stream()
 										.map(ItemStack::new);
-							}
-							return Stream.of(choice.getItemStack());
+							} else if (choice instanceof RecipeChoice.ExactChoice) {
+								return ((RecipeChoice.ExactChoice) choice).getChoices().stream()
+										.map(ItemStack::new);
+							} else
+								return Stream.of(choice.getItemStack());
 						}).toArray(ItemStack[]::new);
 			}
 			return ((ShapedRecipe) recipe).getIngredientMap().values().toArray(new ItemStack[0]);
@@ -606,13 +611,16 @@ public class Adapter {
 			if (self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
 				return ((ShapelessRecipe) recipe).getChoiceList().stream()
 						.flatMap(choice -> {
-							if(choice == null)
+							if (choice == null)
 								return null;
 							if (choice instanceof RecipeChoice.MaterialChoice) {
 								return ((RecipeChoice.MaterialChoice) choice).getChoices().stream()
 										.map(ItemStack::new);
-							}
-							return Stream.of(choice.getItemStack());
+							} else if (choice instanceof RecipeChoice.ExactChoice) {
+								return ((RecipeChoice.ExactChoice) choice).getChoices().stream()
+										.map(ItemStack::new);
+							} else
+								return Stream.of(choice.getItemStack());
 						}).toArray(ItemStack[]::new);
 			}
 			return ((ShapelessRecipe) recipe).getIngredientList().toArray(new ItemStack[0]);
@@ -629,6 +637,69 @@ public class Adapter {
 		if (recipe instanceof ShapelessRecipe)
 			return ((ShapelessRecipe) recipe).getIngredientList();
 		return Collections.emptyList();
+	}
+
+	public static EnumMap<Material, Integer> getFullIngredientsList(@NonNull final Recipe recipe) {
+		VersionChecker versionChecker = self().getVersionChecker();
+		EnumMap<Material, Integer> map = new EnumMap<>(Material.class);
+		if (isCookingRecipe(recipe)) {
+			ItemStack furnaceStack = FurnaceWrapper.getFurnaceStack(recipe)[0];
+			if (furnaceStack == null) return map;
+			map.put(furnaceStack.getType(), 1);
+			return map;
+		}
+
+		final Set<Material> materials = new HashSet<>();
+		int amount = 0;
+
+		if (versionChecker.newerThan(ServerVersion.v1_13)) {
+			if (recipe instanceof ShapedRecipe) {
+				ShapedRecipe shaped = (ShapedRecipe) recipe;
+				for (Entry<Character, RecipeChoice> choiceEntry : shaped.getChoiceMap().entrySet()) {
+					final RecipeChoice choice = choiceEntry.getValue();
+					if (choice == null) continue;
+					if (choice instanceof RecipeChoice.MaterialChoice) {
+						((RecipeChoice.MaterialChoice) choice).getChoices().forEach(material -> materials.add(material));
+					} else if (choice instanceof RecipeChoice.ExactChoice) {
+						((RecipeChoice.ExactChoice) choice).getChoices().forEach(stack -> materials.add(stack.getType()));
+					} else
+						materials.add(choice.getItemStack().getType());
+					amount++;
+				}
+			}
+			if (recipe instanceof ShapelessRecipe) {
+				ShapelessRecipe shapeless = (ShapelessRecipe) recipe;
+				for (RecipeChoice choice : shapeless.getChoiceList()) {
+					if (choice == null) continue;
+					materials.add(choice.getItemStack().getType());
+					amount++;
+				}
+			}
+
+		} else {
+			if (recipe instanceof ShapedRecipe) {
+				ShapedRecipe shaped = (ShapedRecipe) recipe;
+				for (ItemStack stack : shaped.getIngredientMap().values()) {
+					if (stack == null) continue;
+					materials.add(stack.getType());
+					amount++;
+				}
+			}
+			if (recipe instanceof ShapelessRecipe) {
+				ShapelessRecipe shapeless = (ShapelessRecipe) recipe;
+				for (ItemStack stack : shapeless.getIngredientList()) {
+					if (stack == null) continue;
+					materials.add(stack.getType());
+					amount++;
+				}
+			}
+		}
+
+		if (!materials.isEmpty()) {
+			final int finalAmount = amount;
+			materials.forEach(material -> map.put(material, finalAmount));
+		}
+		return map;
 	}
 
 

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumSet;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,8 +25,7 @@ import java.util.stream.Collectors;
 public class RecipeRegistry {
 	private final Map<Material, Set<RecipeWrapper>> mappedRecipes = new HashMap<>();
 	private final Set<RecipeWrapper> allRecipes = new HashSet<>();
-	private final boolean[] processedIndices = new boolean[9];
-	private final Set<Material> matrixIngredients = EnumSet.noneOf(Material.class);
+	private final Set<Material> matrixMaterials = new HashSet<>();
 	private final List<RecipeWrapper> filteredResult = new ArrayList<>();
 
 	public void addRecipe(@Nonnull final RecipeWrapper recipe, @Nonnull final ItemStack[] content) {
@@ -42,6 +41,7 @@ public class RecipeRegistry {
 	public List<RecipeWrapper> findMatchingRecipes(@Nonnull final ItemStack[] matrix) {
 		return findMatchingRecipes(null, matrix);
 	}
+/*
 
 	public List<RecipeWrapper> findMatchingRecipes(@Nullable final RecipeType recipeType, @Nonnull final ItemStack[] matrix) {
 		Debug.send(recipeType, "Find_matching_recipes", () -> "The recipe matrics to find a match: [" + Arrays.stream(matrix).map(stack -> {
@@ -91,6 +91,70 @@ public class RecipeRegistry {
 		Debug.send(recipeType, "Find_matching_recipes", () -> "The final matched recipes amount:" +  filteredResult.size());
 		Debug.send(recipeType, "Find_matching_recipes", () -> "The final matched recipes:" + ( filteredResult.isEmpty() ? "'no match found" : "\n|" +  filteredResult) + "|");
 		filteredResult.sort(Comparator.comparingInt(RecipeWrapper::priority));
+		return new ArrayList<>(filteredResult);
+	}
+*/
+
+	public List<RecipeWrapper> findMatchingRecipes(@Nullable final RecipeType recipeType,
+	                                               @Nonnull final ItemStack[] matrix) {
+
+		Debug.send(recipeType, "Find_matching_recipes", () -> "The recipe matrics to find a match: [" +
+				Arrays.stream(matrix)
+						.map(stack -> stack != null ? stack.getType().name() : null)
+						.collect(Collectors.joining(",")) + "]"
+		);
+
+		matrixMaterials.clear();
+		int matrixSize = 0;
+		for (ItemStack itemStack : matrix) {
+			if (itemStack == null) continue;
+
+			Material type = itemStack.getType();
+			if (type != null && type != Material.AIR) {
+				matrixMaterials.add(type);
+				matrixSize++;
+			}
+		}
+
+		if (matrixMaterials.isEmpty()) {
+			Debug.send(recipeType, "Find_matching_recipes",
+					() -> "Was no recipe that matched the crafting matrix in the cache");
+			return Collections.emptyList();
+		}
+
+		Material bestTrigger = null;
+		int smallestCacheSize = Integer.MAX_VALUE;
+
+		for (Material type : matrixMaterials) {
+			Set<RecipeWrapper> set = this.mappedRecipes.get(type);
+			if (set == null || set.isEmpty()) continue;
+
+			int size = set.size();
+			if (size < smallestCacheSize) {
+				smallestCacheSize = size;
+				bestTrigger = type;
+			}
+		}
+
+		if (bestTrigger == null) {
+			Debug.send(recipeType, "Find_matching_recipes",
+					() -> "Was no recipe that matched the best matched item type in the cache");
+			return Collections.emptyList();
+		}
+		final Set<RecipeWrapper> smallestRecipeSet = this.mappedRecipes.get(bestTrigger);
+		filteredResult.clear();
+		for (RecipeWrapper recipe : smallestRecipeSet) {
+			if (canPossiblyMatch(matrixSize, recipe)) {
+				filteredResult.add(recipe);
+			}
+		}
+		Debug.send(recipeType, "Find_matching_recipes",
+				() -> "The filtered matched recipes amount: " + filteredResult.size());
+
+		filteredResult.sort(Comparator.comparingInt(RecipeWrapper::priority));
+
+		Debug.send(recipeType, "Find_matching_recipes", () -> "Final recipes: " +
+						(filteredResult.isEmpty() ? "'no match found" : "\n|" + filteredResult) + "|");
 		return new ArrayList<>(filteredResult);
 	}
 
@@ -152,4 +216,19 @@ public class RecipeRegistry {
 				.map(ItemStack::getType)
 				.collect(Collectors.toSet());
 	}
+
+
+	private boolean canPossiblyMatch(final int matrixSize, RecipeWrapper recipe) {
+		final EnumMap<Material, Integer> ingredients = recipe.getIngredients();
+
+		for (Material mat : matrixMaterials) {
+			Integer totalSlotCount = ingredients.get(mat);
+			if (totalSlotCount == null) continue;
+			if (totalSlotCount <= matrixSize) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

@@ -6,7 +6,7 @@ import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeRegistry;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.brewing.BrewingWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.recipes.EnchantedCraftWrapper;
-import com.dutchjelly.craftenhance.crafthandling.livedata.recipes.FurnaceBurnWrapper;
+import com.dutchjelly.craftenhance.crafthandling.livedata.recipes.EnchantedFurnaceRecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.recipes.VanillaCookingWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.recipes.VanillaCraftWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.recipes.VanillaFurnaceWrapper;
@@ -157,7 +157,7 @@ public class RecipeLoader {
 		if (recipe instanceof WBRecipe)
 			liveCacheRecipe(new EnchantedCraftWrapper((WBRecipe) recipe), content);
 		else if (recipe instanceof FurnaceRecipe)
-			liveCacheRecipe(new FurnaceBurnWrapper((FurnaceRecipe) recipe), content);
+			liveCacheRecipe(new EnchantedFurnaceRecipeWrapper((FurnaceRecipe) recipe), content);
 		else if (recipe instanceof BrewingRecipe) {
 			liveCacheRecipe(new BrewingWrapper((BrewingRecipe) recipe), new ItemStack[]{recipe.getResult()});
 		}
@@ -274,12 +274,7 @@ public class RecipeLoader {
 				if (Adapter.isRecipeCustom(serverRecipe) || self().getCacheRecipes().isCustomRecipe(serverRecipe)) {
 					return;
 				}
-				if(serverRecipe.getResult().getType() == Material.CAMPFIRE){
-					System.out.println("serverRecipe " + serverRecipe);
-					System.out.println("serverRecipe " + serverRecipe.getClass());
-					System.out.println("isCookingRecipe " + Adapter.isCookingRecipe(serverRecipe));
-					System.out.println("serverRecipe.getClass() " + serverRecipe.getClass().getName());
-				}
+
 				this.addServerRecipes(serverRecipe);
 				final ItemStack[] ingredients = Adapter.getIngredients(serverRecipe);
 				if (Adapter.isCookingRecipe(serverRecipe)) {

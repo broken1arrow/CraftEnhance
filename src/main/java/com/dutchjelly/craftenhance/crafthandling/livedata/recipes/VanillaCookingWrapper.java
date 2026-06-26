@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.crafthandling.livedata.recipes;
 
+import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.RecipeDebug;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareFurnaceContext;
@@ -11,6 +12,7 @@ import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers.MatchType;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
+import org.bukkit.Material;
 import org.bukkit.block.BlastFurnace;
 import org.bukkit.block.Smoker;
 import org.bukkit.inventory.CookingRecipe;
@@ -20,6 +22,7 @@ import org.bukkit.inventory.RecipeChoice;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -27,10 +30,12 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class VanillaCookingWrapper implements RecipeWrapper {
 	private final CookingRecipe<?> furnaceRecipe;
+	private final EnumMap<Material, Integer> ingredients;
 	private final String key;
 
 	public VanillaCookingWrapper(final CookingRecipe<?> furnaceRecipe) {
 		this.furnaceRecipe = furnaceRecipe;
+		this.ingredients = Adapter.getFullIngredientsList(furnaceRecipe);
 
 		StringBuilder builder = new StringBuilder(furnaceRecipe.getResult().getType().name());
 		builder.append("|");
@@ -66,6 +71,16 @@ public class VanillaCookingWrapper implements RecipeWrapper {
 	@Override
 	public boolean isCustom() {
 		return false;
+	}
+
+	@Override
+	public EnumMap<Material, Integer>  getIngredients() {
+		return ingredients;
+	}
+
+	@Override
+	public boolean containsIngredient(final Material material) {
+		return this.ingredients.containsKey(material);
 	}
 
 	@Override

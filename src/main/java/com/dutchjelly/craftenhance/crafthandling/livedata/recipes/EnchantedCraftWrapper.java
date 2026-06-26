@@ -17,6 +17,7 @@ import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers.MatchType;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
@@ -26,6 +27,7 @@ import org.bukkit.inventory.Recipe;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -36,10 +38,19 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class EnchantedCraftWrapper implements RecipeWrapper {
 	private final WBRecipe enhancedRecipe;
+	private final EnumMap<Material, Integer> ingredients = new EnumMap<>(Material.class);
 	private final String key;
 
 	public EnchantedCraftWrapper(@Nonnull final WBRecipe enhancedRecipe) {
 		this.enhancedRecipe = enhancedRecipe;
+		final ItemStack[] content = enhancedRecipe.getContent();
+
+		for (ItemStack stack : content) {
+			if (stack == null) continue;
+			Material type = stack.getType();
+			if (type == Material.AIR) continue;
+			ingredients.merge(type, 1, Integer::sum);
+		}
 
 		this.key = enhancedRecipe.getResult().getType().name() + "|" +
 				Arrays.stream(enhancedRecipe.getContent())
@@ -69,7 +80,17 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 
 	@Override
 	public boolean isCustom() {
-		return false;
+		return true;
+	}
+
+	@Override
+	public EnumMap<Material, Integer> getIngredients() {
+		return ingredients;
+	}
+
+	@Override
+	public boolean containsIngredient(final Material material) {
+		return this.ingredients.containsKey(material);
 	}
 
 	@Override
@@ -127,7 +148,7 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 					}
 					Debug.Send(wbRecipe, () -> "The recipe is now crafted and output item is " + beforeCraftOutputEvent.getResultItem());
 					Debug.Send(wbRecipe, () -> "The crafted recipe matrix: " + RecipeDebug.convertItemStackArrayToString(matrix));
-					return new ResultContext(wbRecipe,beforeCraftOutputEvent.getResultItem(), ResultType.ENHANCED);
+					return new ResultContext(wbRecipe, beforeCraftOutputEvent.getResultItem(), ResultType.ENHANCED);
 				}
 			} else {
 				Debug.Send(wbRecipe, () -> "This recipe doesn't contains Modeldata and will be crafted if the recipe is not cancelled.");
