@@ -20,6 +20,7 @@ import org.bukkit.inventory.BrewerInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.jspecify.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -33,11 +34,12 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class BrewingWrapper implements RecipeWrapper {
 	private final BrewingRecipe brewingRecipe;
+	private final EnumMap<Material, Integer> map = new EnumMap<>(Material.class);
 	private final String key;
 
 	public BrewingWrapper(@Nonnull final BrewingRecipe brewingRecipe) {
 		this.brewingRecipe = brewingRecipe;
-
+		map.put(brewingRecipe.getResult().getType(), 1);
 		StringBuilder builder = new StringBuilder(brewingRecipe.getResult().getType().name());
 		builder.append("|");
 		String content = Arrays.stream(brewingRecipe.getContent())
@@ -74,17 +76,17 @@ public class BrewingWrapper implements RecipeWrapper {
 
 	@Override
 	public EnumMap<Material, Integer> getIngredients() {
-		return new EnumMap<>(Material.class);
+		return map;
 	}
 
 	@Override
 	public int getAmountOfIngredient(final Material material) {
-		return 0;
+		return 1;
 	}
 
 	@Override
 	public int getTotalSlotCount() {
-		return 0;
+		return 1;
 	}
 
 	@Override
@@ -102,32 +104,37 @@ public class BrewingWrapper implements RecipeWrapper {
 
 		boolean notAllowedToBrew = RecipeAdapter.isCraftingAllowedInWorld(location, brewingRecipe);
 		if (notAllowedToBrew) {
-			Debug.Send(Type.Brewing, () -> "You are not allowed to brew potions in this world: " + location.getWorld() + " with this recipe key: " + brewingRecipe.getKey());
+			Debug.send(Type.Brewing, "deny_world | recipe=" + brewingRecipe.getKey(), () -> "You are not allowed to brew potions in this world: " + location.getWorld() + " with this recipe key: " + brewingRecipe.getKey());
 			return false;
 		}
 
 		if (brewingRecipe.getResult().isSimilar(itemStackCursor)) {
+			Debug.send(Type.Brewing, "result | recipe=" + brewingRecipe.getKey(), () -> "Found a brewing recipe with this top item: " + RecipeDebug.formatOneStack(brewingRecipe.getResult()));
+
 			if (checkBrewingClick(event))
 				event.setCancelled(true);
 
-			this.handleInventoryClick(event, brewingInv, slot);
+			if (!this.handleInventoryClick(brewingRecipe, event, brewingInv, slot)) {
+				event.setCancelled(true);
+				Debug.send(Type.Brewing, "not_valid | recipe=" + brewingRecipe.getKey(), () -> "The item you trying to add to this recipe not match.");
+				return false;
+			}
 
 			CraftEnhance.runTaskLater(1, () -> {
 				ItemStack[] itemStacks = brewingInv.getContents();
 				ItemStack[] outputItems = Arrays.copyOfRange(itemStacks, 0, 3);
 				if (brewingRecipe.matches(outputItems)) {
-					Debug.Send(Type.Brewing, () -> "Found matching brewing recipe and will start to make the recipe: " + brewingRecipe.getKey());
+					Debug.send(Type.Brewing, "result | recipe=" + brewingRecipe.getKey(), () -> "Found matching brewing recipe and will start to make the recipe: " + brewingRecipe.getKey());
 					self().getBrewingTask().addTask(location, brewingRecipe);
 				} else {
-					Debug.Send(Type.Brewing, () -> "Failed to find a matching brewing ingredients recipe for recipe: " + brewingRecipe.getKey());
-					Debug.Send(Type.Brewing, () -> "Result item: " + brewingRecipe.getResult());
-					Debug.Send(Type.Brewing, () -> "The items to match: " + Arrays.toString(brewingRecipe.getContent()));
-					Debug.Send(Type.Brewing, () -> "The items inside inventory: " + Arrays.toString(outputItems));
+					Debug.send(Type.Brewing, "result | recipe=" + brewingRecipe.getKey(), () -> "You have not yet added ingredients on the bottom rows to activate brewing");
+					Debug.send(Type.Brewing, "result | recipe=" + brewingRecipe.getKey(), () -> "The items to match: " + RecipeDebug.convertItemStackArrayToString(brewingRecipe.getContent()));
+					Debug.send(Type.Brewing, "result | recipe=" + brewingRecipe.getKey(), () -> "The items inside inventory: " + RecipeDebug.convertItemStackArrayToString((outputItems)));
 				}
 			});
 			return true;
 		} else {
-			Debug.Send(Type.Brewing, () -> "No match for this recipe: " + brewingRecipe.getKey());
+			Debug.send(Type.Brewing, "non_match | recipe=" + brewingRecipe.getKey(), () -> "No match for this brewing recipe.");
 		}
 		return false;
 	}
@@ -175,16 +182,33 @@ public class BrewingWrapper implements RecipeWrapper {
 		return event.getSlot() != 4 && event.getCursor().getType() != Material.AIR;
 	}
 
-	public void handleInventoryClick(final InventoryClickEvent event, final Inventory clickedInventory, final int slot) {
+	public boolean handleInventoryClick(final BrewingRecipe brewingRecipe, final InventoryClickEvent event, final Inventory clickedInventory, final int slot) {
 		ItemStack item = clickedInventory.getItem(slot);
+		final ItemStack cursor = event.getCursor();
 
 		if (item == null) {
-			handleNullItemInSlot(event, clickedInventory, slot);
-		}
+			final ItemStack contentStack = getContentStack(brewingRecipe, slot);
+			if (contentStack == null && event.getSlot() != 3) return false;
 
-		if (event.getCursor().getAmount() < event.getCursor().getMaxStackSize() && event.getCursor().isSimilar(item)) {
+			if (cursor.isSimilar(contentStack) || event.getSlot() == 3) {
+				handleNullItemInSlot(event, clickedInventory, slot);
+			} else {
+				return false;
+			}
+			return true;
+		}
+		if (cursor.getAmount() < cursor.getMaxStackSize() && cursor.isSimilar(item)) {
 			handleCursorStacking(event, clickedInventory, slot, item);
 		}
+		return true;
+	}
+
+	private static @Nullable ItemStack getContentStack(final BrewingRecipe brewingRecipe, final int slot) {
+		final ItemStack[] content = brewingRecipe.getContent();
+		ItemStack contentStack = null;
+		if (content.length > slot)
+			contentStack = content[slot];
+		return contentStack;
 	}
 
 	private void handleNullItemInSlot(final InventoryClickEvent event, final Inventory clickedInventory, final int slot) {

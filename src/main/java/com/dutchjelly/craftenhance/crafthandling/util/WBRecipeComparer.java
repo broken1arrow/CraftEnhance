@@ -210,13 +210,10 @@ public class WBRecipeComparer {
 		final Map<Character, RecipeChoice> choiceMap = shapedRecipe.getChoiceMap();
 		for (int startY = 0; startY <= gridSize - recipeHeight; startY++) {
 			for (int startX = 0; startX <= gridSize - recipeWidth; startX++) {
-
 				if (checkMatch(matrix, choiceMap, shape, startX, startY, gridSize, false) ||
 						checkMatch(matrix, choiceMap, shape, startX, startY, gridSize, true)) {
 					return true;
 				}
-
-
 			}
 		}
 		return false;
@@ -238,13 +235,11 @@ public class WBRecipeComparer {
 					char key = shape[recipeY].charAt(targetX);
 
 					RecipeChoice choice = choiceMap.get(key);
-
 					if (choice == null) {
 						if (item != null && item.getType() != Material.AIR) {
 							return false;
 						}
 					} else {
-
 						if (item == null || !choice.test(item)) {
 							return false;
 						}

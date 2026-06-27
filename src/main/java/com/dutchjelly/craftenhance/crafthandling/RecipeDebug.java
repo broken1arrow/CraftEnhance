@@ -47,9 +47,16 @@ public class RecipeDebug {
 	public static String convertItemStackArrayToString(final Collection<ItemStack> matrix) {
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append("\n____________ingredient matrix_____________");
+		Map<ItemStack, Integer> map = new LinkedHashMap<>();
 		for (ItemStack invItemStack : matrix) {
-			formatStack(invItemStack, stringBuilder);
+			map.merge(invItemStack, 1, Integer::sum);
 		}
+		map.forEach((itemStack, integer) -> {
+			formatStack(itemStack, stringBuilder);
+			if (itemStack != null && integer > 1) {
+				stringBuilder.append("amount: ").append(integer).append("\n");
+			}
+		});
 		stringBuilder.append("\n____________ingredient matrix_____________\n");
 		return stringBuilder + "";
 	}
@@ -63,7 +70,7 @@ public class RecipeDebug {
 		}
 		map.forEach((itemStack, integer) -> {
 			formatStack(itemStack, stringBuilder);
-			if (integer > 1) {
+			if (itemStack != null && integer > 1) {
 				stringBuilder.append("amount: ").append(integer).append("\n");
 			}
 		});

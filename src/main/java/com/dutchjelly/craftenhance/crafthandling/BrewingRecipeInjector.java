@@ -44,7 +44,7 @@ public class BrewingRecipeInjector {
 
 	public void onBrewClick(final InventoryClickEvent event) {
 		if (!enableBrewing || !enableCraft) {
-			Debug.Send(Type.Brewing, () -> "Brewing is turned off in the config, set it to true to allowing custom brewing recipes.");
+			Debug.send(Type.Brewing, "denied", () -> "Brewing is turned off in the config, set it to true to allowing custom brewing recipes.");
 			return;
 		}
 		if (event.getInventory().getType() != InventoryType.BREWING) return;
@@ -64,7 +64,7 @@ public class BrewingRecipeInjector {
 			return;
 		}
 
-		Debug.Send(Type.Brewing, () -> "Player clicked inside Brewing stand, will start to check after matching recipe.");
+		Debug.send(Type.Brewing, "start searching", () -> "Player clicked inside Brewing stand, will start to check after matching recipe.");
 		ItemStack itemStackCursor = event.getCursor();
 		if (brewerInventory.getIngredient() != null)
 			itemStackCursor = brewerInventory.getIngredient();
@@ -104,17 +104,17 @@ public class BrewingRecipeInjector {
 
 			if (possibleRecipeGroups.isEmpty()) {
 				if (RecipeAdapter.checkForDisabledRecipe(disabledServerRecipes, itemStackCheck)) {
-					Debug.Send(Type.Brewing, () -> "This brewing recipe is turned off, will not allow put the item inside the brewing stand.");
+					Debug.send(Type.Brewing, "disabled_recipe", () -> "This brewing recipe is turned off, will not allow put the item inside the brewing stand.");
 					return;
 				}
-				Debug.Send(Type.Brewing, () -> "Couldn't find any matching brewing groups. Skipping the rest of the recipe checks.");
+				Debug.send(Type.Brewing, "No_group", () -> "Couldn't find any matching brewing groups. Skipping the rest of the recipe checks.");
 				return;
 			}
 			if (self().isDisableDefaultModeldataCrafts() && Adapter.containsModelData(brewerInventory.getContents())) {
-				Debug.Send(Type.Brewing, () -> "Found a matching group of brewing recipes, but has turn off creating recipe with modeldata.");
+				Debug.send(Type.Brewing, "model_match", () -> "Found a matching group of brewing recipes, but has turn off creating recipe with modeldata.");
 				return;
 			}
-			Debug.Send(Type.Brewing, () -> "Found " + possibleRecipeGroups.size() + " groups that matching the brewing recipe. Now checking for a matching recipe based on your provided items.");
+			Debug.send(Type.Brewing, "Find_matching_recipes",()-> "Found " + possibleRecipeGroups.size() + " groups that matching the brewing recipe. Now checking for a matching recipe based on your provided items.");
 			final BrewingClickContext clickContext = BrewingClickContext.ofClick(wrapBrewing -> wrapBrewing
 					.setEvent(event)
 					.setBrewingInv(brewerInventory)

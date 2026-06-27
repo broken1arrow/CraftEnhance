@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
 public class RecipeRegistry {
 	private final Map<Material, Set<RecipeWrapper>> mappedRecipes = new HashMap<>();
 	private final Set<RecipeWrapper> allRecipes = new HashSet<>();
-	private final Set<Material> matrixMaterials = new HashSet<>();
+	private final EnumSet<Material> matrixMaterials = EnumSet.noneOf(Material.class);
 	private final List<RecipeWrapper> filteredResult = new ArrayList<>();
 
 	public void addRecipe(@Nonnull final RecipeWrapper recipe, @Nonnull final ItemStack[] content) {
@@ -44,21 +45,19 @@ public class RecipeRegistry {
 
 	public List<RecipeWrapper> findMatchingRecipes(@Nullable final RecipeType recipeType,
 	                                               @Nonnull final ItemStack[] matrix) {
-
-		Debug.send(recipeType, "Find_matching_recipes", () -> "The recipe matrics to find a match: [" +
+		final EnumMap<Material, Integer> matrixMaterials = new EnumMap<>(Material.class);
+		Debug.send(recipeType, "Find_matching_recipes", () -> "The recipe matrix to find a match: [" +
 				Arrays.stream(matrix)
 						.map(stack -> stack != null ? stack.getType().name() : null)
 						.collect(Collectors.joining(",")) + "]"
 		);
-
-		matrixMaterials.clear();
 		int matrixSize = 0;
 		for (ItemStack itemStack : matrix) {
 			if (itemStack == null) continue;
 
 			Material type = itemStack.getType();
 			if (type != null && type != Material.AIR) {
-				matrixMaterials.add(type);
+				matrixMaterials.merge(type, 1, Integer::sum);
 				matrixSize++;
 			}
 		}
@@ -72,7 +71,7 @@ public class RecipeRegistry {
 		Material bestTrigger = null;
 		int smallestCacheSize = Integer.MAX_VALUE;
 
-		for (Material type : matrixMaterials) {
+		for (Material type : matrixMaterials.keySet()) {
 			Set<RecipeWrapper> set = this.mappedRecipes.get(type);
 			if (set == null || set.isEmpty()) continue;
 
@@ -89,9 +88,12 @@ public class RecipeRegistry {
 			return Collections.emptyList();
 		}
 		final Set<RecipeWrapper> smallestRecipeSet = this.mappedRecipes.get(bestTrigger);
-		filteredResult.clear();
+		final List<RecipeWrapper> filteredResult = new ArrayList<>();
+		System.out.println("matrixSize " + matrixSize);
+		System.out.println("matrixSize " + matrixMaterials);
+		System.out.println("matrixSize " + smallestRecipeSet);
 		for (RecipeWrapper recipe : smallestRecipeSet) {
-			if (canPossiblyMatch(matrixSize, recipe)) {
+			if (canPossiblyMatch(matrixMaterials, matrixSize, recipe)) {
 				filteredResult.add(recipe);
 			}
 		}
@@ -100,12 +102,8 @@ public class RecipeRegistry {
 
 		filteredResult.sort(Comparator.comparingInt(RecipeWrapper::priority));
 
-		Debug.send(recipeType, "Find_matching_recipes", () -> "\n___________________Final recipes___________________" +
-				(filteredResult.isEmpty() ? "'no match found" : "\n>" + filteredResult + "<\n") +
-				"\n___________________Final recipes end________________"
-		);
-
-		return new ArrayList<>(filteredResult);
+		//Debug.send(recipeType, "Find_matching_recipes", () -> "\n___________________Final recipes___________________" + (filteredResult.isEmpty() ? "'no match found" : "\n>" + filteredResult + "<\n") + "\n___________________Final recipes end________________");
+		return filteredResult;
 	}
 
 	public void removeRecipe(@Nonnull final EnhancedRecipe enhancedRecipe, @Nonnull final ItemStack[] content) {
@@ -168,17 +166,24 @@ public class RecipeRegistry {
 	}
 
 
-	private boolean canPossiblyMatch(final int matrixSize, RecipeWrapper recipe) {
+	private boolean canPossiblyMatch(final EnumMap<Material, Integer> matrixMaterials, final int matrixSize, RecipeWrapper recipe) {
+		if (recipe.getTotalSlotCount() != matrixSize) {
+			return false;
+		}
 		final EnumMap<Material, Integer> ingredients = recipe.getIngredients();
-		if (recipe.getTotalSlotCount() == matrixSize)
-			for (Material mat : matrixMaterials) {
-				Integer totalSlotCount = ingredients.get(mat);
-				if (totalSlotCount == null) continue;
-				if (totalSlotCount <= matrixSize) {
-					return true;
-				}
+		for (Entry<Material, Integer> gridEntry : matrixMaterials.entrySet()) {
+			Material gridMat = gridEntry.getKey();
+			int gridAmount = gridEntry.getValue();
+			Integer recipeMaxAmount = ingredients.get(gridMat);
+
+			if (recipeMaxAmount == null) {
+				return false;
 			}
-		return false;
+			if (gridAmount > recipeMaxAmount) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 }

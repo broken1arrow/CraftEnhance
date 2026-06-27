@@ -67,7 +67,6 @@ public class RecipeInjector implements Listener {
 	private final Map<UUID, FinishCraft> finishRecipe = new HashMap<>();
 
 	private final BrewingRecipeInjector brewingRecipeInjector;
-	private WorkBenchRecipeInjector workBenchRecipeInjector;
 	@Getter
 	private final FurnaceRecipeInjector furnaceRecipeInjector;
 	private TrackPlayerLocation trackPlayerLocation;

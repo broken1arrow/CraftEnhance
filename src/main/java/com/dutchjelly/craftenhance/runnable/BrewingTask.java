@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.runnable;
 
 import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.crafthandling.RecipeDebug;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
@@ -17,9 +18,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -45,12 +48,13 @@ public class BrewingTask implements Runnable {
 			Location location = entry.getKey();
 			BrewingLogic logic = entry.getValue();
 			BlockState state = location.getBlock().getState();
+			final BrewingRecipe brewingRecipe = logic.getBrewingRecipe();
 			if (!location.getWorld().isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4)) {
-				Debug.Send(Type.Brewing, () -> "[" + logic.getBrewingRecipe().getKey() + "] Chunk unloaded, will check again later.");
+				Debug.send(Type.Brewing, "world_unloaded | recipe=" + brewingRecipe.getKey(), () -> "Chunk unloaded, will check again later.");
 				continue;
 			}
 			if (!(state instanceof BrewingStand)) {
-				Debug.Send(Type.Brewing, () -> "[" + logic.getBrewingRecipe().getKey() + "] Is not a brewing stand, will just abort the brewing.");
+				Debug.send(Type.Brewing, "not_brewing | recipe=" + brewingRecipe.getKey(), () -> "Is not a brewing stand, will just abort this brewing task.");
 				remove.add(location);
 				continue;
 			}
@@ -58,7 +62,7 @@ public class BrewingTask implements Runnable {
 			final BrewingStand brewer = (BrewingStand) state;
 			int fuel = brewer.getFuelLevel();
 			if (fuel <= 0) {
-				Debug.Send(Type.Brewing, () -> "[" + logic.getBrewingRecipe().getKey() + "] No fuel left, will just stop the processes to it gets filled up.");
+				Debug.send(Type.Brewing, "no_fuel | recipe=" + brewingRecipe.getKey(), () -> "No fuel left, will just stop the processes to it gets filled up.");
 				continue;
 			}
 
@@ -74,9 +78,9 @@ public class BrewingTask implements Runnable {
 
 			if (Arrays.stream(contents).allMatch(Objects::isNull) || item == null) {
 				if (item == null) {
-					Debug.Send(Type.Brewing, () -> "[" + logic.getBrewingRecipe().getKey() + "] All result slots is empty or ingredient is removed, cancel the brewing.");
+					Debug.send(Type.Brewing, "stop_brewing | recipe=" + brewingRecipe.getKey(), () -> "All result slots is empty or ingredient is removed, cancel the brewing.");
 				} else {
-					Debug.Send(Type.Brewing, () -> "[" + logic.getBrewingRecipe().getKey() + "] All result slots is empty, cancel the brewing.");
+					Debug.send(Type.Brewing, "stop_brewing | recipe=" + brewingRecipe.getKey(), () -> "All result slots is empty, cancel the brewing.");
 				}
 				remove.add(location);
 				continue;
@@ -90,24 +94,32 @@ public class BrewingTask implements Runnable {
 				location.getWorld().playSound(location, brewSound, 0.4f, 1.0f);
 			}
 
-			Debug.Send(Type.Brewing, () -> "[" + logic.getBrewingRecipe().getKey() + "] Brewing and the time left: " + logic.getRemainingMillis() / 1000);
+			Debug.send(Type.Brewing, "countdown | recipe=" + brewingRecipe.getKey(), () -> "Time left for brewing: " + logic.getRemainingMillis() / 1000);
 			if (logic.isBrewingDone()) {
-				if(item.getAmount() < 1 || item.getType() == Material.AIR){
-					Debug.Send(Type.Brewing, () -> "[" + logic.getBrewingRecipe().getKey() + "] Can't remove ingredient that is AIR or the amount is zero or less.");
+				if (item.getAmount() < 1 || item.getType() == Material.AIR) {
+					Debug.send(Type.Brewing, "stop_brewing | recipe=" + brewingRecipe.getKey(), () -> "Can't remove top ingredient that is AIR or the amount is zero or less, stop brewing.");
 					remove.add(location);
 					continue;
 				}
-				item.setAmount(item.getAmount() - 1);
 
-				BrewingRecipe recipe = logic.getBrewingRecipe();
+				item.setAmount(item.getAmount() - 1);
+				inv.setItem(3, item.getAmount() <= 0 ? null : item);
+
+				final List<ItemStack> addedItems = new ArrayList<>();
 				for (int i = 0; i < contents.length; i++) {
 					if (contents[i] != null) {
-						inv.setItem(i, recipe.getResultItem(i));
+						final ItemStack resultItem = brewingRecipe.getResultItem(i);
+						inv.setItem(i, resultItem);
+						addedItems.add(resultItem);
 					}
 				}
+
+				brewer.update();
+
 				Sound brewCompleteSound = getSound("BLOCK_BREWING_STAND_BREW_COMPLETE", "BLOCK_BREWING_STAND_BREW");
 				location.getWorld().playSound(location, brewCompleteSound, 1.0f, 1.0f);
-				Debug.Send(Type.Brewing, () -> "[" + logic.getBrewingRecipe().getKey() + "] Just completed the brewing and the result should be set inside the inventory.");
+				Debug.send(Type.Brewing, "result | recipe=" + brewingRecipe.getKey(), () -> "Just completed the brewing and the result should be set inside the inventory.");
+				Debug.send(Type.Brewing, "result | recipe=" + brewingRecipe.getKey(), () -> "The item matrix to be set in all non null slots: " + RecipeDebug.convertItemStackArrayToString(addedItems));
 				remove.add(location);
 			}
 		}
