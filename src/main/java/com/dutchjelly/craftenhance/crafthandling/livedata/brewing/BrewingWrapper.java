@@ -56,11 +56,6 @@ public class BrewingWrapper implements RecipeWrapper {
 		return brewingRecipe.getKey();
 	}
 
-	@Override
-	public boolean containsIngredient(final Material material) {
-		return false;
-	}
-
 	@Nonnull
 	@Override
 	public RecipeType getRecipeType() {
@@ -80,6 +75,16 @@ public class BrewingWrapper implements RecipeWrapper {
 	@Override
 	public EnumMap<Material, Integer> getIngredients() {
 		return new EnumMap<>(Material.class);
+	}
+
+	@Override
+	public int getAmountOfIngredient(final Material material) {
+		return 0;
+	}
+
+	@Override
+	public int getTotalSlotCount() {
+		return 0;
 	}
 
 	@Override

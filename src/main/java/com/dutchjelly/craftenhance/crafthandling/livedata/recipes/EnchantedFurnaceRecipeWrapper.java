@@ -12,6 +12,7 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerCache;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerData;
 import com.dutchjelly.craftenhance.messaging.Debug;
+import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import org.bukkit.Material;
 import org.bukkit.block.Furnace;
 import org.bukkit.entity.Player;
@@ -31,6 +32,7 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 public class EnchantedFurnaceRecipeWrapper implements RecipeWrapper {
 	private final FurnaceRecipe furnaceRecipe;
 	private final EnumMap<Material, Integer> ingredients = new EnumMap<>(Material.class);
+	private int totalSlotCount;
 	private final String key;
 
 	public EnchantedFurnaceRecipeWrapper(@Nonnull final FurnaceRecipe furnaceRecipe) {
@@ -41,6 +43,7 @@ public class EnchantedFurnaceRecipeWrapper implements RecipeWrapper {
 			Material type = stack.getType();
 			if (type == Material.AIR) continue;
 			ingredients.merge(type, 1, Integer::sum);
+			totalSlotCount++;
 		}
 
 		StringBuilder builder = new StringBuilder(furnaceRecipe.getResult().getType().name());
@@ -83,9 +86,18 @@ public class EnchantedFurnaceRecipeWrapper implements RecipeWrapper {
 	}
 
 	@Override
-	public boolean containsIngredient(final Material material) {
-		return this.ingredients.containsKey(material);
+	public int getTotalSlotCount() {
+		return totalSlotCount;
 	}
+
+	@Override
+	public int getAmountOfIngredient(final Material material) {
+		Integer amount = this.ingredients.get(material);
+		if (amount != null)
+			return amount;
+		return 0;
+	}
+
 
 	@Override
 	public <T> Optional<T> getRecipe(final Class<T> type) {
@@ -105,29 +117,38 @@ public class EnchantedFurnaceRecipeWrapper implements RecipeWrapper {
 		final ItemStack[] srcMatrix = furnaceContext.getRecipeMatrix();
 		final FurnaceRecipe fRecipe = this.furnaceRecipe;
 
-		Debug.Send(fRecipe, () -> "Furnace belongs to player: " + player + " the id " + (player != null ? player.getName() : "ID not found in cache."));
-		Debug.Send(fRecipe, () -> "Checking if enhanced recipe for " + fRecipe.getResult().toString() + " matches.");
-		Debug.Send(fRecipe, () -> "The srcMatrix " + Arrays.toString(srcMatrix) + ".");
+		Debug.send(Type.Smelting, "furnace=" + fRecipe.getKey(), () -> {
+			String serverRecipeInfo = "not set a server recipe";
+			if (serverRecipe != null)
+				serverRecipeInfo = RecipeDebug.formatOneStack(serverRecipe.getResult());
+			return "It will check if recipe allowed for this world, not disabled and this is a enchanted recipe:\n" + RecipeDebug.formatOneStack(fRecipe.getResult()) +
+					"\nServer detected this recipe: " + serverRecipeInfo;
+		});
+
+		Debug.send(Type.Smelting, "furnace=" + fRecipe.getKey(), () -> "Furnace belongs to player: " + player + " the id " + (player != null ? player.getName() : "ID not found in cache."));
+		Debug.send(Type.Smelting, "furnace=" + fRecipe.getKey(), () -> "The smelting matrix item:\n" + RecipeDebug.convertItemStackArrayToString(srcMatrix));
 
 		if (fRecipe.matches(srcMatrix)) {
 			if (RecipeAdapter.entityCanCraft(player, fRecipe)) {
-				Debug.Send(fRecipe, () -> "Found enhanced recipe " + fRecipe.getResult() + " for furnace");
-				Debug.Send(fRecipe, () -> "Matching ingredients are " + Arrays.toString(srcMatrix) + " .");
+				Debug.send(Type.Smelting, "result | furnace=" + fRecipe.getKey(), () -> "Found the enhanced recipe that match this for enchanted furnace recipe.");
 				return new ResultContext(fRecipe, fRecipe.getResult(), ResultType.ENHANCED);
 			} else {
-				Debug.Send(fRecipe, () -> "found this recipe " + fRecipe.getResult().toString() + " match but, player has not this permission " + fRecipe.getPermission());
+				Debug.send(Type.Smelting, "result | furnace=" + fRecipe.getKey(), () -> "Found a matching recipe,but player has not this permission: " + fRecipe.getPermission());
 				return new ResultContext(fRecipe, fRecipe.getResult(), ResultType.NO_PERMISSION);
 			}
 		} else {
 			final boolean isVanillaRecipe = serverRecipe != null && fRecipe.matchesType(new ItemStack[]{((org.bukkit.inventory.FurnaceRecipe) serverRecipe).getInput()}) && !fRecipe.getResult().isSimilar(serverRecipe.getResult());
 			if (fRecipe.isCheckPartialMatch() && isVanillaRecipe) {
-				Debug.Send(fRecipe, () -> "Recipe partial match match: input '" + Arrays.toString(srcMatrix) + " , furnace burn result " + fRecipe.getResult() + " | " + (RecipeAdapter.entityCanCraft(player, fRecipe) ? "'." : "' and no perms."));
+				Debug.send(Type.Smelting, "vanilla_match | furnace=" + fRecipe.getKey(), () -> "Recipe partial match match for this recipe output: \n" + RecipeDebug.formatOneStack(serverRecipe.getResult()));
+				Debug.send(Type.Smelting, "vanilla_match | furnace=" + fRecipe.getKey(), () -> "Recipe partial match match with this matrix input: \n" + RecipeDebug.convertItemStackArrayToString(srcMatrix));
+				Debug.send(Type.Smelting, "vanilla_match | furnace=" + fRecipe.getKey(), () -> "And the player " +
+						(RecipeAdapter.entityCanCraft(player, fRecipe) ? "have permission to craft the recipe." : "did not have permission to craft the recipe."));
 				return new ResultContext(fRecipe, fRecipe.getResult(), ResultType.PARTIAL_MATCH);
 			}
 			if (isVanillaRecipe) {
 				return new ResultContext(fRecipe, fRecipe.getResult(), ResultType.NO_MATCH);
 			}
-			Debug.Send(fRecipe, () -> "found recipe doesn't match '" + Arrays.toString(srcMatrix) + (RecipeAdapter.entityCanCraft(player, fRecipe) ? "'." : "' and no perms."));
+			Debug.send(Type.Smelting, "no_match | furnace=" + fRecipe.getKey(), () -> "Found smelting matrix doesn't match this enchanted furnace recipe.");
 		}
 		return new ResultContext(fRecipe, fRecipe.getResult(), ResultType.NO_MATCH);
 	}

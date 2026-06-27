@@ -134,6 +134,17 @@ public class RecipeInjector implements Listener {
 		final CraftingInventory craftingInventory = craftEvent.getInventory();
 		final List<HumanEntity> viewers = craftEvent.getViewers();
 
+		ItemStack result = serverRecipe.getResult();
+		boolean requiresVanillaResolution = result.getType() == Material.AIR ||
+				result.getAmount() <= 0;
+		if (requiresVanillaResolution) {
+			Debug.send(Type.Crafting, "Vanilla resolution",
+					() -> "Recipe has no resolved Bukkit result, it will just allowing this passing through. " +
+							"This may be a vanilla dynamic recipe (firework, special crafting) " +
+							"or a custom recipe missing proper output registration."
+			);
+			return;
+		}
 
 		final List<RecipeWrapper> recipes = this.getLoader().findMatchingRecipe(RecipeType.WORKBENCH, craftingInventory.getMatrix());
 		final TrackPlayerLocation trackPlayerCraft = this.trackPlayerLocation;
@@ -149,7 +160,6 @@ public class RecipeInjector implements Listener {
 
 		final Location location = craftingInventory.getLocation();
 		viewers.forEach(humanEntity -> removeFinishRecipe(humanEntity.getUniqueId()));
-
 		for (RecipeWrapper recipe : recipes) {
 			ResultContext contextResult = recipe.matches(craftEvent.getRecipe(), prepareRecipeContext -> {
 				if (prepareRecipeContext instanceof PrepareItemCraftContext) {

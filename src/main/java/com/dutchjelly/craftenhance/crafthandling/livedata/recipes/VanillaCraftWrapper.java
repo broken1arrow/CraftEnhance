@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.crafthandling.livedata.recipes;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.bukkitadapter.Adapter.RecipeContext;
 import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.crafthandling.RecipeDebug;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
@@ -37,11 +38,15 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 public class VanillaCraftWrapper implements RecipeWrapper {
 	private final Recipe recipe;
 	private final EnumMap<Material, Integer> ingredients;
+	private final int totalSlotCount;
 	private final String key;
+
 
 	public VanillaCraftWrapper(@NonNull final Recipe recipe) {
 		this.recipe = recipe;
-		this.ingredients = Adapter.getFullIngredientsList(recipe);
+		RecipeContext recipeContext = Adapter.getFullIngredientsList(recipe);
+		this.ingredients = recipeContext.getMap();
+		this.totalSlotCount = recipeContext.getTotalSlotCount();
 
 		StringBuilder builder = new StringBuilder(recipe.getResult().getType().name());
 		builder.append("|");
@@ -82,14 +87,23 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 	}
 
 	@Override
-	public EnumMap<Material, Integer>  getIngredients() {
+	public EnumMap<Material, Integer> getIngredients() {
 		return ingredients;
 	}
 
 	@Override
-	public boolean containsIngredient(final Material material) {
-		return ingredients.containsKey(material);
+	public int getTotalSlotCount() {
+		return totalSlotCount;
 	}
+
+	@Override
+	public int getAmountOfIngredient(final Material material) {
+		Integer amount = this.ingredients.get(material);
+		if (amount != null)
+			return amount;
+		return 0;
+	}
+
 
 	@Override
 	public ResultContext matches(@Nonnull final Recipe serverRecipe, @Nonnull final Consumer<PrepareRecipeContext> contextConsumer) {
@@ -98,35 +112,35 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 		final ItemStack[] matrix = prepareItemCraftContext.getRecipeMatrix();
 		final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
 
-		Debug.Send(Type.Crafting, () -> "Vanilla recipe check, the result to match: " + recipe.getResult());
+		Debug.send(Type.Crafting, "vanilla recipe", () -> "It will check if recipe allowed for this world, not disabled and this is a valid vanilla recipe:\n" + RecipeDebug.formatOneStack(recipe.getResult()));
 		if (RecipeAdapter.checkForDisabledRecipe(disabledServerRecipes, recipe.getResult())) {
-			Debug.Send(Type.Crafting, () -> "This recipe is disabled with result: " + recipe.getResult());
+			Debug.send(Type.Crafting, "Vanilla recipe", () -> "This recipe is disabled and will not be crafted");
 			return new ResultContext(null, ResultType.DISABLED);
 		}
 
 		if (recipe instanceof ShapedRecipe) {
-			Debug.Send(Type.Crafting, () -> "[ShapedRecipe] matrix to match: " + RecipeDebug.convertItemStackArrayToString(matrix));
-			Debug.Send(Type.Crafting, () -> {
+			Debug.send(Type.Crafting, "injecting | crafting_vanilla", () -> "[ShapedRecipe] crafting table matrix to match: " + RecipeDebug.convertItemStackArrayToString(matrix));
+			Debug.send(Type.Crafting, "injecting | crafting_vanilla", () -> {
 				final ItemStack[] content = ServerRecipeTranslator.translateShapedRecipe((ShapedRecipe) recipe);
-				return "[ShapedRecipe] ingredients" + RecipeDebug.convertItemStackArrayToString(content);
+				return "[ShapedRecipe] ingredients for this recipe: " + RecipeDebug.convertItemStackArrayToString(content);
 			});
 			if (WBRecipeComparer.shapedMatch((ShapedRecipe) recipe, matrix)) {
-				Debug.Send(Type.Crafting, () -> "Matched a ShapedRecipe and will allow this server recipe.");
+				Debug.send(Type.Crafting, "result | crafting_vanilla", () -> "Matched a ShapedRecipe and will allow this server recipe.");
 				return new ResultContext(recipe.getResult(), ResultType.VANILLA);
 			}
 		} else if (recipe instanceof ShapelessRecipe) {
-			Debug.Send(Type.Crafting, () -> "[ShapelessRecipe] matrix to match: " + RecipeDebug.convertItemStackArrayToString(matrix));
-			Debug.Send(Type.Crafting, () -> {
+			Debug.send(Type.Crafting, "injecting | crafting_vanilla", () -> "[ShapelessRecipe] crafting table matrix to match: " + RecipeDebug.convertItemStackArrayToString(matrix));
+			Debug.send(Type.Crafting, "injecting | crafting_vanilla", () -> {
 				final ItemStack[] ingredients = ServerRecipeTranslator.translateShapelessRecipe((ShapelessRecipe) recipe);
-				return "[ShapelessRecipe] ingredients" + RecipeDebug.convertItemStackArrayToString(ingredients);
+				return "[ShapelessRecipe] ingredients for this recipe: " + RecipeDebug.convertItemStackArrayToString(ingredients);
 			});
 
 			if (WBRecipeComparer.shapelessMatch((ShapelessRecipe) recipe, matrix)) {
-				Debug.Send(Type.Crafting, () -> "Matched a ShapelessRecipe and will allow this server recipe.");
+				Debug.send(Type.Crafting, "result | crafting_vanilla", () -> "Matched a shapeless recipe and will allow this server recipe.");
 				return new ResultContext(recipe.getResult(), ResultType.VANILLA);
 			}
 		}
-		Debug.Send(Type.Crafting, () -> "Did not match this recipe.");
+		Debug.send(Type.Crafting, "no_match | crafting_vanilla", () -> "Crafting table matrix did not match this crafting recipe.");
 		return new ResultContext(null, ResultType.NO_MATCH);
 	}
 
@@ -156,7 +170,7 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("___________<  Vanilla Recipe >___________")
+		builder.append("___________<  crafting_vanilla >___________")
 				.append("\n");
 		builder.append("Result: ")
 				.append(this.recipe.getResult().getType().name())
@@ -216,7 +230,7 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 			}
 		}
 
-		builder.append("___________<  Vanilla Recipe end >___________\n");
+		builder.append("___________<  crafting_vanilla end >___________\n");
 		return builder.toString();
 	}
 

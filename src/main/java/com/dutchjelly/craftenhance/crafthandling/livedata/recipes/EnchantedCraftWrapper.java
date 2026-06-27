@@ -39,6 +39,7 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 public class EnchantedCraftWrapper implements RecipeWrapper {
 	private final WBRecipe enhancedRecipe;
 	private final EnumMap<Material, Integer> ingredients = new EnumMap<>(Material.class);
+	private int totalSlotCount;
 	private final String key;
 
 	public EnchantedCraftWrapper(@Nonnull final WBRecipe enhancedRecipe) {
@@ -50,6 +51,7 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 			Material type = stack.getType();
 			if (type == Material.AIR) continue;
 			ingredients.merge(type, 1, Integer::sum);
+			totalSlotCount++;
 		}
 
 		this.key = enhancedRecipe.getResult().getType().name() + "|" +
@@ -89,9 +91,19 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 	}
 
 	@Override
-	public boolean containsIngredient(final Material material) {
-		return this.ingredients.containsKey(material);
+	public int getTotalSlotCount() {
+		return totalSlotCount;
 	}
+
+	@Override
+	public int getAmountOfIngredient(final Material material) {
+		Integer amount = this.ingredients.get(material);
+		if (amount != null)
+			return amount;
+		return 0;
+	}
+
+
 
 	@Override
 	public ResultContext matches(@Nonnull final Recipe serverRecipe, @Nonnull final Consumer<PrepareRecipeContext> contextConsumer) {
@@ -103,76 +115,85 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 		final WBRecipe wbRecipe = enhancedRecipe;
 
 		if (inventory == null) {
-			Debug.Send(Type.Crafting, () -> "You have not set the inventory, it will deny all crafting.");
+			Debug.send(Type.Crafting, "recipe=" + wbRecipe.getKey(), () -> "You have not set the inventory, it will deny all crafting.");
 			return new ResultContext(wbRecipe, null, ResultType.CANCELLED);
 		}
 
 		final List<HumanEntity> viewers = craftContext.getViewers();
 		final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
+		final boolean notAllowedToCraft = RecipeAdapter.isCraftingAllowedInWorld(location, wbRecipe);
 
-		Debug.Send(Type.Crafting, () -> "The server wants to inject " + serverRecipe.getResult() + " ceh will check or modify this.");
+		Debug.send(Type.Crafting, "recipe=" + wbRecipe.getKey(),  () -> {
+			String serverRecipeInfo = "not set a server recipe";
+			if (serverRecipe != null)
+				serverRecipeInfo = RecipeDebug.formatOneStack(serverRecipe.getResult());
+			return "It will check if recipe allowed for this world, not disabled and this is a enchanted recipe:\n" + RecipeDebug.formatOneStack(wbRecipe.getResult()) +
+					"\nServer detected this recipe: " + serverRecipeInfo;
+		});
 
-		boolean notAllowedToCraft = RecipeAdapter.isCraftingAllowedInWorld(location, wbRecipe);
 		if (notAllowedToCraft) {
-			Debug.Send(wbRecipe, () -> "You are not allowed to craft this recipe: " + wbRecipe.getKey());
+			Debug.send(Type.Crafting, "world_check | recipe=" + wbRecipe.getKey(), () -> "You are not allowed to craft this recipe: " + wbRecipe.getKey());
 			craftContext.setResult(null);
 			return new ResultContext(wbRecipe, null, ResultType.NO_PERMISSION);
 		}
 
 		if (RecipeAdapter.checkForDisabledRecipe(disabledServerRecipes, wbRecipe, serverRecipe.getResult())) {
-			Debug.Send(wbRecipe, () -> "This recipe is disabled: " + wbRecipe.getKey());
+			Debug.send(Type.Crafting, "disabled | recipe=" + wbRecipe.getKey(), () -> "This recipe is disabled: " + wbRecipe.getKey());
 			craftContext.setResult(null);
 			return new ResultContext(wbRecipe, null, ResultType.DISABLED);
 		}
 
 
-		Debug.Send(wbRecipe, () -> "Checking if enhanced recipe for " + wbRecipe.getResult().toString() + " matches.");
+		Debug.send(Type.Crafting, "recipe=" + wbRecipe.getKey(), () -> "The recipe allowed for this world and recipe are not blocked on the server, will check the ingredient matrix match.");
 		final Player player = !viewers.isEmpty() ? (Player) viewers.get(0) : null;
-		if (inventory.getType() != InventoryType.WORKBENCH && inventory.getType() != InventoryType.CRAFTING && self().getConfig().getBoolean("turn_of_crafter", true)) {
-			Debug.Send(wbRecipe, () -> "The crafting of this custom recipe is stopped.");
-			return new ResultContext(wbRecipe, null, ResultType.CANCELLED);
-		}
 
 		if (wbRecipe.matches(matrix)
 				&& RecipeAdapter.isViewersAllowedCraft(viewers, wbRecipe)
 				&& !CraftEnhanceAPI.fireEvent(wbRecipe, player, inventory, null)) {
-			Debug.Send(wbRecipe, () -> "Recipe matches, injecting " + wbRecipe.getResult().toString());
+			if (inventory.getType() != InventoryType.WORKBENCH && inventory.getType() != InventoryType.CRAFTING && self().getConfig().getBoolean("turn_of_crafter", true)) {
+				Debug.send(Type.Crafting, "recipe=" + wbRecipe.getKey(), () -> "The crafting of this custom recipe is stopped as crafter is turned of in the config.");
+				return new ResultContext(wbRecipe, null, ResultType.NO_MATCH);
+			}
+
+			Debug.send(Type.Crafting, "recipe=" + wbRecipe.getKey(), () -> "Recipe matches the ingredient matrix, will now check Itemsadder is turned on and the item contains model data.");
 
 			if (self().isMakeItemsadderCompatible() && Adapter.containsModelData(matrix)) {
-				Debug.Send(wbRecipe, () -> "This recipe contains Modeldata and will be crafted if the recipe is not cancelled.");
+				Debug.send(Type.Crafting, "model_check | recipe=" + wbRecipe.getKey(), () -> "This recipe contains Modeldata and will be crafted if the recipe is not cancelled.");
 				if (wbRecipe.matches(matrix)) {
 					final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(enhancedRecipe, wbRecipe, wbRecipe.getResult().clone());
 					if (beforeCraftOutputEvent.isCancelled()) {
-						Debug.Send(wbRecipe, () -> "This recipe is now cancelled and will not produce output item.");
+						Debug.send(Type.Crafting, "cancelled | recipe= " + wbRecipe.getKey(), () -> "This recipe is now cancelled and will not produce output item.");
 						return new ResultContext(wbRecipe, null, ResultType.CANCELLED);
 					}
-					Debug.Send(wbRecipe, () -> "The recipe is now crafted and output item is " + beforeCraftOutputEvent.getResultItem());
-					Debug.Send(wbRecipe, () -> "The crafted recipe matrix: " + RecipeDebug.convertItemStackArrayToString(matrix));
+					Debug.send(Type.Crafting, "result | recipe=" + wbRecipe.getKey(), () -> "The recipe is now crafted and output item is:\n " + RecipeDebug.formatOneStack(beforeCraftOutputEvent.getResultItem()));
+					Debug.send(Type.Crafting, "result | recipe=" + wbRecipe.getKey(), () -> "The inputted  matrix to remove:\n " + RecipeDebug.convertItemStackArrayToString(matrix));
 					return new ResultContext(wbRecipe, beforeCraftOutputEvent.getResultItem(), ResultType.ENHANCED);
 				}
 			} else {
-				Debug.Send(wbRecipe, () -> "This recipe doesn't contains Modeldata and will be crafted if the recipe is not cancelled.");
+				Debug.send(Type.Crafting, "recipe=" + wbRecipe.getKey(), () -> "This recipe doesn't contains Modeldata and will be crafted if the recipe is not cancelled.");
 
 				final BeforeCraftOutputEvent beforeCraftOutputEvent = new BeforeCraftOutputEvent(enhancedRecipe, wbRecipe, wbRecipe.getResult().clone());
 				if (beforeCraftOutputEvent.isCancelled()) {
-					Debug.Send(wbRecipe, () -> "This recipe is now cancelled and will not produce output item.");
+					Debug.send(Type.Crafting, "cancelled | recipe="  + wbRecipe.getKey(), () -> "This recipe is now cancelled and will not produce output item.");
 					return new ResultContext(wbRecipe, null, ResultType.CANCELLED);
 				}
-				Debug.Send(wbRecipe, () -> "The recipe is now crafted and output item is " + beforeCraftOutputEvent.getResultItem());
-				Debug.Send(wbRecipe, () -> "The crafted recipe matrix: " + RecipeDebug.convertItemStackArrayToString(matrix));
+				Debug.send(Type.Crafting, "result | recipe=" + wbRecipe.getKey(), () -> "The recipe is now crafted and output item is\n " + RecipeDebug.formatOneStack(beforeCraftOutputEvent.getResultItem()));
+				Debug.send(Type.Crafting, "result | recipe=" + wbRecipe.getKey(), () -> "The inputted  matrix to remove:\n " + RecipeDebug.convertItemStackArrayToString(matrix));
 				return new ResultContext(wbRecipe, beforeCraftOutputEvent.getResultItem(), ResultType.ENHANCED);
 			}
 		}
-		Debug.Send(wbRecipe, () -> "Recipe matrix doesn't match.");
-		Debug.Send(wbRecipe, () -> RecipeDebug.recipeIngredientsDebug(wbRecipe, matrix));
+		Debug.send(Type.Crafting, "matrix_non | recipe=" + wbRecipe.getKey(), () -> "The crafting recipe matrix doesn't match.");
+		Debug.send(Type.Crafting, "matching_matrix | recipe=" + wbRecipe.getKey(), () -> RecipeDebug.recipeIngredientsDebug(wbRecipe, matrix));
 
-		if (wbRecipe.isCheckPartialMatch() && wbRecipe.matches(matrix, MatchType.MATCH_TYPE.getMatcher())) {
-			Debug.Send(wbRecipe, () -> "Partial matched recipe fond and will prevent craft this recipe.");
-			return new ResultContext(wbRecipe, null, ResultType.PARTIAL_MATCH);
-		} else if (wbRecipe.isCheckPartialMatch()) {
-			Debug.Send(wbRecipe, () -> "Partial matched recipe not fund ingredients not match the type, check next recipe if it exists.");
+		if (wbRecipe.isCheckPartialMatch()) {
+			if (wbRecipe.matches(matrix, MatchType.MATCH_TYPE.getMatcher())) {
+				Debug.send(Type.Crafting, "partial | recipe=" + wbRecipe.getKey(), () -> "Partial matched recipe fond and will prevent craft this recipe.");
+				return new ResultContext(wbRecipe, null, ResultType.PARTIAL_MATCH);
+			} else {
+				Debug.send(Type.Crafting, "partial | recipe=" + wbRecipe.getKey(), () -> "Partial matched recipe not fund, ingredients not match the type of a vanilla recipe.");
+			}
 		}
-		Debug.Send(Type.Crafting, () -> "The recipe did not match the pattern, will continue with next recipe if it exists.");
+		Debug.send(Type.Crafting, "no_match | recipe=" + wbRecipe.getKey(), () -> "The recipe matrix in the crafting table did not match the pattern.");
 		return new ResultContext(wbRecipe, null, ResultType.NO_MATCH);
 	}
 

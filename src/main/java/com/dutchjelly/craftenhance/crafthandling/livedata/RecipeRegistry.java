@@ -41,59 +41,6 @@ public class RecipeRegistry {
 	public List<RecipeWrapper> findMatchingRecipes(@Nonnull final ItemStack[] matrix) {
 		return findMatchingRecipes(null, matrix);
 	}
-/*
-
-	public List<RecipeWrapper> findMatchingRecipes(@Nullable final RecipeType recipeType, @Nonnull final ItemStack[] matrix) {
-		Debug.send(recipeType, "Find_matching_recipes", () -> "The recipe matrics to find a match: [" + Arrays.stream(matrix).map(stack -> {
-					if (stack != null)
-						return stack.getType().name();
-					return null;
-				}).collect(Collectors.joining(",")) + "]"
-		);
-		matrixIngredients.clear();
-		for (ItemStack itemStack : matrix) {
-			if (itemStack != null) {
-				final Material type = itemStack.getType();
-				if (type != null && type != Material.AIR) {
-					matrixIngredients.add(type);
-				}
-			}
-		}
-
-		if (matrixIngredients.isEmpty()) {
-			Debug.send(recipeType, "Find_matching_recipes", () -> "Was no recipe that matched the crafting matrix in the cache");
-			return Collections.emptyList();
-		}
-
-		Material bestTrigger = null;
-		int smallestCacheSize = Integer.MAX_VALUE;
-
-		for (Material type : matrixIngredients) {
-			int size = this.mappedRecipes.getOrDefault(type, Collections.emptySet()).size();
-			if (size > 0 && size < smallestCacheSize) {
-				smallestCacheSize = size;
-				bestTrigger = type;
-			}
-		}
-
-		if (bestTrigger == null) {
-			Debug.send(recipeType, "Find_matching_recipes", () -> "Was no recipe that matched the best matched item type in the cache");
-			return Collections.emptyList();
-		}
-
-		final Set<RecipeWrapper> smallestRecipeSet = this.mappedRecipes.getOrDefault(bestTrigger, Collections.emptySet());
-
-		filteredResult.clear();
-		for (RecipeWrapper recipe : smallestRecipeSet) {
-				filteredResult.add(recipe);
-		}
-
-		Debug.send(recipeType, "Find_matching_recipes", () -> "The final matched recipes amount:" +  filteredResult.size());
-		Debug.send(recipeType, "Find_matching_recipes", () -> "The final matched recipes:" + ( filteredResult.isEmpty() ? "'no match found" : "\n|" +  filteredResult) + "|");
-		filteredResult.sort(Comparator.comparingInt(RecipeWrapper::priority));
-		return new ArrayList<>(filteredResult);
-	}
-*/
 
 	public List<RecipeWrapper> findMatchingRecipes(@Nullable final RecipeType recipeType,
 	                                               @Nonnull final ItemStack[] matrix) {
@@ -153,8 +100,11 @@ public class RecipeRegistry {
 
 		filteredResult.sort(Comparator.comparingInt(RecipeWrapper::priority));
 
-		Debug.send(recipeType, "Find_matching_recipes", () -> "Final recipes: " +
-						(filteredResult.isEmpty() ? "'no match found" : "\n|" + filteredResult) + "|");
+		Debug.send(recipeType, "Find_matching_recipes", () -> "\n___________________Final recipes___________________" +
+				(filteredResult.isEmpty() ? "'no match found" : "\n>" + filteredResult + "<\n") +
+				"\n___________________Final recipes end________________"
+		);
+
 		return new ArrayList<>(filteredResult);
 	}
 
@@ -220,14 +170,14 @@ public class RecipeRegistry {
 
 	private boolean canPossiblyMatch(final int matrixSize, RecipeWrapper recipe) {
 		final EnumMap<Material, Integer> ingredients = recipe.getIngredients();
-
-		for (Material mat : matrixMaterials) {
-			Integer totalSlotCount = ingredients.get(mat);
-			if (totalSlotCount == null) continue;
-			if (totalSlotCount == matrixSize) {
-				return true;
+		if (recipe.getTotalSlotCount() == matrixSize)
+			for (Material mat : matrixMaterials) {
+				Integer totalSlotCount = ingredients.get(mat);
+				if (totalSlotCount == null) continue;
+				if (totalSlotCount <= matrixSize) {
+					return true;
+				}
 			}
-		}
 		return false;
 	}
 

@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.crafthandling.livedata.recipes;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.bukkitadapter.Adapter.RecipeContext;
 import com.dutchjelly.craftenhance.crafthandling.RecipeDebug;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareFurnaceContext;
@@ -20,10 +21,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
@@ -31,11 +30,14 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 public class VanillaFurnaceWrapper implements RecipeWrapper {
 	private final FurnaceRecipe furnaceRecipe;
 	private final EnumMap<Material, Integer> ingredients;
+	private final int totalSlotCount;
 	private String key;
 
 	public VanillaFurnaceWrapper(final FurnaceRecipe furnaceRecipe) {
 		this.furnaceRecipe = furnaceRecipe;
-		this.ingredients = Adapter.getFullIngredientsList(furnaceRecipe);
+		RecipeContext recipeContext = Adapter.getFullIngredientsList(furnaceRecipe);
+		this.ingredients = recipeContext.getMap();
+		this.totalSlotCount = recipeContext.getTotalSlotCount();
 
 		StringBuilder builder = new StringBuilder(furnaceRecipe.getResult().getType().name());
 		builder.append("|");
@@ -74,14 +76,23 @@ public class VanillaFurnaceWrapper implements RecipeWrapper {
 	}
 
 	@Override
-	public EnumMap<Material, Integer>  getIngredients() {
+	public EnumMap<Material, Integer> getIngredients() {
 		return ingredients;
 	}
 
 	@Override
-	public boolean containsIngredient(final Material material) {
-		return this.ingredients.containsKey(material);
+	public int getTotalSlotCount() {
+		return totalSlotCount;
 	}
+
+	@Override
+	public int getAmountOfIngredient(final Material material) {
+		Integer amount = this.ingredients.get(material);
+		if (amount != null)
+			return amount;
+		return 0;
+	}
+
 
 	@Override
 	public ResultContext matches(@Nonnull final Recipe serverRecipe, @Nonnull final Consumer<PrepareRecipeContext> contextConsumer) {
@@ -90,16 +101,16 @@ public class VanillaFurnaceWrapper implements RecipeWrapper {
 		final ItemStack[] srcMatrix = furnaceContext.getRecipeMatrix();
 		final FurnaceRecipe fRecipe = this.furnaceRecipe;
 
-		Debug.Send(Type.Smelting, () -> "Checking if vanilla recipe for " + fRecipe.getResult() + " matches.");
-		Debug.Send(Type.Smelting, () -> "The srcMatrix " + Arrays.toString(srcMatrix) + ".");
+		Debug.send(Type.Smelting, "furnace_recipe", () -> "It will check if recipe allowed for this world, not disabled and this is a valid vanilla furnace recipe output:\n" + RecipeDebug.formatOneStack(serverRecipe.getResult()));
+		Debug.send(Type.Smelting, "furnace_recipe", () -> "The smelting matrix item:" + RecipeDebug.convertItemStackArrayToString(srcMatrix));
 
 		if (matchesType(fRecipe, srcMatrix)) {
-			Debug.Send(Type.Smelting, () -> "Found vanilla recipe " + fRecipe.getResult() + " for furnace.");
-			Debug.Send(Type.Smelting, () -> "Matching ingredients are " + Arrays.toString(srcMatrix) + " .");
+			Debug.send(Type.Smelting, "result | furnace_recipe", () -> "Matched vanilla furnace recipe.");
 			return new ResultContext(fRecipe.getResult(), ResultType.VANILLA);
 		} else {
-			Debug.Send(Type.Smelting, () -> "Found recipe doesn't match '" + Arrays.toString(srcMatrix) + "' and output item " + fRecipe.getResult() + ".");
+			Debug.send(Type.Smelting, "result | furnace_recipe", () -> "Found furnace recipe doesn't match.");
 		}
+		Debug.send(Type.Smelting, "no_match | furnace_recipe", () -> "The smelt item did not match this recipe.");
 		return new ResultContext(fRecipe.getResult(), ResultType.NO_MATCH);
 	}
 

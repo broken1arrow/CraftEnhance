@@ -27,9 +27,9 @@ public class RecipeAdapter {
 		return viewers.stream().allMatch(x -> entityCanCraft(x, wbRecipe));
 	}
 
-	public static boolean entityCanCraft(final Permissible entity, final EnhancedRecipe group) {
-		return group.getPermission() == null || group.getPermission().isEmpty()
-				|| (entity != null && entity.hasPermission(group.getPermission()));
+	public static boolean entityCanCraft(final Permissible entity, final EnhancedRecipe enhancedRecipe) {
+		return enhancedRecipe.getPermission() == null || enhancedRecipe.getPermission().isEmpty()
+				|| (entity != null && entity.hasPermission(enhancedRecipe.getPermission()));
 	}
 
 

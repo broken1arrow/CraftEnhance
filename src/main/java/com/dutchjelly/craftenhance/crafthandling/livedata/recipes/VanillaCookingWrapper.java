@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.crafthandling.livedata.recipes;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.bukkitadapter.Adapter.RecipeContext;
 import com.dutchjelly.craftenhance.crafthandling.RecipeDebug;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareFurnaceContext;
@@ -21,7 +22,6 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.RecipeChoice;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -31,11 +31,15 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 public class VanillaCookingWrapper implements RecipeWrapper {
 	private final CookingRecipe<?> furnaceRecipe;
 	private final EnumMap<Material, Integer> ingredients;
+	private final int totalSlotCount;
 	private final String key;
+
 
 	public VanillaCookingWrapper(final CookingRecipe<?> furnaceRecipe) {
 		this.furnaceRecipe = furnaceRecipe;
-		this.ingredients = Adapter.getFullIngredientsList(furnaceRecipe);
+		RecipeContext recipeContext = Adapter.getFullIngredientsList(furnaceRecipe);
+		this.ingredients = recipeContext.getMap();
+		this.totalSlotCount = recipeContext.getTotalSlotCount();
 
 		StringBuilder builder = new StringBuilder(furnaceRecipe.getResult().getType().name());
 		builder.append("|");
@@ -74,13 +78,21 @@ public class VanillaCookingWrapper implements RecipeWrapper {
 	}
 
 	@Override
-	public EnumMap<Material, Integer>  getIngredients() {
+	public EnumMap<Material, Integer> getIngredients() {
 		return ingredients;
 	}
 
 	@Override
-	public boolean containsIngredient(final Material material) {
-		return this.ingredients.containsKey(material);
+	public int getTotalSlotCount() {
+		return totalSlotCount;
+	}
+
+	@Override
+	public int getAmountOfIngredient(final Material material) {
+		Integer amount = this.ingredients.get(material);
+		if (amount != null)
+			return amount;
+		return 0;
 	}
 
 	@Override
@@ -90,16 +102,16 @@ public class VanillaCookingWrapper implements RecipeWrapper {
 		final ItemStack[] srcMatrix = furnaceContext.getRecipeMatrix();
 		final CookingRecipe<?> fRecipe = this.furnaceRecipe;
 
-		Debug.Send(Type.Smelting, () -> "Checking if vanilla recipe for " + fRecipe.getResult() + " matches.");
-		Debug.Send(Type.Smelting, () -> "The srcMatrix " + Arrays.toString(srcMatrix) + ".");
+		Debug.send(Type.Smelting, "cooking_recipe", () -> "It will check if recipe allowed for this world, not disabled and this is a valid vanilla cooking recipe output:\n" + RecipeDebug.formatOneStack(serverRecipe.getResult()));
+		Debug.send(Type.Smelting, "cooking_recipe", () -> "The cooking input matrix:" + RecipeDebug.convertItemStackArrayToString(srcMatrix));
 
 		if (matchesType(fRecipe, srcMatrix)) {
-			Debug.Send(Type.Smelting, () -> "Found vanilla recipe " + fRecipe.getResult() + " for furnace.");
-			Debug.Send(Type.Smelting, () -> "Matching ingredients are " + Arrays.toString(srcMatrix) + " .");
+			Debug.send(Type.Smelting, "result | cooking_recipe", () -> "Matched vanilla cooking recipe.");
 			return new ResultContext(fRecipe.getResult(), ResultType.VANILLA);
 		} else {
-			Debug.Send(Type.Smelting, () -> "Found recipe doesn't match '" + Arrays.toString(srcMatrix) + "' and output item " + fRecipe.getResult() + ".");
+			Debug.send(Type.Smelting, "result | cooking_recipe", () -> "Found cooking recipe doesn't match.");
 		}
+		Debug.send(Type.Smelting, "no_match | cooking_recipe", () -> "The smelt item did not match this recipe.");
 		return new ResultContext(fRecipe.getResult(), ResultType.NO_MATCH);
 	}
 
@@ -140,7 +152,7 @@ public class VanillaCookingWrapper implements RecipeWrapper {
 		builder.append("Result: ").append(this.furnaceRecipe.getResult()).append("\n");
 		final RecipeChoice inputChoice = this.furnaceRecipe.getInputChoice();
 		builder.append("Ingredients:");
-		RecipeDebug.formatStack(inputChoice.getItemStack(),builder);
+		RecipeDebug.formatStack(inputChoice.getItemStack(), builder);
 		builder.append("\n");
 		builder.append("___________< Vanilla cooking recipe end >___________\n");
 		return builder.toString();

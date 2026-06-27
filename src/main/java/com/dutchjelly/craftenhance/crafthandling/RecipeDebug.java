@@ -7,7 +7,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("deprecation")
 public class RecipeDebug {
@@ -41,6 +43,7 @@ public class RecipeDebug {
 		}
 		return stringBuilder + "";
 	}
+
 	public static String convertItemStackArrayToString(final Collection<ItemStack> matrix) {
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append("\n____________ingredient matrix_____________");
@@ -54,20 +57,35 @@ public class RecipeDebug {
 	public static String convertItemStackArrayToString(final ItemStack[] matrix) {
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append("\n____________ingredient matrix_____________");
+		Map<ItemStack, Integer> map = new LinkedHashMap<>();
 		for (ItemStack invItemStack : matrix) {
-			formatStack(invItemStack, stringBuilder);
+			map.merge(invItemStack, 1, Integer::sum);
 		}
+		map.forEach((itemStack, integer) -> {
+			formatStack(itemStack, stringBuilder);
+			if (integer > 1) {
+				stringBuilder.append("amount: ").append(integer).append("\n");
+			}
+		});
 		stringBuilder.append("\n____________ingredient matrix_____________\n");
+		return stringBuilder + "";
+	}
+
+	public static String formatOneStack(final ItemStack stack) {
+		if (stack == null) return "empty";
+		StringBuilder stringBuilder = new StringBuilder();
+		formatStack(stack, stringBuilder);
+		stringBuilder.append("\n________________________________");
 		return stringBuilder + "";
 	}
 
 	public static void formatStack(final ItemStack stack, final StringBuilder stringBuilder) {
 		if (stack != null) {
 			final ItemMeta itemMeta = stack.getItemMeta();
-			stringBuilder.append("\nIngredient  type= ").append(stack.getType());
+			stringBuilder.append("\nIngredient type= ").append(stack.getType());
 			if (itemMeta != null) {
 				final String displayName = itemMeta.getDisplayName();
-				final String name =  displayName == null || displayName.isEmpty() || displayName.equals("null") ? "non" : "'" + displayName + "'";
+				final String name = displayName == null || displayName.isEmpty() || displayName.equals("null") ? "non" : "'" + displayName + "'";
 				stringBuilder.append("\nItem display name= ").append(name);
 				if (itemMeta.getLore() != null)
 					stringBuilder.append("\nItem lore= ").append(itemMeta.getLore());

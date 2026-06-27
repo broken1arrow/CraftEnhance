@@ -24,7 +24,9 @@ public interface RecipeWrapper {
 
 	EnumMap<Material, Integer> getIngredients();
 
-	boolean containsIngredient(final Material material);
+	int getAmountOfIngredient(final Material material);
+
+	int getTotalSlotCount();
 
 	ResultContext matches(@Nonnull final Recipe serverRecipe, @Nonnull final Consumer<PrepareRecipeContext> contextConsumer);
 

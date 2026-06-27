@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -639,19 +638,17 @@ public class Adapter {
 		return Collections.emptyList();
 	}
 
-	public static EnumMap<Material, Integer> getFullIngredientsList(@NonNull final Recipe recipe) {
-		VersionChecker versionChecker = self().getVersionChecker();
-		EnumMap<Material, Integer> map = new EnumMap<>(Material.class);
+	public static RecipeContext getFullIngredientsList(@NonNull final Recipe recipe) {
+		final VersionChecker versionChecker = self().getVersionChecker();
+		final RecipeContext recipeContext = new RecipeContext();
+		int amount = 0;
 		if (isCookingRecipe(recipe)) {
 			ItemStack furnaceStack = FurnaceWrapper.getFurnaceStack(recipe)[0];
-			if (furnaceStack == null) return map;
-			map.put(furnaceStack.getType(), 1);
-			return map;
+			if (furnaceStack == null) return recipeContext;
+			recipeContext.mergeItem(furnaceStack.getType(), 1);
+			recipeContext.setTotalSlotCount(1);
+			return recipeContext;
 		}
-
-		final Set<Material> materials = new HashSet<>();
-		int amount = 0;
-
 		if (versionChecker.newerThan(ServerVersion.v1_13)) {
 			if (recipe instanceof ShapedRecipe) {
 				ShapedRecipe shaped = (ShapedRecipe) recipe;
@@ -659,11 +656,11 @@ public class Adapter {
 					final RecipeChoice choice = choiceEntry.getValue();
 					if (choice == null) continue;
 					if (choice instanceof RecipeChoice.MaterialChoice) {
-						((RecipeChoice.MaterialChoice) choice).getChoices().forEach(material -> materials.add(material));
+						((RecipeChoice.MaterialChoice) choice).getChoices().forEach(material -> recipeContext.mergeItem(material, 1));
 					} else if (choice instanceof RecipeChoice.ExactChoice) {
-						((RecipeChoice.ExactChoice) choice).getChoices().forEach(stack -> materials.add(stack.getType()));
+						((RecipeChoice.ExactChoice) choice).getChoices().forEach(stack -> recipeContext.mergeItem(stack.getType(), 1));
 					} else
-						materials.add(choice.getItemStack().getType());
+						recipeContext.mergeItem(choice.getItemStack().getType(), 1);
 					amount++;
 				}
 			}
@@ -671,7 +668,7 @@ public class Adapter {
 				ShapelessRecipe shapeless = (ShapelessRecipe) recipe;
 				for (RecipeChoice choice : shapeless.getChoiceList()) {
 					if (choice == null) continue;
-					materials.add(choice.getItemStack().getType());
+					recipeContext.mergeItem(choice.getItemStack().getType(), 1);
 					amount++;
 				}
 			}
@@ -681,7 +678,7 @@ public class Adapter {
 				ShapedRecipe shaped = (ShapedRecipe) recipe;
 				for (ItemStack stack : shaped.getIngredientMap().values()) {
 					if (stack == null) continue;
-					materials.add(stack.getType());
+					recipeContext.mergeItem(stack.getType(), 1);
 					amount++;
 				}
 			}
@@ -689,19 +686,14 @@ public class Adapter {
 				ShapelessRecipe shapeless = (ShapelessRecipe) recipe;
 				for (ItemStack stack : shapeless.getIngredientList()) {
 					if (stack == null) continue;
-					materials.add(stack.getType());
+					recipeContext.mergeItem(stack.getType(), 1);
 					amount++;
 				}
 			}
 		}
-
-		if (!materials.isEmpty()) {
-			final int finalAmount = amount;
-			materials.forEach(material -> map.put(material, finalAmount));
-		}
-		return map;
+		recipeContext.setTotalSlotCount(amount);
+		return recipeContext;
 	}
-
 
 	public static boolean isCookingRecipe(final Recipe recipe) {
 		final VersionChecker versionChecker = self().getVersionChecker();
@@ -867,6 +859,27 @@ public class Adapter {
 				furnaceRecipe.setGroup(groupName);
 		}
 
+	}
+
+	public static class RecipeContext {
+		private final EnumMap<Material, Integer> map = new EnumMap<>(Material.class);
+		private int totalSlotCount;
+
+		public void mergeItem(@NonNull final Material material, final int amount) {
+			map.merge(material, amount, Integer::sum);
+		}
+
+		public void setTotalSlotCount(final int totalSlotCount) {
+			this.totalSlotCount = totalSlotCount;
+		}
+
+		public EnumMap<Material, Integer> getMap() {
+			return map;
+		}
+
+		public int getTotalSlotCount() {
+			return totalSlotCount;
+		}
 	}
 
 }
