@@ -224,7 +224,7 @@ public class RecipeRegistry {
 		for (Material mat : matrixMaterials) {
 			Integer totalSlotCount = ingredients.get(mat);
 			if (totalSlotCount == null) continue;
-			if (totalSlotCount <= matrixSize) {
+			if (totalSlotCount == matrixSize) {
 				return true;
 			}
 		}
