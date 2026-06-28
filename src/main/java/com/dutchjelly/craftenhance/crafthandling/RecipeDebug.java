@@ -5,44 +5,50 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 @SuppressWarnings("deprecation")
 public class RecipeDebug {
 
 	public static String recipeIngredientsDebug(final WBRecipe wbRecipe, final ItemStack[] matrix) {
-		StringBuilder stringBuilder = new StringBuilder();
-		if (!wbRecipe.matches(matrix)) {
-			for (int i = 0; i < wbRecipe.getContent().length; i++) {
-				ItemStack itemStack = wbRecipe.getContent()[i];
-				ItemMeta recipeMeta = null;
-				if (itemStack != null) recipeMeta = itemStack.getItemMeta();
-
-				List<ItemStack> matchingInvItems = getItemStack(matrix, itemStack);
-
-				if (itemStack != null && matchingInvItems != null) {
-					stringBuilder.append("\n<--------Similar ingredient match-------->\n");
-					stringBuilder.append("Ingredient  type= ").append(itemStack.getType()).append("\n");
-
-					if (recipeMeta != null) {
-						stringBuilder.append("The recipe display name= '").append(recipeMeta.getDisplayName()).append("'");
-						if (recipeMeta.getLore() != null)
-							stringBuilder.append("The recipe lore= ").append(recipeMeta.getLore());
-					}
-
-					stringBuilder.append("\nMatched ingredients in the crafting grid: \n");
-					setIngredients(matchingInvItems, stringBuilder, recipeMeta);
-					stringBuilder.append("\n<--------Similar ingredient match end-------->\n\n");
-				}
-			}
-
+		if (wbRecipe.matches(matrix)) {
+			return ""; // Nothing to debug if the recipe matches perfectly
 		}
-		return stringBuilder + "";
+		Set<ItemStack> itemStackSet = new LinkedHashSet<>(Arrays.asList(wbRecipe.getContent()));
+
+		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append("\n================ ingredient mismatch debug ================\n");
+		stringBuilder.append("The recipe result type: ").append(wbRecipe.getResult().getType());
+		for (ItemStack expectedItem : itemStackSet) {
+			if (expectedItem == null || expectedItem.getType() == Material.AIR) continue;
+
+			ItemMeta expectedMeta = expectedItem.getItemMeta();
+			Map<ItemStack, TrackStacks> matchingInvItems = getMatchingItemsWithSlots(matrix, expectedItem);
+
+			if (matchingInvItems != null && !matchingInvItems.isEmpty()) {
+				stringBuilder.append("\ningredients: \n");
+
+				String expectedName = (expectedMeta != null && expectedMeta.hasDisplayName()) ? expectedMeta.getDisplayName() : "none";
+				String expectedLore = (expectedMeta != null && expectedMeta.hasLore()) ? expectedMeta.getLore().toString() : "none";
+				stringBuilder.append("  expected_type=").append(expectedItem.getType().name()).append("\n");
+				stringBuilder.append("  expected_meta: {name='").append(expectedName)
+						.append("', lore=").append(expectedLore).append("}\n");
+				stringBuilder.append("  candidates:\n");
+
+				appendCandidateIngredients(matchingInvItems, stringBuilder, expectedMeta);
+			}
+		}
+
+		return stringBuilder.toString();
 	}
 
 	public static String convertItemStackArrayToString(final Collection<ItemStack> collection) {
@@ -116,10 +122,6 @@ public class RecipeDebug {
 		return stringBuilder + "";
 	}
 
-	public static void formatStack(final ItemStack stack, final StringBuilder stringBuilder) {
-		formatStack(stack, stringBuilder, true);
-	}
-
 	public static void formatStack(final ItemStack stack, final StringBuilder stringBuilder, boolean hasMetadata) {
 		if (!hasMetadata) {
 			if (stack != null) {
@@ -155,58 +157,28 @@ public class RecipeDebug {
 	}
 
 
-	public static int findMismatchIndex(String str1, String str2) {
-		if (str1 == null || str2 == null) {
-			if (str1 == null && str2 == null)
-				return -1;
-			if (str1 != null) {
-				return 0;
+	private static FieldResult findMismatchIndex(String expectedName, String str2) {
+		if (expectedName == null && str2 == null)
+			return new FieldResult(FieldMatch.EXACT, -1);
+		if (expectedName == null || str2 == null) {
+			if (expectedName != null) {
+				return new FieldResult(FieldMatch.NULL_INPUT, -3);
 			}
-			return 0;
+			return new FieldResult(FieldMatch.NULL_INPUT, -4);
 		}
-		int minLength = Math.min(str1.length(), str2.length());
+		int minLength = Math.min(expectedName.length(), str2.length());
 
 		for (int i = 0; i < minLength; i++) {
-			if (str1.charAt(i) != str2.charAt(i)) {
-				return i;
+			if (expectedName.charAt(i) != str2.charAt(i)) {
+				return new FieldResult(FieldMatch.MISMATCH_AT_POS, i);
 			}
 		}
-		// If no mismatch found, check if strings are of different lengths
-		if (str1.length() != str2.length()) {
-			return -2;
+		if (expectedName.length() != str2.length()) {
+			return new FieldResult(FieldMatch.LENGTH_MISMATCH, -2);
 		}
-		return -1; // Strings are identical
+		return new FieldResult(FieldMatch.EXACT, -1);
 	}
 
-	private static void setIngredients(final List<ItemStack> matchingInvItems, final StringBuilder stringBuilder, final ItemMeta recipeMeta) {
-		for (int index = 0; index < matchingInvItems.size(); index++) {
-			ItemStack invItem = matchingInvItems.get(index);
-
-			final ItemMeta invItemMeta = invItem == null ? null : invItem.getItemMeta();
-			stringBuilder.append("____________ingredient match").append("_____________\n");
-			stringBuilder.append("slot index=").append(index);
-			stringBuilder.append("\nIngredient crafting with type= ").append(invItem == null ? "AIR" : invItem.getType());
-			final String displayName = invItemMeta != null ? invItemMeta.getDisplayName() : "";
-
-			final int mismatchIndex = findMismatchIndex(recipeMeta != null ? recipeMeta.getDisplayName() : "", displayName);
-			String match = "matching exactly";
-			if (mismatchIndex == -2) match = "different length of the names";
-			if (mismatchIndex > 0) match = "match to pos " + mismatchIndex;
-			stringBuilder.append("\nDisplay name match= ").append(match);
-
-			if (invItemMeta != null) {
-				final String name = displayName == null || displayName.isEmpty() || displayName.equals("null") ? "non" : "'" + displayName + "'";
-				stringBuilder.append("\nplayer added item display name= ").append(name);
-				if (invItemMeta.getLore() != null)
-					stringBuilder.append("\nThe added item lore= ").append(invItemMeta.getLore());
-				else stringBuilder.append("\nThe added item lore= non");
-			} else {
-				stringBuilder.append("\nplayer added item display name= non");
-				stringBuilder.append("\nThe added item lore= non");
-			}
-			stringBuilder.append("\n____________ingredient match end_____________\n");
-		}
-	}
 
 	private static List<ItemStack> getItemStack(final ItemStack[] matrix, final ItemStack itemStack) {
 		if (itemStack == null || itemStack.getType() == Material.AIR) return null;
@@ -228,5 +200,195 @@ public class RecipeDebug {
 		return !haveDisplayName || itemMeta.getLore() != null;
 	}
 
+	private static void appendCandidateIngredients(final Map<ItemStack, TrackStacks> candidates, final StringBuilder sb, final ItemMeta expectedMeta) {
+		String expectedName = (expectedMeta != null && expectedMeta.hasDisplayName()) ? expectedMeta.getDisplayName() : null;
+		String expectedLore = (expectedMeta != null && expectedMeta.hasLore()) ? expectedMeta.getLore().toString() : null;
 
+		for (Entry<ItemStack, TrackStacks> entry : candidates.entrySet()) {
+			ItemStack actualItem = entry.getKey();
+			TrackStacks trackStacks = entry.getValue();
+
+			ItemMeta actualMeta = actualItem == null ? null : actualItem.getItemMeta();
+
+			String typeName = actualItem == null ? "AIR" : actualItem.getType().name();
+			final boolean hasDisplayName = actualMeta != null && actualMeta.hasDisplayName() && actualMeta.getDisplayName() != null;
+			String actualName = hasDisplayName ? actualMeta.getDisplayName() : null;
+			String actualLore = (actualMeta != null && actualMeta.hasLore()) ? actualMeta.getLore().toString() : null;
+			MatchStatus result = getMatchStatus(expectedName, actualName, expectedLore, actualLore);
+
+			sb.append("    ingredient:");
+			sb.append("\n      slots=").append(trackStacks.slots);
+			sb.append("\n      item=").append(typeName).append(" ")
+					.append("x").append(trackStacks.amount)
+					.append("\n      reason=").append(result.matchStatus)
+					.append("\n      description=").append(result.description);
+
+			if (!result.matchStatus.equals("MATCH_EXACT")) {
+				sb.append("\n").append("      meta=");
+				if (actualName != null && actualLore != null) {
+					sb.append(" | {name='").append(actualName).append("' , lore=").append(actualLore).append("}");
+				} else {
+					sb.append("{no name and lore set}");
+				}
+			}
+			sb.append("\n");
+		}
+	}
+
+	private static class MatchStatus {
+		public final String matchStatus;
+		public final String description;
+
+		public MatchStatus(final String matchStatus, final String description) {
+			this.matchStatus = matchStatus;
+			this.description = description;
+		}
+	}
+
+	private static Map<ItemStack, TrackStacks> getMatchingItemsWithSlots(final ItemStack[] matrix, final ItemStack expectedItem) {
+		if (expectedItem == null || expectedItem.getType() == Material.AIR) return null;
+
+		Map<ItemStack, TrackStacks> items = new LinkedHashMap<>();
+		for (int i = 0; i < matrix.length; i++) {
+			ItemStack invItemStack = matrix[i];
+			if (invItemStack != null && invItemStack.getType() == expectedItem.getType()) {
+
+				items.computeIfAbsent(invItemStack, stack -> new TrackStacks())
+						.addSlot(i)
+						.addAmount();
+			}
+		}
+		return items.isEmpty() ? null : items;
+	}
+
+	static class TrackStacks {
+		List<Integer> slots = new ArrayList<>();
+		int amount;
+
+		public TrackStacks addSlot(int slot) {
+			slots.add(slot);
+			return this;
+		}
+
+		public TrackStacks addAmount() {
+			this.amount++;
+			return this;
+		}
+	}
+
+	@Nonnull
+	private static MatchStatus getMatchStatus(String expectedName, String actualName, String expectedLore, String actualLore) {
+		final FieldResult display = findMismatchIndex(expectedName, actualName);
+		final FieldResult lore = findMismatchIndex(expectedLore, actualLore);
+
+		MatchStatusType type;
+		String description;
+
+		final FieldMatch displayMatch = display.getMatch();
+		final FieldMatch loreMatch = lore.getMatch();
+		final boolean displayBad = displayMatch != FieldMatch.EXACT;
+		final boolean loreBad = loreMatch != FieldMatch.EXACT;
+
+
+		if (displayMatch == FieldMatch.NULL_INPUT || loreMatch == FieldMatch.NULL_INPUT) {
+
+			if (displayMatch == FieldMatch.NULL_INPUT && loreMatch == FieldMatch.NULL_INPUT) {
+				type = MatchStatusType.DISPLAY_LORE_NULL;
+				description = "Both display name and lore are missing for the input item.";
+			} else if (displayMatch == FieldMatch.NULL_INPUT) {
+				type = MatchStatusType.DISPLAY_NULL;
+				description = "Expected display name is missing in input item.";
+			} else {
+				type = MatchStatusType.LORE_NULL;
+				description = "Expected lore is missing in input item.";
+			}
+
+			return new MatchStatus(type.name(), description);
+		}
+		if (displayMatch == FieldMatch.LENGTH_MISMATCH ||
+				loreMatch == FieldMatch.LENGTH_MISMATCH) {
+
+			if (displayMatch == FieldMatch.LENGTH_MISMATCH &&
+					loreMatch == FieldMatch.LENGTH_MISMATCH) {
+
+				type = MatchStatusType.DISPLAY_LORE_LENGTH_MISMATCH;
+				description = "Both display name and lore length differ.";
+			} else if (displayMatch == FieldMatch.LENGTH_MISMATCH) {
+				type = MatchStatusType.DISPLAY_LENGTH_MISMATCH;
+				description = "Display name length mismatch.";
+			} else {
+				type = MatchStatusType.LORE_LENGTH_MISMATCH;
+				description = "Lore length mismatch.";
+			}
+
+			return new MatchStatus(type.name(), description);
+		}
+		if (displayBad || loreBad) {
+			int pos = Math.max(display.getPosition(), lore.getPosition());
+
+			if (displayBad && loreBad) {
+				type = MatchStatusType.DISPLAY_LORE_MISMATCH_AT_POS;
+				description = "Display and lore mismatch at position " + pos;
+			} else if (displayBad) {
+				type = MatchStatusType.DISPLAY_MISMATCH_AT_POS;
+				description = "Display mismatch at position " + display.getPosition();
+			} else {
+				type = MatchStatusType.LORE_MISMATCH_AT_POS;
+				description = "Lore mismatch at position " + lore.getPosition();
+			}
+
+			return new MatchStatus(type.name(), description);
+		}
+		return new MatchStatus(MatchStatusType.EXACT.name(), "Exact match");
+	}
+
+	private static final class FieldResult {
+
+		private final FieldMatch match;
+		private final int position;
+
+		public FieldResult(FieldMatch match, int position) {
+			this.match = match;
+			this.position = position;
+		}
+
+		public FieldMatch getMatch() {
+			return match;
+		}
+
+		public int getPosition() {
+			return position;
+		}
+
+		@Override
+		public String toString() {
+			return "FieldResult{" +
+					"match=" + match +
+					", position=" + position +
+					'}';
+		}
+	}
+
+	enum FieldMatch {
+		EXACT,
+		LENGTH_MISMATCH,
+		MISMATCH_AT_POS,
+		NULL_INPUT,
+	}
+
+	enum MatchStatusType {
+		EXACT,
+
+		DISPLAY_LENGTH_MISMATCH,
+		LORE_LENGTH_MISMATCH,
+		DISPLAY_LORE_LENGTH_MISMATCH,
+
+		DISPLAY_MISMATCH_AT_POS,
+		LORE_MISMATCH_AT_POS,
+		DISPLAY_LORE_MISMATCH_AT_POS,
+
+		DISPLAY_NULL,
+		LORE_NULL,
+		DISPLAY_LORE_NULL
+	}
 }

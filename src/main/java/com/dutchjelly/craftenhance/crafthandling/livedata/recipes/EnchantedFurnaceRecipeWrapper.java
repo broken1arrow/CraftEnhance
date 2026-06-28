@@ -118,11 +118,12 @@ public class EnchantedFurnaceRecipeWrapper implements RecipeWrapper {
 		final FurnaceRecipe fRecipe = this.furnaceRecipe;
 
 		Debug.send(Type.Smelting, "furnace=" + fRecipe.getKey(), () -> {
-			String serverRecipeInfo = "not set a server recipe";
-			if (serverRecipe != null)
-				serverRecipeInfo = RecipeDebug.formatOneStack(serverRecipe.getResult());
-			return "It will check if recipe allowed for this world, not disabled and this is a enchanted recipe:\n" + RecipeDebug.formatOneStack(fRecipe.getResult()) +
-					"\nServer detected this recipe: " + serverRecipeInfo;
+			String serverRecipeInfo = "";
+			if (serverRecipe != null && fRecipe.getResult().getType() != serverRecipe.getResult().getType()) {
+				//serverRecipeInfo = RecipeDebug.formatOneStack(serverRecipe.getResult());
+				serverRecipeInfo = ". Server recipe differ to enhanced ";
+			}
+			return "It will check if recipe allowed for this world, not disabled "+serverRecipeInfo+"and this is a enchanted recipe:\n" + RecipeDebug.formatOneStack(fRecipe.getResult());
 		});
 
 		Debug.send(Type.Smelting, "furnace=" + fRecipe.getKey(), () -> "Furnace belongs to player: " + player + " the id " + (player != null ? player.getName() : "ID not found in cache."));
