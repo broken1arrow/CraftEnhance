@@ -14,12 +14,12 @@ import java.util.List;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
-@CommandRoute(cmdPath="ceh.removerecipe", perms="perms.recipe-editor")
-public class RemoveRecipeCmd implements ICommand  {
+@CommandRoute(cmdPath = "ceh.removerecipe", perms = "perms.recipe-editor")
+public class RemoveRecipeCmd implements ICommand {
 
 	private CustomCmdHandler handler;
 
-	public RemoveRecipeCmd(CustomCmdHandler handler){
+	public RemoveRecipeCmd(CustomCmdHandler handler) {
 		this.handler = handler;
 	}
 
@@ -27,44 +27,48 @@ public class RemoveRecipeCmd implements ICommand  {
 	public String getDescription() {
 		return "The remove the recipe command. The usage is /ceh createrecipe [key] [permission].";
 	}
+
 	@Override
 	public void handlePlayerCommand(Player p, String[] args) {
-		removeRecipe(p,args);
+		removeRecipe(p, args);
 	}
 
 	@Override
 	public void handleConsoleCommand(final CommandSender sender, final String[] args) {
-		removeRecipe(sender,args);
+		removeRecipe(sender, args);
 	}
 
 	private void removeRecipe(final CommandSender sender, String[] args) {
-		if (args.length == 0){return;}
+		if (args.length == 0) {
+			return;
+		}
 		//Use the input that the user gave.
 		if (args.length == 1) {
 			args = addEmptyString(args);
 		}
-		List<EnhancedRecipe> enhancedRecipes = RecipeLoader.getInstance().getLoadedRecipes();
-		for (EnhancedRecipe recipe : enhancedRecipes) {
-			if (recipe.getKey().equals(args[0])) {
-				self().getCacheRecipes().remove(recipe);
-				RecipeLoader.getInstance().unloadRecipe(recipe);
-				Messenger.Message("The specified recipe is removed " + recipe.getKey(), sender);
-				return;
-			}
+		final EnhancedRecipe recipe = self().getCacheRecipes().getRecipe(args[0]);
+		if (recipe == null) {
+			Messenger.Message("The specified recipe could not be removed, as it could not be found in cache: " + args[0], sender);
+			return;
 		}
+		self().getCacheRecipes().remove(recipe);
+		RecipeLoader.getInstance().unloadRecipe(recipe);
+		Messenger.Message("The specified recipe is removed " + recipe.getKey(), sender);
+		return;
+
 	}
 
 	@Override
 	public List<String> handleTabCompletion(final CommandSender sender, final String[] args) {
 		List<String> recipes = new ArrayList<>();
-		if (args.length == 2){
-			RecipeLoader.getInstance().getLoadedRecipes().forEach(recipe-> recipes.add(recipe.getKey()));
+		if (args.length == 2) {
+			self().getCacheRecipes().getListOfRecipes().forEach(recipe -> recipes.add(recipe.getKey()));
 		}
 		return recipes;
 	}
 
 	//Create a new array object so return that.
-	private String[] addEmptyString(String[] args){
+	private String[] addEmptyString(String[] args) {
 		String[] newArray = new String[args.length + 1];
 		newArray[0] = args[0];
 		newArray[1] = "";

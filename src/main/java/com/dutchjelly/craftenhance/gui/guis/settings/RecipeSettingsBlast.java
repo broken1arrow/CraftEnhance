@@ -18,6 +18,7 @@ public class RecipeSettingsBlast extends RecipeSettings<BlastRecipe>{
 		super(recipe, 0,categoryData, permission, editorType);
 	}
 
+	@Override
 	protected boolean onPlayerClick(final BlastRecipe blastRecipe, final String buttonAction, final Player player) {
 		if (player.isConversing()) return true;
 
@@ -76,11 +77,5 @@ public class RecipeSettingsBlast extends RecipeSettings<BlastRecipe>{
 		new RecipeEditorBlast(recipe, this.page,categoryData, null, ButtonType.ChooseFurnaceType,false).menuOpen(player);
 	}
 
-	@Override
-	protected Map<String, String> recipePlaceholders(final BlastRecipe recipe) {
-		return new HashMap<String, String>() {{
-			put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(recipe.getExp()));
-			put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(recipe.getDuration()));
-		}};
-	}
+
 }

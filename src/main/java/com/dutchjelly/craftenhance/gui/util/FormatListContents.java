@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.gui.util;
 
+import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.gui.guis.editors.IngredientsCache;
@@ -21,7 +22,19 @@ public class FormatListContents {
 
 	public static <RecipeT extends EnhancedRecipe> List<ItemStack> formatRecipes(final RecipeT recipe, final IngredientsCache ingredientsCache, final boolean loadCachedItems) {
 		if (recipe == null) return new ArrayList<>();
-		List<ItemStack> list = new ArrayList<>(Arrays.asList(recipe.getContent()));
+		List<ItemStack> list;
+		if (recipe instanceof BrewingRecipe) {
+			final BrewingRecipe brewingRecipe = (BrewingRecipe) recipe;
+			list = new ArrayList<>(brewingRecipe.getCombinedContent().length + 1);
+
+			list.addAll(Arrays.asList(brewingRecipe.getOutPutResult()));
+			list.addAll(Arrays.asList(brewingRecipe.getContent()));
+			list.add(0, brewingRecipe.getResult());
+			return list;
+		} else {
+			list = new ArrayList<>(Arrays.asList(recipe.getContent()));
+		}
+
 		ItemStack result = recipe.getResult();
 		if (ingredientsCache != null && loadCachedItems) {
 			final ItemStack itemStackResult = ingredientsCache.getItemStackResult();
@@ -33,9 +46,13 @@ public class FormatListContents {
 		}
 		//todo fix so it auto set right craftingslot
 		final int index;
-		if (list.size() < 6)
-			index = 1;
-		else
+		if (list.size() < 6) {
+			if (recipe instanceof BrewingRecipe) {
+				index = 0;
+			} else {
+				index = 1;
+			}
+		} else
 			index = 6;
 		list.add(index, result);
 		return list;
@@ -47,7 +64,7 @@ public class FormatListContents {
 				.collect(Collectors.toList());
 	}
 
-	private static boolean canViewRecipe(final EnhancedRecipe recipe, final Player p) {
+	public static boolean canViewRecipe(final EnhancedRecipe recipe, final Player p) {
 		final boolean showAvailable = !self().getConfig().getBoolean("only-show-available");
 		final boolean hasPermission = recipe.getPermission() == null ||
 				"".equals(recipe.getPermission()) ||
@@ -76,8 +93,8 @@ public class FormatListContents {
 		return categoryNames.stream().filter(x -> x.contains(grupSeachFor)).collect(Collectors.toList());
 	}
 
-	public static List<Recipe> getRecipes(final List<Recipe> enabledRecipes, final List<Recipe> disabledRecipes, final boolean enableMode, final String grupSeachFor) {
-		final List<Recipe> recipes = !enableMode ? enabledRecipes : disabledRecipes;
+	public static List<Recipe> getRecipes(final Set<Recipe> enabledRecipes, final List<Recipe> disabledRecipes, final boolean enableMode, final String grupSeachFor) {
+		final List<Recipe> recipes = !enableMode ? new ArrayList<>(enabledRecipes) : disabledRecipes;
 		if (grupSeachFor == null || grupSeachFor.equals("")) {
 			return recipes;
 		}

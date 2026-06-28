@@ -47,4 +47,5 @@ public abstract class GuiPlacable implements ConfigurationSerializable {
 	}
 
 	public abstract ItemStack getDisplayItem();
+
 }

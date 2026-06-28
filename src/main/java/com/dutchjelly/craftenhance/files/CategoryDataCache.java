@@ -2,14 +2,14 @@ package com.dutchjelly.craftenhance.files;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.ServerLoadable;
 import com.dutchjelly.craftenhance.files.util.SimpleYamlHelper;
+import org.broken.arrow.library.yaml.utillity.ConfigurationWrapper;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.Recipe;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
@@ -20,12 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class CategoryDataCache extends SimpleYamlHelper {
-
-
-	private final Map<String, CategoryData> recipeCategorys = new HashMap<>();
+	private final Map<String, CategoryData> recipeCategories = new HashMap<>();
 
 	public CategoryDataCache() {
 		super("categorys.yml", true, true);
@@ -36,31 +33,28 @@ public class CategoryDataCache extends SimpleYamlHelper {
 	}
 
 	public Collection<CategoryData> values(){
-		return  recipeCategorys.values();
+		return  recipeCategories.values();
 	}
 
-	public List<Recipe> getServerRecipes(){
-		return  recipeCategorys.values().stream().flatMap(categoryData->categoryData.getEnhancedRecipes()
-				.stream().map(ServerLoadable::getServerRecipe)).collect(Collectors.toList());
-	}
 	@Nullable
 	public CategoryData get(final String category){
-		return recipeCategorys.get(category);
+		return recipeCategories.get(category);
 	}
 	public void put(final String category, final ItemStack itemStack, final String displayName){
-		recipeCategorys.put(category,this.of(category,itemStack,displayName));
+		recipeCategories.put(category,this.of(category,itemStack,displayName));
 	}
+
 	public void put(final String category, final CategoryData categoryData){
-		recipeCategorys.put(category,categoryData);
+		recipeCategories.put(category,categoryData);
 	}
 
 	public void remove(final String category){
-		recipeCategorys.remove(category);
+		recipeCategories.remove(category);
 	}
 
 	public CategoryData move(final String oldCategory, final String category, final EnhancedRecipe... recipes) {
-		final CategoryData categoryDataOld = this.getRecipeCategorys().get(oldCategory);
-		final CategoryData existingCategory = this.getRecipeCategorys().get(category);
+		final CategoryData categoryDataOld = this.getRecipeCategories().get(oldCategory);
+		final CategoryData existingCategory = this.getRecipeCategories().get(category);
 		final CategoryData categoryData = this.createCategoryData( categoryDataOld,category,existingCategory != null);
 
 		if (categoryDataOld != null && recipes != null && recipes.length > 0) {
@@ -83,29 +77,29 @@ public class CategoryDataCache extends SimpleYamlHelper {
 			}
 		}
 		if (existingCategory != null) {
-			this.getRecipeCategorys().put(category, existingCategory);
+			this.getRecipeCategories().put(category, existingCategory);
 			return existingCategory;
 		} else if (categoryData != null) {
-			this.getRecipeCategorys().put(category, categoryData);
+			this.getRecipeCategories().put(category, categoryData);
 			return categoryData;
 		}
 		return null;
 	}
 	public boolean addCategory(final String category, final ItemStack itemStack, final String displayname) {
-		final CategoryData categoryData = this.getRecipeCategorys().get(category);
+		final CategoryData categoryData = this.getRecipeCategories().get(category);
 		if (categoryData != null) return true;
-		 recipeCategorys.put(category,of(category,itemStack,displayname));
+		 recipeCategories.put(category,of(category,itemStack,displayname));
 		return false;
 	}
 	public Set<String> getCategoryNames() {
-		return recipeCategorys.keySet();
+		return recipeCategories.keySet();
 	}
-	private Map<String, CategoryData> getRecipeCategorys() {
-		return recipeCategorys;
+	private Map<String, CategoryData> getRecipeCategories() {
+		return recipeCategories;
 	}
 
 	@Override
-	protected void saveDataToFile(final File file) {
+	protected void saveDataToFile(@Nonnull final File file, @Nonnull final ConfigurationWrapper configurationWrapper) {
 		if (!file.exists()) {
 			try {
 				file.createNewFile();
@@ -113,22 +107,22 @@ public class CategoryDataCache extends SimpleYamlHelper {
 				e.printStackTrace();
 			}
 		}
-		FileConfiguration fileConfiguration = this.getCustomConfig();
-		if (fileConfiguration == null)
-			fileConfiguration = YamlConfiguration.loadConfiguration(file);
+		FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
 		fileConfiguration.set("Categorys",null);
-		for (final Entry<String, CategoryData> entry : recipeCategorys.entrySet())
-			this.setData(file, "Categorys." + entry.getKey(), entry.getValue());
+		for (final Entry<String, CategoryData> entry : recipeCategories.entrySet()){
+			configurationWrapper.addSerializableData("Categorys." + entry.getKey(), entry.getValue());
+			this.setData(configurationWrapper);
+		}
 	}
-
 	@Override
-	protected void loadSettingsFromYaml(final File file) {
-		final ConfigurationSection templateConfig = this.getCustomConfig().getConfigurationSection("Categorys");
+	protected void loadSettingsFromYaml(final File file, final FileConfiguration fileConfiguration) {
+
+		final ConfigurationSection templateConfig = fileConfiguration.getConfigurationSection("Categorys");
 		if (templateConfig == null) return;
 		for (final String category : templateConfig.getKeys(false)) {
 			final CategoryData categoryData = this.getData( "Categorys." + category, CategoryData.class);
 			if (categoryData == null) continue;
-			recipeCategorys.put(category, categoryData);
+			recipeCategories.put(category, categoryData);
 		}
 	}
 	public void collectToNewList(final String category,final List<EnhancedRecipe> fromList, final List<EnhancedRecipe> toList) {
@@ -161,4 +155,6 @@ public class CategoryDataCache extends SimpleYamlHelper {
 		}
 		return categoryData;
 	}
+
+
 }

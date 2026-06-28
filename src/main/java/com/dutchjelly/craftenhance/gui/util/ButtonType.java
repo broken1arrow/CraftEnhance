@@ -14,11 +14,13 @@ public enum ButtonType {
     SetPermission(""),
     SwitchDisablerMode(""),
     SetCookTime(""),
+    SetBrewingTime(""),
     SetExp(""),
     ChooseWorkbenchType("WBRecipeEditor"),
     ChooseFurnaceType("FurnaceRecipeEditor"),
     ChooseBlastType("FurnaceRecipeEditor"),
     ChooseSmokerType("FurnaceRecipeEditor"),
+    ChooseBrewingType("BrewingRecipeEditor"),
     Search(""),
     NewCategory(""),
     ChangeCategoryName(""),
@@ -32,9 +34,12 @@ public enum ButtonType {
 	SetPartialMatch(""),
     edit_recipe(""),
     Save(""),
+    SetCommand(""),
+    Sort(""),
+    Group_name("")
     ;
 
-    private final String type;
+	private final String type;
 
     ButtonType(final String type) {
 

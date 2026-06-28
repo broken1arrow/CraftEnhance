@@ -2,14 +2,20 @@ package com.dutchjelly.craftenhance.crafthandling.recipes;
 
 import org.bukkit.inventory.Recipe;
 
+import javax.annotation.Nullable;
+
 
 public interface ServerLoadable {
 
     String getKey();
 
+    @Nullable
+    String getGroup();
     Recipe getServerRecipe();
 
     boolean isSimilar(Recipe r);
+
+    boolean sharesIngredientWith(Recipe r);
 
     boolean isSimilar(EnhancedRecipe r);
 

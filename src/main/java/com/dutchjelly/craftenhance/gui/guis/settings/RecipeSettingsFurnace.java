@@ -4,13 +4,9 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorFurnace;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
-import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import org.bukkit.entity.Player;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class RecipeSettingsFurnace extends RecipeSettings<FurnaceRecipe> {
 
@@ -18,6 +14,7 @@ public class RecipeSettingsFurnace extends RecipeSettings<FurnaceRecipe> {
 		super(recipe, 0, categoryData, permission, editorType);
 	}
 
+	@Override
 	protected boolean onPlayerClick(final FurnaceRecipe furnaceRecipe, final String buttonAction, final Player player) {
 		if (player.isConversing()) return true;
 
@@ -76,11 +73,4 @@ public class RecipeSettingsFurnace extends RecipeSettings<FurnaceRecipe> {
 		new RecipeEditorFurnace(recipe, this.page, categoryData, null, ButtonType.ChooseFurnaceType, false).menuOpen(player);
 	}
 
-	@Override
-	protected Map<String, String> recipePlaceholders(final FurnaceRecipe recipe) {
-		return new HashMap<String, String>() {{
-			put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(recipe.getExp()));
-			put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(recipe.getDuration()));
-		}};
-	}
 }

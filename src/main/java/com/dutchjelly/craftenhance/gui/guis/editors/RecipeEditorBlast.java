@@ -33,12 +33,6 @@ public class RecipeEditorBlast extends RecipeEditor<BlastRecipe> {
 		recipe.setExp(recipe.getExp());
 	}
 
-	@Override
-	protected Map<String, String> recipePlaceholders(final BlastRecipe recipe) {
-		return new HashMap<String, String>() {{
-			put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(recipe.getExp()));
-			put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(recipe.getDuration()));
-		}};
-	}
+
 
 }

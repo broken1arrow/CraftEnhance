@@ -34,6 +34,27 @@ public class ServerRecipeTranslator {
         return recipeKey;
     }
 
+
+    public static ShapedRecipe translateShapedEnhancedRecipe(final WBRecipe recipe) {
+        return translateShapedEnhancedRecipe(recipe.getContent(), recipe.getResult(), recipe.getKey());
+    }
+
+    public static ShapelessRecipe translateShapelessEnhancedRecipe(final WBRecipe recipe) {
+        return translateShapelessEnhancedRecipe(recipe.getContent(), recipe.getResult(), recipe.getKey());
+    }
+
+    public static ShapelessRecipe translateShapelessEnhancedRecipe(final ItemStack[] content, final ItemStack result, final String key) {
+        final List<ItemStack> ingredients = Arrays.stream(content).filter(x -> x != null).collect(Collectors.toList());
+        if (ingredients.size() == 0)
+            return null;
+        final String recipeKey = GetFreeKey(key);
+        final ShapelessRecipe shapeless = Adapter.GetShapelessRecipe(
+                CraftEnhance.getPlugin(CraftEnhance.class), KeyPrefix + recipeKey, result
+        );
+        ingredients.forEach(x -> Adapter.addIngredient(shapeless, x));
+        return shapeless;
+    }
+
     public static ShapedRecipe translateShapedEnhancedRecipe(final ItemStack[] content, final ItemStack result, final String key) {
         if (!Arrays.asList(content).stream().anyMatch(x -> x != null))
             return null;
@@ -46,32 +67,11 @@ public class ServerRecipeTranslator {
             MapIngredients(shaped, content);
         } catch (final IllegalArgumentException e) {
             self().getLogger().log(Level.WARNING, "Recipe: " + recipeKey + " do have AIR or null as result.");
+            self().getLogger().log(Level.WARNING, "", e);
             return null;
         }
         return shaped;
     }
-
-    public static ShapedRecipe translateShapedEnhancedRecipe(final WBRecipe recipe) {
-        return translateShapedEnhancedRecipe(recipe.getContent(), recipe.getResult(), recipe.getKey());
-    }
-
-
-    public static ShapelessRecipe translateShapelessEnhancedRecipe(final ItemStack[] content, final ItemStack result, final String key) {
-        final List<ItemStack> ingredients = Arrays.stream(content).filter(x -> x != null).collect(Collectors.toList());
-        if (ingredients.size() == 0)
-            return null;
-        final String recipeKey = GetFreeKey(key);
-        final ShapelessRecipe shapeless = Adapter.GetShapelessRecipe(
-                CraftEnhance.getPlugin(CraftEnhance.class), KeyPrefix + recipeKey, result
-        );
-        ingredients.forEach(x -> Adapter.AddIngredient(shapeless, x));
-        return shapeless;
-    }
-
-    public static ShapelessRecipe translateShapelessEnhancedRecipe(final WBRecipe recipe) {
-        return translateShapelessEnhancedRecipe(recipe.getContent(), recipe.getResult(), recipe.getKey());
-    }
-
 
     public static ItemStack[] translateShapedRecipe(final ShapedRecipe recipe) {
         final ItemStack[] content = new ItemStack[9];
@@ -96,6 +96,9 @@ public class ServerRecipeTranslator {
     //Gets the shape of the recipe 'content'.
     private static String[] GetShape(final ItemStack[] content) {
         final String[] recipeShape = {"", "", ""};
+        if(content.length < 9)
+            return new String[0];
+
         for (int i = 0; i < 9; i++) {
             if (content[i] != null)
                 recipeShape[i / 3] += (char) ('A' + i);
@@ -139,8 +142,9 @@ public class ServerRecipeTranslator {
 
     private static void MapIngredients(final ShapedRecipe recipe, final ItemStack[] content) {
         for (int i = 0; i < 9; i++) {
-            if (content[i] != null) {
-                Adapter.SetIngredient(recipe, (char) ('A' + i), content[i]);
+            final ItemStack itemStacks = content[i];
+            if (itemStacks != null) {
+                Adapter.setIngredient(recipe, (char) ('A' + i), itemStacks);
             }
         }
     }

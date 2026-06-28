@@ -5,15 +5,15 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>CraftEnhance</groupId>
     <artifactId>CraftEnhance</artifactId>
-    <version>2.5.7.0</version>
+    <version>2.6.1.0</version>
     <name>CraftEnhance</name>
     <description>This is a minecraft plugin to enhance crafting.</description>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.target>8</maven.compiler.target>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.release>8</maven.compiler.release>
-        <utility-library>0.116</utility-library>
+        <utility-library>0.136</utility-library>
         <dependencys_path>com.dutchjelly.craftenhance.libs</dependencys_path>
     </properties>
     <build>
@@ -33,23 +33,31 @@
                             <finalName>${project.name}-${project.version}</finalName>
                             <artifactSet>
                                 <includes>
-                                    <include>com.github.broken1arrow.Utility-Library:conversation-prompt*</include>
-                                    <include>com.github.broken1arrow.Utility-Library:nbt*</include>
-                                    <include>com.github.broken1arrow.Utility-Library:menu-library*</include>
-                                    <include>com.github.broken1arrow.Utility-Library:title-update*</include>
-                                    <include>com.github.broken1arrow.Utility-Library:nbt*</include>
-                                    <include>com.github.broken1arrow.Utility-Library:menu-configuration-manager*
+                                    <include>org.broken.arrow.library:conversation-prompt*</include>
+                                    <include>org.broken.arrow.library:nbt*</include>
+                                    <include>org.broken.arrow.library:menu-library*</include>
+                                    <include>org.broken.arrow.library:title-update*</include>
+                                    <include>org.broken.arrow.library:nbt*</include>
+                                    <include>org.broken.arrow.library:menu-configuration-manager*
                                     </include>
-                                    <include>com.github.broken1arrow.Utility-Library:yaml-utility*</include>
-                                    <include>com.github.broken1arrow.Utility-Library:serialize-utility*</include>
-                                    <include>com.github.broken1arrow.Utility-Library:color-conversion*</include>
-                                    <include>com.github.broken1arrow.Utility-Library:log-and-validate*</include>
+                                    <include>org.broken.arrow.library:yaml-utility*</include>
+                                    <include>org.broken.arrow.library:serialize-utility*</include>
+                                    <include>org.broken.arrow.library:color-conversion*</include>
+                                    <include>org.broken.arrow.library:log-and-validate*</include>
+                                    <include>org.broken.arrow.library:localization*</include>
+                                    <include>org.broken.arrow.library:version*</include>
+                                    <include>org.broken.arrow.library:item-creator*</include>
+                                    <include>de.tr7zw:item-nbt-api*</include>
                                 </includes>
                             </artifactSet>
                             <relocations>
                                 <relocation>
-                                    <pattern>org.broken.arrow</pattern>
+                                    <pattern>org.broken.arrow.library</pattern>
                                     <shadedPattern>${dependencys_path}</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>de.tr7zw.changeme</pattern>
+                                    <shadedPattern>${dependencys_path}.nbt</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
@@ -66,8 +74,17 @@
     </build>
     <repositories>
         <repository>
+            <id>repsy</id>
+            <name>Utility library</name>
+            <url>https://repo.repsy.io/broken-arrow/utility-library</url>
+        </repository>
+        <repository>
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>papermc</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
         <repository>
             <id>minecraft-repo</id>
@@ -89,6 +106,12 @@
     </repositories>
     <dependencies>
         <dependency>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>1.21.4-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+       <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
             <version>1.21-R0.1-SNAPSHOT</version>
@@ -102,36 +125,48 @@
         <dependency>
             <groupId>com.mojang</groupId>
             <artifactId>authlib</artifactId>
-            <version>3.13.56</version>
+            <version>3.17.30</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.broken1arrow.Utility-Library</groupId>
+            <groupId>org.broken.arrow.library</groupId>
             <artifactId>conversation-prompt</artifactId>
             <version>${utility-library}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.broken1arrow.Utility-Library</groupId>
+            <groupId>org.broken.arrow.library</groupId>
             <artifactId>nbt</artifactId>
             <version>${utility-library}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.broken1arrow.Utility-Library</groupId>
+            <groupId>org.broken.arrow.library</groupId>
             <artifactId>menu-library</artifactId>
             <version>${utility-library}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.broken1arrow.Utility-Library</groupId>
+            <groupId>org.broken.arrow.library</groupId>
             <artifactId>title-update</artifactId>
             <version>${utility-library}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.broken1arrow.Utility-Library</groupId>
+            <groupId>org.broken.arrow.library</groupId>
             <artifactId>menu-configuration-manager</artifactId>
+            <version>${utility-library}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.broken.arrow.library</groupId>
+            <artifactId>yaml-utility</artifactId>
+            <version>${utility-library}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.broken.arrow.library</groupId>
+            <artifactId>localization</artifactId>
             <version>${utility-library}</version>
             <scope>compile</scope>
         </dependency>

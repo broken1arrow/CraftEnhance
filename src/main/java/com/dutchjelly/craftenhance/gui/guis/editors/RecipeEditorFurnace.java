@@ -36,11 +36,5 @@ public class RecipeEditorFurnace extends RecipeEditor<FurnaceRecipe> {
 		recipe.setExp(recipe.getExp());
 	}
 
-	@Override
-	protected Map<String, String> recipePlaceholders(final FurnaceRecipe recipe) {
-		return new HashMap<String, String>() {{
-			put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(recipe.getExp()));
-			put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(recipe.getDuration()));
-		}};
-	}
+
 }

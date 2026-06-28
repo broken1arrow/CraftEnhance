@@ -1,29 +1,35 @@
 package com.dutchjelly.craftenhance.gui.util;
 
 public enum InfoItemPlaceHolders {
-    MatchMeta("[match meta]"),
-    MatchType("[match type]"),
-    Shaped("[shaped]"),
-    Hidden("[hidden]"),
-    Permission("[permission]"),
-    Config_permission("[config_permission]"),
-    Key("[key]"),
-    Slot("[slot]"),
-    DisableMode("[mode]"),
-    Exp("[exp]"),
-    Duration("[duration]"),
-    Page("[page]"),
-    Category("[category]"),
-    DisplayName("[display_name]"),
-    Worlds("[worlds]"),
-    Partial_match("[partial_match]"),
-    Recipe_type("[Recipe_type]");
-    private final String placeHolder;
+	MatchMeta("[matcher]"),
+	MatchDescription("[match_description]"),
+	Shaped("[shaped]"),
+	Hidden("[hidden]"),
+	Permission("[permission]"),
+	RecipeCommand("[recipe_command]"),
+	Config_permission("[config_permission]"),
+	Key("[key]"),
+	Slot("[slot]"),
+	DisableMode("[mode]"),
+	Exp("[exp]"),
+	Duration("[duration]"),
+	Page("[page]"),
+	Category("[category]"),
+	DisplayName("[display_name]"),
+	Worlds("[worlds]"),
+	Partial_match("[partial_match]"),
+	Recipe_type("[Recipe_type]"),
+	Recipe_group("[recipe_group]"),
+	Sort("[sort]"),
+	Brewing_status("[brewing_status]"),
+	Recipe_activated("[recipe_activated]")
+	;
+	private final String placeHolder;
+	public String getPlaceHolder() {
+		return placeHolder;
+	}
 
-    public String getPlaceHolder(){
-        return placeHolder;
-    }
-    InfoItemPlaceHolders(final String placeHolder){
-        this.placeHolder = placeHolder;
-    }
+	InfoItemPlaceHolders(final String placeHolder) {
+		this.placeHolder = placeHolder;
+	}
 }

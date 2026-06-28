@@ -1,17 +1,16 @@
 package com.dutchjelly.craftenhance.files;
 
-import com.dutchjelly.craftenhance.cache.CacheRecipes;
+import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.cache.CacheRecipes;
+import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import lombok.SneakyThrows;
-import org.broken.arrow.menu.library.utility.ServerVersion;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.broken.arrow.library.menu.utility.ServerVersion;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
@@ -28,11 +27,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.UUID;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class FileManager {
-
 	private final boolean useJson;
 
 	private File dataFolder;
@@ -62,11 +60,11 @@ public class FileManager {
 		fm.items = new HashMap<>();
 		fm.recipes = new ArrayList<>();
 		fm.logger = main.getLogger();
-		fm.cacheRecipes =  main.getCacheRecipes();
+		fm.cacheRecipes = main.getCacheRecipes();
 		fm.dataFolder = main.getDataFolder();
 		fm.dataFolder.mkdir();
 		fm.itemsFile = new File(fm.dataFolder, fm.useJson ? "items.json" : "items.yml");
-		fm.recipesFile = new File(fm.dataFolder,"recipes.yml");
+		fm.recipesFile = new File(fm.dataFolder, "recipes.yml");
 		fm.serverRecipeFile = fm.getFile("server-recipes.yml");
 		fm.containerOwnerFile = fm.getFile("container-owners.yml");
 		return fm;
@@ -86,7 +84,7 @@ public class FileManager {
 		boolean unsavedChanges = false;
 
 		for (final String key : jarResourceConfig.getKeys(false)) {
-			if (ServerVersion.newerThan(ServerVersion.V1_8))
+			if (ServerVersion.newerThan(8.8))
 				if (!fileConfig.contains(key, false)) {
 					fileConfig.set(key, jarResourceConfig.get(key));
 					unsavedChanges = true;
@@ -127,15 +125,15 @@ public class FileManager {
 	}
 
 	public void cacheRecipes() {
-		Debug.Send("The file manager is caching recipes...");
+		Debug.send(Debug.Type.Loading_yaml, "Loading yml", () -> "The file manager is caching recipes...");
 		EnhancedRecipe keyValue;
-		if(!recipesFile.exists())
+		if (!recipesFile.exists())
 			return;
 
 		recipesConfig = getYamlConfig(recipesFile);
 		recipes.clear();
 		for (final String key : recipesConfig.getKeys(false)) {
-			Debug.Send("Caching recipe with key " + key);
+			Debug.send(Debug.Type.Loading_yaml, "Loading yml", () -> "Caching recipe with key " + key);
 			keyValue = (EnhancedRecipe) recipesConfig.get(key);
 			final String validation = keyValue.validate();
 			if (validation != null) {
@@ -154,7 +152,7 @@ public class FileManager {
 
 	@SneakyThrows
 	public void cacheItems() {
-		if(!itemsFile.exists())
+		if (!itemsFile.exists())
 			return;
 
 		if (useJson) {
@@ -279,120 +277,14 @@ public class FileManager {
 		return true;
 	}
 
-	public Map<Location, UUID> getContainerOwners() {
-		containerOwnerConfig = getYamlConfig(containerOwnerFile);
-		final Map<Location, UUID> blockOwners = new HashMap<>();
-		for (final String key : containerOwnerConfig.getKeys(false)) {
-			if (key == null) continue;
-			final String[] parsedKey = key.split(",");
-			final World world = Bukkit.getServer().getWorld(UUID.fromString(parsedKey[3]));
-			if (world != null) {
-				final Location loc = new Location(
-						world,
-						Integer.parseInt(parsedKey[0]),
-						Integer.parseInt(parsedKey[1]),
-						Integer.parseInt(parsedKey[2]));
-				blockOwners.put(loc, UUID.fromString(containerOwnerConfig.getString(key)));
-			}
-		}
-		return blockOwners;
-	}
-
-	public boolean saveContainerOwners(final Map<Location, UUID> blockOwners) {
-		containerOwnerConfig.getKeys(false).forEach(x -> containerOwnerConfig.set(x, null));
-		for (final Map.Entry<Location, UUID> blockOwnerSet : blockOwners.entrySet()) {
-			final Location key = blockOwnerSet.getKey();
-			final String keyString = key.getBlockX() + "," + key.getBlockY() + "," + key.getBlockZ() + "," + key.getWorld().getUID();
-			containerOwnerConfig.set(keyString, blockOwnerSet.getValue().toString());
-		}
+	public boolean saveAllDisabledServerRecipes() {
+		serverRecipeConfig.set("disabled", RecipeLoader.getInstance().getDisabledServerRecipes().stream().map(Adapter::GetRecipeIdentifier).collect(Collectors.toList()));
 		try {
-			containerOwnerConfig.save(containerOwnerFile);
+			serverRecipeConfig.save(serverRecipeFile);
 		} catch (final IOException e) {
 			return false;
 		}
 		return true;
-	}
-
-	public void saveRecipe(final EnhancedRecipe recipe) {
-		Debug.Send("Saving recipe " + recipe.toString() + " with key " + recipe.getKey());
-		String recipeKey = recipe.getKey();
-		if (recipe.getKey().contains(".")) {
-			recipeKey = recipeKey.replace(".", "_");
-			Messenger.Message("your recipe key contains '.', it is removed now. Before " + recipe.getKey() + " after removed " + recipeKey);
-			recipe.setKey(recipeKey);
-		}
-
-		recipesConfig = getYamlConfig(recipesFile);
-		recipesConfig.set(recipeKey, recipe);
-		try {
-			recipesConfig.save(recipesFile);
-			if (getRecipe(recipe.getKey()) == null)
-				recipes.add(recipe);
-			Debug.Send("Succesfully saved the recipe, there are now " + recipes.size() + " recipes cached.");
-		} catch (final IOException e) {
-			logger.severe("Error saving a recipe to the recipes.yml file.");
-		}
-	}
-
-	public void removeRecipe(final EnhancedRecipe recipe) {
-		Debug.Send("Removing recipe " + recipe.toString() + " with key " + recipe.getKey());
-		String recipeKey = recipe.getKey();
-		if (recipe.getKey().contains(".")) {
-			recipeKey = recipeKey.replace(".", "_");
-			Messenger.Message("your recipe key contains '.', it is removed now. Before " + recipe.getKey() + " after removed " + recipeKey);
-			recipe.setKey(recipeKey);
-		}
-
-		recipesConfig = getYamlConfig(recipesFile);
-		recipesConfig.set(recipeKey, null);
-		recipes.remove(recipe);
-		try {
-			recipesConfig.save(recipesFile);
-		} catch (final IOException e) {
-			logger.severe("Error removing a recipe.");
-		}
-	}
-
-	public void overrideSave() {
-		Debug.Send("Overriding saved recipes with new list..");
-		final List<EnhancedRecipe> cloned = new ArrayList<>();
-		recipes.forEach(x -> cloned.add(x));
-		removeAllRecipes();
-		cloned.forEach(x -> saveRecipe(x));
-		recipes = cloned;
-		recipesConfig = getYamlConfig(recipesFile);
-	}
-
-	private void removeAllRecipes() {
-		if (recipes.isEmpty()) return;
-		removeRecipe(recipes.get(0));
-		removeAllRecipes();
-	}
-
-	public void cleanItemFile() {
-		Debug.Send("Cleaning up unused items.");
-		for (final String itemKey : items.keySet()) {
-			if (!isItemInUse(items.get(itemKey))) {
-				Debug.Send("Item with key " + itemKey + " is not used and will be removed.");
-				itemsConfig.set(itemKey, null);
-				try {
-					itemsConfig.save(itemsFile);
-				} catch (final IOException e) {
-					Debug.Send("Failed saving itemsConfig");
-				}
-			}
-		}
-	}
-
-	private boolean isItemInUse(final ItemStack item) {
-		for (final EnhancedRecipe r : recipes) {
-			if (r.getResult().equals(item)) return true;
-			for (final ItemStack inRecipe : r.getContent()) {
-				if (inRecipe != null && inRecipe.equals(item)) return true;
-			}
-
-		}
-		return false;
 	}
 
 }

@@ -2,6 +2,8 @@ package com.dutchjelly.craftenhance.updatechecking;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.messaging.Debug;
+import com.dutchjelly.craftenhance.messaging.Debug.Type;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import lombok.Getter;
 
@@ -14,16 +16,26 @@ public class VersionChecker {
     public static VersionChecker init(final CraftEnhance plugin) {
         final VersionChecker checker = new VersionChecker();
         checker.serverVersion = plugin.getServer().getBukkitVersion();
-        String version = checker.serverVersion.split("\\.")[1];
-        if (version.contains("-"))
+        final String[] split = checker.serverVersion.split("\\.");
+        String version = split[1];
+        int majorVersion = Integer.parseInt(split[0]);
+        if (majorVersion > 21) {
+            checker.currentServerVersion = majorVersion;
+            checker.plugin = plugin;
+            return checker;
+        } else if (version.contains("-"))
             version =version.substring(0,version.indexOf('-'));
+
         checker.currentServerVersion = Integer.parseInt(version);
         checker.plugin = plugin;
         return checker;
     }
 
     public void runUpdateCheck() {
-        if (!plugin.getConfig().getBoolean("enable-updatechecker")) return;
+        if (!plugin.getConfig().getBoolean("enable-updatechecker")) {
+            Debug.send(Type.Loading, "Loading plugin",()-> "Update checker is turned off in config.");
+            return;
+        }
 
         final GithubLoader loader = GithubLoader.init(this);
         loader.readVersion();
@@ -87,6 +99,7 @@ public class VersionChecker {
     }
 
     public boolean newerThan(final ServerVersion version) {
+
         return serverVersion(version) > 0;
     }
 
@@ -99,6 +112,7 @@ public class VersionChecker {
     }
 
     public enum ServerVersion {
+        v1_26(26),
         v1_21(21),
         v1_20(20),
         v1_19(19),

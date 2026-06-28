@@ -1,6 +1,8 @@
 package com.dutchjelly.craftenhance.gui.guis.viewers;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
@@ -11,27 +13,25 @@ import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.RecipesViewer;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorBlast;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorBrewing;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorFurnace;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorSmoker;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
-import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
 import com.dutchjelly.craftenhance.util.PermissionTypes;
-import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
-import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
-import org.broken.arrow.menu.library.button.MenuButton;
-import org.broken.arrow.menu.library.button.logic.ButtonUpdateAction;
-import org.broken.arrow.menu.library.button.logic.FillMenuButton;
-import org.broken.arrow.menu.library.holder.MenuHolderPage;
+import org.broken.arrow.library.menu.button.MenuButton;
+import org.broken.arrow.library.menu.button.logic.ButtonUpdateAction;
+import org.broken.arrow.library.menu.button.logic.FillMenuButton;
+import org.broken.arrow.library.menu.button.manager.utility.MenuButtonData;
+import org.broken.arrow.library.menu.button.manager.utility.MenuTemplate;
+import org.broken.arrow.library.menu.holder.MenuHolderPage;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
@@ -79,23 +79,7 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 
 			@Override
 			public ItemStack getItem() {
-				final Map<String, String> placeHolders = new HashMap<String, String>() {{
-					if (recipe instanceof WBRecipe)
-						put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), ((WBRecipe) recipe).isShapeless() ? "shapeless" : "shaped");
-					if (recipe instanceof FurnaceRecipe) {
-						put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(((FurnaceRecipe) recipe).getExp()));
-						put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(((FurnaceRecipe) recipe).getDuration()));
-					}
-					put(InfoItemPlaceHolders.Recipe_type.getPlaceHolder(), recipe.getType().name().toLowerCase());
-					put(InfoItemPlaceHolders.Config_permission.getPlaceHolder(), PermissionTypes.Edit.getPerm());
-					put(InfoItemPlaceHolders.Key.getPlaceHolder(), recipe.getKey() == null ? "null" : recipe.getKey());
-					put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), recipe.getMatchType().getDescription());
-					put(InfoItemPlaceHolders.MatchType.getPlaceHolder(), recipe.getMatchType().getDescription());
-					put(InfoItemPlaceHolders.Permission.getPlaceHolder(), recipe.getPermission() == null ? "not set" : recipe.getPermission());
-					put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), recipe.getAllowedWorlds() == null || recipe.getAllowedWorlds().isEmpty() ? "all worlds" : recipe.getAllowedWorldsFormatted());
-				}};
-
-				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = null;
+				org.broken.arrow.library.menu.button.manager.utility.MenuButton button = null;
 				if (getViewer().hasPermission(PermissionTypes.Edit.getPerm()))
 					button = value.getActiveButton();
 				if (button == null)
@@ -104,7 +88,7 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 				ItemStack itemStack = Adapter.getItemStack(button.getMaterial(), button.getDisplayName(), button.getLore(), button.getExtra(), button.isGlow());
 				if (itemStack == null)
 					return null;
-				return GuiUtil.ReplaceAllPlaceHolders(itemStack.clone(), placeHolders);
+				return GuiUtil.ReplaceAllPlaceHolders(itemStack.clone(), recipe.getPlaceholders(player));
 			}
 		};
 	}
@@ -113,8 +97,8 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 		if (value.isActionTypeEqual(ButtonType.Back.name())) {
 			final RecipesViewer recipesViewer = new RecipesViewer(this.categoryData, "", player);
 			recipesViewer.menuOpen(player);
-			if ( this.page > 0)
-				recipesViewer.setPage( this.page);
+			if (this.page > 0)
+				recipesViewer.setPage(this.page);
 		}
 		if (value.isActionTypeEqual(ButtonType.edit_recipe.name())) {
 			if (player.hasPermission(PermissionTypes.Edit.getPerm())) {
@@ -122,13 +106,16 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 					new RecipeEditor<>((WBRecipe) recipe, this.page, categoryData, null, ButtonType.ChooseWorkbenchType).menuOpen(player);
 				}
 				if (recipe instanceof FurnaceRecipe) {
-					new RecipeEditorFurnace((FurnaceRecipe) recipe, this.page,categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
+					new RecipeEditorFurnace((FurnaceRecipe) recipe, this.page, categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
 				}
 				if (recipe instanceof BlastRecipe) {
-					new RecipeEditorBlast((BlastRecipe) recipe, this.page,categoryData, null, ButtonType.ChooseBlastType, true).menuOpen(player);
+					new RecipeEditorBlast((BlastRecipe) recipe, this.page, categoryData, null, ButtonType.ChooseBlastType, true).menuOpen(player);
 				}
 				if (recipe instanceof SmokerRecipe) {
-					new RecipeEditorSmoker((SmokerRecipe) recipe, this.page,categoryData, null, ButtonType.ChooseSmokerType, true).menuOpen(player);
+					new RecipeEditorSmoker((SmokerRecipe) recipe, this.page, categoryData, null, ButtonType.ChooseSmokerType, true).menuOpen(player);
+				}
+				if (recipe instanceof BrewingRecipe) {
+					new RecipeEditorBrewing((BrewingRecipe) recipe, this.page, categoryData, null, ButtonType.ChooseBrewingType, true).menuOpen(player);
 				}
 			}
 			return false;
@@ -141,4 +128,11 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 		return new FillMenuButton<>((player1, itemStacks, clickType, itemStack, recipeT) -> ButtonUpdateAction.NONE,
 				(integer, itemStack) -> itemStack);
 	}
+
+	private Object getPermissionText(final boolean viewAll, final String permissionText, final boolean permissionSet) {
+		final CraftEnhance self = self();
+		return viewAll && !permissionSet ? permissionText : permissionSet ? self.getText("permission_non_set") : self.getText("permission_no_perm");
+	}
+
+
 }

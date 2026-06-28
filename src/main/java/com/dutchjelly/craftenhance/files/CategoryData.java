@@ -1,10 +1,12 @@
 package com.dutchjelly.craftenhance.files;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
-import com.dutchjelly.craftenhance.files.util.ConfigurationSerializeUtility;
+import org.broken.arrow.library.serialize.utility.serialize.ConfigurationSerializable;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,21 +14,40 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class CategoryData implements ConfigurationSerializeUtility {
+import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
+public class CategoryData implements ConfigurationSerializable {
+
+	private final ItemStack recipeCategoryItem;
 	private String recipeCategory;
 	private String displayName;
-	private final ItemStack recipeCategoryItem;
-	private List<EnhancedRecipe> enhancedRecipes = new ArrayList<>();
+	private List<EnhancedRecipeWrapper> enhancedRecipes = new ArrayList<>();
 
 	private CategoryData(final ItemStack recipeCategoryItem, final String recipeCategory, final String displayName) {
 		this.recipeCategoryItem = recipeCategoryItem;
 		this.recipeCategory = recipeCategory;
 		this.displayName = displayName;
 	}
+
 	public static CategoryData of(final ItemStack recipeCategoryItem, final String recipeCategory, final String displayName) {
-		return new CategoryData(recipeCategoryItem,recipeCategory,displayName);
+		return new CategoryData(recipeCategoryItem, recipeCategory, displayName);
 	}
+
+	public static CategoryData deserialize(final Map<String, Object> map) {
+		final String recipeCategory = (String) map.getOrDefault("category.name", null);
+		ItemStack itemStack = (ItemStack) map.getOrDefault("category.category_item", null);
+		final String displayName = (String) map.getOrDefault("category.display_name", null);
+		if (itemStack == null || itemStack.getType() == Material.AIR || itemStack.getType() == Material.getMaterial("END_PORTAL")) {
+			Material material = Adapter.getMaterial("CRAFTING_TABLE");
+			if (material == null)
+				material = Material.CRAFTING_TABLE;
+			itemStack = new ItemStack(material);
+		}
+		final CategoryData categoryData = new CategoryData(itemStack, recipeCategory, displayName);
+		categoryData.setDisplayName(displayName);
+		return categoryData;
+	}
+
 	public String getDisplayName() {
 		return displayName;
 	}
@@ -48,19 +69,23 @@ public class CategoryData implements ConfigurationSerializeUtility {
 	}
 
 	public List<EnhancedRecipe> getEnhancedRecipes() {
+		return enhancedRecipes.stream().map(this::getEnhancedRecipe).collect(Collectors.toList());
+	}
+	public List<EnhancedRecipeWrapper> getRecipeCoreData() {
 		return enhancedRecipes;
 	}
-	public List<EnhancedRecipe> getEnhancedRecipes(final String recipeSearchFor) {
-		if (recipeSearchFor == null || recipeSearchFor.equals(""))
-		return enhancedRecipes;
-		return enhancedRecipes.stream().filter(x -> x.getKey().contains(recipeSearchFor)).collect(Collectors.toList());
-	}
-	public void addEnhancedRecipes(final EnhancedRecipe enhancedRecipes) {
-		this.enhancedRecipes.add(enhancedRecipes);
+	public void setEnhancedRecipes(final List<EnhancedRecipe> enhancedRecipes) {
+		this.enhancedRecipes = new ArrayList<>();
+		enhancedRecipes.forEach(enhancedRecipe -> this.enhancedRecipes.add(new EnhancedRecipeWrapper(enhancedRecipe)));
 	}
 
-	public void setEnhancedRecipes(final List<EnhancedRecipe> enhancedRecipes) {
-		this.enhancedRecipes = enhancedRecipes;
+	@Nullable
+	private EnhancedRecipe getEnhancedRecipe(final EnhancedRecipeWrapper enhancedRecipeWrapper) {
+		return self().getCacheRecipes().getRecipe(enhancedRecipeWrapper.getKey());
+	}
+
+	public void addEnhancedRecipes(final EnhancedRecipe enhancedRecipe) {
+		this.enhancedRecipes.add(new EnhancedRecipeWrapper(enhancedRecipe));
 	}
 
 	@Override
@@ -70,20 +95,6 @@ public class CategoryData implements ConfigurationSerializeUtility {
 			put("category.category_item", recipeCategoryItem);
 			put("category.display_name", displayName);
 		}};
-	}
-	public static CategoryData deserialize(final Map< String, Object> map) {
-		final String recipeCategory = (String) map.getOrDefault("category.name", null);
-		ItemStack itemStack = (ItemStack) map.getOrDefault("category.category_item", null);
-		final String displayName = (String) map.getOrDefault("category.display_name", null);
-		if (itemStack == null || itemStack.getType() == Material.AIR || itemStack.getType() == Material.getMaterial("END_PORTAL")) {
-			Material material = Adapter.getMaterial("CRAFTING_TABLE");
-			if (material == null)
-				material = Material.CRAFTING_TABLE;
-			itemStack = new ItemStack(material);
-		}
-		final CategoryData categoryData =  new CategoryData(itemStack,recipeCategory,displayName);
-		categoryData.setDisplayName(displayName);
-		return categoryData;
 	}
 
 	@Override

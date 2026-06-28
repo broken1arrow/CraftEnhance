@@ -75,11 +75,5 @@ public class RecipeSettingsSmoker extends RecipeSettings<SmokerRecipe>{
 		new RecipeEditorSmoker(recipe, this.page,categoryData, null, ButtonType.ChooseFurnaceType,false).menuOpen(player);
 	}
 
-	@Override
-	protected Map<String, String> recipePlaceholders(final SmokerRecipe recipe) {
-		return new HashMap<String, String>() {{
-			put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(recipe.getExp()));
-			put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(recipe.getDuration()));
-		}};
-	}
+
 }

@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance.gui.guis.editors;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
@@ -9,11 +10,10 @@ import com.dutchjelly.craftenhance.gui.guis.RecipesViewerCategorys;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
-import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
-import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
-import org.broken.arrow.menu.library.button.MenuButton;
-import org.broken.arrow.menu.library.holder.MenuHolder;
-import org.bukkit.Bukkit;
+import org.broken.arrow.library.menu.button.MenuButton;
+import org.broken.arrow.library.menu.button.manager.utility.MenuButtonData;
+import org.broken.arrow.library.menu.button.manager.utility.MenuTemplate;
+import org.broken.arrow.library.menu.holder.MenuHolder;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -65,7 +65,7 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 
 			@Override
 			public ItemStack getItem() {
-				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = value.getPassiveButton();
+				org.broken.arrow.library.menu.button.manager.utility.MenuButton button = value.getPassiveButton();
 				return Adapter.getItemStack(button.getMaterial(),button.getDisplayName(),button.getLore(),button.getExtra(),button.isGlow());
 			}
 		};
@@ -89,7 +89,7 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 					self().getCategoryDataCache().put(defaultCategory, oldCategory);
 				}
 				self().getCategoryDataCache().remove((this.category));
-				Bukkit.getScheduler().runTaskLaterAsynchronously(self(), () -> self().getCategoryDataCache().save(), 1);
+				CraftEnhance.runTaskLaterAsync(1, () -> self().getCategoryDataCache().save());
 				new RecipesViewerCategorys("").menuOpen(player);
 			}
 		}

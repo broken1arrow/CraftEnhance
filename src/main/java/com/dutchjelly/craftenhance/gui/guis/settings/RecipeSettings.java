@@ -1,6 +1,8 @@
 package com.dutchjelly.craftenhance.gui.guis.settings;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
@@ -12,15 +14,17 @@ import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
+import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
+import com.dutchjelly.craftenhance.util.PermissionTypes;
 import lombok.Getter;
 import lombok.NonNull;
-import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
-import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
-import org.broken.arrow.menu.library.MenuUtility;
-import org.broken.arrow.menu.library.button.MenuButton;
-import org.broken.arrow.menu.library.holder.MenuHolder;
+import org.broken.arrow.library.menu.MenuUtility;
+import org.broken.arrow.library.menu.button.MenuButton;
+import org.broken.arrow.library.menu.button.manager.utility.MenuButtonData;
+import org.broken.arrow.library.menu.button.manager.utility.MenuTemplate;
+import org.broken.arrow.library.menu.holder.MenuHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -33,7 +37,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -44,15 +47,15 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
-	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
 	protected final int page;
-	private String permission;
+	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
 	private final MenuTemplate menuTemplate;
 	@Getter
 	private final RecipeT recipe;
-	private ItemMatchers.MatchType recipeMatchType;
 	private final ButtonType editorType;
 	private final CategoryData categoryData;
+	private String permission;
+	private ItemMatchers.MatchType recipeMatchType;
 
 	public RecipeSettings(final RecipeT recipe, int pageNumber, final CategoryData categoryData, final String permission, final ButtonType editorType) {
 		page = pageNumber;
@@ -65,6 +68,9 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		String menu = "RecipeSettingsCrafting";
 		if (recipe instanceof FurnaceRecipe) {
 			menu = "RecipeSettingsFurnace";
+		}
+		if (recipe instanceof BrewingRecipe) {
+			menu = "RecipeSettingsBrewing";
 		}
 		this.setUseColorConversion(true);
 		this.setIgnoreItemCheck(true);
@@ -105,12 +111,12 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 
 			@Override
 			public ItemStack getItem() {
-				final Map<String, String> placeHolders = setPlaceholders();
+				final Map<String, Object> placeHolders = setPlaceholders();
 
 				ItemStack itemStack = getConversingItem(ButtonType.valueOfType(value.getActionType()));
 				if (itemStack != null) return itemStack;
 
-				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = value.getPassiveButton();
+				org.broken.arrow.library.menu.button.manager.utility.MenuButton button = value.getPassiveButton();
 				itemStack = Adapter.getItemStack(button.getMaterial(), button.getDisplayName(), button.getLore(), button.getExtra(), button.isGlow());
 				if (itemStack == null)
 					return null;
@@ -152,11 +158,27 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			}
 			return true;
 		}
+
 		if (value.isActionTypeEqual(ButtonType.SwitchHidden.name())) {
 			final boolean hidden = !this.recipe.isHidden();
 			this.recipe.setHidden(hidden);
 			return true;
 		}
+
+		if (value.isActionTypeEqual(ButtonType.Group_name.name())) {
+			if (player.isConversing()) return true;
+			if (click.isRightClick()) {
+				recipe.setGroup("");
+				return true;
+			}
+			new HandleChatInput(this, msg -> {
+				recipe.setGroup(msg);
+				this.runTask(() -> this.menuOpen(player));
+				return true;
+			}).setMessages("Set the group for the recipe, the group with recipes sha be added to same group in the learning book", " Type q,exit,cancel to turn it off").start(getViewer());
+			return true;
+		}
+
 		if (value.isActionTypeEqual(ButtonType.SwitchMatchMeta.name())) {
 			switchMatchMeta();
 			return true;
@@ -176,9 +198,37 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 			}).setMessages("Set your own permission on a recipe or type 'non' or 'null' to unset permission. Only players some has this permission can craft the item.", " Type q,exit,cancel to turn it off").start(getViewer());
 			return true;
 		}
+
+		if (value.isActionTypeEqual(ButtonType.SetCommand.name())) {
+			if (!player.hasPermission(PermissionTypes.Edit.getPerm())) {
+				Debug.error("A player attempting to modify the command without correct permissions. The player:" + player.getName());
+				return false;
+			}
+			if (player.isOp()) {
+				Debug.error("OP mode introduces serious security risks by bypassing safety checks. Its use is strongly discouraged, " +
+						"and future versions of this plugin will restrict it to prevent abuse — especially regarding set command in menu.");
+			}
+
+			if (click.isRightClick()) {
+				recipe.setOnCraftCommand(null);
+				return true;
+			}
+
+			if (player.isConversing()) return true;
+			new HandleChatInput(this, msg -> {
+				if (!handleCommand(msg)) {
+					this.runTask(() -> this.menuOpen(player));
+					return false;
+				}
+				return true;
+			}).setMessages("Set a custom command to run when the player picks up the recipe result. Type 'none' or 'null' to clear the command. Type q, exit, or cancel to exit.").start(getViewer());
+			return false;
+		}
+
 		if (value.isActionTypeEqual(ButtonType.ChangeCategoryList.name())) {
 			new CategoryList<>(this.recipe, this.categoryData, this.permission, this.editorType, "").menuOpen(player);
 		}
+
 		if (value.isActionTypeEqual(ButtonType.ChangeCategory.name())) {
 			if (player.isConversing()) return true;
 			new HandleChatInput(this, msg -> {
@@ -227,6 +277,25 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		}
 		final String permission = message;
 		this.recipe.setPermission(permission);
+		return false;
+	}
+
+	private boolean handleCommand(String message) {
+		if (message == null || message.trim().isEmpty()) return false;
+
+		message = message.trim();
+
+		final String messageLowerCase = message.toLowerCase();
+		if (messageLowerCase.equals("q") || messageLowerCase.equals("cancel") || messageLowerCase.equals("quit") || messageLowerCase.equals("exit"))
+			return false;
+
+		if (messageLowerCase.equals("non") || messageLowerCase.equals("null")) {
+			this.recipe.setOnCraftCommand(null);
+			return false;
+		}
+
+		final String permission = message;
+		this.recipe.setOnCraftCommand(permission);
 		return false;
 	}
 
@@ -336,40 +405,12 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		return null;
 	}
 
-	public Map<String, String> setPlaceholders() {
-		Map<String, String> placeholders = new HashMap<String, String>() {{
-			put(InfoItemPlaceHolders.Key.getPlaceHolder(), recipe.getKey() == null ? "null" : recipe.getKey());
-			if (recipe instanceof WBRecipe)
-				put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), ((WBRecipe) recipe).isShapeless() ? "shapeless" : "shaped");
-			if (recipe instanceof FurnaceRecipe) {
-				put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(((FurnaceRecipe) recipe).getExp()));
-				put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(((FurnaceRecipe) recipe).getDuration()));
-			}
-			final String permission = recipe.getPermission();
-			put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), recipe.getMatchType().getDescription());
-			put(InfoItemPlaceHolders.MatchType.getPlaceHolder(), recipe.getMatchType().getDescription());
-			put(InfoItemPlaceHolders.Hidden.getPlaceHolder(), recipe.isHidden() ? "hide recipe in menu" : "show recipe in menu");
-			put(InfoItemPlaceHolders.Permission.getPlaceHolder(), permission == null || permission.trim().equals("") ? "none" : permission);
-			put(InfoItemPlaceHolders.Slot.getPlaceHolder(), String.valueOf(recipe.getSlot()));
-			put(InfoItemPlaceHolders.Page.getPlaceHolder(), String.valueOf(recipe.getPage()));
-			put(InfoItemPlaceHolders.Partial_match.getPlaceHolder(), recipe.isCheckPartialMatch() ? "checks for partial match" : "doesn't check for partial match");
-			put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), recipe.getAllowedWorlds() != null && !recipe.getAllowedWorlds().isEmpty() ?
-					recipe.getAllowedWorldsFormatted() : "non set");
-			if (categoryData != null)
-				put(InfoItemPlaceHolders.Category.getPlaceHolder(), categoryData.getRecipeCategory());
-			else
-				put(InfoItemPlaceHolders.Category.getPlaceHolder(), recipe.getRecipeCategory() != null ? recipe.getRecipeCategory() : "default");
-
-		}};
-		Map<String, String> extraPlaceholders = recipePlaceholders(recipe);
-		if (extraPlaceholders != null && !extraPlaceholders.isEmpty())
-			placeholders.putAll(extraPlaceholders);
-
-		return placeholders;
+	public Map<String, Object> setPlaceholders() {
+		return recipe.getPlaceholders(player);
 	}
 
 	protected void runTask(final Runnable runnable) {
-		Bukkit.getScheduler().runTaskLater(self(), runnable, 1);
+		CraftEnhance.runTaskLater(1, runnable);
 	}
 
 	protected boolean onPlayerClick(final RecipeT recipe, final String buttonAction, final Player player) {
@@ -379,7 +420,4 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 	protected void handleBack(final RecipeT recipe, final CategoryData categoryData, final Player player) {
 	}
 
-	protected Map<String, String> recipePlaceholders(final RecipeT recipe) {
-		return null;
-	}
 }

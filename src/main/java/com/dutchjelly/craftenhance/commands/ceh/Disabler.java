@@ -26,7 +26,7 @@ public class Disabler implements ICommand {
 	@Override
 	public void handlePlayerCommand(Player p, String[] args) {
 		//final CraftEnhance main = handler.getMain();
-		RecipeDisabler menu = new RecipeDisabler(RecipeLoader.getInstance().getServerRecipes(), RecipeLoader.getInstance().getDisabledServerRecipes(),false,"");
+		RecipeDisabler menu = new RecipeDisabler(RecipeLoader.getInstance().getLoadedServerRecipes(), RecipeLoader.getInstance().getDisabledServerRecipes(),false,"");
 		menu.menuOpen(p);
 		/*	final GuiTemplate template = main.getGuiTemplatesFile().getTemplate(RecipeDisabler.class);
 		final RecipeDisabler gui = new RecipeDisabler(main.getGuiManager(), template, null, p, RecipeLoader.getInstance().getServerRecipes(), RecipeLoader.getInstance().getDisabledServerRecipes(),"");

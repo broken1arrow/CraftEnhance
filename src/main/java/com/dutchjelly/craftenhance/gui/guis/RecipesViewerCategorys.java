@@ -8,15 +8,17 @@ import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.FormatListContents;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.gui.util.InfoItemPlaceHolders;
+import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import com.dutchjelly.craftenhance.util.PermissionTypes;
-import org.broken.arrow.menu.button.manager.library.utility.MenuButtonData;
-import org.broken.arrow.menu.button.manager.library.utility.MenuTemplate;
-import org.broken.arrow.menu.library.button.MenuButton;
-import org.broken.arrow.menu.library.button.logic.ButtonUpdateAction;
-import org.broken.arrow.menu.library.button.logic.FillMenuButton;
-import org.broken.arrow.menu.library.holder.MenuHolderPage;
+import org.broken.arrow.library.menu.button.MenuButton;
+import org.broken.arrow.library.menu.button.logic.ButtonUpdateAction;
+import org.broken.arrow.library.menu.button.logic.FillMenuButton;
+import org.broken.arrow.library.menu.button.manager.utility.MenuButtonData;
+import org.broken.arrow.library.menu.button.manager.utility.MenuTemplate;
+import org.broken.arrow.library.menu.holder.MenuHolderPage;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -72,7 +74,7 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 
 			@Override
 			public ItemStack getItem() {
-				org.broken.arrow.menu.button.manager.library.utility.MenuButton button = null;
+				org.broken.arrow.library.menu.button.manager.utility.MenuButton button = null;
 				if (getViewer().hasPermission(PermissionTypes.Categorys_editor.getPerm()))
 					button = value.getActiveButton();
 				if (button == null)
@@ -92,21 +94,37 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 			nextPage();
 			return true;
 		}
+		if (value.isActionTypeEqual(ButtonType.Back.name())) {
+			player.closeInventory();
+			if (value.getExtra() != null) {
+				final boolean containsKey = self().getConfig().contains("show_command_menu");
+				if (!containsKey) {
+					Debug.info("To disable debugging messages when executing commands via the menu, set 'show_command_menu: false' in the config.yml file");
+				}
+				for (String command : value.getExtra()) {
+					if (command == null || command.equals("null"))
+						continue;
+					if (!containsKey || self().getConfig().getBoolean("show_command_menu")) {
+						Debug.info("Player: " + player.getName() + " run this command: " + command);
+					}
+					Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%playername%", player.getName()));
+				}
+			}
+		}
 		if (value.isActionTypeEqual(ButtonType.Search.name())) {
 			if (click == ClickType.RIGHT) {
-				Messenger.Message("Search for categorys.", getViewer());
+				Messenger.Message("Search for categories.", getViewer());
 				new HandleChatInput(this, msg -> {
 					if (GuiUtil.seachCategory(msg)) {
 						new RecipesViewerCategorys(msg).menuOpen(getViewer());
 						return false;
 					}
 					return true;
-				}).setMessages("Search for categorys.")
+				}).setMessages("Search for categories.")
 						.start(getViewer());
 				;
 			} else new RecipesViewerCategorys("").menuOpen(player);
 		}
-
 		if (value.isActionTypeEqual(ButtonType.NewCategory.name()) && player.hasPermission(PermissionTypes.Categorys_editor.getPerm())) {
 			if (!player.isConversing()) {
 				new HandleChatInput(this, msg -> {
@@ -139,12 +157,18 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 			if (categoryData != null) {
 				String displayName = " ";
 				List<String> lore = new ArrayList<>();
-				final Map<String, String> placeHolders = new HashMap<>();
+				final Map<String, Object> placeHolders = new HashMap<>();
 				if (menuTemplate != null) {
 					final MenuButtonData menuButton = menuTemplate.getMenuButton(-1);
 					if (menuButton != null) {
-						displayName = menuButton.getPassiveButton().getDisplayName();
-						lore = menuButton.getPassiveButton().getLore();
+						final org.broken.arrow.library.menu.button.manager.utility.MenuButton activeButton = menuButton.getActiveButton();
+						if (player.hasPermission(PermissionTypes.Categorys_editor.getPerm()) && activeButton != null) {
+							displayName = activeButton.getDisplayName();
+							lore = activeButton.getLore();
+						} else {
+							displayName = menuButton.getPassiveButton().getDisplayName();
+							lore = menuButton.getPassiveButton().getLore();
+						}
 					}
 				}
 				final ItemStack itemStack = categoryData.getRecipeCategoryItem();
