@@ -163,13 +163,6 @@ public class Debug {
 		}
 	}
 
-	public static void error(final String message) {
-		logger.log(Level.WARNING,prefix + message);
-	}
-	public static void error(final String message,Throwable throwable) {
-		logger.log(Level.WARNING,prefix + message,throwable);
-	}
-
 
 	public enum Type {
 		Crafting,
