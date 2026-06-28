@@ -72,7 +72,7 @@ public class FurnaceRecipeInjector {
 		final RecipeResult result = getFurnaceResult(recipe, resultItem, matchingRecipe, matrix, furnace);
 
 		if (result.isEnhancedRecipe()) {
-			Debug.Send(Type.Smelting, () -> "Custom item smelted, the result item: " + result);
+			Debug.Send(Type.Smelting, () -> "Custom item smelted, the result item: " + RecipeDebug.formatOneStack(result.getItem()));
 			event.setResult(result.getItem());
 		} else {
 			if (result.isNone()) {
