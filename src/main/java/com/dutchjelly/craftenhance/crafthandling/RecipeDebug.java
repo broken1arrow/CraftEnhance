@@ -297,10 +297,10 @@ public class RecipeDebug {
 				description = "Both display name and lore are missing for the input item.";
 			} else if (displayMatch == FieldMatch.NULL_INPUT) {
 				type = MatchStatusType.DISPLAY_NULL;
-				description = "Expected display name is missing in input item.";
+				description = "Expected display name is missing input item.";
 			} else {
 				type = MatchStatusType.LORE_NULL;
-				description = "Expected lore is missing in input item.";
+				description = "Expected lore is missing input item.";
 			}
 
 			return new MatchStatus(type.name(), description);
@@ -324,11 +324,9 @@ public class RecipeDebug {
 			return new MatchStatus(type.name(), description);
 		}
 		if (displayBad || loreBad) {
-			int pos = Math.max(display.getPosition(), lore.getPosition());
-
 			if (displayBad && loreBad) {
 				type = MatchStatusType.DISPLAY_LORE_MISMATCH_AT_POS;
-				description = "Display and lore mismatch at position " + pos;
+				description = "Display and lore mismatch in the set display name at:'" + display.getPosition() + "'pos and at lore pos:'" + lore.getPosition() + "'.";
 			} else if (displayBad) {
 				type = MatchStatusType.DISPLAY_MISMATCH_AT_POS;
 				description = "Display mismatch at position " + display.getPosition();
