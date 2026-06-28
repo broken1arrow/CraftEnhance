@@ -118,7 +118,7 @@ public class RecipeDebug {
 		if (!checkMetadata)
 			stringBuilder.append("\nIngredient type= ");
 		formatStack(stack, stringBuilder, checkMetadata);
-		stringBuilder.append("________________________________");
+		stringBuilder.append("\n________________________________");
 		return stringBuilder + "";
 	}
 

@@ -274,7 +274,6 @@ public class RecipeLoader {
 				if (Adapter.isRecipeCustom(serverRecipe) || self().getCacheRecipes().isCustomRecipe(serverRecipe)) {
 					return;
 				}
-
 				this.addServerRecipes(serverRecipe);
 				final ItemStack[] ingredients = Adapter.getIngredients(serverRecipe);
 				if (Adapter.isCookingRecipe(serverRecipe)) {

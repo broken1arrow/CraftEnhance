@@ -47,6 +47,7 @@ import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.ComplexRecipe;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -171,6 +172,13 @@ public class RecipeInjector implements Listener {
 			});
 			if (contextResult == null) continue;
 			if (endCraftingCheck(contextResult, location, craftingInventory)) return;
+		}
+
+		if (serverRecipe instanceof ComplexRecipe) {
+			Debug.send(Type.Crafting, "complex recipe", () -> "Will allowing this recipe to be craft without this plugin interfere.");
+			Debug.send(Type.Crafting, "complex recipe", () -> "The type: " + RecipeDebug.formatOneStack(serverRecipe.getResult()));
+			Debug.send(Type.Crafting, "complex recipe", () -> "The ingredients if set this stage: " + RecipeDebug.convertItemStackArrayToString(Adapter.getIngredients(serverRecipe)));
+			return;
 		}
 		craftingInventory.setResult(null);
 	}
