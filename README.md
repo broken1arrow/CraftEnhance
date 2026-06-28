@@ -18,8 +18,12 @@ Some examples of why I would use this plugin as an API in certain cases is to:
 
 ##### 2.6.1
 ```diff
-+ Revorked the recipe lookup on the server to be more efficant.  
++ Completely reworked the server-side recipe lookup system for significantly better performance and efficiency.
++ Improved readability of debug messages, making it much easier to diagnose exactly why a custom or vanilla recipe might fail to load or work.
++ The plugin actively supports Minecraft versions from 26.2 down to 1.8.8
 ```
+_Note: While the plugin may still run on legacy versions like 1.8.8, active support is no longer provided for them._
+
 ##### 2.6.0
 ```diff
 + Implemented support for some placeholder in the menu to be translated to any language.
