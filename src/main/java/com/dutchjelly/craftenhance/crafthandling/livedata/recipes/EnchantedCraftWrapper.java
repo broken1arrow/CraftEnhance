@@ -225,7 +225,7 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 		final ItemStack[] content = this.enhancedRecipe.getContent();
 		builder.append("___________< Enhanced recipe >___________").append("\n")
 				.append("Key: ").append(this.enhancedRecipe.getKey()).append("\n")
-				.append("Result: ").append(this.enhancedRecipe.getResult()).append("\n")
+				.append("Result: ").append(RecipeDebug.formatOneStack(this.enhancedRecipe.getResult())).append("\n")
 				.append("Ingredients:")
 				.append(RecipeDebug.convertItemStackArrayToString(content))
 				.append("\n")

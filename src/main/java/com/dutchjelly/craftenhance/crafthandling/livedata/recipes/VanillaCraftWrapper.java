@@ -173,7 +173,7 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 		builder.append("___________<  crafting_vanilla >___________")
 				.append("\n");
 		builder.append("Result: ")
-				.append(this.recipe.getResult().getType().name())
+				.append(RecipeDebug.formatOneStack(this.recipe.getResult()))
 				.append("\n");
 
 		boolean isModern = self().getVersionChecker()

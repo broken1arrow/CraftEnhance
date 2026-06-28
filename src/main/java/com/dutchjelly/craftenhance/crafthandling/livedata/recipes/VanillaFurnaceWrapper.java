@@ -149,9 +149,9 @@ public class VanillaFurnaceWrapper implements RecipeWrapper {
 		builder.append("________< Vanilla furnace recipe >________").append("\n");
 		if (self().getVersionChecker().newerThan(ServerVersion.v1_13))
 			builder.append("Key: ").append(this.furnaceRecipe.getKey()).append("\n");
-		builder.append("Result: ").append(this.furnaceRecipe.getResult()).append("\n");
+		builder.append("Result: ").append(RecipeDebug.formatOneStack(this.furnaceRecipe.getResult())).append("\n");
 		builder.append("Ingredients:");
-		RecipeDebug.formatStack(inputChoice, builder);
+		builder.append(RecipeDebug.formatOneStack(inputChoice));
 		builder.append("\n");
 		builder.append("________< Vanilla furnace recipe end >________\n");
 		return builder.toString();

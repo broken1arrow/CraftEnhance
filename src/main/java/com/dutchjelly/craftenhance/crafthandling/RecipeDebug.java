@@ -6,6 +6,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -44,17 +45,31 @@ public class RecipeDebug {
 		return stringBuilder + "";
 	}
 
-	public static String convertItemStackArrayToString(final Collection<ItemStack> matrix) {
-		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append("\n____________ingredient matrix_____________");
-		Map<ItemStack, Integer> map = new LinkedHashMap<>();
-		for (ItemStack invItemStack : matrix) {
+	public static String convertItemStackArrayToString(final Collection<ItemStack> collection) {
+		final StringBuilder stringBuilder = new StringBuilder();
+		final Map<ItemStack, Integer> map = new LinkedHashMap<>();
+		final ItemStack[] matrix = collection.toArray(new ItemStack[0]);
+		final Boolean[] checkMetadata = new Boolean[matrix.length];
+		Arrays.fill(checkMetadata, false);
+		for (int i = 0; i < matrix.length; i++) {
+			ItemStack invItemStack = matrix[i];
+			checkMetadata[i] = isNoMetadata(invItemStack);
 			map.merge(invItemStack, 1, Integer::sum);
 		}
+		final boolean noItemWithMeta = Arrays.stream(checkMetadata).anyMatch(x -> x);
+		stringBuilder.append("\n____________ingredient matrix_____________");
+
+		if (!noItemWithMeta && !map.isEmpty()) {
+			stringBuilder.append("\nIngredient type= ");
+		}
 		map.forEach((itemStack, integer) -> {
-			formatStack(itemStack, stringBuilder);
-			if (itemStack != null && integer > 1) {
-				stringBuilder.append("amount: ").append(integer).append("\n");
+			formatStack(itemStack, stringBuilder, noItemWithMeta);
+			if (integer > 1) {
+				if (!noItemWithMeta) {
+					stringBuilder.append("x").append(integer).append(", ");
+				} else {
+					stringBuilder.append("amount: ").append(integer);
+				}
 			}
 		});
 		stringBuilder.append("\n____________ingredient matrix_____________\n");
@@ -62,16 +77,28 @@ public class RecipeDebug {
 	}
 
 	public static String convertItemStackArrayToString(final ItemStack[] matrix) {
-		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append("\n____________ingredient matrix_____________");
-		Map<ItemStack, Integer> map = new LinkedHashMap<>();
-		for (ItemStack invItemStack : matrix) {
+		final StringBuilder stringBuilder = new StringBuilder();
+		final Map<ItemStack, Integer> map = new LinkedHashMap<>();
+		final Boolean[] checkMetadata = new Boolean[matrix.length];
+		Arrays.fill(checkMetadata, false);
+
+		for (int i = 0; i < matrix.length; i++) {
+			ItemStack invItemStack = matrix[i];
+			checkMetadata[i] = isNoMetadata(invItemStack);
 			map.merge(invItemStack, 1, Integer::sum);
 		}
+		final boolean noItemWithMeta = Arrays.stream(checkMetadata).anyMatch(x -> x);
+
+		stringBuilder.append("\n____________ingredient matrix_____________");
+		if (!noItemWithMeta && !map.isEmpty()) {
+			stringBuilder.append("\nIngredient type= ");
+		}
 		map.forEach((itemStack, integer) -> {
-			formatStack(itemStack, stringBuilder);
-			if (itemStack != null && integer > 1) {
-				stringBuilder.append("amount: ").append(integer).append("\n");
+			formatStack(itemStack, stringBuilder, noItemWithMeta);
+			if (!noItemWithMeta) {
+				stringBuilder.append("x").append(integer).append(", ");
+			} else {
+				stringBuilder.append("amount: ").append(integer);
 			}
 		});
 		stringBuilder.append("\n____________ingredient matrix_____________\n");
@@ -81,27 +108,49 @@ public class RecipeDebug {
 	public static String formatOneStack(final ItemStack stack) {
 		if (stack == null) return "empty";
 		StringBuilder stringBuilder = new StringBuilder();
-		formatStack(stack, stringBuilder);
-		stringBuilder.append("\n________________________________");
+		boolean checkMetadata = isNoMetadata(stack);
+		if (!checkMetadata)
+			stringBuilder.append("\nIngredient type= ");
+		formatStack(stack, stringBuilder, checkMetadata);
+		stringBuilder.append("________________________________");
 		return stringBuilder + "";
 	}
 
 	public static void formatStack(final ItemStack stack, final StringBuilder stringBuilder) {
+		formatStack(stack, stringBuilder, true);
+	}
+
+	public static void formatStack(final ItemStack stack, final StringBuilder stringBuilder, boolean hasMetadata) {
+		if (!hasMetadata) {
+			if (stack != null) {
+				stringBuilder.append(stack.getType());
+			} else {
+				stringBuilder.append("AIR");
+			}
+			return;
+		}
+
 		if (stack != null) {
 			final ItemMeta itemMeta = stack.getItemMeta();
 			stringBuilder.append("\nIngredient type= ").append(stack.getType());
 			if (itemMeta != null) {
 				final String displayName = itemMeta.getDisplayName();
-				final String name = displayName == null || displayName.isEmpty() || displayName.equals("null") ? "non" : "'" + displayName + "'";
-				stringBuilder.append("\nItem display name= ").append(name);
-				if (itemMeta.getLore() != null)
-					stringBuilder.append("\nItem lore= ").append(itemMeta.getLore());
-				else stringBuilder.append("\nItem lore= non");
+				final boolean haveDisplayName = displayName == null || displayName.isEmpty() || displayName.equals("null");
+				if (haveDisplayName && itemMeta.getLore() == null) {
+					stringBuilder.append("\nMetadata= {no name and lore set}");
+				} else {
+					final String name = haveDisplayName ? "none" : "'" + displayName + "'";
+					stringBuilder.append("\nMetadata= ").append("{name=").append(name);
+					if (itemMeta.getLore() != null)
+						stringBuilder.append(", lore=").append(itemMeta.getLore()).append("}");
+					else stringBuilder.append(", lore=none set}");
+				}
 			} else {
-				stringBuilder.append("\nItem display name= non");
-				stringBuilder.append("\nItem lore= non");
+				stringBuilder.append("\nMetadata= {not set}");
 			}
 			stringBuilder.append("\n");
+		} else {
+			stringBuilder.append("\nIngredient type= AIR\n");
 		}
 	}
 
@@ -168,6 +217,15 @@ public class RecipeDebug {
 			}
 		}
 		return items.isEmpty() ? null : items;
+	}
+
+	private static boolean isNoMetadata(final ItemStack stack) {
+		if (stack == null) return false;
+		if (!stack.hasItemMeta()) return false;
+		final ItemMeta itemMeta = stack.getItemMeta();
+		final String displayName = itemMeta.getDisplayName();
+		final boolean haveDisplayName = displayName == null || displayName.isEmpty() || displayName.equals("null");
+		return !haveDisplayName || itemMeta.getLore() != null;
 	}
 
 

@@ -89,9 +89,6 @@ public class RecipeRegistry {
 		}
 		final Set<RecipeWrapper> smallestRecipeSet = this.mappedRecipes.get(bestTrigger);
 		final List<RecipeWrapper> filteredResult = new ArrayList<>();
-		System.out.println("matrixSize " + matrixSize);
-		System.out.println("matrixSize " + matrixMaterials);
-		System.out.println("matrixSize " + smallestRecipeSet);
 		for (RecipeWrapper recipe : smallestRecipeSet) {
 			if (canPossiblyMatch(matrixMaterials, matrixSize, recipe)) {
 				filteredResult.add(recipe);
