@@ -16,7 +16,10 @@ Some examples of why I would use this plugin as an API in certain cases is to:
 
 ### Changelog
 
-
+##### 2.6.1
+```diff
++ Revorked the recipe lookup on the server to be more efficant.  
+```
 ##### 2.6.0
 ```diff
 + Implemented support for some placeholder in the menu to be translated to any language.
