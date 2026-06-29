@@ -1,5 +1,7 @@
 package com.dutchjelly.craftenhance.database.util;
 
+import com.dutchjelly.craftenhance.messaging.Messenger;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,7 +15,6 @@ public class SQLiteMigrationUtil {
 
 	public static void addColumnsIfMissing(Connection conn, String tableName, List<ColumnDefinition> columns) throws SQLException {
 		final Set<String> existingColumns = getExistingColumns(conn, tableName);
-		System.out.println("Added column existingColumns " + existingColumns);
 		try (Statement stmt = conn.createStatement()) {
 			for (ColumnDefinition col : columns) {
 				if (!existingColumns.contains(col.getName().toLowerCase())) {
@@ -23,7 +24,7 @@ public class SQLiteMigrationUtil {
 							" " + col.getDefinition();
 
 					stmt.executeUpdate(sql);
-					System.out.println("Added column: " + col.getName());
+					Messenger.Message("Added column: " + col.getName());
 				}
 			}
 		}

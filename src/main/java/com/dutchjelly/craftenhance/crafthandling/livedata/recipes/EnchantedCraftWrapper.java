@@ -5,7 +5,6 @@ import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.api.CraftEnhanceAPI;
 import com.dutchjelly.craftenhance.api.event.crafting.BeforeCraftOutputEvent;
 import com.dutchjelly.craftenhance.crafthandling.RecipeDebug;
-import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareItemCraftContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
@@ -119,7 +118,6 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 		}
 
 		final List<HumanEntity> viewers = craftContext.getViewers();
-		final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
 		final boolean notAllowedToCraft = RecipeAdapter.isCraftingAllowedInWorld(location, wbRecipe);
 
 		Debug.send(Type.Crafting, "recipe=" + wbRecipe.getKey(), () -> {
