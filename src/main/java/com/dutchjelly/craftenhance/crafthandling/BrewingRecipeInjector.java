@@ -4,10 +4,10 @@ import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
+import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.brewing.BrewingClickContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.brewing.BrewingDragContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.brewing.BrewingWrapper;
-import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
@@ -23,7 +23,6 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.BrewerInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.Recipe;
 
 import java.util.Arrays;
 import java.util.List;
@@ -100,10 +99,9 @@ public class BrewingRecipeInjector {
 		if (itemStackCursor != null) {
 			final ItemStack itemStackCheck = itemStackCursor.clone();
 			final List<RecipeWrapper> possibleRecipeGroups = loader.findMatchingRecipe(RecipeType.BREWING, new ItemStack[]{itemStackCheck});
-			final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
 
 			if (possibleRecipeGroups.isEmpty()) {
-				if (RecipeAdapter.checkForDisabledRecipe(disabledServerRecipes, itemStackCheck)) {
+				if (RecipeAdapter.checkForDisabledRecipe( itemStackCheck)) {
 					Debug.send(Type.Brewing, "disabled_recipe", () -> "This brewing recipe is turned off, will not allow put the item inside the brewing stand.");
 					return;
 				}
@@ -155,10 +153,9 @@ public class BrewingRecipeInjector {
 		if (itemStackCursor != null) {
 			final ItemStack itemStackCheck = itemStackCursor.clone();
 			final List<RecipeWrapper> possibleRecipeGroups = loader.findMatchingRecipe(RecipeType.BREWING, new ItemStack[]{itemStackCheck});
-			final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
 
 			if (possibleRecipeGroups == null || possibleRecipeGroups.isEmpty()) {
-				if (RecipeAdapter.checkForDisabledRecipe(disabledServerRecipes, itemStackCursor)) {
+				if (RecipeAdapter.checkForDisabledRecipe(itemStackCursor)) {
 					return;
 				}
 				Debug.Send(Type.Brewing, () -> "No matching group or groups for the recipe.");

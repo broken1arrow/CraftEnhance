@@ -136,12 +136,11 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 			return new ResultContext(wbRecipe, null, ResultType.NO_PERMISSION);
 		}
 
-		if (RecipeAdapter.checkForDisabledRecipe(disabledServerRecipes, wbRecipe, serverRecipe.getResult())) {
+		if (RecipeAdapter.checkForDisabledRecipe(wbRecipe, serverRecipe.getResult())) {
 			Debug.send(Type.Crafting, "disabled | recipe=" + wbRecipe.getKey(), () -> "This recipe is disabled: " + wbRecipe.getKey());
 			craftContext.setResult(null);
 			return new ResultContext(wbRecipe, null, ResultType.DISABLED);
 		}
-
 
 		Debug.send(Type.Crafting, "recipe=" + wbRecipe.getKey(), () -> "The recipe allowed for this world and recipe are not blocked on the server, will check the ingredient matrix match.");
 		final Player player = !viewers.isEmpty() ? (Player) viewers.get(0) : null;

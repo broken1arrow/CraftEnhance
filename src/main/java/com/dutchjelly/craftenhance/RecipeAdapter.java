@@ -1,6 +1,7 @@
 package com.dutchjelly.craftenhance;
 
 import com.dutchjelly.bukkitadapter.Adapter;
+import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.util.IMatcher;
@@ -48,23 +49,29 @@ public class RecipeAdapter {
 		return true;
 	}
 
-	public static boolean checkForDisabledRecipe(final List<Recipe> disabledServerRecipes, final @NonNull ItemStack result) {
-		if (disabledServerRecipes != null && !disabledServerRecipes.isEmpty())
+	public static boolean checkForDisabledRecipe(final @NonNull ItemStack result) {
+		final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
+
+		if (disabledServerRecipes != null && !disabledServerRecipes.isEmpty()) {
 			for (final Recipe disabledRecipe : disabledServerRecipes) {
 				if (disabledRecipe.getResult().isSimilar(result)) {
 					return true;
 				}
 			}
+		}
 		return false;
 	}
 
-	public static boolean checkForDisabledRecipe(final List<Recipe> disabledServerRecipes, final @NonNull WBRecipe wbRecipe, final @NonNull ItemStack result) {
-		if (disabledServerRecipes != null && !disabledServerRecipes.isEmpty())
+	public static boolean checkForDisabledRecipe(final @NonNull WBRecipe wbRecipe, final @NonNull ItemStack result) {
+		final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
+
+		if (disabledServerRecipes != null && !disabledServerRecipes.isEmpty()) {
 			for (final Recipe disabledRecipe : disabledServerRecipes) {
 				if (disabledRecipe.getResult().isSimilar(result) && wbRecipe.isSimilar(disabledRecipe)) {
 					return true;
 				}
 			}
+		}
 		return false;
 	}
 

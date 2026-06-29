@@ -56,7 +56,7 @@ public class WorkBenchRecipeInjector {
 			if (self().isDisableDefaultModeldataCrafts() && Adapter.containsModelData(matrix)) {
 				result.accept(null);
 			}
-			if (RecipeAdapter.checkForDisabledRecipe(disabledServerRecipes, serverRecipe.getResult())) {
+			if (RecipeAdapter.checkForDisabledRecipe(serverRecipe.getResult())) {
 				result.accept(null);
 			}
 			Debug.Send(Type.Crafting, () -> "No matching groups");
@@ -80,7 +80,7 @@ public class WorkBenchRecipeInjector {
 					continue;
 				}
 
-				if (RecipeAdapter.checkForDisabledRecipe(disabledServerRecipes, wbRecipe, serverRecipe.getResult())) {
+				if (RecipeAdapter.checkForDisabledRecipe(wbRecipe, serverRecipe.getResult())) {
 					result.accept(null);
 					Debug.Send(wbRecipe, () -> "This recipe is disabled. ");
 					continue;

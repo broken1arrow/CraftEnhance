@@ -4,7 +4,6 @@ import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.bukkitadapter.Adapter.RecipeContext;
 import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.crafthandling.RecipeDebug;
-import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareItemCraftContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
@@ -110,10 +109,9 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 		final PrepareItemCraftContext prepareItemCraftContext = new PrepareItemCraftContext();
 		contextConsumer.accept(prepareItemCraftContext);
 		final ItemStack[] matrix = prepareItemCraftContext.getRecipeMatrix();
-		final List<Recipe> disabledServerRecipes = RecipeLoader.getInstance().getDisabledServerRecipes();
 
 		Debug.send(Type.Crafting, "vanilla recipe", () -> "It will check if recipe allowed for this world, not disabled and this is a valid vanilla recipe:\n" + RecipeDebug.formatOneStack(recipe.getResult()));
-		if (RecipeAdapter.checkForDisabledRecipe(disabledServerRecipes, recipe.getResult())) {
+		if (RecipeAdapter.checkForDisabledRecipe(recipe.getResult())) {
 			Debug.send(Type.Crafting, "Vanilla recipe", () -> "This recipe is disabled and will not be crafted");
 			return new ResultContext(null, ResultType.DISABLED);
 		}
@@ -185,21 +183,7 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 				builder.append("Key: ").append(shapeless.getKey())
 						.append("\n");
 			}
-			builder.append("Ingredients: ");
-
-			if (isModern) {
-				String joined = shapeless.getChoiceList().stream()
-						.map(this::formatChoice)
-						.collect(Collectors.joining(", "));
-				builder.append(joined).append("\n");
-			} else {
-				// Legacy: Loopa igenom ItemStack
-				String joined = shapeless.getIngredientList().stream()
-						.map(stack -> stack != null ?
-								stack.getType().name() : "empty")
-						.collect(Collectors.joining(", "));
-				builder.append(joined).append("\n");
-			}
+			setShapelessIngredients(builder, isModern, shapeless);
 		}
 
 		if (recipe instanceof ShapedRecipe) {
@@ -208,30 +192,48 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 				builder.append("Key: ").append(shaped.getKey())
 						.append("\n");
 			}
-
 			final String[] shape = shaped.getShape();
 			builder.append("Shape Layout:\n");
-
-			for (int i = 0; i < shape.length; i++) {
-				builder.append("  Row ").append(i + 1).append(": ");
-				List<String> rowItems = new ArrayList<>();
-
-				for (char c : shape[i].toCharArray()) {
-					if (isModern) {
-						RecipeChoice choice = shaped.getChoiceMap().get(c);
-						rowItems.add(formatChoice(choice));
-					} else {
-						ItemStack item = shaped.getIngredientMap().get(c);
-						rowItems.add(item != null ?
-								item.getType().name() : "empty");
-					}
-				}
-				builder.append(String.join(", ", rowItems)).append("\n");
-			}
+			setShapedIngredients(shape, builder, isModern, shaped);
 		}
-
 		builder.append("___________<  crafting_vanilla end >___________\n");
 		return builder.toString();
+	}
+
+	private void setShapelessIngredients(final StringBuilder builder, final boolean isModern, final ShapelessRecipe shapeless) {
+		builder.append("Ingredients: ");
+
+		if (isModern) {
+			String joined = shapeless.getChoiceList().stream()
+					.map(this::formatChoice)
+					.collect(Collectors.joining(", "));
+			builder.append(joined).append("\n");
+		} else {
+			String joined = shapeless.getIngredientList().stream()
+					.map(stack -> stack != null ?
+							stack.getType().name() : "empty")
+					.collect(Collectors.joining(", "));
+			builder.append(joined).append("\n");
+		}
+	}
+
+	private void setShapedIngredients(final String[] shape, final StringBuilder builder, final boolean isModern, final ShapedRecipe shaped) {
+		for (int i = 0; i < shape.length; i++) {
+			builder.append("  Row ").append(i + 1).append(": ");
+			List<String> rowItems = new ArrayList<>();
+
+			for (char c : shape[i].toCharArray()) {
+				if (isModern) {
+					RecipeChoice choice = shaped.getChoiceMap().get(c);
+					rowItems.add(formatChoice(choice));
+				} else {
+					ItemStack item = shaped.getIngredientMap().get(c);
+					rowItems.add(item != null ?
+							item.getType().name() : "empty");
+				}
+			}
+			builder.append(String.join(", ", rowItems)).append("\n");
+		}
 	}
 
 	private String formatChoice(RecipeChoice choice) {

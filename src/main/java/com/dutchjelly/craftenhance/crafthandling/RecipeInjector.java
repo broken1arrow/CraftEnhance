@@ -3,6 +3,7 @@ package com.dutchjelly.craftenhance.crafthandling;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
+import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareItemCraftContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
@@ -175,9 +176,14 @@ public class RecipeInjector implements Listener {
 		}
 
 		if (serverRecipe instanceof ComplexRecipe) {
-			Debug.send(Type.Crafting, "complex recipe", () -> "Will allowing this recipe to be craft without this plugin interfere.");
-			Debug.send(Type.Crafting, "complex recipe", () -> "The type: " + RecipeDebug.formatOneStack(serverRecipe.getResult()));
-			Debug.send(Type.Crafting, "complex recipe", () -> "The ingredients if set this stage: " + RecipeDebug.convertItemStackArrayToString(Adapter.getIngredients(serverRecipe)));
+			if (RecipeAdapter.checkForDisabledRecipe(result)) {
+				Debug.send(Type.Crafting, "denied | complex recipe", () -> "This recipe is disabled and will not be crafted.");
+				craftingInventory.setResult(null);
+				return;
+			}
+			Debug.send(Type.Crafting, "complex_recipe", () -> "Will allowing this recipe to be craft without this plugin interfere.");
+			Debug.send(Type.Crafting, "complex_recipe", () -> "The type: " + RecipeDebug.formatOneStack(serverRecipe.getResult()));
+			Debug.send(Type.Crafting, "complex_recipe", () -> "The ingredients if set this stage: " + RecipeDebug.convertItemStackArrayToString(Adapter.getIngredients(serverRecipe)));
 			return;
 		}
 		craftingInventory.setResult(null);
