@@ -29,6 +29,7 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryEvent;
+import org.bukkit.inventory.ComplexRecipe;
 import org.bukkit.inventory.CookingRecipe;
 import org.bukkit.inventory.CraftingRecipe;
 import org.bukkit.inventory.Inventory;
@@ -38,6 +39,7 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.inventory.TransmuteRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.material.MaterialData;
@@ -424,6 +426,13 @@ public class Adapter {
 	}
 
 	public static String GetRecipeIdentifier(final Recipe r) {
+
+		if (self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
+			if (r instanceof org.bukkit.Keyed) {
+				org.bukkit.NamespacedKey key = ((org.bukkit.Keyed) r).getKey();
+				return key.toString();
+			}
+		}
 		try {
 			//reflection is so damn powerful!! You can even invoke methods from derived classes.
 			final Object obj = r.getClass().getMethod("getKey").invoke(r);
@@ -431,7 +440,11 @@ public class Adapter {
 		} catch (final Exception e) {
 		}
 
-		return r.getResult().getType().name();
+		final Material type = r.getResult().getType();
+		if (type != Material.AIR) {
+			return type.name();
+		}
+		return "UNKNOWN_RECIPE";
 	}
 
 	public static NamespacedKey getNamespacedKey(final Recipe recipe) {
@@ -625,6 +638,26 @@ public class Adapter {
 			return ((ShapelessRecipe) recipe).getIngredientList().toArray(new ItemStack[0]);
 		}
 		return new ItemStack[0];
+	}
+
+	public static ItemStack[] getComplexRecipeIngredients(@Nonnull final Recipe recipe) {
+		if (self().getVersionChecker().newerThan(ServerVersion.v1_13) && recipe instanceof ComplexRecipe) {
+			if (recipe instanceof TransmuteRecipe) {
+				final TransmuteRecipe transmuteRecipe = (TransmuteRecipe) recipe;
+				if (!(transmuteRecipe.getInput() instanceof RecipeChoice.MaterialChoice))
+					return new ItemStack[0];
+				final RecipeChoice.MaterialChoice recipeInputChoice = (RecipeChoice.MaterialChoice) transmuteRecipe.getInput();
+				final List<Material> inputChoices = recipeInputChoice.getChoices();
+				final List<Material> materials = new ArrayList<>(inputChoices);
+
+				final RecipeChoice.MaterialChoice ChoiceMaterial = (RecipeChoice.MaterialChoice) transmuteRecipe.getMaterial();
+				final List<Material> materialList = ChoiceMaterial.getChoices();
+				materials.addAll(materialList);
+
+				return materials.stream().map(ItemStack::new).toArray(ItemStack[]::new);
+			}
+		}
+		return getIngredients(recipe);
 	}
 
 	public static List<ItemStack> getIngredientsList(@NonNull final Recipe recipe) {

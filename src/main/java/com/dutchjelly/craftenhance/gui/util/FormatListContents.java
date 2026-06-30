@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.gui.util;
 
+import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
@@ -98,6 +99,11 @@ public class FormatListContents {
 		if (grupSeachFor == null || grupSeachFor.equals("")) {
 			return recipes;
 		}
-		return recipes.stream().filter(recipe -> recipe.getResult().getType().name().contains(grupSeachFor.toUpperCase())).collect(Collectors.toList());
+		return recipes.stream().filter(recipe -> {
+			boolean containsKey = Adapter.GetRecipeIdentifier(recipe).contains(grupSeachFor.toLowerCase());
+			if (containsKey)
+				return true;
+			return recipe.getResult().getType().name().contains(grupSeachFor.toUpperCase());
+		}).collect(Collectors.toList());
 	}
 }

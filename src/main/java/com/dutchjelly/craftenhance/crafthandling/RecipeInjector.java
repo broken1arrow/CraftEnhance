@@ -182,8 +182,9 @@ public class RecipeInjector implements Listener {
 				return;
 			}
 			Debug.send(Type.Crafting, "complex_recipe", () -> "Will allowing this recipe to be craft without this plugin interfere.");
+			Debug.send(Type.Crafting, "complex_recipe", () -> "The key: " + Adapter.GetRecipeIdentifier(serverRecipe));
 			Debug.send(Type.Crafting, "complex_recipe", () -> "The type: " + RecipeDebug.formatOneStack(serverRecipe.getResult()));
-			Debug.send(Type.Crafting, "complex_recipe", () -> "The ingredients if set this stage: " + RecipeDebug.convertItemStackArrayToString(Adapter.getIngredients(serverRecipe)));
+			Debug.send(Type.Crafting, "complex_recipe", () -> "The ingredients if set this stage: " + RecipeDebug.convertItemStackArrayToString(Adapter.getComplexRecipeIngredients(serverRecipe)));
 			return;
 		}
 		craftingInventory.setResult(null);
