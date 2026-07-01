@@ -23,6 +23,7 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.jspecify.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -77,6 +78,11 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 	@Override
 	public int priority() {
 		return 0;
+	}
+
+	@Override
+	public @Nullable Recipe getRecipe() {
+		return this.enhancedRecipe.getServerRecipe();
 	}
 
 	@Override

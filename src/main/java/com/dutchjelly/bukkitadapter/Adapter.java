@@ -51,12 +51,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -408,7 +408,7 @@ public class Adapter {
 		}
 	}
 
-	public static Recipe FilterRecipes(final Set<Recipe> recipes, final String name) {
+	public static Recipe FilterRecipes(final Collection<Recipe> recipes, final String name) {
 		for (final Recipe r : recipes) {
 			final String id = GetRecipeIdentifier(r);
 			if (id == null) continue;

@@ -69,6 +69,12 @@ public class BrewingWrapper implements RecipeWrapper {
 		return 0;
 	}
 
+	@Nonnull
+	@Override
+	public Recipe getRecipe() {
+		return null;
+	}
+
 	@Override
 	public boolean isCustom() {
 		return true;

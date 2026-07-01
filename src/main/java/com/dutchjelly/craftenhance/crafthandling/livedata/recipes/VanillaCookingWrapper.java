@@ -20,6 +20,7 @@ import org.bukkit.inventory.CookingRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.RecipeChoice;
+import org.jspecify.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.EnumMap;
@@ -41,10 +42,14 @@ public class VanillaCookingWrapper implements RecipeWrapper {
 		this.ingredients = recipeContext.getMap();
 		this.totalSlotCount = recipeContext.getTotalSlotCount();
 
-		StringBuilder builder = new StringBuilder(furnaceRecipe.getResult().getType().name());
-		builder.append("|");
-		builder.append(furnaceRecipe.getInputChoice().getItemStack().getType().name());
-		builder.append("|");
+		final StringBuilder builder = new StringBuilder(furnaceRecipe.getResult().getType().name());
+		if (self().getVersionChecker().newerThan(ServerVersion.v1_13))
+			builder.append(Adapter.getNamespacedKey(furnaceRecipe));
+		else {
+			builder.append("|");
+			builder.append(furnaceRecipe.getInputChoice().getItemStack().getType().name());
+			builder.append("|");
+		}
 		this.key = builder.toString();
 	}
 
@@ -119,6 +124,11 @@ public class VanillaCookingWrapper implements RecipeWrapper {
 		if (content.length < 1)
 			return false;
 		return MatchType.MATCH_TYPE.getMatcher().match(fRecipe.getInput(), content[0]);
+	}
+
+	@Override
+	public @Nullable Recipe getRecipe() {
+		return this.furnaceRecipe;
 	}
 
 	@Override

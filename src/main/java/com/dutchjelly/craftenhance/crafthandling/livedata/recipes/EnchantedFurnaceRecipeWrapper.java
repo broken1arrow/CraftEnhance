@@ -18,6 +18,7 @@ import org.bukkit.block.Furnace;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.jspecify.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -98,6 +99,10 @@ public class EnchantedFurnaceRecipeWrapper implements RecipeWrapper {
 		return 0;
 	}
 
+	@Override
+	public @Nullable Recipe getRecipe() {
+		return this.furnaceRecipe.getServerRecipe();
+	}
 
 	@Override
 	public <T> Optional<T> getRecipe(final Class<T> type) {

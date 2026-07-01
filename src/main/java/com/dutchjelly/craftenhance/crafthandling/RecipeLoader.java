@@ -186,11 +186,15 @@ public class RecipeLoader {
 	}
 
 	public void addServerRecipes(@Nonnull final Recipe serverRecipe) {
-		serverRecipes.add(serverRecipe);
+
 	}
 
-	public Set<Recipe> getLoadedServerRecipes() {
-		return serverRecipes;
+	public List<Recipe> getLoadedServerRecipes() {
+		return mappedRecipes.values().stream()
+				.flatMap(recipeRegistry -> recipeRegistry.getAllRecipes().stream())
+				.filter(recipeWrapper -> recipeWrapper.getRecipe() != null && !recipeWrapper.isCustom())
+				.map(RecipeWrapper::getRecipe)
+				.collect(Collectors.toList());
 	}
 
 	public void printGroupsDebugInfo() {
@@ -212,49 +216,46 @@ public class RecipeLoader {
 	}
 
 	public boolean disableServerRecipe(final Recipe r) {
-		if (serverRecipes.remove(r)) {
+		final RecipeType type = RecipeType.getType(r);
+		final RecipeRegistry recipeRegistry = this.mappedRecipes.get(type);
+
+		if (recipeRegistry != null && recipeRegistry.removeRecipe(r)) {
 			Debug.send(Type.Other, "Unloading recipe", () -> "Disabling server recipe for " + r.getResult().getType().name());
 			disabledServerRecipes.add(r);
 			unloadRecipe(r);
-
-			final ItemStack[] ingredients = Adapter.getIngredients(r);
-			if (Adapter.isCookingRecipe(r))
-				liveCacheRecipe(new VanillaFurnaceWrapper((org.bukkit.inventory.FurnaceRecipe) r), ingredients);
-			else
-				liveCacheRecipe(new VanillaCraftWrapper(r), ingredients);
 		}
 		return false;
 	}
 
-	public boolean enableServerRecipe(final Recipe r) {
-		if (serverRecipes.add(r)) {
-			Debug.send(Type.Other, "Loading recipe", () -> "Enabling server recipe for " + r.getResult().getType().name());
-			disabledServerRecipes.remove(r);
+	public boolean enableServerRecipe(final Recipe recipe) {
+		final RecipeType type = RecipeType.getType(recipe);
+		final RecipeRegistry recipeRegistry = this.mappedRecipes.get(type);
+
+		if (recipeRegistry != null) {
+			Debug.send(Type.Other, "Loading recipe", () -> "Enabling server recipe for " + recipe.getResult().getType().name());
+			disabledServerRecipes.remove(recipe);
 			if (self().getVersionChecker().newerThan(ServerVersion.v1_13)) {
-				final NamespacedKey namespacedKey = Adapter.getNamespacedKey(r);
+				final NamespacedKey namespacedKey = Adapter.getNamespacedKey(recipe);
 				if (namespacedKey != null && server.getRecipe(namespacedKey) == null)
-					server.addRecipe(r);
+					server.addRecipe(recipe);
 			} else {
-				server.addRecipe(r);
+				server.addRecipe(recipe);
+			}
+			final ItemStack[] ingredients = Adapter.getIngredients(recipe);
+			List<RecipeWrapper> similarRecipes = recipeRegistry.findMatchingRecipes(ingredients);
+			if (!similarRecipes.isEmpty()) {
+				if (Adapter.isCookingRecipe(recipe)) {
+					if (self().getVersionChecker().newerThan(ServerVersion.v1_13) && recipe instanceof CookingRecipe) {
+						liveCacheRecipe(new VanillaCookingWrapper((CookingRecipe<?>) recipe), ingredients);
+					} else {
+						liveCacheRecipe(new VanillaFurnaceWrapper((org.bukkit.inventory.FurnaceRecipe) recipe), ingredients);
+					}
+				} else
+					liveCacheRecipe(new VanillaCraftWrapper(recipe), ingredients);
 			}
 
-			final RecipeType type = RecipeType.getType(r);
-			if (type != null) {
-				for (final RecipeRegistry recipeRegistry : mappedRecipes.values()) {
-					final ItemStack[] ingredients = Adapter.getIngredients(r);
-					List<RecipeWrapper> similarRecipes = recipeRegistry.findMatchingRecipes(ingredients);
-					if (!similarRecipes.isEmpty()) {
-						if (r instanceof org.bukkit.inventory.FurnaceRecipe) {
-							recipeRegistry.addRecipe(new VanillaFurnaceWrapper((org.bukkit.inventory.FurnaceRecipe) r), ingredients);
-						} else {
-							recipeRegistry.addRecipe(new VanillaCraftWrapper(r), ingredients);
-						}
-					}
-				}
-			}
-			return true;
 		}
-		return false;
+		return true;
 	}
 
 	public void disableServerRecipes(final List<Recipe> disabledServerRecipes) {
@@ -263,18 +264,17 @@ public class RecipeLoader {
 	}
 
 	public void clearCache() {
-		this.serverRecipes = new HashSet<>();
 		this.disabledServerRecipes = new ArrayList<>();
 		this.mappedRecipes.clear();
 	}
 
 	public void updateServerRecipes() {
-		try {
-			server.recipeIterator().forEachRemaining(serverRecipe -> {
+		server.recipeIterator().forEachRemaining(serverRecipe -> {
+			try {
 				if (Adapter.isRecipeCustom(serverRecipe) || self().getCacheRecipes().isCustomRecipe(serverRecipe)) {
 					return;
 				}
-				this.addServerRecipes(serverRecipe);
+
 				final ItemStack[] ingredients = Adapter.getIngredients(serverRecipe);
 				if (Adapter.isCookingRecipe(serverRecipe)) {
 					if (self().getVersionChecker().newerThan(ServerVersion.v1_13) && serverRecipe instanceof CookingRecipe) {
@@ -284,13 +284,14 @@ public class RecipeLoader {
 					}
 				} else
 					liveCacheRecipe(new VanillaCraftWrapper(serverRecipe), ingredients);
-			});
-		} catch (IllegalArgumentException e) {
-			self().getLogger().log(Level.SEVERE, "This server recipe contains air, will not be loaded.", e);
-		}
+			} catch (IllegalArgumentException e) {
+				self().getLogger().log(Level.SEVERE, "This server recipe contains air, will not be loaded.", e);
+			}
+		});
 	}
 
-	private boolean isAlreadyRegistered(@Nonnull final EnhancedRecipe recipe, @Nullable final RecipeRegistry containsRecipe) {
+	private boolean isAlreadyRegistered(@Nonnull final EnhancedRecipe recipe,
+	                                    @Nullable final RecipeRegistry containsRecipe) {
 		Map<Material, Set<RecipeWrapper>> recipes = containsRecipe != null ? containsRecipe.getMappedRecipes() : new HashMap<>();
 		boolean alreadyRegistered = false;
 		for (ItemStack stack : recipe.getContent()) {
@@ -366,7 +367,6 @@ public class RecipeLoader {
 	}
 
 	private void unloadRecipe(final Recipe r) {
-		serverRecipes.remove(r);
 		final Iterator<Recipe> it = server.recipeIterator();
 		while (it.hasNext()) {
 			final Recipe currentRecipe = it.next();

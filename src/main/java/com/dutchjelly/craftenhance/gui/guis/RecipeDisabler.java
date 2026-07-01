@@ -24,11 +24,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
@@ -41,7 +41,7 @@ public class RecipeDisabler extends MenuHolderPage<Recipe> {
 	//If true, you can enable *disabled* recipes.
 	boolean enableMode;
 
-	public RecipeDisabler(final Set<Recipe> enabledRecipes, final List<Recipe> disabledRecipes, final boolean enableMode, final String recipesSeachFor) {
+	public RecipeDisabler(final Collection<Recipe> enabledRecipes, final List<Recipe> disabledRecipes, final boolean enableMode, final String recipesSeachFor) {
 		super(getRecipes(enabledRecipes, disabledRecipes, enableMode, recipesSeachFor));
 		this.menuTemplate = menuSettingsCache.getTemplate("RecipeDisabler");
 		this.enableMode = enableMode;

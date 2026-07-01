@@ -22,6 +22,7 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.jspecify.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -47,18 +48,22 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 		this.ingredients = recipeContext.getMap();
 		this.totalSlotCount = recipeContext.getTotalSlotCount();
 
-		StringBuilder builder = new StringBuilder(recipe.getResult().getType().name());
-		builder.append("|");
-		String joined = Adapter.getIngredientsList(recipe).stream()
-				.filter(Objects::nonNull)
-				.map(stack -> stack.getType().name())
-				.sorted()
-				.collect(Collectors.joining(","));
-		if (recipe instanceof ShapelessRecipe) {
-			builder.append("S|").append(joined);
-		}
-		if (recipe instanceof ShapedRecipe) {
-			builder.append("H|").append(joined);
+		final StringBuilder builder = new StringBuilder(recipe.getResult().getType().name());
+		if (self().getVersionChecker().newerThan(ServerVersion.v1_13))
+			builder.append(Adapter.getNamespacedKey(recipe));
+		else {
+			builder.append("|");
+			String joined = Adapter.getIngredientsList(recipe).stream()
+					.filter(Objects::nonNull)
+					.map(stack -> stack.getType().name())
+					.sorted()
+					.collect(Collectors.joining(","));
+			if (recipe instanceof ShapelessRecipe) {
+				builder.append("S|").append(joined);
+			}
+			if (recipe instanceof ShapedRecipe) {
+				builder.append("H|").append(joined);
+			}
 		}
 		this.key = builder.toString();
 	}
@@ -83,6 +88,11 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 	@Override
 	public boolean isCustom() {
 		return false;
+	}
+
+	@Override
+	public @Nullable Recipe getRecipe() {
+		return this.recipe;
 	}
 
 	@Override
