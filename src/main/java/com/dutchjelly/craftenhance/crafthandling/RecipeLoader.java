@@ -242,18 +242,14 @@ public class RecipeLoader {
 				server.addRecipe(recipe);
 			}
 			final ItemStack[] ingredients = Adapter.getIngredients(recipe);
-			List<RecipeWrapper> similarRecipes = recipeRegistry.findMatchingRecipes(ingredients);
-			if (!similarRecipes.isEmpty()) {
-				if (Adapter.isCookingRecipe(recipe)) {
-					if (self().getVersionChecker().newerThan(ServerVersion.v1_13) && recipe instanceof CookingRecipe) {
-						liveCacheRecipe(new VanillaCookingWrapper((CookingRecipe<?>) recipe), ingredients);
-					} else {
-						liveCacheRecipe(new VanillaFurnaceWrapper((org.bukkit.inventory.FurnaceRecipe) recipe), ingredients);
-					}
-				} else
-					liveCacheRecipe(new VanillaCraftWrapper(recipe), ingredients);
-			}
-
+			if (Adapter.isCookingRecipe(recipe)) {
+				if (self().getVersionChecker().newerThan(ServerVersion.v1_13) && recipe instanceof CookingRecipe) {
+					liveCacheRecipe(new VanillaCookingWrapper((CookingRecipe<?>) recipe), ingredients);
+				} else {
+					liveCacheRecipe(new VanillaFurnaceWrapper((org.bukkit.inventory.FurnaceRecipe) recipe), ingredients);
+				}
+			} else
+				liveCacheRecipe(new VanillaCraftWrapper(recipe), ingredients);
 		}
 		return true;
 	}
