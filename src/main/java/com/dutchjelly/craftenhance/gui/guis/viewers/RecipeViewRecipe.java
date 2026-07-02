@@ -4,7 +4,7 @@ import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
@@ -105,8 +105,8 @@ public class RecipeViewRecipe<RecipeT extends EnhancedRecipe> extends MenuHolder
 				if (recipe instanceof WBRecipe) {
 					new RecipeEditor<>((WBRecipe) recipe, this.page, categoryData, null, ButtonType.ChooseWorkbenchType).menuOpen(player);
 				}
-				if (recipe instanceof FurnaceRecipe) {
-					new RecipeEditorFurnace((FurnaceRecipe) recipe, this.page, categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
+				if (recipe instanceof EnhancedFurnaceRecipe) {
+					new RecipeEditorFurnace((EnhancedFurnaceRecipe) recipe, this.page, categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
 				}
 				if (recipe instanceof BlastRecipe) {
 					new RecipeEditorBlast((BlastRecipe) recipe, this.page, categoryData, null, ButtonType.ChooseBlastType, true).menuOpen(player);

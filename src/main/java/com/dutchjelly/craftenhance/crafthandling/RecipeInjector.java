@@ -8,7 +8,7 @@ import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareItemCraftContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.ServerLoadable;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.gui.util.FormatListContents;
@@ -374,8 +374,8 @@ public class RecipeInjector implements Listener {
 				/*todo need to fix so you can stop it from progress if not allow to burn the item  */
 				return;
 			}
-			if (furnaceContext.getEnhancedRecipe() instanceof FurnaceRecipe) {
-				final int duration = ((FurnaceRecipe) furnaceContext.getEnhancedRecipe()).getDuration();
+			if (furnaceContext.getEnhancedRecipe() instanceof EnhancedFurnaceRecipe) {
+				final int duration = ((EnhancedFurnaceRecipe) furnaceContext.getEnhancedRecipe()).getDuration();
 				Debug.Send(Type.Smelting, () -> "Alter the time for the furnace recipe to the correct time that is: " + duration + " ticks from the recipes set: " + event.getTotalCookTime());
 				event.setTotalCookTime(duration);
 			}

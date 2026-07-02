@@ -12,7 +12,7 @@ import com.dutchjelly.craftenhance.crafthandling.livedata.recipes.VanillaCraftWr
 import com.dutchjelly.craftenhance.crafthandling.livedata.recipes.VanillaFurnaceWrapper;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
@@ -154,8 +154,8 @@ public class RecipeLoader {
 		ItemStack[] content = recipe.getContent();
 		if (recipe instanceof WBRecipe)
 			liveCacheRecipe(new EnchantedCraftWrapper((WBRecipe) recipe), content);
-		else if (recipe instanceof FurnaceRecipe)
-			liveCacheRecipe(new EnchantedFurnaceRecipeWrapper((FurnaceRecipe) recipe), content);
+		else if (recipe instanceof EnhancedFurnaceRecipe)
+			liveCacheRecipe(new EnchantedFurnaceRecipeWrapper((EnhancedFurnaceRecipe) recipe), content);
 		else if (recipe instanceof BrewingRecipe) {
 			liveCacheRecipe(new BrewingWrapper((BrewingRecipe) recipe), new ItemStack[]{recipe.getResult()});
 		}
@@ -302,7 +302,7 @@ public class RecipeLoader {
 
 	private String loadCategories(@NonNull final EnhancedRecipe recipe) {
 		String categoryName = recipe.getRecipeCategory();
-		if (recipe instanceof FurnaceRecipe)
+		if (recipe instanceof EnhancedFurnaceRecipe)
 			categoryName = categoryName == null || categoryName.isEmpty() ? "furnace" : categoryName;
 		else if (recipe instanceof BrewingRecipe)
 			categoryName = categoryName == null || categoryName.isEmpty() ? "brewing" : categoryName;
@@ -321,7 +321,7 @@ public class RecipeLoader {
 				enhancedRecipeWrapperList.add(new EnhancedRecipeWrapper(recipe));
 		} else {
 			final ItemStack itemStack;
-			if (recipe instanceof FurnaceRecipe)
+			if (recipe instanceof EnhancedFurnaceRecipe)
 				itemStack = new ItemStack(Adapter.getMaterial("FURNACE"));
 			else if (recipe instanceof BrewingRecipe)
 				itemStack = new ItemStack(Adapter.getMaterial("BREWING_STAND"));

@@ -176,7 +176,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 	public EnhancedRecipe copy() {
 		switch (this.getType()) {
 			case FURNACE:
-				return new FurnaceRecipe(this);
+				return new EnhancedFurnaceRecipe(this);
 			case BLAST:
 				return new BlastRecipe(this);
 			case SMOKER:

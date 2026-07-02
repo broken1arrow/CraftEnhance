@@ -4,7 +4,7 @@ import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
@@ -170,11 +170,11 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 				else
 					new RecipeViewRecipe<>(categoryData, this.getPageNumber(), (WBRecipe) enhancedRecipe, "WBRecipeViewer").menuOpen(player);
 			}
-			if (enhancedRecipe instanceof FurnaceRecipe) {
+			if (enhancedRecipe instanceof EnhancedFurnaceRecipe) {
 				if (allowClick)
-					new RecipeEditorFurnace((FurnaceRecipe) enhancedRecipe, this.getPageNumber(), categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
+					new RecipeEditorFurnace((EnhancedFurnaceRecipe) enhancedRecipe, this.getPageNumber(), categoryData, null, ButtonType.ChooseFurnaceType, true).menuOpen(player);
 				else
-					new RecipeViewRecipe<>(categoryData, this.getPageNumber(), (FurnaceRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
+					new RecipeViewRecipe<>(categoryData, this.getPageNumber(), (EnhancedFurnaceRecipe) enhancedRecipe, "FurnaceRecipeViewer").menuOpen(player);
 			}
 			if (enhancedRecipe instanceof BlastRecipe) {
 				if (allowClick)
@@ -260,8 +260,8 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 				put(InfoItemPlaceHolders.Category.getPlaceHolder(), enhancedRecipe.getRecipeCategory() != null ? enhancedRecipe.getRecipeCategory() : craftEnhance.getText("recipe_category"));
 		}};
 
-		if (enhancedRecipe instanceof FurnaceRecipe) {
-			final FurnaceRecipe furnaceRecipe = (FurnaceRecipe) enhancedRecipe;
+		if (enhancedRecipe instanceof EnhancedFurnaceRecipe) {
+			final EnhancedFurnaceRecipe furnaceRecipe = (EnhancedFurnaceRecipe) enhancedRecipe;
 			placeHolders.put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(furnaceRecipe.getExp()));
 			placeHolders.put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(furnaceRecipe.getDuration()));
 		} else {

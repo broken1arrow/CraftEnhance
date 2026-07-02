@@ -5,7 +5,7 @@ import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.cache.CacheRecipes;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
@@ -107,7 +107,7 @@ public class EditorTypeSelector extends MenuHolder {
 			return;
 		}
 		if (value.isActionTypeEqual(ButtonType.ChooseFurnaceType.name())) {
-			FurnaceRecipe furnaceRecipe = new FurnaceRecipe(permission, null, new ItemStack[1]);
+			EnhancedFurnaceRecipe furnaceRecipe = new EnhancedFurnaceRecipe(permission, null, new ItemStack[1]);
 			furnaceRecipe.setKey(getFreshKey(recipeKey));
 			new RecipeEditorFurnace(furnaceRecipe, 0, null, permission, ButtonType.ChooseFurnaceType, true).menuOpen(player);
 			return;

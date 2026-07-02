@@ -2,6 +2,7 @@ package com.dutchjelly.craftenhance.crafthandling;
 
 
 import com.dutchjelly.craftenhance.cache.EnhancedRecipeWrapper;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
@@ -180,7 +181,7 @@ public class RecipeGroup {
 				recipesBuilder.append(enhancedRecipe.getAllowedWorldsFormatted()).append("'| result='");
 				recipesBuilder.append(enhancedRecipe.getResult()).append("'| perm='");
 				recipesBuilder.append(enhancedRecipe.getPermission()).append("'");
-				if (!(enhancedRecipe instanceof com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe))
+				if (!(enhancedRecipe instanceof EnhancedFurnaceRecipe))
 					recipesBuilder.append("| command='").append(enhancedRecipe.getOnCraftCommand()).append("'");
 			}
 			enhancedJoiner.add(recipesBuilder);

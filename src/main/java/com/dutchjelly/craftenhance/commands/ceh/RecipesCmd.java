@@ -5,7 +5,7 @@ import com.dutchjelly.craftenhance.commandhandling.CommandRoute;
 import com.dutchjelly.craftenhance.commandhandling.CustomCmdHandler;
 import com.dutchjelly.craftenhance.commandhandling.ICommand;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.gui.guis.RecipesViewer;
@@ -66,11 +66,11 @@ public class RecipesCmd implements ICommand {
 								new RecipeViewRecipe<>(categoryData, 0,(WBRecipe) recipe, "WBRecipeViewer").menuOpen(p);
 							return;
 						}
-						if (recipe  instanceof FurnaceRecipe) {
+						if (recipe  instanceof EnhancedFurnaceRecipe) {
 							if (p.hasPermission(PermissionTypes.Edit.getPerm()))
-								new RecipeEditor<>((FurnaceRecipe) recipe,0, categoryData,null, ButtonType.ChooseFurnaceType).menuOpen(p);
+								new RecipeEditor<>((EnhancedFurnaceRecipe) recipe,0, categoryData,null, ButtonType.ChooseFurnaceType).menuOpen(p);
 							else
-								new RecipeViewRecipe<>(categoryData, 0,(FurnaceRecipe) recipe, "FurnaceRecipeViewer").menuOpen(p);
+								new RecipeViewRecipe<>(categoryData, 0,(EnhancedFurnaceRecipe) recipe, "FurnaceRecipeViewer").menuOpen(p);
 							return;
 						}
 					}

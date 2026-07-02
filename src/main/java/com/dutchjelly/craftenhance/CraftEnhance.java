@@ -21,7 +21,7 @@ import com.dutchjelly.craftenhance.commands.edititem.LoreCmd;
 import com.dutchjelly.craftenhance.crafthandling.RecipeInjector;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.ServerLoadable;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
@@ -290,7 +290,7 @@ public class CraftEnhance extends JavaPlugin {
 	private void registerSerialization() {
 		ConfigurationSerialization.registerClass(WBRecipe.class, "EnhancedRecipe");
 		ConfigurationSerialization.registerClass(WBRecipe.class, "Recipe");
-		ConfigurationSerialization.registerClass(FurnaceRecipe.class, "FurnaceRecipe");
+		ConfigurationSerialization.registerClass(EnhancedFurnaceRecipe.class, "FurnaceRecipe");
 		ConfigurationSerialization.registerClass(BlastRecipe.class, "BlastRecipe");
 		ConfigurationSerialization.registerClass(SmokerRecipe.class, "SmokerRecipe");
 	}

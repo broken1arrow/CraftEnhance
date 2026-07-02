@@ -21,7 +21,7 @@ import java.util.Map;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
-public class FurnaceRecipe extends EnhancedRecipe {
+public class EnhancedFurnaceRecipe extends EnhancedRecipe {
 
 	@Getter
 	private final RecipeType type = RecipeType.FURNACE;
@@ -32,20 +32,20 @@ public class FurnaceRecipe extends EnhancedRecipe {
 	@Setter
 	private float exp = 0;
 
-	protected FurnaceRecipe(final Map<String, Object> args) {
+	protected EnhancedFurnaceRecipe(final Map<String, Object> args) {
 		super(args);
 	}
 
-	public FurnaceRecipe(final String perm, final ItemStack result, final ItemStack[] content) {
+	public EnhancedFurnaceRecipe(final String perm, final ItemStack result, final ItemStack[] content) {
 		super(perm, result, content);
 	}
 
-	protected FurnaceRecipe(EnhancedRecipe enhancedRecipe) {
+	protected EnhancedFurnaceRecipe(EnhancedRecipe enhancedRecipe) {
 		super(enhancedRecipe);
 	}
 
-	public static FurnaceRecipe deserialize(final Map<String, Object> args) {
-		final FurnaceRecipe recipe = new FurnaceRecipe(args);
+	public static EnhancedFurnaceRecipe deserialize(final Map<String, Object> args) {
+		final EnhancedFurnaceRecipe recipe = new EnhancedFurnaceRecipe(args);
 		recipe.duration = (int) args.get("duration");
 		if (recipe.duration == 0) {
 			recipe.duration = 160;
@@ -58,7 +58,7 @@ public class FurnaceRecipe extends EnhancedRecipe {
 	@Override
 	public Map<String, Object> serialize() {
 		return new LinkedHashMap<String, Object>() {{
-			putAll(FurnaceRecipe.super.serialize());
+			putAll(EnhancedFurnaceRecipe.super.serialize());
 			put("exp", exp);
 			put("duration", duration);
 		}};
@@ -127,7 +127,7 @@ public class FurnaceRecipe extends EnhancedRecipe {
 
 	@Override
 	public boolean isSimilar(final EnhancedRecipe r) {
-		return r instanceof FurnaceRecipe && ItemMatchers.matchTypeData(r.getContent()[0], getContent()[0]);
+		return r instanceof EnhancedFurnaceRecipe && ItemMatchers.matchTypeData(r.getContent()[0], getContent()[0]);
 	}
 
 	@Override

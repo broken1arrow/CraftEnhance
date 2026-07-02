@@ -5,7 +5,7 @@ import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
@@ -176,8 +176,8 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 			if (this.enhancedRecipe instanceof WBRecipe) {
 				new RecipeEditor<>((WBRecipe) this.enhancedRecipe, this.page, categoryData, null, ButtonType.ChooseWorkbenchType).menuOpen(player);
 			}
-			if (this.enhancedRecipe instanceof FurnaceRecipe) {
-				new RecipeEditorFurnace((FurnaceRecipe) this.enhancedRecipe, this.page, categoryData, null, ButtonType.ChooseFurnaceType, false).menuOpen(player);
+			if (this.enhancedRecipe instanceof EnhancedFurnaceRecipe) {
+				new RecipeEditorFurnace((EnhancedFurnaceRecipe) this.enhancedRecipe, this.page, categoryData, null, ButtonType.ChooseFurnaceType, false).menuOpen(player);
 			}
 			if (this.enhancedRecipe instanceof BlastRecipe) {
 				new RecipeEditorBlast((BlastRecipe) this.enhancedRecipe, this.page, categoryData, null, ButtonType.ChooseBlastType, false).menuOpen(player);
@@ -292,7 +292,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 		if (!stackList.stream().anyMatch(x -> x != null)) {
 			return null;
 		}
-		if (enhancedRecipe instanceof FurnaceRecipe)
+		if (enhancedRecipe instanceof EnhancedFurnaceRecipe)
 			return stackList.toArray(new ItemStack[1]);
 		final ItemStack[] itemstacks = stackList.toArray(new ItemStack[0]);
 /*		for (final ItemStack lastItem : itemstacks){

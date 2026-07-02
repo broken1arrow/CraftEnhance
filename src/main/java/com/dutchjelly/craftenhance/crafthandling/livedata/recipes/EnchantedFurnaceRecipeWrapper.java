@@ -7,7 +7,7 @@ import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareFurnaceCo
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.PrepareRecipeContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultContext;
 import com.dutchjelly.craftenhance.crafthandling.livedata.event.ResultType;
-import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerCache;
 import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerData;
@@ -31,12 +31,12 @@ import java.util.stream.Collectors;
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
 public class EnchantedFurnaceRecipeWrapper implements RecipeWrapper {
-	private final FurnaceRecipe furnaceRecipe;
+	private final EnhancedFurnaceRecipe furnaceRecipe;
 	private final EnumMap<Material, Integer> ingredients = new EnumMap<>(Material.class);
 	private int totalSlotCount;
 	private final String key;
 
-	public EnchantedFurnaceRecipeWrapper(@Nonnull final FurnaceRecipe furnaceRecipe) {
+	public EnchantedFurnaceRecipeWrapper(@Nonnull final EnhancedFurnaceRecipe furnaceRecipe) {
 		this.furnaceRecipe = furnaceRecipe;
 		final ItemStack[] content = furnaceRecipe.getContent();
 		for (ItemStack stack : content) {
@@ -120,7 +120,7 @@ public class EnchantedFurnaceRecipeWrapper implements RecipeWrapper {
 		final BlockOwnerData containerOwner = blockOwnerCache.getContainerOwner(furnace.getLocation());
 		final Player player = containerOwner == null ? null : self().getServer().getPlayer(containerOwner.getCurrentOwner());
 		final ItemStack[] srcMatrix = furnaceContext.getRecipeMatrix();
-		final FurnaceRecipe fRecipe = this.furnaceRecipe;
+		final EnhancedFurnaceRecipe fRecipe = this.furnaceRecipe;
 
 		Debug.send(Type.Smelting, "furnace=" + fRecipe.getKey(), () -> {
 			String serverRecipeInfo = "";

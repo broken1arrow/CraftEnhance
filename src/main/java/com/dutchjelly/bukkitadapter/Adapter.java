@@ -2,7 +2,7 @@ package com.dutchjelly.bukkitadapter;
 
 
 import com.dutchjelly.craftenhance.CraftEnhance;
-import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
 import com.dutchjelly.craftenhance.crafthandling.util.ServerRecipeTranslator;
@@ -309,7 +309,7 @@ public class Adapter {
 	}
 
 
-	public static org.bukkit.inventory.FurnaceRecipe getFurnaceRecipe(@NonNull final FurnaceRecipe enhancedFurnaceRecipe) {
+	public static org.bukkit.inventory.FurnaceRecipe getFurnaceRecipe(@NonNull final EnhancedFurnaceRecipe enhancedFurnaceRecipe) {
 		final String key = ServerRecipeTranslator.GetFreeKey(enhancedFurnaceRecipe.getKey());
 		final ItemStack result = enhancedFurnaceRecipe.getResult();
 		final ItemStack ingredient = enhancedFurnaceRecipe.getContent()[0];
@@ -326,7 +326,7 @@ public class Adapter {
 			Debug.errorDisablable("Couldn't use namespaced key for furnace recipe:' " + key + "' will fallback to legacy option\n", e);
 
 			final org.bukkit.inventory.FurnaceRecipe recipe = new org.bukkit.inventory.FurnaceRecipe(result, ingredient.getType());
-			if (!callSingleParamMethod("setCookingTime", duration, Integer.class, recipe, FurnaceRecipe.class))
+			if (!callSingleParamMethod("setCookingTime", duration, Integer.class, recipe, EnhancedFurnaceRecipe.class))
 				Debug.send(Type.Other, "furnace recipe registering", () -> "Custom cooking time is not supported.");
 			try {
 				recipe.setExperience(exp);
@@ -733,7 +733,7 @@ public class Adapter {
 		if (versionChecker.newerThan(ServerVersion.v1_13) && recipe instanceof CookingRecipe<?>) {
 			return true;
 		}
-		return recipe instanceof FurnaceRecipe;
+		return recipe instanceof EnhancedFurnaceRecipe;
 	}
 
 	public static boolean recipeContainsNamespace(final Recipe recipe) {

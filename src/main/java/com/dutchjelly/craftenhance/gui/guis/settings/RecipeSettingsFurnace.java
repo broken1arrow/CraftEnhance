@@ -1,6 +1,6 @@
 package com.dutchjelly.craftenhance.gui.guis.settings;
 
-import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditorFurnace;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
@@ -8,14 +8,14 @@ import com.dutchjelly.craftenhance.messaging.Messenger;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
 import org.bukkit.entity.Player;
 
-public class RecipeSettingsFurnace extends RecipeSettings<FurnaceRecipe> {
+public class RecipeSettingsFurnace extends RecipeSettings<EnhancedFurnaceRecipe> {
 
-	public RecipeSettingsFurnace(final FurnaceRecipe recipe, final CategoryData categoryData, final String permission, final ButtonType editorType) {
+	public RecipeSettingsFurnace(final EnhancedFurnaceRecipe recipe, final CategoryData categoryData, final String permission, final ButtonType editorType) {
 		super(recipe, 0, categoryData, permission, editorType);
 	}
 
 	@Override
-	protected boolean onPlayerClick(final FurnaceRecipe furnaceRecipe, final String buttonAction, final Player player) {
+	protected boolean onPlayerClick(final EnhancedFurnaceRecipe furnaceRecipe, final String buttonAction, final Player player) {
 		if (player.isConversing()) return true;
 
 		if (buttonAction.equalsIgnoreCase(ButtonType.SetExp.name())) {
@@ -69,7 +69,7 @@ public class RecipeSettingsFurnace extends RecipeSettings<FurnaceRecipe> {
 	}
 
 	@Override
-	protected void handleBack(final FurnaceRecipe recipe, final CategoryData categoryData, final Player player) {
+	protected void handleBack(final EnhancedFurnaceRecipe recipe, final CategoryData categoryData, final Player player) {
 		new RecipeEditorFurnace(recipe, this.page, categoryData, null, ButtonType.ChooseFurnaceType, false).menuOpen(player);
 	}
 

@@ -4,7 +4,7 @@ import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers;
 import com.dutchjelly.craftenhance.files.CategoryData;
@@ -66,7 +66,7 @@ public class RecipeSettings<RecipeT extends EnhancedRecipe> extends MenuHolder {
 		this.categoryData = categoryData;
 		this.recipeMatchType = recipe.getMatchType();
 		String menu = "RecipeSettingsCrafting";
-		if (recipe instanceof FurnaceRecipe) {
+		if (recipe instanceof EnhancedFurnaceRecipe) {
 			menu = "RecipeSettingsFurnace";
 		}
 		if (recipe instanceof BrewingRecipe) {

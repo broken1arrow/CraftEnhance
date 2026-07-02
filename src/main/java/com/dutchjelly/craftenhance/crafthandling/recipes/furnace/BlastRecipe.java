@@ -2,7 +2,7 @@ package com.dutchjelly.craftenhance.crafthandling.recipes.furnace;
 
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.utility.RecipeType;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker.ServerVersion;
 import lombok.Getter;
@@ -17,7 +17,7 @@ import java.util.Map;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
-public class BlastRecipe extends FurnaceRecipe {
+public class BlastRecipe extends EnhancedFurnaceRecipe {
 
 	@Getter
 	private final RecipeType type = RecipeType.BLAST;

@@ -36,7 +36,7 @@ public interface RecipeWrapper {
 	/**
 	 * Retrieve the recipe via a safe cast, include the custom recipe classes like
 	 * {@link com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe} or
-	 * {@link com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe}
+	 * {@link com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe}
 	 *
 	 * @param type the recipe class you want to access.
 	 * @param <T>  The type of recipe class.

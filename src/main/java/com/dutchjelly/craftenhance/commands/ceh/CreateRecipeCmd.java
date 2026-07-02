@@ -5,7 +5,7 @@ import com.dutchjelly.craftenhance.commandhandling.CustomCmdHandler;
 import com.dutchjelly.craftenhance.commandhandling.ICommand;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
@@ -79,9 +79,9 @@ public class CreateRecipeCmd implements ICommand {
 				recipeEditor.menuOpen(p);
 				break;
 			case "furnace":
-				recipe = new FurnaceRecipe(permission , null, new ItemStack[1]);
+				recipe = new EnhancedFurnaceRecipe(permission , null, new ItemStack[1]);
 				recipe.setKey(args[1]);
-				RecipeEditorFurnace editorFurnace = new RecipeEditorFurnace((FurnaceRecipe) recipe,0, null, null, ButtonType.ChooseFurnaceType);
+				RecipeEditorFurnace editorFurnace = new RecipeEditorFurnace((EnhancedFurnaceRecipe) recipe,0, null, null, ButtonType.ChooseFurnaceType);
 				editorFurnace.menuOpen(p);
 				break;
 			case "blast":

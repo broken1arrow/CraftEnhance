@@ -2,7 +2,7 @@ package com.dutchjelly.craftenhance.database;
 
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.FurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
@@ -311,8 +311,8 @@ public class RecipeDatabase implements RecipeSQLQueries {
 
 		int duration = 0;
 		float exp = 0;
-		if (recipe instanceof FurnaceRecipe) {
-			FurnaceRecipe furnaceRecipe = (FurnaceRecipe) recipe;
+		if (recipe instanceof EnhancedFurnaceRecipe) {
+			EnhancedFurnaceRecipe furnaceRecipe = (EnhancedFurnaceRecipe) recipe;
 			duration = furnaceRecipe.getDuration();
 			exp = furnaceRecipe.getExp();
 		}
@@ -442,7 +442,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 				case FURNACE:
 					map.put("duration", rs.getInt("duration"));
 					map.put("exp", rs.getDouble("exp"));
-					recipe = FurnaceRecipe.deserialize(map);
+					recipe = EnhancedFurnaceRecipe.deserialize(map);
 					break;
 				case BLAST:
 					map.put("duration", rs.getInt("duration"));
@@ -534,7 +534,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 	}
 
 	private void removeFurnaceData(final Connection connection, final EnhancedRecipe enhancedRecipe) throws SQLException {
-		if (!(enhancedRecipe instanceof FurnaceRecipe)) return;
+		if (!(enhancedRecipe instanceof EnhancedFurnaceRecipe)) return;
 
 		try (PreparedStatement pstmt = connection.prepareStatement(DELETE_FURNACE_DATA_SQL)) {
 			pstmt.setString(1, enhancedRecipe.getKey());
