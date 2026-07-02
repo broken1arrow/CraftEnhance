@@ -41,11 +41,11 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 
 	public RecipesViewerCategorys(final String grupSeachFor) {
 		super(FormatListContents.getCategories(self().getCategoryDataCache().values(), grupSeachFor));
-		this.menuTemplate = menuSettingsCache.getTemplate("RecipesCategorys");
+		this.menuTemplate = menuSettingsCache.getTemplate("RecipesCategories");
 		setFillSpace(this.menuTemplate.getFillSlots());
 		setTitle(this.menuTemplate.getMenuTitle());
 		//setIgnoreItemCheck(true);
-		setMenuSize(GuiUtil.invSize("RecipesCategorys", this.menuTemplate.getAmountOfButtons()));
+		setMenuSize(GuiUtil.invSize("RecipesCategories", this.menuTemplate.getAmountOfButtons()));
 		setMenuOpenSound(this.menuTemplate.getSound());
 
 		this.setUseColorConversion(true);

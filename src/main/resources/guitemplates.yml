@@ -79,9 +79,9 @@ Menus:
         lore:
           - "&fGo to the next page"
         glow: true
-  RecipesCategorys:
+  RecipesCategories:
     menu_settings:
-      name: Categorys
+      name: Categories
       fill-space: 0-45
       sound: BLOCK_NOTE_BLOCK_BASEDRUM
     buttons:
@@ -121,7 +121,7 @@ Menus:
         name: "&aSearch for a category"
         lore:
           - "&fSearch for same or similar"
-          - "&fcategorys, it can be enough"
+          - "&fcategories, it can be enough"
           - "&fto type the first three/four"
           - "&fletters."
         glow: true
@@ -148,7 +148,7 @@ Menus:
             - "&fLeftclick to open"
             - "&fRightclick to edit Category"
           glow: true
-  CategorysSettings:
+  CategorySettings:
     menu_settings:
       name: Category settings
       sound: BLOCK_NOTE_BLOCK_BASEDRUM

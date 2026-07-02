@@ -32,11 +32,11 @@ public class RecipesViewerCategoriesSettings extends MenuHolder {
 	private final String category;
 
 	public RecipesViewerCategoriesSettings(final String category) {
-		this.menuTemplate = menuSettingsCache.getTemplate("CategorysSettings");
+		this.menuTemplate = menuSettingsCache.getTemplate("CategorySettings");
 		if (this.menuTemplate != null) {
 			setFillSpace(this.menuTemplate.getFillSlots());
 			setTitle(this.menuTemplate.getMenuTitle());
-			setMenuSize(GuiUtil.invSize("CategorysSettings",this.menuTemplate.getAmountOfButtons()));
+			setMenuSize(GuiUtil.invSize("CategorySettings",this.menuTemplate.getAmountOfButtons()));
 			setMenuOpenSound(this.menuTemplate.getSound());
 		}
 		this.category = category;
