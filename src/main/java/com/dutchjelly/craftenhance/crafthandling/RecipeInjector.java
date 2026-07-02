@@ -368,8 +368,8 @@ public class RecipeInjector implements Listener {
 					recipeType = RecipeType.SMOKER;
 			}
 			Debug.Send(Type.Smelting, () -> "Alter the time for the furnace recipe if could find it in cache.");
-			final List<RecipeWrapper> matchingRecipe = loader.findMatchingRecipe(recipeType, new ItemStack[]{event.getSource()});
-			ResultContext furnaceContext = getFurnaceRecipeInjector().getFurnaceContext(event.getRecipe(), matchingRecipe, new ItemStack[]{event.getSource()}, furnace);
+			final List<RecipeWrapper> matchingRecipe = loader.findMatchingRecipe(recipeType, Adapter.toItemStackArray(event.getSource()));
+			ResultContext furnaceContext = getFurnaceRecipeInjector().getFurnaceContext(event.getRecipe(), matchingRecipe, Adapter.toItemStackArray(event.getSource()), furnace);
 			if (furnaceContext == null) {
 				/*todo need to fix so you can stop it from progress if not allow to burn the item  */
 				return;

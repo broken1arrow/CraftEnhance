@@ -98,10 +98,10 @@ public class BrewingRecipeInjector {
 		}*/
 		if (itemStackCursor != null) {
 			final ItemStack itemStackCheck = itemStackCursor.clone();
-			final List<RecipeWrapper> possibleRecipeGroups = loader.findMatchingRecipe(RecipeType.BREWING, new ItemStack[]{itemStackCheck});
+			final List<RecipeWrapper> possibleRecipeGroups = loader.findMatchingRecipe(RecipeType.BREWING, Adapter.toItemStackArray(itemStackCheck));
 
 			if (possibleRecipeGroups.isEmpty()) {
-				if (RecipeAdapter.checkForDisabledRecipe( itemStackCheck)) {
+				if (RecipeAdapter.checkForDisabledRecipe(itemStackCheck)) {
 					Debug.send(Type.Brewing, "disabled_recipe", () -> "This brewing recipe is turned off, will not allow put the item inside the brewing stand.");
 					return;
 				}
@@ -112,7 +112,7 @@ public class BrewingRecipeInjector {
 				Debug.send(Type.Brewing, "model_match", () -> "Found a matching group of brewing recipes, but has turn off creating recipe with modeldata.");
 				return;
 			}
-			Debug.send(Type.Brewing, "Find_matching_recipes",()-> "Found " + possibleRecipeGroups.size() + " groups that matching the brewing recipe. Now checking for a matching recipe based on your provided items.");
+			Debug.send(Type.Brewing, "Find_matching_recipes", () -> "Found " + possibleRecipeGroups.size() + " groups that matching the brewing recipe. Now checking for a matching recipe based on your provided items.");
 			final BrewingClickContext clickContext = BrewingClickContext.ofClick(wrapBrewing -> wrapBrewing
 					.setEvent(event)
 					.setBrewingInv(brewerInventory)
@@ -122,7 +122,7 @@ public class BrewingRecipeInjector {
 			);
 			for (RecipeWrapper recipeWrapper : possibleRecipeGroups) {
 				if (recipeWrapper instanceof BrewingWrapper) {
-					if(((BrewingWrapper) recipeWrapper).brewingCheck(clickContext))
+					if (((BrewingWrapper) recipeWrapper).brewingCheck(clickContext))
 						return;
 				}
 			}
@@ -152,7 +152,7 @@ public class BrewingRecipeInjector {
 
 		if (itemStackCursor != null) {
 			final ItemStack itemStackCheck = itemStackCursor.clone();
-			final List<RecipeWrapper> possibleRecipeGroups = loader.findMatchingRecipe(RecipeType.BREWING, new ItemStack[]{itemStackCheck});
+			final List<RecipeWrapper> possibleRecipeGroups = loader.findMatchingRecipe(RecipeType.BREWING, Adapter.toItemStackArray(itemStackCheck));
 
 			if (possibleRecipeGroups == null || possibleRecipeGroups.isEmpty()) {
 				if (RecipeAdapter.checkForDisabledRecipe(itemStackCursor)) {

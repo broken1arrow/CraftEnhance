@@ -228,6 +228,13 @@ public class Adapter {
 		return null;
 	}
 
+	public static ItemStack[] toItemStackArray(@NonNull final ItemStack... matrix) {
+		if (matrix == null) {
+			return new ItemStack[0];
+		}
+		return matrix;
+	}
+
 	public static ItemStack getColoredItem(final String name, final DyeColor color) {
 		try {
 			return new ItemStack(Material.valueOf(color.name() + "_" + name));
@@ -883,8 +890,8 @@ public class Adapter {
 		@Nonnull
 		private static ItemStack[] getFurnaceStack(@Nonnull final Recipe recipe) {
 			if (self().getVersionChecker().newerThan(ServerVersion.v1_13))
-				return new ItemStack[]{((CookingRecipe<?>) recipe).getInput()};
-			return new ItemStack[]{((org.bukkit.inventory.FurnaceRecipe) recipe).getInput()};
+				return Adapter.toItemStackArray(((CookingRecipe<?>) recipe).getInput());
+			return Adapter.toItemStackArray(((org.bukkit.inventory.FurnaceRecipe) recipe).getInput());
 		}
 
 		private static <T extends CookingRecipe<?>> void setGroup(@NonNull final CookingRecipe<T> furnaceRecipe, @NonNull final String groupName) {

@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.database;
 
+import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
@@ -294,7 +295,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 
 			boolean isShapeless = (recipe instanceof WBRecipe) && ((WBRecipe) recipe).isShapeless();
 			pstmt.setBoolean(13, isShapeless);
-			pstmt.setString(14,recipe.getGroup());
+			pstmt.setString(14, recipe.getGroup());
 			try {
 				updateSQL(pstmt);
 			} catch (SQLException e) {
@@ -616,7 +617,7 @@ public class RecipeDatabase implements RecipeSQLQueries {
 					ingredients.setSlot(recipe.getResultSlot());
 					ingredients.setRecipeName(recipe.getKey());
 					final ItemStack result = recipe.getResult().clone();
-					ingredients.setItemData(serializeItemStack(new ItemStack[]{result}));
+					ingredients.setItemData(serializeItemStack(Adapter.toItemStackArray(result)));
 					ingredients.setItemName(this.getItemKey(result));
 					ingredients.setRecipeType(RecipeIngredientType.RESULT);
 				});

@@ -1,5 +1,6 @@
 package com.dutchjelly.craftenhance.crafthandling.livedata.recipes;
 
+import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.RecipeAdapter;
 import com.dutchjelly.craftenhance.crafthandling.RecipeDebug;
 import com.dutchjelly.craftenhance.crafthandling.livedata.RecipeWrapper;
@@ -143,7 +144,7 @@ public class EnchantedFurnaceRecipeWrapper implements RecipeWrapper {
 				return new ResultContext(fRecipe, fRecipe.getResult(), ResultType.NO_PERMISSION);
 			}
 		} else {
-			final boolean isVanillaRecipe = serverRecipe != null && fRecipe.matchesType(new ItemStack[]{((org.bukkit.inventory.FurnaceRecipe) serverRecipe).getInput()}) && !fRecipe.getResult().isSimilar(serverRecipe.getResult());
+			final boolean isVanillaRecipe = serverRecipe != null && fRecipe.matchesType(Adapter.toItemStackArray(((org.bukkit.inventory.FurnaceRecipe) serverRecipe).getInput())) && !fRecipe.getResult().isSimilar(serverRecipe.getResult());
 			if (fRecipe.isCheckPartialMatch() && isVanillaRecipe) {
 				Debug.send(Type.Smelting, "vanilla_match | furnace=" + fRecipe.getKey(), () -> "Recipe partial match match for this recipe output: \n" + RecipeDebug.formatOneStack(serverRecipe.getResult()));
 				Debug.send(Type.Smelting, "vanilla_match | furnace=" + fRecipe.getKey(), () -> "Recipe partial match match with this matrix input: \n" + RecipeDebug.convertItemStackArrayToString(srcMatrix));

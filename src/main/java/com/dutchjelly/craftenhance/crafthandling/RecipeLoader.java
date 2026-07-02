@@ -157,7 +157,7 @@ public class RecipeLoader {
 		else if (recipe instanceof EnhancedFurnaceRecipe)
 			liveCacheRecipe(new EnchantedFurnaceRecipeWrapper((EnhancedFurnaceRecipe) recipe), content);
 		else if (recipe instanceof BrewingRecipe) {
-			liveCacheRecipe(new BrewingWrapper((BrewingRecipe) recipe), new ItemStack[]{recipe.getResult()});
+			liveCacheRecipe(new BrewingWrapper((BrewingRecipe) recipe), Adapter.toItemStackArray(recipe.getResult()));
 		}
 	}
 
