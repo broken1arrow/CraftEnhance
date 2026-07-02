@@ -37,7 +37,6 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +56,6 @@ public class RecipeLoader {
 	private final CategoryDataCache categoryDataCache;
 	private final Server server;
 
-	private Set<Recipe> serverRecipes = new HashSet<>();
 	@Getter
 	private List<Recipe> disabledServerRecipes = new ArrayList<>();
 	private final Map<RecipeType, RecipeRegistry> mappedRecipes = new HashMap<>();
