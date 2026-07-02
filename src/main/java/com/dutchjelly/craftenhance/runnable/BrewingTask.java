@@ -113,9 +113,7 @@ public class BrewingTask implements Runnable {
 						addedItems.add(resultItem);
 					}
 				}
-
-				brewer.update();
-
+				location.getBlock().getState().update(false);
 				Sound brewCompleteSound = getSound("BLOCK_BREWING_STAND_BREW_COMPLETE", "BLOCK_BREWING_STAND_BREW");
 				location.getWorld().playSound(location, brewCompleteSound, 1.0f, 1.0f);
 				Debug.send(Type.Brewing, "result | recipe=" + brewingRecipe.getKey(), () -> "Just completed the brewing and the result should be set inside the inventory.");
