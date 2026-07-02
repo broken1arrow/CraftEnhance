@@ -40,7 +40,7 @@ perms:
   recipe-editor: "craftenhance.edit"
   recipe-viewer: "craftenhance.view"
   item-editor: "craftenhance.edititems"
-  categorys-editor: "craftenhance.edit_categorys"
+  category-editor: "craftenhance.edit_categorys"
   view-all: "craftenhance.view-all"
 
 messages:
