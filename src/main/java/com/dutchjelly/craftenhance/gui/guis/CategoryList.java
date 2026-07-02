@@ -51,8 +51,8 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 	private final String permission;
 	private final ButtonType editorType;
 
-	public CategoryList(final RecipeT recipe, final CategoryData categoryData, final String permission, final ButtonType editorType, final String grupSeachFor) {
-		super(FormatListContents.getCategorys(self().getCategoryDataCache().values(), grupSeachFor));
+	public CategoryList(final RecipeT recipe, final CategoryData categoryData, final String permission, final ButtonType editorType, final String groupSearchFor) {
+		super(FormatListContents.getCategories(self().getCategoryDataCache().values(), groupSearchFor));
 		this.menuTemplate = menuSettingsCache.getTemplate("CategoryList");
 		this.recipe = recipe;
 		this.categoryData = categoryData;

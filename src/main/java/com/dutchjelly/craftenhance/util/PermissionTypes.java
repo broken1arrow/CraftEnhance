@@ -7,7 +7,7 @@ public enum PermissionTypes {
     View("perms.recipe-viewer"),
     View_ALL("perms.view-all"),
     EditItem("perms.edit-item"),
-    Categorys_editor("perms.categorys-editor"),;
+    Category_editor("perms.categorys-editor"),;
 
     public final String permPath;
 

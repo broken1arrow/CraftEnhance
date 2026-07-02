@@ -41,8 +41,8 @@ public class RecipeDisabler extends MenuHolderPage<Recipe> {
 	//If true, you can enable *disabled* recipes.
 	boolean enableMode;
 
-	public RecipeDisabler(final Collection<Recipe> enabledRecipes, final List<Recipe> disabledRecipes, final boolean enableMode, final String recipesSeachFor) {
-		super(getRecipes(enabledRecipes, disabledRecipes, enableMode, recipesSeachFor));
+	public RecipeDisabler(final Collection<Recipe> enabledRecipes, final List<Recipe> disabledRecipes, final boolean enableMode, final String groupSearchFor) {
+		super(getRecipes(enabledRecipes, disabledRecipes, enableMode, groupSearchFor));
 		this.menuTemplate = menuSettingsCache.getTemplate("RecipeDisabler");
 		this.enableMode = enableMode;
 		setFillSpace(this.menuTemplate.getFillSlots());

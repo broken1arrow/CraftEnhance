@@ -4,7 +4,7 @@ import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
-import com.dutchjelly.craftenhance.gui.guis.editors.RecipesViewerCategorysSettings;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipesViewerCategoriesSettings;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.messaging.Messenger;
@@ -95,14 +95,14 @@ public class ChangeCategoryItem extends MenuHolderPage<ItemStack> {
 					newCategoryData.setEnhancedRecipes(categoryData.getEnhancedRecipes());
 					self().getCategoryDataCache().put(this.category, newCategoryData);
 					CraftEnhance.runTaskLaterAsync( 1,()-> self().getCategoryDataCache().save());
-					new RecipesViewerCategorysSettings(this.category).menuOpen(player);
+					new RecipesViewerCategoriesSettings(this.category).menuOpen(player);
 					break;
 				}
 			}
 		}
 
 		if (value.isActionTypeEqual( ButtonType.Back.name())) {
-			new RecipesViewerCategorysSettings(this.category).menuOpen(player);
+			new RecipesViewerCategoriesSettings(this.category).menuOpen(player);
 		}
 		return false;
 	}

@@ -3,7 +3,7 @@ package com.dutchjelly.craftenhance.gui.guis;
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
-import com.dutchjelly.craftenhance.gui.guis.editors.RecipesViewerCategorysSettings;
+import com.dutchjelly.craftenhance.gui.guis.editors.RecipesViewerCategoriesSettings;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.FormatListContents;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
@@ -40,7 +40,7 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 	private final MenuTemplate menuTemplate;
 
 	public RecipesViewerCategorys(final String grupSeachFor) {
-		super(FormatListContents.getCategorys(self().getCategoryDataCache().values(), grupSeachFor));
+		super(FormatListContents.getCategories(self().getCategoryDataCache().values(), grupSeachFor));
 		this.menuTemplate = menuSettingsCache.getTemplate("RecipesCategorys");
 		setFillSpace(this.menuTemplate.getFillSlots());
 		setTitle(this.menuTemplate.getMenuTitle());
@@ -75,7 +75,7 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 			@Override
 			public ItemStack getItem() {
 				org.broken.arrow.library.menu.button.manager.utility.MenuButton button = null;
-				if (getViewer().hasPermission(PermissionTypes.Categorys_editor.getPerm()))
+				if (getViewer().hasPermission(PermissionTypes.Category_editor.getPerm()))
 					button = value.getActiveButton();
 				if (button == null)
 					button = value.getPassiveButton();
@@ -125,7 +125,7 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 				;
 			} else new RecipesViewerCategorys("").menuOpen(player);
 		}
-		if (value.isActionTypeEqual(ButtonType.NewCategory.name()) && player.hasPermission(PermissionTypes.Categorys_editor.getPerm())) {
+		if (value.isActionTypeEqual(ButtonType.NewCategory.name()) && player.hasPermission(PermissionTypes.Category_editor.getPerm())) {
 			if (!player.isConversing()) {
 				new HandleChatInput(this, msg -> {
 					if (!GuiUtil.newCategory(msg, player)) {
@@ -148,8 +148,8 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 			if (categoryData != null) {
 				if (clickType == ClickType.LEFT)
 					new RecipesViewer(categoryData, "", player).menuOpen(player);
-				else if (player.hasPermission(PermissionTypes.Categorys_editor.getPerm())) {
-					new RecipesViewerCategorysSettings(categoryData.getRecipeCategory()).menuOpen(player);
+				else if (player.hasPermission(PermissionTypes.Category_editor.getPerm())) {
+					new RecipesViewerCategoriesSettings(categoryData.getRecipeCategory()).menuOpen(player);
 				}
 			}
 			return ButtonUpdateAction.NONE;
@@ -162,7 +162,7 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 					final MenuButtonData menuButton = menuTemplate.getMenuButton(-1);
 					if (menuButton != null) {
 						final org.broken.arrow.library.menu.button.manager.utility.MenuButton activeButton = menuButton.getActiveButton();
-						if (player.hasPermission(PermissionTypes.Categorys_editor.getPerm()) && activeButton != null) {
+						if (player.hasPermission(PermissionTypes.Category_editor.getPerm()) && activeButton != null) {
 							displayName = activeButton.getDisplayName();
 							lore = activeButton.getLore();
 						} else {

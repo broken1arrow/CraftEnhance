@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
@@ -82,28 +81,23 @@ public class FormatListContents {
 		return showAvailable || hasPermission;
 	}
 
-	public static List<CategoryData> getCategorys(final Collection<CategoryData> categoryData, final String grupSeachFor) {
-		if (grupSeachFor == null || grupSeachFor.equals(""))
+	public static List<CategoryData> getCategories(final Collection<CategoryData> categoryData, final String groupSearchFor) {
+		if (groupSearchFor == null || groupSearchFor.equals(""))
 			return new ArrayList<>(categoryData);
-		return categoryData.stream().filter(x -> x.getRecipeCategory().contains(grupSeachFor)).collect(Collectors.toList());
+		return categoryData.stream().filter(x -> x.getRecipeCategory().contains(groupSearchFor)).collect(Collectors.toList());
 	}
 
-	public static List<String> getCategorys(final Set<String> categoryNames, final String grupSeachFor) {
-		if (grupSeachFor == null || grupSeachFor.equals(""))
-			return new ArrayList<>(categoryNames);
-		return categoryNames.stream().filter(x -> x.contains(grupSeachFor)).collect(Collectors.toList());
-	}
 
-	public static List<Recipe> getRecipes(final Collection<Recipe> enabledRecipes, final List<Recipe> disabledRecipes, final boolean enableMode, final String grupSeachFor) {
+	public static List<Recipe> getRecipes(final Collection<Recipe> enabledRecipes, final List<Recipe> disabledRecipes, final boolean enableMode, final String groupSearchFor) {
 		final List<Recipe> recipes = !enableMode ? new ArrayList<>(enabledRecipes) : disabledRecipes;
-		if (grupSeachFor == null || grupSeachFor.equals("")) {
+		if (groupSearchFor == null || groupSearchFor.equals("")) {
 			return recipes;
 		}
 		return recipes.stream().filter(recipe -> {
-			boolean containsKey = Adapter.GetRecipeIdentifier(recipe).contains(grupSeachFor.toLowerCase());
+			boolean containsKey = Adapter.GetRecipeIdentifier(recipe).contains(groupSearchFor.toLowerCase());
 			if (containsKey)
 				return true;
-			return recipe.getResult().getType().name().contains(grupSeachFor.toUpperCase());
+			return recipe.getResult().getType().name().contains(groupSearchFor.toUpperCase());
 		}).collect(Collectors.toList());
 	}
 }

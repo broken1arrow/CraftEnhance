@@ -25,13 +25,13 @@ import java.util.Map.Entry;
 
 import static com.dutchjelly.craftenhance.CraftEnhance.self;
 
-public class RecipesViewerCategorysSettings extends MenuHolder {
+public class RecipesViewerCategoriesSettings extends MenuHolder {
 
 	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
 	private final MenuTemplate menuTemplate;
 	private final String category;
 
-	public RecipesViewerCategorysSettings(final String category) {
+	public RecipesViewerCategoriesSettings(final String category) {
 		this.menuTemplate = menuSettingsCache.getTemplate("CategorysSettings");
 		if (this.menuTemplate != null) {
 			setFillSpace(this.menuTemplate.getFillSlots());
@@ -96,7 +96,7 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 		if (value.isActionTypeEqual( ButtonType.ChangeCategoryName.name())){
 			new HandleChatInput(this, msg-> {
 				if(!GuiUtil.changeCategoryName(this.category,msg,player)){
-					new RecipesViewerCategorysSettings(this.category).menuOpen(player);
+					new RecipesViewerCategoriesSettings(this.category).menuOpen(player);
 					return false;
 				}
 				return true;
@@ -109,7 +109,7 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 			} else
 				new HandleChatInput(this, msg -> {
 					if (!GuiUtil.changeCategoryItem(this.category, msg, player)) {
-						new RecipesViewerCategorysSettings(this.category).menuOpen(player);
+						new RecipesViewerCategoriesSettings(this.category).menuOpen(player);
 						return false;
 					}
 					return true;
@@ -119,7 +119,7 @@ public class RecipesViewerCategorysSettings extends MenuHolder {
 		if (value.isActionTypeEqual( ButtonType.ChangeCategory.name())){
 			new HandleChatInput(this, msg -> {
 				if (!GuiUtil.changeCategory(this.category, msg, player)) {
-					new RecipesViewerCategorysSettings(this.category).menuOpen(player);
+					new RecipesViewerCategoriesSettings(this.category).menuOpen(player);
 					return false;
 				}
 				return true;
