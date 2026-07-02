@@ -182,7 +182,7 @@ public class CraftEnhance extends JavaPlugin {
 		setupListeners();
 		setupCommands();
 
-		Messenger.Message("CraftEnhance is managed and developed by DutchJelly and BrokenArrow.");
+		Messenger.Message("CraftEnhance is managed and developed by DutchJelly and Broken Arrow.");
 		Messenger.Message("If you find a bug in the plugin, please report it to https://github.com/broken1arrow/CraftEnhance/issues.");
 		if (!versionChecker.runVersionCheck()) {
 			for (int i = 0; i < 4; i++)
