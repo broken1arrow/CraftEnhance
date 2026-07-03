@@ -1068,7 +1068,7 @@ Menus:
           - "&fCurrently set to:"
           - "&3[partial_match]"
         glow: true
-      "35":
+      "44":
         action_type: Back
         material: GLOWSTONE_DUST
         name: "&aBack"
