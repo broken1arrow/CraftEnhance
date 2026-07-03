@@ -277,7 +277,7 @@ public class CraftEnhance extends JavaPlugin {
 			Messenger.Message("Could not execute the command.", sender);
 			Messenger.Message("Something went wrong with initializing the commandHandler. Please make sure to use" +
 					" Spigot or Bukkit when using this plugin. If you are using Spigot or Bukkit and still experiencing this " +
-					"issue, please send a bug report here: https://dev.bukkit.org/projects/craftenhance.");
+					"issue, please send a bug report here: https://github.com/broken1arrow/CraftEnhance/issues.");
 			Messenger.Message("Disabling the plugin...");
 			getPluginLoader().disablePlugin(this);
 		}
