@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 public class CacheRecipes extends CacheRecipesGroup {
 
-	private final Map<String,EnhancedRecipe> recipes = new ConcurrentHashMap<>();
+	private final Map<String, EnhancedRecipe> recipes = new ConcurrentHashMap<>();
 	private final RecipeDatabase database;
 	private final SaveScheduler saveSchedule;
 
@@ -45,8 +45,8 @@ public class CacheRecipes extends CacheRecipesGroup {
 	}
 
 	public void add(final EnhancedRecipe enhancedRecipe) {
-		if (enhancedRecipe == null ||  getRecipe( enhancedRecipe.getKey()) != null) return;
-		recipes.put(enhancedRecipe.getKey(),enhancedRecipe);
+		if (enhancedRecipe == null || getRecipe(enhancedRecipe.getKey()) != null) return;
+		recipes.put(enhancedRecipe.getKey(), enhancedRecipe);
 		groupCacheDirty = true;
 	}
 
@@ -69,7 +69,7 @@ public class CacheRecipes extends CacheRecipesGroup {
 	}
 
 	public void save(final EnhancedRecipe enhancedRecipe) {
-		if(enhancedRecipe.isRemove()) {
+		if (enhancedRecipe.isRemove()) {
 			saveSchedule.addTask(() -> {
 				this.database.deleteRecipe(enhancedRecipe);
 				recipes.remove(enhancedRecipe.getKey());

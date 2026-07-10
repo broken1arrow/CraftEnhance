@@ -27,7 +27,7 @@ public class OrderEditor extends GUIElement {
 	public OrderEditor(GuiManager manager, GuiTemplate template, GUIElement previous, Player p){
 		super(manager, template, previous, p);
 		Debug.Send("An instance is being made for an order editor");
-		recipes = new ArrayList<>(getManager().getMain().getFm().getRecipes());
+		recipes = new ArrayList<>(getManager().getMain().getCacheRecipes().getListOfRecipes());
 		this.addBtnListener(ButtonType.NxtPage, this::handlePageChangingClicked);
 		this.addBtnListener(ButtonType.PrvPage, this::handlePageChangingClicked);
 		this.addBtnListener(ButtonType.SaveRecipe, this::handleSave);
@@ -57,7 +57,7 @@ public class OrderEditor extends GUIElement {
 		inventories = new Inventory[requiredPages];
 		for(int i = 0; i < requiredPages; i++){
 			inventories[i] = GuiUtil.FillInventory(
-					GuiUtil.CopyInventory(getTemplate().getTemplate(), getTemplate().getInvTitle(), this),
+					GuiUtil.CopyInventory(getTemplate().getStacksTemplate(), getTemplate().getInvTitle(), this),
 					getTemplate().getFillSpace(),
 					recipeItems.subList(itemsPerPage*i, Math.min(recipeItems.size(), itemsPerPage*(i+1)))
 			);

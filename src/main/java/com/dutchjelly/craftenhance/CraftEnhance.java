@@ -6,6 +6,7 @@ import com.dutchjelly.craftenhance.commandhandling.CustomCmdHandler;
 import com.dutchjelly.craftenhance.commands.ceh.ChangeKeyCmd;
 import com.dutchjelly.craftenhance.commands.ceh.CleanItemFileCmd;
 import com.dutchjelly.craftenhance.commands.ceh.CreateRecipeCmd;
+import com.dutchjelly.craftenhance.commands.ceh.CustomTable;
 import com.dutchjelly.craftenhance.commands.ceh.Disabler;
 import com.dutchjelly.craftenhance.commands.ceh.RecipesCmd;
 import com.dutchjelly.craftenhance.commands.ceh.ReloadCmd;
@@ -37,6 +38,9 @@ import com.dutchjelly.craftenhance.files.blockowner.BlockOwnerCache;
 import com.dutchjelly.craftenhance.gui.GuiManager;
 import com.dutchjelly.craftenhance.gui.customcrafting.CustomCraftingTable;
 import com.dutchjelly.craftenhance.gui.guis.editors.IngredientsCache;
+import com.dutchjelly.craftenhance.gui.templates.GuiTemplate;
+import com.dutchjelly.craftenhance.gui.templates.GuiTemplate.TemplateItemStack;
+import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.FormatListContents;
 import com.dutchjelly.craftenhance.messaging.Debug;
 import com.dutchjelly.craftenhance.messaging.Debug.Type;
@@ -46,17 +50,20 @@ import com.dutchjelly.craftenhance.runnable.PlayerCheckTask;
 import com.dutchjelly.craftenhance.updatechecking.VersionChecker;
 import com.dutchjelly.craftenhance.util.Metrics;
 import lombok.Getter;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.broken.arrow.library.localization.LocalizationCache;
 import org.broken.arrow.library.localization.builders.PluginMessages;
 import org.broken.arrow.library.menu.RegisterMenuAPI;
 import org.broken.arrow.library.serialize.utility.converters.PlaceholderTranslator;
 import org.broken.arrow.library.serialize.utility.converters.PlaceholderTranslator.PlaceholderWrapper;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -67,10 +74,13 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class CraftEnhance extends JavaPlugin {
 
@@ -113,6 +123,7 @@ public class CraftEnhance extends JavaPlugin {
 	@Getter
 	private LocalizationCache localizationCache;
 	private PlayerCheckTask playerCheckTask;
+	private boolean placeholderAPI;
 
 
 	public static CraftEnhance self() {
@@ -149,6 +160,7 @@ public class CraftEnhance extends JavaPlugin {
 		plugin = this;
 		Debug.init(this);
 		Messenger.Init(this);
+
 		this.brewingTask = new BrewingTask();
 		this.brewingTask.start();
 
@@ -172,6 +184,7 @@ public class CraftEnhance extends JavaPlugin {
 		setupFileManager();
 		saveDefaultConfig();
 
+		runTask(() -> this.placeholderAPI = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"));
 
 		runTaskAsync(() -> {
 			loadPluginData();
@@ -255,15 +268,6 @@ public class CraftEnhance extends JavaPlugin {
 		loader.updateServerRecipes();
 	}
 
-	public void reLearnRecipes() {
-		//todo learn recipes are little broken. when you reload it. This is an attempt to force learn recipes too all players.
-		if (!Bukkit.getOnlinePlayers().isEmpty() && self().getConfig().getBoolean("learn-recipes"))
-			for (final Player player : Bukkit.getOnlinePlayers())
-				Adapter.DiscoverRecipes(player, getCacheRecipes().getListOfRecipes().stream()
-						.filter(enhancedRecipe -> FormatListContents.canViewRecipe(enhancedRecipe, player))
-						.map(ServerLoadable::getServerRecipe)
-						.collect(Collectors.toList()));
-	}
 
 	@Nonnull
 	public Object getText(String key) {
@@ -274,13 +278,19 @@ public class CraftEnhance extends JavaPlugin {
 	}
 
 	@Nonnull
-	public List<String> getText(final String key,@Nonnull final Consumer<PlaceholderWrapper> placeholders) {
+	public List<String> getText(final String key, @Nonnull final Consumer<PlaceholderWrapper> placeholders) {
 		final PluginMessages pluginMessages = self().getLocalizationCache().getLocalization().getPluginMessages();
 		if (pluginMessages == null) {
 			return new ArrayList<>();
 		}
 
-		return PlaceholderTranslator.translateList(pluginMessages.getMessage(key),  placeholders);
+		return PlaceholderTranslator.translateList(pluginMessages.getMessage(key), placeholders);
+	}
+
+	public String parsePlaceholderApi(@Nonnull final Player player, final @Nonnull String text) {
+		if (!placeholderAPI)
+			return text;
+		return PlaceholderAPI.setPlaceholders(player, text);
 	}
 
 	@Override
@@ -295,6 +305,7 @@ public class CraftEnhance extends JavaPlugin {
 					"issue, please send a bug report here: https://github.com/broken1arrow/CraftEnhance/issues.");
 			Messenger.Message("Disabling the plugin...");
 			getPluginLoader().disablePlugin(this);
+			return false;
 		}
 
 		commandHandler.handleCommand(sender, label, args);
@@ -332,7 +343,8 @@ public class CraftEnhance extends JavaPlugin {
 				new SetPermissionCmd(commandHandler),
 				new ReloadCmd(),
 				new Disabler(commandHandler),
-				new RemoveRecipeCmd(commandHandler)
+				new RemoveRecipeCmd(commandHandler),
+				new CustomTable()
 				//,new Test()
 		));
 	}
@@ -398,11 +410,49 @@ public class CraftEnhance extends JavaPlugin {
 	}
 
 	public void openEnhancedCraftingTable(final Player p) {
+		final GuiTemplate guiTemplate = new GuiTemplate(template -> {
+			final Map<Integer, TemplateItemStack> templateItemStackMap = new HashMap<>();
+			final List<Integer> fillSlots = new ArrayList<>();
+			final String range = "0-2,9-11,18-20";
+			for (String subRange : range.split(",")) {
+				if (subRange == "") continue;
+				if (subRange.contains("-")) {
+					int first = Integer.valueOf(subRange.split("-")[0]);
+					int second = Integer.valueOf(subRange.split("-")[1]);
+					fillSlots.addAll(IntStream.range(first, second + 1).mapToObj(x -> x).collect(Collectors.toList()));
+				} else fillSlots.add(Integer.valueOf(subRange));
+			}
+			for (int i = 0; i < 43; i++) {
+				if (i == 13 || fillSlots.contains(i)) continue;
+				templateItemStackMap.put(i, new TemplateItemStack(new ItemStack(Material.BLACK_STAINED_GLASS), ButtonType.Back));
+			}
+			templateItemStackMap.put(44, new TemplateItemStack(new ItemStack(Material.GLOWSTONE_DUST), ButtonType.Back));
+			template.setTemplateInventoryContents(templateItemStackMap);
+			template.setFillSpace(fillSlots);
+			template.setName("Custom crafting");
+			template.setResultSlot(13);
+		});
 		final CustomCraftingTable table = new CustomCraftingTable(
 				getGuiManager(),
-				getGuiTemplatesFile().getTemplate(null),
+				guiTemplate,
 				null, p
 		);
+		List<ItemStack> itemStacks = new ArrayList<>();
+		itemStacks.add(new ItemStack(Material.STICK));
+		itemStacks.add(new ItemStack(Material.STICK));
+		itemStacks.add(new ItemStack(Material.STICK));
+		itemStacks.add(new ItemStack(Material.STONE));
+		table.setRecipe(itemStacks.toArray(new ItemStack[0]), new ItemStack(Material.ARMOR_STAND), false);
 		getGuiManager().openGUI(p, table);
+	}
+
+	public void reLearnRecipes() {
+		//todo learn recipes are little broken. when you reload it. This is an attempt to force learn recipes too all players.
+		if (!Bukkit.getOnlinePlayers().isEmpty() && self().getConfig().getBoolean("learn-recipes"))
+			for (final Player player : Bukkit.getOnlinePlayers())
+				Adapter.DiscoverRecipes(player, getCacheRecipes().getListOfRecipes().stream()
+						.filter(enhancedRecipe -> FormatListContents.canViewRecipe(enhancedRecipe, player))
+						.map(ServerLoadable::getServerRecipe)
+						.collect(Collectors.toList()));
 	}
 }

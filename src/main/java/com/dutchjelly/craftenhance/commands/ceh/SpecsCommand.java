@@ -8,12 +8,15 @@ import com.dutchjelly.craftenhance.messaging.Messenger;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-@CommandRoute(cmdPath="ceh.specs", perms="perms.recipe-editor")
+import java.util.ArrayList;
+import java.util.List;
+
+@CommandRoute(cmdPath = "ceh.specs", perms = "perms.recipe-editor")
 public class SpecsCommand implements ICommand {
 
 	private CustomCmdHandler handler;
-	
-	public SpecsCommand(CustomCmdHandler handler){
+
+	public SpecsCommand(CustomCmdHandler handler) {
 		this.handler = handler;
 	}
 
@@ -24,12 +27,12 @@ public class SpecsCommand implements ICommand {
 
 	@Override
 	public void handlePlayerCommand(Player p, String[] args) {
-		if(args.length != 1) {
+		if (args.length != 1) {
 			Messenger.MessageFromConfig("messages.commands.few-arguments", p, "1");
 			return;
 		}
 		EnhancedRecipe recipe = handler.getMain().getCacheRecipes().getRecipe(args[0]);
-		if(recipe == null) {
+		if (recipe == null) {
 			Messenger.Message("That recipe key doesn't exist", p);
 			return;
 		}
@@ -39,5 +42,13 @@ public class SpecsCommand implements ICommand {
 	@Override
 	public void handleConsoleCommand(CommandSender sender, String[] args) {
 		Messenger.MessageFromConfig("messages.commands.only-for-players", sender);
+	}
+
+	@Override
+	public List<String> handleTabCompletion(final CommandSender sender, final String[] args) {
+		if (args.length == 2) {
+			return new ArrayList<>(handler.getMain().getCacheRecipes().getRecipes().keySet());
+		}
+		return ICommand.super.handleTabCompletion(sender, args);
 	}
 }
