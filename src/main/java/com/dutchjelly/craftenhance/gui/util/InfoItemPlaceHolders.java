@@ -21,7 +21,7 @@ public enum InfoItemPlaceHolders {
 	Recipe_type("[recipe_type]"),
 	Recipe_group("[recipe_group]"),
 	Sort("[sort]"),
-	Recipe_activated("[recipes_activated]")
+	Recipes_activated("[recipes_activated]")
 	;
 	private final String placeHolder;
 	public String getPlaceHolder() {

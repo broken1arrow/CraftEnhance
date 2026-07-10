@@ -331,7 +331,7 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 
 
 		placeholders.put(InfoItemPlaceHolders.Key.getPlaceHolder(), viewAll ? getKey() == null ? "null" : getKey() : lackViewEditPermission);
-		placeholders.put(InfoItemPlaceHolders.Recipe_activated.getPlaceHolder(), viewAll ? recipesActivated : lackViewEditPermission);
+		placeholders.put(InfoItemPlaceHolders.Recipes_activated.getPlaceHolder(), viewAll ? recipesActivated : lackViewEditPermission);
 		placeholders.put(InfoItemPlaceHolders.Hidden.getPlaceHolder(), viewAll ? hiddenText : lackViewEditPermission);
 		placeholders.put(InfoItemPlaceHolders.RecipeCommand.getPlaceHolder(), viewAll ? commandNonSet : lackViewEditPermission);
 		placeholders.put(InfoItemPlaceHolders.Partial_match.getPlaceHolder(), viewAll ? partialMatch : lackViewEditPermission);

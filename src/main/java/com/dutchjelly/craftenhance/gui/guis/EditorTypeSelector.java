@@ -134,9 +134,9 @@ public class EditorTypeSelector extends MenuHolder {
 		final CraftEnhance self = self();
 		return new HashMap<String, Object>() {{
 			if (menuButtonData.isActionTypeEqual(ButtonType.ChooseBrewingType.name())) {
-				put(InfoItemPlaceHolders.Recipe_activated.getPlaceHolder(), self.getConfig().getBoolean("enable-brewing-recipes") ? "Activated" : "Activate custom brewing in config");
+				put(InfoItemPlaceHolders.Recipes_activated.getPlaceHolder(), self.getConfig().getBoolean("enable-brewing-recipes") ? "Activated" : "Activate custom brewing in config");
 			} else {
-				put(InfoItemPlaceHolders.Recipe_activated.getPlaceHolder(), self.getConfig().getBoolean("enable-recipes") ? "Activated" : "Activate custom crafting in config");
+				put(InfoItemPlaceHolders.Recipes_activated.getPlaceHolder(), self.getConfig().getBoolean("enable-recipes") ? "Activated" : "Activate custom crafting in config");
 			}
 		}};
 	}
