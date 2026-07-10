@@ -313,8 +313,8 @@ public abstract class EnhancedRecipe extends GuiPlacable implements Configuratio
 		final String recipesActivated = self.getConfig().getBoolean("enable-recipes") ? "Activated" : "Activate custom crafting in config";
 
 		final List<String> lackViewEditPermission = self.getText("recipe_lack_view_extended_permission", placeholderWrapper -> {
-			placeholderWrapper.put("{view.perm}", PermissionTypes.View_ALL.getPerm());
-			placeholderWrapper.put("{edit.perm}", PermissionTypes.Edit.getPerm());
+			placeholderWrapper.put("[view.perm]", PermissionTypes.View_ALL.getPerm());
+			placeholderWrapper.put("[edit.perm]", PermissionTypes.Edit.getPerm());
 		});
 		if (lackViewEditPermission.isEmpty()) {
 			lackViewEditPermission.add("You lack '" + PermissionTypes.View_ALL.getPerm() + "' or '" + PermissionTypes.Edit.getPerm() + "' to show this info.");

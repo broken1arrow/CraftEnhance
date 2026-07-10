@@ -10,7 +10,7 @@ public enum PermissionTypes {
 	Category_editor("perms.category-editor"),
 	;
 
-	public final String permPath;
+	private final String permPath;
 
 	PermissionTypes(final String permPath) {
 		this.permPath = permPath;
@@ -22,7 +22,7 @@ public enum PermissionTypes {
 			permission = CraftEnhance.self().getConfig().getString("perms.categorys-editor");
 		}
 		if (permission == null)
-			permission = "craftenhance.permission.not.set";
+			permission = "craftenhance." + this.name().toLowerCase();
 		return permission;
 	}
 }

@@ -21,6 +21,6 @@ MessagesUtility:
   match_type_match_modeldata_and_type: "Match modeldata and type of item."
   match_type_name_lore: "Match name, lore and type on the item."
   match_type_basic_meta: "Similar to matching metadata, but less strict."
-  recipe_lack_view_extended_permission: "You lack '{view.perm}' or '{edit.perm}' to show this info"
+  recipe_lack_view_extended_permission: "You lack '[view.perm]' or '[edit.perm]' to show this info"
   checks_partial_match: "checks for partial match"
   does_not_checks_partial_match: "doesn't check for partial match"
