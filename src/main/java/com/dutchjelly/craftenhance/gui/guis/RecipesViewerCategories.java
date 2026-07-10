@@ -35,11 +35,11 @@ import static com.dutchjelly.craftenhance.CraftEnhance.self;
 import static com.dutchjelly.craftenhance.gui.util.GuiUtil.setTextItem;
 import static com.dutchjelly.craftenhance.messaging.Messenger.Message;
 
-public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
+public class RecipesViewerCategories extends MenuHolderPage<CategoryData> {
 	private final MenuSettingsCache menuSettingsCache = self().getMenuSettingsCache();
 	private final MenuTemplate menuTemplate;
 
-	public RecipesViewerCategorys(final String grupSeachFor) {
+	public RecipesViewerCategories(final String grupSeachFor) {
 		super(FormatListContents.getCategories(self().getCategoryDataCache().values(), grupSeachFor));
 		this.menuTemplate = menuSettingsCache.getTemplate("RecipesCategories");
 		setFillSpace(this.menuTemplate.getFillSlots());
@@ -116,20 +116,20 @@ public class RecipesViewerCategorys extends MenuHolderPage<CategoryData> {
 				Messenger.Message("Search for categories.", getViewer());
 				new HandleChatInput(this, msg -> {
 					if (GuiUtil.seachCategory(msg)) {
-						new RecipesViewerCategorys(msg).menuOpen(getViewer());
+						new RecipesViewerCategories(msg).menuOpen(getViewer());
 						return false;
 					}
 					return true;
 				}).setMessages("Search for categories.")
 						.start(getViewer());
 				;
-			} else new RecipesViewerCategorys("").menuOpen(player);
+			} else new RecipesViewerCategories("").menuOpen(player);
 		}
 		if (value.isActionTypeEqual(ButtonType.NewCategory.name()) && player.hasPermission(PermissionTypes.Category_editor.getPerm())) {
 			if (!player.isConversing()) {
 				new HandleChatInput(this, msg -> {
 					if (!GuiUtil.newCategory(msg, player)) {
-						new RecipesViewerCategorys("").menuOpen(player);
+						new RecipesViewerCategories("").menuOpen(player);
 						return false;
 					}
 					return true;

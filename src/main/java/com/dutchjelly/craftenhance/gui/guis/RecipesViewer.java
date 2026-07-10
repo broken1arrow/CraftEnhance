@@ -3,12 +3,11 @@ package com.dutchjelly.craftenhance.gui.guis;
 import com.dutchjelly.bukkitadapter.Adapter;
 import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
-import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.SmokerRecipe;
-import com.dutchjelly.craftenhance.crafthandling.util.ItemMatchers.MatchType;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
@@ -151,7 +150,7 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 			else new RecipesViewer(categoryData, "", player).menuOpen(player);
 		}
 		if (value.isActionTypeEqual(ButtonType.Back.name())) {
-			new RecipesViewerCategorys("").menuOpen(player);
+			new RecipesViewerCategories("").menuOpen(player);
 		}
 		return false;
 	}
@@ -221,63 +220,7 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 
 	private Map<String, Object> getPlaceholders(final EnhancedRecipe enhancedRecipe) {
 		final Player player = getViewer();
-		final boolean viewAll = player.hasPermission(PermissionTypes.View_ALL.getPerm()) || player.hasPermission(PermissionTypes.Edit.getPerm());
-		final CraftEnhance craftEnhance = self();
-
-		final String permission = enhancedRecipe.getPermission();
-		final boolean permissionSet = permission == null || permission.trim().equals("");
-		final String permissionText = permissionSet ? "" : permission;
-		final Object hidden = enhancedRecipe.isHidden() ? craftEnhance.getText("recipe_hidden") : craftEnhance.getText("recipe_not_hidden");
-		final MatchType matchType = enhancedRecipe.getMatchType();
-		final Object description = matchType.getMatchDescription();
-
-
-		final Map<String, Object> placeHolders = new HashMap<String, Object>() {{
-
-			put(InfoItemPlaceHolders.Key.getPlaceHolder(), enhancedRecipe.getKey() == null ? "null" : enhancedRecipe.getKey());
-			if (enhancedRecipe instanceof WBRecipe)
-				put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), ((WBRecipe) enhancedRecipe).isShapeless() ? craftEnhance.getText("shapeless_recipe") : craftEnhance.getText("shaped_recipe"));
-			else
-				put(InfoItemPlaceHolders.Shaped.getPlaceHolder(), craftEnhance.getText("not_shaped_recipe"));
-
-
-			put(InfoItemPlaceHolders.Recipe_type.getPlaceHolder(), enhancedRecipe.getType().capitalize());
-			put(InfoItemPlaceHolders.Recipe_group.getPlaceHolder(), enhancedRecipe.getGroup() != null ?
-					enhancedRecipe.getGroup() : "no group set");
-			put(InfoItemPlaceHolders.MatchMeta.getPlaceHolder(), viewAll ? matchType.getMatchName() : "");
-			put(InfoItemPlaceHolders.MatchDescription.getPlaceHolder(), viewAll ? description : "");
-			put(InfoItemPlaceHolders.Hidden.getPlaceHolder(), viewAll ? hidden : "");
-			put(InfoItemPlaceHolders.Permission.getPlaceHolder(), getPermissionText(viewAll, permissionText, permissionSet));
-			put(InfoItemPlaceHolders.Slot.getPlaceHolder(), viewAll ? String.valueOf(enhancedRecipe.getSlot()) : "");
-			put(InfoItemPlaceHolders.Page.getPlaceHolder(), viewAll ? String.valueOf(enhancedRecipe.getPage()) : "");
-
-
-			put(InfoItemPlaceHolders.Worlds.getPlaceHolder(), enhancedRecipe.getAllowedWorlds() != null && !enhancedRecipe.getAllowedWorlds().isEmpty() ?
-					enhancedRecipe.getAllowedWorldsFormatted() : craftEnhance.getText("allowed_worlds_not_set"));
-			if (categoryData != null)
-				put(InfoItemPlaceHolders.Category.getPlaceHolder(), categoryData.getRecipeCategory());
-			else
-				put(InfoItemPlaceHolders.Category.getPlaceHolder(), enhancedRecipe.getRecipeCategory() != null ? enhancedRecipe.getRecipeCategory() : craftEnhance.getText("recipe_category"));
-		}};
-
-		if (enhancedRecipe instanceof EnhancedFurnaceRecipe) {
-			final EnhancedFurnaceRecipe furnaceRecipe = (EnhancedFurnaceRecipe) enhancedRecipe;
-			placeHolders.put(InfoItemPlaceHolders.Exp.getPlaceHolder(), String.valueOf(furnaceRecipe.getExp()));
-			placeHolders.put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(furnaceRecipe.getDuration()));
-		} else {
-			if (enhancedRecipe instanceof BrewingRecipe) {
-				placeHolders.put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(((BrewingRecipe) enhancedRecipe).getDuration()));
-				placeHolders.put(InfoItemPlaceHolders.Exp.getPlaceHolder(), "not in use");
-				placeHolders.put(InfoItemPlaceHolders.Brewing_status.getPlaceHolder(), self().getConfig().getBoolean("enable-brewing-recipes") ? "Activated" : "Activate custom brewing in config");
-			} else {
-				placeHolders.put(InfoItemPlaceHolders.Exp.getPlaceHolder(), "not in use");
-				placeHolders.put(InfoItemPlaceHolders.Duration.getPlaceHolder(), "not in use");
-				placeHolders.put(InfoItemPlaceHolders.Brewing_status.getPlaceHolder(), "");
-				placeHolders.put(InfoItemPlaceHolders.Recipe_activated.getPlaceHolder(), self().getConfig().getBoolean("enable-recipes") ? "Activated" : "Activate custom crafting in config");
-			}
-		}
-
-		return placeHolders;
+		return enhancedRecipe.getPlaceholders(player);
 	}
 
 	private Object getPermissionText(final boolean viewAll, final String permissionText, final boolean permissionSet) {

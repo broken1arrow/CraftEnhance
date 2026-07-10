@@ -9,7 +9,7 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.gui.guis.RecipesViewer;
-import com.dutchjelly.craftenhance.gui.guis.RecipesViewerCategorys;
+import com.dutchjelly.craftenhance.gui.guis.RecipesViewerCategories;
 import com.dutchjelly.craftenhance.gui.guis.editors.RecipeEditor;
 import com.dutchjelly.craftenhance.gui.guis.viewers.RecipeViewRecipe;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
@@ -42,7 +42,7 @@ public class RecipesCmd implements ICommand {
 
 	@Override
 	public void handlePlayerCommand(final Player p, final String[] args) {
-		final RecipesViewerCategorys menu = new RecipesViewerCategorys("");
+		final RecipesViewerCategories menu = new RecipesViewerCategories("");
 		if (args.length > 1) {
 			if (args[0].equals("page"))
 				try {

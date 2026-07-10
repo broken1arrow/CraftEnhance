@@ -14,19 +14,20 @@ Menus:
           lore:
             - "&f<-- info -->"
             - "&fShaped:&6 [shaped]"
-            - "&fType:&6 [Recipe_type]"
+            - "&fType:&6 [recipe_type]"
             - "&fPerm:&6 [permission]"
             - "&fAllowed to craft in this worlds:"
             - "&6[worlds]"
-            - "&fCategory:&6 [category]"
+            - "&fRecipe group:&6 [recipe_group]"
           glow: false
         active:
           material: BOOK
           name: "&a"
           lore:
             - "&f<-- info -->"
+            - "&fActivated:&6[recipe_activated]"
             - "&fShaped:&6 [shaped]"
-            - "&fType:&6 [Recipe_type]"
+            - "&fType:&6 [recipe_type]"
             - "&fPerm:&6 [permission]"
             - "&fAllowed to craft in this worlds:"
             - "&6[worlds]"
@@ -36,8 +37,7 @@ Menus:
             - "&fPage:&6 [page]"
             - "&fExperience:&6 [exp]"
             - "&fDuration:&6 [duration]"
-            - "&fMatch type:"
-            - "&6[matcher]"
+            - "&fMatch type: &6[matcher]"
           glow: true
       "46":
         action_type: PrvPage
@@ -459,13 +459,13 @@ Menus:
         glow: false
   FurnaceRecipeViewer:
     menu_settings:
-      name: "[Recipe_type] recipe"
+      name: "[recipe_type] recipe"
       fill-space: "10,12"
       sound: BLOCK_NOTE_BLOCK_BASEDRUM
     buttons:
       "11":
         material: FURNACE
-        name: "&fEnhanced [Recipe_type] recipe"
+        name: "&fEnhanced [recipe_type] recipe"
         lore:
           - "&fThe recipe rewards &3[exp] &fexp"
           - "&fThe cooking time is &3[duration] &fticks"
@@ -506,7 +506,7 @@ Menus:
         glow: false
   FurnaceRecipeEditor:
     menu_settings:
-      name: "[Recipe_type] editor"
+      name: "[recipe_type] editor"
       fill-space: "10,12"
       sound: BLOCK_NOTE_BLOCK_BASEDRUM
     buttons:
@@ -520,7 +520,7 @@ Menus:
         glow: true
       "11":
         material: FURNACE
-        name: "&aEnhanced [Recipe_type] recipe"
+        name: "&aEnhanced [recipe_type] recipe"
         lore:
           - "&fThe ingredients need &3[matcher]"
           - "&fThe key of the recipe is &3[key]"
@@ -566,7 +566,7 @@ Menus:
         glow: false
   BrewingRecipeEditor:
     menu_settings:
-      name: "[Recipe_type] editor"
+      name: "[recipe_type] editor"
       fill-space: "2,19-21,13-15"
       sound: BLOCK_NOTE_BLOCK_BASEDRUM
     buttons:
@@ -580,7 +580,7 @@ Menus:
         glow: true
       "11":
         material: BREWING_STAND
-        name: "&aEnhanced [Recipe_type] recipe"
+        name: "&aEnhanced [recipe_type] recipe"
         lore:
           - "&fThe ingredients need &3[matcher]"
           - "&fThe key of the recipe is &3[key]"
@@ -635,15 +635,15 @@ Menus:
         glow: false
   BrewerRecipeViewer:
     menu_settings:
-      name: "[Recipe_type] view"
+      name: "[recipe_type] view"
       fill-space: "2,19-21,13-15"
       sound: BLOCK_NOTE_BLOCK_BASEDRUM
     buttons:
       "11":
         material: BREWING_STAND
-        name: "&aEnhanced [Recipe_type] recipe"
+        name: "&aEnhanced [recipe_type] recipe"
         lore:
-          - "&fBrewing active: &3[brewing_status]"
+          - "&fBrewing active: &3[recipe_activated]"
           - "&fThe ingredients need &3[matcher]"
           - "&fThe key of the recipe is &3[key]"
           - "&fThe brewing time is &3[duration] &fsec"
@@ -692,7 +692,7 @@ Menus:
         glow: false
   RecipeSettingsBrewing:
     menu_settings:
-      name: "[Recipe_type] settings"
+      name: "[recipe_type] settings"
       fill-space: "10,12"
       sound: BLOCK_NOTE_BLOCK_BASEDRUM
     buttons:
@@ -963,7 +963,7 @@ Menus:
         glow: false
   RecipeSettingsFurnace:
     menu_settings:
-      name: "[Recipe_type] settings"
+      name: "[recipe_type] settings"
       fill-space: "10,12"
       sound: BLOCK_NOTE_BLOCK_BASEDRUM
     buttons:

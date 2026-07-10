@@ -134,7 +134,7 @@ public class BrewingRecipe extends EnhancedRecipe{
 		Map<String,Object> map = new HashMap<>();
 		map.put(InfoItemPlaceHolders.Exp.getPlaceHolder(), "not in use");
 		map.put(InfoItemPlaceHolders.Duration.getPlaceHolder(), String.valueOf(this.getDuration()));
-		map.put(InfoItemPlaceHolders.Brewing_status.getPlaceHolder(), self().getConfig().getBoolean("enable-brewing-recipes") ? "Activated" : "Activate custom brewing in config");
+		map.put(InfoItemPlaceHolders.Recipe_activated.getPlaceHolder(), self().getConfig().getBoolean("enable-brewing-recipes") ? "Activated" : "Activate custom brewing in config");
 		return map;
 	}
 

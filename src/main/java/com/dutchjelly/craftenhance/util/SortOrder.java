@@ -3,10 +3,11 @@ package com.dutchjelly.craftenhance.util;
 public enum SortOrder {
 	NON,
 	NAME,
+	RESULT_MATERIAL_NAME,
 	ID,
 	MATCH_TYPE,
 	RECIPE_TYPE,
-	GROUP;
+	GROUP, IS_HIDDEN;
 
 
 	public SortOrder nextValue() {

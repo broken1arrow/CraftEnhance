@@ -20,8 +20,8 @@ import com.dutchjelly.craftenhance.commands.edititem.LocalizedNameCmd;
 import com.dutchjelly.craftenhance.commands.edititem.LoreCmd;
 import com.dutchjelly.craftenhance.crafthandling.RecipeInjector;
 import com.dutchjelly.craftenhance.crafthandling.RecipeLoader;
-import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
+import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.ServerLoadable;
 import com.dutchjelly.craftenhance.crafthandling.recipes.WBRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.furnace.BlastRecipe;
@@ -49,6 +49,8 @@ import lombok.Getter;
 import org.broken.arrow.library.localization.LocalizationCache;
 import org.broken.arrow.library.localization.builders.PluginMessages;
 import org.broken.arrow.library.menu.RegisterMenuAPI;
+import org.broken.arrow.library.serialize.utility.converters.PlaceholderTranslator;
+import org.broken.arrow.library.serialize.utility.converters.PlaceholderTranslator.PlaceholderWrapper;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -63,9 +65,11 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class CraftEnhance extends JavaPlugin {
@@ -261,11 +265,22 @@ public class CraftEnhance extends JavaPlugin {
 						.collect(Collectors.toList()));
 	}
 
+	@Nonnull
 	public Object getText(String key) {
 		final PluginMessages pluginMessages = self().getLocalizationCache().getLocalization().getPluginMessages();
 		if (pluginMessages == null)
 			return "";
 		return pluginMessages.getMessage(key);
+	}
+
+	@Nonnull
+	public List<String> getText(final String key,@Nonnull final Consumer<PlaceholderWrapper> placeholders) {
+		final PluginMessages pluginMessages = self().getLocalizationCache().getLocalization().getPluginMessages();
+		if (pluginMessages == null) {
+			return new ArrayList<>();
+		}
+
+		return PlaceholderTranslator.translateList(pluginMessages.getMessage(key),  placeholders);
 	}
 
 	@Override

@@ -6,7 +6,7 @@ import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
 import com.dutchjelly.craftenhance.files.CategoryData;
 import com.dutchjelly.craftenhance.files.MenuSettingsCache;
 import com.dutchjelly.craftenhance.gui.guis.ChangeCategoryItem;
-import com.dutchjelly.craftenhance.gui.guis.RecipesViewerCategorys;
+import com.dutchjelly.craftenhance.gui.guis.RecipesViewerCategories;
 import com.dutchjelly.craftenhance.gui.util.ButtonType;
 import com.dutchjelly.craftenhance.gui.util.GuiUtil;
 import com.dutchjelly.craftenhance.prompt.HandleChatInput;
@@ -90,7 +90,7 @@ public class RecipesViewerCategoriesSettings extends MenuHolder {
 				}
 				self().getCategoryDataCache().remove((this.category));
 				CraftEnhance.runTaskLaterAsync(1, () -> self().getCategoryDataCache().save());
-				new RecipesViewerCategorys("").menuOpen(player);
+				new RecipesViewerCategories("").menuOpen(player);
 			}
 		}
 		if (value.isActionTypeEqual( ButtonType.ChangeCategoryName.name())){
@@ -127,7 +127,7 @@ public class RecipesViewerCategoriesSettings extends MenuHolder {
 					.start(player);
 		}
 		if (value.isActionTypeEqual( ButtonType.Back.name())){
-			new RecipesViewerCategorys("").menuOpen(player);
+			new RecipesViewerCategories("").menuOpen(player);
 		}
 		return false;
 	}

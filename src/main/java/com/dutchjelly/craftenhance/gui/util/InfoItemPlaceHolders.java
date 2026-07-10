@@ -18,10 +18,9 @@ public enum InfoItemPlaceHolders {
 	DisplayName("[display_name]"),
 	Worlds("[worlds]"),
 	Partial_match("[partial_match]"),
-	Recipe_type("[Recipe_type]"),
+	Recipe_type("[recipe_type]"),
 	Recipe_group("[recipe_group]"),
 	Sort("[sort]"),
-	Brewing_status("[brewing_status]"),
 	Recipe_activated("[recipe_activated]")
 	;
 	private final String placeHolder;

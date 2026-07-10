@@ -28,7 +28,7 @@ public class PaginatedItems {
 
 	public List<EnhancedRecipe> retrieveList(final Player player, final SortOrder sort, final String recipeSearchFor) {
 		List<EnhancedRecipe> enhancedRecipes = canSeeRecipes(getEnhancedRecipes(recipeSearchFor), player);
-
+		boolean isSortingActive = sort == null || sort == SortOrder.NON;
 		if (sort != null) {
 			switch (sort) {
 				case NAME:
@@ -40,17 +40,29 @@ public class PaginatedItems {
 				case MATCH_TYPE:
 					enhancedRecipes.sort(Comparator.comparing(EnhancedRecipe::getMatchType));
 					break;
+				case RESULT_MATERIAL_NAME:
+					enhancedRecipes.sort(Comparator.comparing(recipe ->
+							recipe.getResult() != null ? recipe.getResult().getType().name() : ""));
+					break;
 				case RECIPE_TYPE:
 					enhancedRecipes.sort(Comparator.comparing(EnhancedRecipe::getType));
 					break;
 				case GROUP:
 					enhancedRecipes.sort(Comparator.comparing(enhancedRecipe -> enhancedRecipe.getGroup() != null ? enhancedRecipe.getGroup() : ""));
 					break;
+				case IS_HIDDEN:
+					enhancedRecipes.sort(Comparator.comparing(EnhancedRecipe::isHidden, Comparator.reverseOrder()));
+					break;
 			}
 		}
 
 		for (EnhancedRecipe recipe : enhancedRecipes) {
-			addItem(new Item(recipe));
+			Item item = new Item(recipe);
+			if (!isSortingActive) {
+				item.page = -1;
+				item.slot = -1;
+			}
+			addItem(item);
 		}
 		for (Item item : needSortItems) {
 			addDuplicates(item);
