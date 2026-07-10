@@ -1,7 +1,6 @@
 package com.dutchjelly.craftenhance.gui.guis;
 
 import com.dutchjelly.bukkitadapter.Adapter;
-import com.dutchjelly.craftenhance.CraftEnhance;
 import com.dutchjelly.craftenhance.crafthandling.recipes.BrewingRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedFurnaceRecipe;
 import com.dutchjelly.craftenhance.crafthandling.recipes.EnhancedRecipe;
@@ -221,11 +220,6 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 	private Map<String, Object> getPlaceholders(final EnhancedRecipe enhancedRecipe) {
 		final Player player = getViewer();
 		return enhancedRecipe.getPlaceholders(player);
-	}
-
-	private Object getPermissionText(final boolean viewAll, final String permissionText, final boolean permissionSet) {
-		final CraftEnhance self = self();
-		return viewAll && !permissionSet ? permissionText : permissionSet ? self.getText("permission_non_set") : self.getText("permission_no_perm");
 	}
 
 }

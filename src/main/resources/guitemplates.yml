@@ -25,7 +25,7 @@ Menus:
           name: "&a"
           lore:
             - "&f<-- info -->"
-            - "&fActivated:&6[recipe_activated]"
+            - "&fActivated crafting:&6 [recipes_activated]"
             - "&fShaped:&6 [shaped]"
             - "&fType:&6 [recipe_type]"
             - "&fPerm:&6 [permission]"
@@ -643,7 +643,7 @@ Menus:
         material: BREWING_STAND
         name: "&aEnhanced [recipe_type] recipe"
         lore:
-          - "&fBrewing active: &3[recipe_activated]"
+          - "&fBrewing active: &3[recipes_activated]"
           - "&fThe ingredients need &3[matcher]"
           - "&fThe key of the recipe is &3[key]"
           - "&fThe brewing time is &3[duration] &fsec"
@@ -833,7 +833,7 @@ Menus:
         name: "&fClick to create a brewing recipe"
         lore:
           - ""
-          - "&fRecipe activated:&3 [recipe_activated]"
+          - "&fRecipe activated:&3 [recipes_activated]"
         glow: true
       "0-1,3-5,7-9,11,13-26":
         extra: GRAY
