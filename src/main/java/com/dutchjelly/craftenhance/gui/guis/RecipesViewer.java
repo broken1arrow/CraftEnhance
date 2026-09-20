@@ -159,7 +159,7 @@ public class RecipesViewer extends MenuHolderPage<EnhancedRecipe> {
 		MenuButtonData menuButton = this.menuTemplate.getMenuButton(-1);
 
 		final boolean viewAll = player.hasPermission(PermissionTypes.View_ALL.getPerm()) || player.hasPermission(PermissionTypes.Edit.getPerm());
-		return new FillMenuButton<>((player, itemStacks, clickType, itemStack, enhancedRecipe) -> {
+		return new FillMenuButton<>((player, clickType,  enhancedRecipe,context) -> {
 			boolean allowClick = (clickType == ClickType.MIDDLE || clickType == ClickType.RIGHT) && getViewer().hasPermission(PermissionTypes.Edit.getPerm());
 
 			if (enhancedRecipe instanceof WBRecipe) {

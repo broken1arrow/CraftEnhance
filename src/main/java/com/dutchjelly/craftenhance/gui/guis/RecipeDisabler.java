@@ -133,7 +133,7 @@ public class RecipeDisabler extends MenuHolderPage<Recipe> {
 
 	@Override
 	public FillMenuButton<Recipe> createFillMenuButton() {
-		return new FillMenuButton<>((player1, itemStacks, clickType, itemStack, recipe) -> {
+		return new FillMenuButton<>((player1,  clickType,  recipe,context) -> {
 			if (recipe != null) {
 				if (enableMode) {
 					RecipeLoader.getInstance().enableServerRecipe(recipe);

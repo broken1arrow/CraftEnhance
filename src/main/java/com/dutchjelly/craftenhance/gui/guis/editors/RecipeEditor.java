@@ -102,7 +102,7 @@ public class RecipeEditor<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 
 	@Override
 	public FillMenuButton<ItemStack> createFillMenuButton() {
-		return new FillMenuButton<>((player1, itemStacks, clickType, itemStack, recipeT) -> ButtonUpdateAction.NONE,
+		return new FillMenuButton<>((player1,  clickType,  recipeT,context) -> ButtonUpdateAction.NONE,
 				(slot, itemStack) -> itemStack);
 	}
 

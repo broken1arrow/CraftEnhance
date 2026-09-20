@@ -13,7 +13,7 @@
         <maven.compiler.target>8</maven.compiler.target>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.release>8</maven.compiler.release>
-        <utility-library>0.136</utility-library>
+        <utility-library>0.137</utility-library>
         <dependencys_path>com.dutchjelly.craftenhance.libs</dependencys_path>
     </properties>
     <build>

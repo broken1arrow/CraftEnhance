@@ -166,7 +166,7 @@ public class CategoryList<RecipeT extends EnhancedRecipe> extends MenuHolderPage
 
 	@Override
 	public FillMenuButton<CategoryData> createFillMenuButton() {
-		return new FillMenuButton<>((player1, itemStacks, clickType, itemStack, containerData) -> {
+		return new FillMenuButton<>((player1, clickType, containerData, context) -> {
 			if (containerData != null) {
 				final String category = containerData.getRecipeCategory();
 				final CategoryData changedCategory = containerData;
