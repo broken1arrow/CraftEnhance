@@ -138,15 +138,11 @@ public class RecipeDisabler extends MenuHolderPage<Recipe> {
 				if (enableMode) {
 					RecipeLoader.getInstance().enableServerRecipe(recipe);
 					self().getFm().saveAllDisabledServerRecipes();
-					//enabledRecipes.remove( o);
-//               getRecipes().remove(recipe);
 					return ButtonUpdateAction.ALL;
 
 				} else {
 					if (!RecipeLoader.getInstance().disableServerRecipe(recipe)) {
 						self().getFm().saveAllDisabledServerRecipes();
-						//disabledRecipes.remove( o);
-//               getRecipes().remove(recipe);
 						return ButtonUpdateAction.ALL;
 					}
 				}
@@ -163,8 +159,8 @@ public class RecipeDisabler extends MenuHolderPage<Recipe> {
 					result = new ItemStack(Material.BARRIER);
 					final ItemMeta meta = result.getItemMeta();
 					meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&4Complex Recipe: " + Adapter.GetRecipeIdentifier(((Recipe) recipe))));
-					meta.setLore(Arrays.asList("&eWARN: &fThis recipe is complex, which", "&f means that the result is only known", " &f&oafter&r&f the content of the crafting table is sent", " &fto the server. Think of repairing or coloring recipes.", " &f&nSo disabling is not recommended!"));
-					meta.setLore(meta.getLore().stream().map(x -> ChatColor.translateAlternateColorCodes('&', x)).collect(Collectors.toList()));
+					List<String> list = Arrays.asList("&eWARN: &fThis recipe is complex, which", "&f means that the result is only known", " &f&oafter&r&f the content of the crafting table is sent", " &fto the server. Think of repairing or coloring recipes.", " &f&nSo disabling is not recommended!");
+					meta.setLore(list.stream().map(x -> ChatColor.translateAlternateColorCodes('&', x)).collect(Collectors.toList()));
 					result.setItemMeta(meta);
 				} else {
 					final ItemMeta meta = result.getItemMeta();
