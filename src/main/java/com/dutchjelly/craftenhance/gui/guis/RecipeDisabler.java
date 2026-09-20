@@ -158,13 +158,14 @@ public class RecipeDisabler extends MenuHolderPage<Recipe> {
 				if (GuiUtil.isNull(result)) {
 					result = new ItemStack(Material.BARRIER);
 					final ItemMeta meta = result.getItemMeta();
-					meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&4Complex Recipe: " + Adapter.GetRecipeIdentifier(((Recipe) recipe))));
-					List<String> list = Arrays.asList("&eWARN: &fThis recipe is complex, which", "&f means that the result is only known", " &f&oafter&r&f the content of the crafting table is sent", " &fto the server. Think of repairing or coloring recipes.", " &f&nSo disabling is not recommended!");
+					final List<String> list = Arrays.asList("&eWARN: &fThis recipe is complex, which", "&f means that the result is only known", " &f&oafter&r&f the content of the crafting table is sent", " &fto the server. Think of repairing or coloring recipes.", " &f&nSo disabling is not recommended!");
+
+					meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&4Complex Recipe: " + Adapter.GetRecipeIdentifier(recipe)));
 					meta.setLore(list.stream().map(x -> ChatColor.translateAlternateColorCodes('&', x)).collect(Collectors.toList()));
 					result.setItemMeta(meta);
 				} else {
 					final ItemMeta meta = result.getItemMeta();
-					meta.setLore(Arrays.asList(ChatColor.translateAlternateColorCodes('&', "&3key: &f" + Adapter.GetRecipeIdentifier(((Recipe) recipe)))));
+					meta.setLore(Arrays.asList(ChatColor.translateAlternateColorCodes('&', "&3key: &f" + Adapter.GetRecipeIdentifier(recipe))));
 					result.setItemMeta(meta);
 				}
 				return result;
