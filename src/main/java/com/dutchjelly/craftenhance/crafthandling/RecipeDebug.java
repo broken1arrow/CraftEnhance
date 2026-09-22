@@ -41,7 +41,7 @@ public class RecipeDebug {
 				String expectedLore = (expectedMeta != null && expectedMeta.hasLore()) ? expectedMeta.getLore().toString() : "none";
 				stringBuilder.append("  expected_type=").append(expectedItem.getType().name()).append("\n");
 				stringBuilder.append("  expected_meta: {name='").append(expectedName)
-						.append("', lore=").append(expectedLore).append("}\n");
+						.append("', lore=").append(expectedLore).append(" || ").append(expectedMeta).append("}\n");
 				stringBuilder.append("  candidates:\n");
 
 				appendCandidateIngredients(matchingInvItems, stringBuilder, expectedMeta);
@@ -226,9 +226,9 @@ public class RecipeDebug {
 			if (!result.matchStatus.equals("MATCH_EXACT")) {
 				sb.append("\n").append("      meta=");
 				if (actualName != null && actualLore != null) {
-					sb.append(" | {name='").append(actualName).append("' , lore=").append(actualLore).append("}");
+					sb.append(" | {name='").append(actualName).append("' , lore=").append(actualLore).append(" || ").append(actualMeta).append("}");
 				} else {
-					sb.append("{no name and lore set}");
+					sb.append("{no name and lore set || ").append(actualMeta).append("}");
 				}
 			}
 			sb.append("\n");
@@ -326,7 +326,7 @@ public class RecipeDebug {
 		if (displayBad || loreBad) {
 			if (displayBad && loreBad) {
 				type = MatchStatusType.DISPLAY_LORE_MISMATCH_AT_POS;
-				description = "Display and lore mismatch in the set display name at:'" + display.getPosition() + "'pos and at lore pos:'" + lore.getPosition() + "'.";
+				description = "Display and lore mismatch in the set display name at: '" + display.getPosition() + "'pos and at lore pos:'" + lore.getPosition() + "'.";
 			} else if (displayBad) {
 				type = MatchStatusType.DISPLAY_MISMATCH_AT_POS;
 				description = "Display mismatch at position " + display.getPosition();
