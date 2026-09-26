@@ -54,7 +54,7 @@ public class EnchantedCraftWrapper implements RecipeWrapper {
 			totalSlotCount++;
 		}
 
-		this.key = enhancedRecipe.getResult().getType().name() + "|" +
+		this.key = "custom:" + enhancedRecipe.getKey() + "|" + enhancedRecipe.getResult().getType().name() + "|" +
 				Arrays.stream(enhancedRecipe.getContent())
 						.filter(Objects::nonNull)
 						.map(i -> i.getType().name())

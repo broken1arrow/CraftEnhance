@@ -162,7 +162,7 @@ public class RecipeInjector implements Listener {
 		final Location location = craftingInventory.getLocation();
 		viewers.forEach(humanEntity -> removeFinishRecipe(humanEntity.getUniqueId()));
 		for (RecipeWrapper recipe : recipes) {
-			ResultContext contextResult = recipe.matches(craftEvent.getRecipe(), prepareRecipeContext -> {
+			ResultContext contextResult = recipe.matches(serverRecipe, prepareRecipeContext -> {
 				if (prepareRecipeContext instanceof PrepareItemCraftContext) {
 					final PrepareItemCraftContext recipeContext = (PrepareItemCraftContext) prepareRecipeContext;
 					recipeContext.setRecipeMatrix(craftingInventory.getMatrix());

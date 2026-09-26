@@ -49,6 +49,7 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 		this.totalSlotCount = recipeContext.getTotalSlotCount();
 
 		final StringBuilder builder = new StringBuilder(recipe.getResult().getType().name());
+		builder.append("vanilla:");
 		if (self().getVersionChecker().newerThan(ServerVersion.v1_13))
 			builder.append(Adapter.getNamespacedKey(recipe));
 		else {
@@ -71,7 +72,7 @@ public class VanillaCraftWrapper implements RecipeWrapper {
 	@Nonnull
 	@Override
 	public String getRecipeKey() {
-		return "vanilla_recipe:" + key;
+		return key;
 	}
 
 	@Nonnull
